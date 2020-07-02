@@ -140,7 +140,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
+    public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_DESCRIPTION,
             required = true) String transcripts) {
 
         try {
@@ -163,7 +163,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
-                                    value = ParamConstants.TRANSCRIPT_DESCRIPTION, required = true) String id) {
+                                    value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
         try {
             GeneQuery query = new GeneQuery(uriParams);
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query);

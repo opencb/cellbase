@@ -80,17 +80,37 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions) {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
+        QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
-            Bson projection = getProjection(queryOptions);
-            List<Bson> orBsonList = new ArrayList<>(ids.size());
-            orBsonList.add(Filters.eq("id", id));
-            orBsonList.add(Filters.eq("name", id));
+            // make query to look in id OR name
+            List<Bson> orBsonList = new ArrayList<>(2);
+            orBsonList.add(Filters.eq("transcripts.id", id));
+            orBsonList.add(Filters.eq("transcripts.name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Transcript>(mongoDBCollection.find(bson, projection, Transcript.class, new QueryOptions())));
+
+            // unwind results
+            List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
+            GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
+            MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+            List<Transcript> transcripts = new ArrayList<>();
+            while (iterator.hasNext()) {
+                transcripts.add(iterator.next());
+            }
+            // one result per ID
+            results.add(new CellBaseDataResult<>(id, 0, new ArrayList<>(), transcripts.size(), transcripts, -1));
         }
         return results;
+    }
+
+    private QueryOptions getInfoQueryOptions(ProjectionQueryOptions queryOptions) {
+        if (queryOptions == null) {
+            return new QueryOptions();
+        } else {
+            TranscriptQuery query = (TranscriptQuery) queryOptions;
+            return query.toQueryOptions();
+        }
     }
 
     @Deprecated
@@ -324,9 +344,12 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 //    }
 
     private List<Bson> unwindAndMatchTranscripts(TranscriptQuery query, QueryOptions options) {
-        List<Bson> aggregateList = new ArrayList<>();
-
         Bson bson = parseQuery(query);
+        return unwindAndMatchTranscripts(bson, options);
+    }
+
+    private List<Bson> unwindAndMatchTranscripts(Bson bson, QueryOptions options) {
+        List<Bson> aggregateList = new ArrayList<>();
         Bson match = Aggregates.match(bson);
 
         Bson include = null;
