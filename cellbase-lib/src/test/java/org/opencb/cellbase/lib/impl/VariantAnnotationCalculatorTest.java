@@ -1105,18 +1105,54 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testClinicalAnnotation() throws Exception {
+        // This variant used to fail because of double normalization carried out during the normalizer call at
+        // getAnnotationByVariantList and posteriorly within the HgvsCalculator called at
+        // ClinicalMongoDBAdaptor.getClinicalVariant to enable checking for the aa change. The MNV must
+        // be decomposed into 17:43049164:C:T & 17:43049168:A:T. The MNV IS in ClinVar and RCV000159931, RCV000167071,
+        // RCV000239024, RCV000471387 must be returned.
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
         queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("ignorePhase", false);
+        queryOptions.put("checkAminoAcidChange", true);
 
-        Variant variant = new Variant("5", 112136975, "GAG", "G");
+        Variant variant = new Variant("chr17", 41201180, "ACCACA", "ATCACT");
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertNotNull(queryResult.getResult());
+        assertEquals(2, queryResult.getResult().size());
+        VariantAnnotation variantAnnotation = queryResult.getResult().get(0);
+        assertEquals(Integer.valueOf(41201181), variantAnnotation.getStart());
+        assertEquals("C", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+        assertNotNull(variantAnnotation.getTraitAssociation());
+        assertTrue(containsAccession(variantAnnotation, "RCV000159931"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000167071"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000239024"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000471387"));
+        variantAnnotation = queryResult.getResult().get(1);
+        assertEquals(Integer.valueOf(41201185), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+        assertNotNull(variantAnnotation.getTraitAssociation());
+        assertTrue(containsAccession(variantAnnotation, "RCV000159931"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000167071"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000239024"));
+        assertTrue(containsAccession(variantAnnotation, "RCV000471387"));
+
+        queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        variant = new Variant("5", 112136975, "GAG", "G");
+        queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(Integer.valueOf(112136974), queryResult.getResult().get(0).getStart());
         assertEquals("AG", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000000829"));
+        assertTrue(containsAccession(queryResult.getResult().get(0), "RCV000000829"));
 
         variant = new Variant("11", 64577375, "G", "GGGGGC");
         queryResult = variantAnnotationCalculator
@@ -1125,7 +1161,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("", queryResult.getResult().get(0).getReference());
         assertEquals("GGGGC", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000161945"));
+        assertTrue(containsAccession(queryResult.getResult().get(0), "RCV000161945"));
 
         variant = new Variant("3", 37090475, "C", "CTT");
         queryResult = variantAnnotationCalculator
@@ -1134,7 +1170,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("", queryResult.getResult().get(0).getReference());
         assertEquals("TT", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000221270"));
+        assertTrue(containsAccession(queryResult.getResult().get(0), "RCV000221270"));
 
         // This example is peculiar. Was sent to me by Alona (slack 30th May). She expected this var below
         // 3:37089111:TGTTGAGTTTCTGAA:T
@@ -1160,7 +1196,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("", queryResult.getResult().get(0).getReference());
         assertEquals("AA", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000075667"));
+        assertTrue(containsAccession(queryResult.getResult().get(0), "RCV000075667"));
 
         variant = new Variant("13", 32912901, "TAAGA", "T");
         queryResult = variantAnnotationCalculator
@@ -1169,27 +1205,21 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("AAGA", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000044410"));
+        assertTrue(containsAccession(queryResult.getResult().get(0), "RCV000044410"));
 
 
     }
 
-    private boolean containsAccession(QueryResult<VariantAnnotation> queryResult, String accession) {
+    private boolean containsAccession(VariantAnnotation variantAnnotation, String accession) {
         boolean found = false;
-        int i = 0;
-        while (i < queryResult.getNumResults() && !found) {
-            int j = 0;
-            while (j < queryResult.getResult().get(i).getTraitAssociation().size() && !found) {
-                found = queryResult
-                        .getResult()
-                        .get(i)
-                        .getTraitAssociation()
-                        .get(j)
-                        .getId()
-                        .equals(accession);
-                j++;
-            }
-            i++;
+        int j = 0;
+        while (j < variantAnnotation.getTraitAssociation().size() && !found) {
+            found = variantAnnotation
+                    .getTraitAssociation()
+                    .get(j)
+                    .getId()
+                    .equals(accession);
+            j++;
         }
         return found;
     }
