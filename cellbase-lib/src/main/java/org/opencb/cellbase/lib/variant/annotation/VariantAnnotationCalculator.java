@@ -84,8 +84,7 @@ public class VariantAnnotationCalculator {
     private static HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
-    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
-            + RegulationDBAdaptor.FeatureType.TF_binding_site_motif;
+    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name();
     private static final String REGION = "region";
     private static final String MERGE = "merge";
 
