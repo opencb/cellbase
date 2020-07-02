@@ -242,7 +242,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "region":
-                    case "id":
+                    case "transcripts.id":
                         if (!visited) {
                            // parse region and ID at the same time
                             createRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
@@ -252,7 +252,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                     case "ontology":
                         createOntologyQuery(value, andBsonList);
                         break;
-                    case "supportLevel":
+                    case "transcripts.supportLevel":
                         andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
                     default:
