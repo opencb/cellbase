@@ -24,14 +24,17 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.Chromosome;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -537,7 +540,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     }
 
     @Override
-    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);

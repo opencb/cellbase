@@ -32,7 +32,7 @@ import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
@@ -727,7 +727,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);

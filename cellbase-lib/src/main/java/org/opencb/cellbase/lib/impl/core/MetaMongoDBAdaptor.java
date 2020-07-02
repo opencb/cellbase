@@ -20,7 +20,7 @@ import org.bson.BsonDocument;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -70,7 +70,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     }
 
     @Override
-    public List<CellBaseDataResult> info(List ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions) {
         return null;
     }
 

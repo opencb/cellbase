@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.api.core;
 
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 
@@ -86,5 +86,5 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     CellBaseDataResult<String> distinct(Q query);
 
-    List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions);
+    List<CellBaseDataResult<T>> info(List<String> ids, ProjectionQueryOptions queryOptions);
 }

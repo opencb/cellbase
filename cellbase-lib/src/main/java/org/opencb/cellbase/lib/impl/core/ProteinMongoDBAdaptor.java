@@ -29,7 +29,7 @@ import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -329,7 +329,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Entry>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<Entry>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);

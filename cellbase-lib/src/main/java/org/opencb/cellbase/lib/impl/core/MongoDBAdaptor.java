@@ -25,8 +25,8 @@ import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
@@ -196,7 +196,7 @@ public class MongoDBAdaptor {
     }
 
     // TODO remove this and use method in MongoDBQueryUtils
-    protected static Bson getProjection(CellBaseQueryOptions options) {
+    protected static Bson getProjection(ProjectionQueryOptions options) {
         Bson projectionResult = null;
         List<Bson> projections = new ArrayList<>();
 

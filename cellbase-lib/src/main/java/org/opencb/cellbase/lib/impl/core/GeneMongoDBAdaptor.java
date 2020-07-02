@@ -23,10 +23,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -110,7 +107,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //    }
 
     @Override
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);

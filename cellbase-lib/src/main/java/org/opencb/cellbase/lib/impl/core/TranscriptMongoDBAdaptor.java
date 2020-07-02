@@ -28,7 +28,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
@@ -80,7 +80,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);

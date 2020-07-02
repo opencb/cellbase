@@ -22,7 +22,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.RepeatsQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -172,7 +172,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Repeat>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Repeat>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         return null;
     }
 
