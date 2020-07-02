@@ -88,6 +88,9 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
+    public static final String TRANSCRIPT_DESCRIPTION = "Comma separated list of ENSEMBL transcript ids or names, "
+            + "e.g. BRCA2-201,ENST00000380152,ENST00000544455. Exact text matches will be returned";
+
     public static final String TRANSCRIPT_BIOTYPES_DESCRIPTION = "Comma separated list of transcript gencode biotypes, "
             + "e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
     public static final String TRANSCRIPT_BIOTYPES_PARAM = "transcriptBiotype";

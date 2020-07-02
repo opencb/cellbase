@@ -468,8 +468,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                        @ApiParam(name = "genes", value = ParamConstants.GENE_IDS, required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")),
-                    geneQuery.toCellBaseQueryOptions());
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -504,7 +503,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(genes.split(",")),
-                    query.toCellBaseQueryOptions());
+                    query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -593,8 +592,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(genes.split(",")),
-                    query.toCellBaseQueryOptions());
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(genes.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

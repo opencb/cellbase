@@ -86,8 +86,7 @@ public class IdWSServer extends GenericRestWSServer {
                                         String id) {
         try {
             XrefQuery query = new XrefQuery(uriParams);
-            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")),
-                    query.toCellBaseQueryOptions());
+            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -178,8 +177,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             GeneQuery query = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")),
-                    query.toCellBaseQueryOptions());
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

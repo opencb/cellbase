@@ -123,12 +123,11 @@ public class OntologyWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION, required = true)
+    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_DESCRIPTION, required = true)
                                         String ids) {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
-            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")),
-                    query.toCellBaseQueryOptions());
+            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
