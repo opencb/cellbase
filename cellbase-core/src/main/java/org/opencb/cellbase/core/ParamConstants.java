@@ -56,7 +56,7 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String GENE_IDS = "Comma separated list of gene ids, e.g. ENSG00000268020,BRCA2"
+    public static final String GENE_IDS = "Comma separated list of ENSEMBL gene ids or names, e.g. ENSG00000268020,BRCA2"
             + " Exact text matches will be returned";
     public static final String GENE_ENSEMBL_IDS = "Comma separated list of ENSEMBL gene ids, "
             + "e.g. ENSG00000132170,ENSG00000155657. Exact text matches will be returned";
