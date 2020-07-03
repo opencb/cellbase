@@ -109,7 +109,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 new Variant("1:62165739:A:T"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(3, variantCellBaseDataResult.getResults().get(0).getAnnotation().getPopulationFrequencies().size());
         List<PopulationFrequency> populationFrequencyList
@@ -155,7 +155,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1:62165740:T:G"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(4, variantCellBaseDataResult.getResults().get(0).getAnnotation().getPopulationFrequencies().size());
         populationFrequencyList
