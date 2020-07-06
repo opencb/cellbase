@@ -24,7 +24,6 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.core.*;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -342,7 +341,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
         query.setSkip(queryCommandOptions.skip);
         query.setLimit(queryCommandOptions.limit);
-        query.setCount( queryCommandOptions.count);
+        query.setCount(queryCommandOptions.count);
         return query;
     }
 }
