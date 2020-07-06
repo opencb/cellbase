@@ -86,11 +86,11 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--distinct"}, description = "", required = false, arity = 1)
         public String distinct;
 
-        @Parameter(names = {"--histogram"}, description = "", required = false, arity = 0)
-        public boolean histogram;
+//        @Parameter(names = {"--histogram"}, description = "", required = false, arity = 0)
+//        public boolean histogram;
 
-        @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
-        public int interval = 100000;
+//        @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
+//        public int interval = 100000;
 
         @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
         public Map<String, String> options = new HashMap<>();
