@@ -24,6 +24,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -33,6 +34,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -157,7 +159,33 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         return new CellBaseIterator<>(iterator);
     }
 
-    public List<Bson> unwind(XrefQuery query) {
+    @Override
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+        List<CellBaseDataResult<Xref>> results = new ArrayList<>();
+        for (String id : ids) {
+            XrefQuery query = getInfoQuery(queryOptions);
+            query.setIds(Collections.singletonList(id));
+            CellBaseIterator<Xref> iterator = iterator(query);
+            List<Xref> xrefs = new ArrayList<>();
+            while (iterator.hasNext()) {
+                xrefs.add(iterator.next());
+            }
+            results.add(new CellBaseDataResult<>(id, 0, new ArrayList<>(), xrefs.size(), xrefs, -1));
+        }
+        return results;
+    }
+
+    private XrefQuery getInfoQuery(ProjectionQueryOptions queryOptions) {
+        XrefQuery xrefQuery;
+        if (queryOptions == null) {
+            xrefQuery = new XrefQuery();
+        } else {
+            xrefQuery = (XrefQuery) queryOptions;
+        }
+        return xrefQuery;
+    }
+
+    private List<Bson> unwind(XrefQuery query) {
         Bson bson = parseQuery(query);
         Bson match = Aggregates.match(bson);
 

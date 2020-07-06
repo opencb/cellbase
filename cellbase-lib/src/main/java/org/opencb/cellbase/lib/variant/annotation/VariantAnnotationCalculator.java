@@ -84,8 +84,7 @@ public class VariantAnnotationCalculator {
     private static HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
-    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
-            + RegulationDBAdaptor.FeatureType.TF_binding_site_motif;
+    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name();
     private static final String REGION = "region";
     private static final String MERGE = "merge";
 
@@ -1647,7 +1646,7 @@ public class VariantAnnotationCalculator {
                     query.setRegions(Collections.singletonList(region));
                     queries.add(query);
                 }
-                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager.info(queries);
+                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager.search(queries);
 
                 // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints

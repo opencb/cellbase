@@ -56,7 +56,7 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String GENE_IDS = "Comma separated list of gene ids, e.g. ENSG00000268020,BRCA2"
+    public static final String GENE_IDS = "Comma separated list of ENSEMBL gene ids or names, e.g. ENSG00000268020,BRCA2"
             + " Exact text matches will be returned";
     public static final String GENE_ENSEMBL_IDS = "Comma separated list of ENSEMBL gene ids, "
             + "e.g. ENSG00000132170,ENSG00000155657. Exact text matches will be returned";
@@ -87,6 +87,9 @@ public class ParamConstants {
     public static final String ONTOLOGY_CHILDREN = "Comma separated list of ontology terms, e.g. GO:0019882";
 
     // ---------------------------------------------
+
+    public static final String TRANSCRIPT_DESCRIPTION = "Comma separated list of ENSEMBL transcript ids or names, "
+            + "e.g. BRCA2-201,ENST00000380152,ENST00000544455. Exact text matches will be returned";
 
     public static final String TRANSCRIPT_BIOTYPES_DESCRIPTION = "Comma separated list of transcript gencode biotypes, "
             + "e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
@@ -186,6 +189,8 @@ public class ParamConstants {
             + "e.g. Q9UL59,B2R8Q1,Q9UKT9. Exact text matches will be returned";
     public static final String PROTEIN_ACCESSION = "A UniProt accession id, e.g. Q9UL59.";
     public static final String PROTEIN_NAMES = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN. "
+            + "Exact text matches will be returned";
+    public static final String PROTEIN_IDS = "Comma separated list of protein accessions or names, e.g.: Q9UL59,ZN214_HUMAN,MKS1_HUMAN. "
             + "Exact text matches will be returned";
 
     // ---------------------------------------------

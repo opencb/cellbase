@@ -18,9 +18,11 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,8 +36,16 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
         return getDBAdaptor().query(query);
     }
 
-    default List<CellBaseDataResult<T>> info(List<Q> queries) {
-        List<CellBaseDataResult<T>> results = getDBAdaptor().query(queries);
+    default List<CellBaseDataResult<T>> search(List<Q> queries) throws QueryException, IllegalAccessException {
+        List<CellBaseDataResult<T>> results = new ArrayList<>();
+        for (Q query : queries) {
+            results.add(getDBAdaptor().query(query));
+        }
+        return results;
+    }
+
+    default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<T>> results = getDBAdaptor().info(ids, queryOptions);
         return results;
     }
 

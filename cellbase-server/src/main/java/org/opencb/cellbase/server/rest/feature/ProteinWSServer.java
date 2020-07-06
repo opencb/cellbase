@@ -36,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -83,18 +82,11 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
+    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_IDS,
                                                required = true) String id) {
         try {
-            List<ProteinQuery> proteinQueries = new ArrayList<>();
-            String[] identifiers = id.split(",");
-            for (String identifier : identifiers) {
-                ProteinQuery query = new ProteinQuery(uriParams);
-                query.setXrefs(Arrays.asList(identifier));
-                proteinQueries.add(query);
-                logger.info("REST proteinQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(proteinQueries);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

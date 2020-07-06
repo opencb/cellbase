@@ -131,7 +131,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 //    }
 
     @GET
-    @Path("/{chromosomeName}/info")
+    @Path("/{chromosomes}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
             response = Chromosome.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -145,11 +145,11 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING")
     })
-    public Response getChromosomes(@PathParam("chromosomeName") @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
-                                                required = true) String chromosomeName) {
+    public Response getChromosomes(@PathParam("chromosomes") @ApiParam(name = "chromosomes", value = ParamConstants.CHROMOSOMES,
+                                                required = true) String chromosomes) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomeName);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

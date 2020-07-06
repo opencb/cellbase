@@ -29,6 +29,7 @@ import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -325,6 +326,21 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         GenericDocumentComplexConverter<Entry> converter = new GenericDocumentComplexConverter<>(Entry.class);
         MongoDBIterator<Entry> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    @Override
+    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+        List<CellBaseDataResult<Entry>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("accession", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Entry>(mongoDBCollection.find(bson, projection,
+                    Entry.class, new QueryOptions())));
+        }
+        return results;
     }
 
     @Override

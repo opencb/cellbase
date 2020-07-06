@@ -19,15 +19,19 @@ package org.opencb.cellbase.app.cli.main.executors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.*;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -36,7 +40,9 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by imedina on 20/02/15.
@@ -228,24 +234,25 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
+    private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output)
+            throws JsonProcessingException, CellbaseException {
         RegulationMongoDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
-
-        // FIXME nativeIterator has been removed
-//        if (queryCommandOptions.resource != null) {
-//            switch (queryCommandOptions.resource) {
-//                case "info":
-//                    query.append(RegulationDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-//                    Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
-//                    while (iterator.hasNext()) {
-//                        Object next = iterator.next();
-//                        output.println(objectMapper.writeValueAsString(next));
-//                    }
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
+        RegulatoryManager regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(queryCommandOptions.species);
+        if (queryCommandOptions.resource != null) {
+            switch (queryCommandOptions.resource) {
+                case "info":
+                    RegulationQuery regulationQuery = createQueryOptions(new RegulationQuery());
+                    List<CellBaseDataResult<RegulatoryFeature>> results = regulatoryManager.info(Collections.singletonList(
+                            queryCommandOptions.id), regulationQuery);
+                    while (results.iterator().hasNext()) {
+                        CellBaseDataResult<RegulatoryFeature> next = results.iterator().next();
+                        output.println(objectMapper.writeValueAsString(next));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
@@ -325,4 +332,16 @@ public class QueryCommandExecutor extends CommandExecutor {
         return queryOptions;
     }
 
+    private <Q extends AbstractQuery> Q createQueryOptions(Q query) {
+        query.setIncludes(Collections.singletonList(queryCommandOptions.include));
+        if (queryCommandOptions.exclude != null && !queryCommandOptions.exclude.isEmpty()) {
+            query.setExcludes(Collections.singletonList(queryCommandOptions.exclude + ",_id,_chunkIds"));
+        } else {
+            query.setExcludes(Collections.singletonList("_id,_chunkIds"));
+        }
+        query.setSkip(queryCommandOptions.skip);
+        query.setLimit(queryCommandOptions.limit);
+        query.setCount(queryCommandOptions.count);
+        return query;
+    }
 }

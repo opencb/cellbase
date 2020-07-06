@@ -34,6 +34,7 @@ import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -96,10 +97,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         // May not have info for specified chromosome, e.g. 17_KI270729v1_random
         if (chromosomeInfo != null && chromosomeInfo.getResults() != null && !chromosomeInfo.getResults().isEmpty()) {
             Chromosome chromosome = chromosomeInfo.getResults().get(0);
-            logger.error("chromosome " + chromosome.toString());
             List<Cytoband> results = chromosome.getCytobands();
             for (Cytoband cytoband : results) {
                 if (cytoband.getEnd() >= region.getStart() && cytoband.getStart() <= region.getEnd()) {
+                    cytoband.setChromosome(chromosome.getName());
                     cytobandList.add(cytoband);
                 }
             }
@@ -536,6 +537,20 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     public CellBaseDataResult<String> distinct(GenomeQuery query) {
         Bson bsonDocument = parseQuery(query);
         return new CellBaseDataResult<>(genomeInfoMongoDBCollection.distinct(query.getFacet(), bsonDocument));
+    }
+
+    @Override
+    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+        List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Chromosome>(mongoDBCollection.find(bson, projection, Chromosome.class, new QueryOptions())));
+        }
+        return results;
     }
 
     public Bson parseQuery(GenomeQuery geneQuery) {

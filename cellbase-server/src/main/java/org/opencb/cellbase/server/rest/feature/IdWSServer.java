@@ -85,16 +85,8 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = ParamConstants.FEATURE_IDS_DESCRIPTION, required = true)
                                         String id) {
         try {
-
-            List<XrefQuery> queries = new ArrayList<>();
-            String[] identifiers = id.split(",");
-            for (String identifier : identifiers) {
-                XrefQuery query = new XrefQuery(uriParams);
-                query.setIds(Collections.singletonList(identifier));
-                queries.add(query);
-                logger.info("REST XrefQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(queries);
+            XrefQuery query = new XrefQuery(uriParams);
+            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -184,15 +176,8 @@ public class IdWSServer extends GenericRestWSServer {
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
-            List<GeneQuery> geneQueries = new ArrayList<>();
-            String[] identifiers = id.split(",");
-            for (String identifier : identifiers) {
-                GeneQuery geneQuery = new GeneQuery(uriParams);
-                geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
-                geneQueries.add(geneQuery);
-                logger.info("REST geneQuery: {}", geneQuery.toString());
-            }
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
+            GeneQuery query = new GeneQuery(uriParams);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

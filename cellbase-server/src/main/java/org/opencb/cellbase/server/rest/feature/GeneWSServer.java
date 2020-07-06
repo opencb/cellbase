@@ -353,7 +353,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     geneQueries.add(geneQuery);
                     logger.info("/search geneQuery: {}", geneQuery.toString());
                 }
-                List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
+                List<CellBaseDataResult<Gene>> queryResults = geneManager.search(geneQueries);
                 return createOkResponse(queryResults);
             } else {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
@@ -459,47 +459,16 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-//            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
-//                    required = false, dataType = "string", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfo(@PathParam("genes")
-                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
+                                       @ApiParam(name = "genes", value = ParamConstants.GENE_IDS, required = true) String genes) {
         try {
-            List<GeneQuery> geneQueries = new ArrayList<>();
-            String[] identifiers = genes.split(",");
-            for (String identifier : identifiers) {
-                GeneQuery geneQuery = new GeneQuery(uriParams);
-                geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
-                geneQueries.add(geneQuery);
-                logger.info("REST geneQuery: {}", geneQuery.toString());
-            }
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -532,15 +501,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            List<TranscriptQuery> queries = new ArrayList<>();
-            String[] identifiers =  genes.split(",");
-            for (String identifier : identifiers) {
-                TranscriptQuery query = new TranscriptQuery(uriParams);
-                query.setTranscriptsXrefs(Arrays.asList(identifier));
-                queries.add(query);
-                logger.info("REST TranscriptQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(genes.split(",")),
+                    query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -628,15 +591,8 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getSNPByGenes(@PathParam("genes")
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
-            List<VariantQuery> queries = new ArrayList<>();
-            String[] identifiers = genes.split(",");
-            for (String identifier : identifiers) {
-                VariantQuery query = new VariantQuery(uriParams);
-                query.setGenes(new LogicalList(Collections.singletonList(identifier)));
-                queries.add(query);
-                logger.info("REST VariantQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
+            VariantQuery query = new VariantQuery(uriParams);
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(genes.split(",")), query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

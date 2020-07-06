@@ -25,8 +25,8 @@ import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
@@ -196,7 +196,7 @@ public class MongoDBAdaptor {
     }
 
     // TODO remove this and use method in MongoDBQueryUtils
-    protected static Bson getProjection(CellBaseQueryOptions options) {
+    protected static Bson getProjection(ProjectionQueryOptions options) {
         Bson projectionResult = null;
         List<Bson> projections = new ArrayList<>();
 
@@ -307,6 +307,25 @@ public class MongoDBAdaptor {
             andBsonList.add(Filters.or(orBsonList));
         }
     }
+
+    // check in both the id and name field.
+    protected void createOntologyQuery(Object queryValues, List<Bson> andBsonList) {
+        if (queryValues != null) {
+            List<Bson> orBsonList = new ArrayList<>();
+            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.name"));
+            andBsonList.add(Filters.or(orBsonList));
+        }
+    }
+
+    protected Bson getLogicalListFilter(Object queryValues, String mongoDbField) {
+        MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+                ? MongoDBQueryUtils.LogicalOperator.AND
+                : MongoDBQueryUtils.LogicalOperator.OR;
+        Query query = new Query(mongoDbField, queryValues);
+        return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
+    }
+
 
     protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
         if (queryValues instanceof LogicalList) {
