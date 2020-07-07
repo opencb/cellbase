@@ -16,11 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.broad.igv.bbfile.BigWigIterator;
-import org.broad.igv.bbfile.WigItem;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.tools.feature.BigWigManager;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -43,11 +39,6 @@ public class ConservationBuilder extends CellBaseBuilder {
 
     private CellBaseFileSerializer fileSerializer;
     private Map<String, String> outputFileNames;
-    // Download data:
-    // for i in `seq 1 22`;
-    // do wget ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phastCons46way/primates/chr$i.phastCons46way.primates.wigFix.gz;
-    // done
-    // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
     public ConservationBuilder(Path conservedRegionPath, CellBaseFileSerializer serializer) {
         this(conservedRegionPath, MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE, serializer);
@@ -63,14 +54,15 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     @Override
-    public void parse() throws IOException, InterruptedException {
+    public void parse() throws IOException {
         System.out.println("conservedRegionPath = " + conservedRegionPath.toString());
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
-            throw new IOException("Conservation directory whether does not exist, is not a directory or cannot be read");
+            throw new IOException("Conservation directory does not exist, is not a directory or cannot be read");
         }
 
         /*
-         * GERP is stored in a particular format
+         * GERP is downloaded from Ensembl as a bigwig file. The library we have doesn't seem to parse
+         * this file correctly, so we transform the file into a bedGraph format which is human readable.
          */
         Path gerpFolderPath = conservedRegionPath.resolve(EtlCommons.GERP_SUBDIRECTORY);
         if (gerpFolderPath.toFile().exists()) {
@@ -116,80 +108,57 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
     }
 
-    private void gerpParser(Path gerpFolderPath) throws IOException, InterruptedException {
-        logger.info("parsing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+    private void gerpParser(Path gerpFolderPath) throws IOException {
+        Path gerpProcessFilePath = gerpFolderPath.resolve(EtlCommons.GERP_PROCESSED_FILE);
+        logger.info("parsing {}", gerpProcessFilePath);
+        BufferedReader bufferedReader = FileUtils.newBufferedReader(gerpProcessFilePath);
+        final String dataSource = "gerp";
+        String line;
+        int counter = 1;
+        int startOfBatch = -1;
+        String chromosome = "-1";
+        List<Float> conservationScores = new ArrayList<>(chunkSize);
+        while ((line = bufferedReader.readLine()) != null) {
+            String[] fields = line.split("\t");
 
-        String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-                "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT"};
+            // file is wrong. throw an exception instead?
+            if (fields.length != 4) {
+                logger.error("skipping invalid line: " + line);
+                continue;
+            }
 
-        BigWigManager bigWigManager = new BigWigManager(gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+            chromosome = fields[0];
 
-        // one file per chromosome
-        for (String chromosome : chromosomes) {
+            // start coordinate for this batch
+            if (startOfBatch == -1) {
+                // file is american! starts at zero
+                startOfBatch = Integer.parseInt(fields[1]) + 1;
+            }
 
-            int start = 1;
-            int end = 1999;
-            int currentBase = 1;
+            // add score to our collection for this batch
+            String score = fields[3];
+            conservationScores.add(Float.valueOf(score));
 
-            // keep querying and increasing coordinate values until iterator can't find anything.
-            while (true) {
-                // new region to search
-                Region region = new Region(chromosome, start, end);
+            // keep track of how many in batch
+            counter++;
 
-                // scores for this chromosome go here
-                List<Float> conservationScores = new ArrayList<>(chunkSize);
+            if (counter == chunkSize) {
+                GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
+                        startOfBatch + conservationScores.size(), dataSource, conservationScores);
+                fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
 
-                // run query
-                BigWigIterator iterator = bigWigManager.iterator(region);
-                if (iterator == null || !iterator.hasNext()) {
-                    // no more data
-                    break;
-                }
-
-                // save value for each position
-                while (iterator.hasNext()) {
-                    WigItem wigItem = iterator.next();
-                    int startBase = wigItem.getStartBase();
-                    int endBase = wigItem.getEndBase();
-
-                    // missing entries at the beginning. fill.
-                    while (currentBase < startBase) {
-                        conservationScores.add((float) 0);
-                        currentBase++;
-                    }
-                    // ** startBase == currentBase now **
-
-                    // get score for this item
-                    Float score = wigItem.getWigValue();
-
-                    // for the whole range of startBase to endBase, enter value
-                    while (currentBase <= endBase) {
-                        conservationScores.add(score);
-                        currentBase++;
-                    }
-                }
-
-                // LAST region of chromosome
-                if (conservationScores.size() < chunkSize) {
-                    end = start + conservationScores.size();
-
-                    GenomicScoreRegion<Float> conservationScoreRegion
-                            = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
-                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
-                    // end of chromosome
-                    break;
-                } else {
-                    // make object for all 2000 values
-                    GenomicScoreRegion<Float> conservationScoreRegion
-                            = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
-                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
-
-                    // reset values for next query
-                    start = end + 1;
-                    end += chunkSize;
-                }
+                // reset everything
+                counter = 0;
+                startOfBatch = -1;
+                conservationScores.clear();
             }
         }
+        // we need to serialize the last chunk that might be incomplete
+        GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
+                startOfBatch + conservationScores.size() - 1, dataSource, conservationScores);
+        fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+
+        bufferedReader.close();
     }
 
 //    @Deprecated

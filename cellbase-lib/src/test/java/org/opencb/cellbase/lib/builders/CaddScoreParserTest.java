@@ -31,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Created by imedina on 06/11/15.
  */
-@Deprecated
 public class CaddScoreParserTest {
 
     // TODO: to finish - properly reimplement
