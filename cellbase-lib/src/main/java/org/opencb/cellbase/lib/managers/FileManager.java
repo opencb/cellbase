@@ -50,8 +50,8 @@ public class FileManager extends AbstractManager {
         switch(query.getFileType()) {
             case "fasta":
                 return getFasta(dataFile, query);
-            case "bigwig":
-                return getBigWig(dataFile, query);
+//            case "bigwig":
+//                return getBigWig(dataFile, query);
             default:
                 throw new InvalidParameterException("File type not found:" + query.getFileType());
         }

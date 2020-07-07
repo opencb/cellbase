@@ -60,7 +60,7 @@ public class FileWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "filePath", value = "Full path to the file",
                     required = true, dataType = "java.lang.String", paramType = "query"),
             @ApiImplicitParam(name = "fileType", value = "Fasta files MUST have tabix file. Should be the same file name with suffix 'fai'",
-                    required = true, dataType = "java.lang.String", paramType = "query", allowableValues = "fasta,bigwig"),
+                    required = true, dataType = "java.lang.String", paramType = "query", allowableValues = "fasta"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = true, dataType = "java.util.List", paramType = "query")
     })
