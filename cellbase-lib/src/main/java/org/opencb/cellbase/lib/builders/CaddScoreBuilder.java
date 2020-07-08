@@ -31,7 +31,6 @@ import java.util.Map;
 /**
  * Created by imedina on 06/11/15.
  */
-@Deprecated
 public class CaddScoreBuilder extends CellBaseBuilder {
 
     private Path caddFilePath;

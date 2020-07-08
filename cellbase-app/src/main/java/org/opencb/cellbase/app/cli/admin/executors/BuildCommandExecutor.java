@@ -125,9 +125,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
-//                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-//                            parser = buildCadd();
-//                            break;
+                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
+                            parser = buildCadd();
+                            break;
                         case EtlCommons.REGULATION_DATA:
                             parser = buildRegulation();
                             break;
@@ -263,7 +263,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
     }
 
-    @Deprecated
     private CellBaseBuilder buildCadd() {
         Path variationFunctionalScorePath = downloadFolder.resolve("variation_functional_score");
         copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("caddVersion.json")));

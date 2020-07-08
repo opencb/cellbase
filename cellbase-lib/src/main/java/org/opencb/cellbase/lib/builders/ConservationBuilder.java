@@ -252,7 +252,8 @@ public class ConservationBuilder extends CellBaseBuilder {
                         attributes.put(attrKeyValue[0].toLowerCase(), attrKeyValue[1]);
                     }
                 }
-                chromosome = attributes.get("chrom").replace("chr", "");
+
+                chromosome = formatChromosome(attributes);
                 start = Integer.parseInt(attributes.get("start"));
 //                end = Integer.parseInt(attributes.get("start"));
 
@@ -294,11 +295,25 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     private String getOutputFileName(String chromosome) {
+        // phylop and phastcons list the chromosome as M instead of the standard MT. replace.
+        if (chromosome.equals("M")) {
+            chromosome = "MT";
+        }
         String outputFileName = outputFileNames.get(chromosome);
         if (outputFileName == null) {
             outputFileName = "conservation_" + chromosome;
             outputFileNames.put(chromosome, outputFileName);
         }
         return outputFileName;
+    }
+
+    // phylop and phastcons list the chromosome as M instead of the standard MT. replace.
+    private String formatChromosome(Map<String, String> attributes) {
+        String chromosome = attributes.get("chrom").replace("chr", "");
+
+        if (chromosome.equals("M")) {
+            chromosome = "MT";
+        }
+        return chromosome;
     }
 }
