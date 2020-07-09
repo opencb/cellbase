@@ -37,9 +37,9 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
     private static final String UNIPROT_NAME = "UniProt";
-    private static final String GERP_NAME = "GERP++";
-    private static final String PHASTCONS_NAME = "PhastCons";
-    private static final String PHYLOP_NAME = "PhyloP";
+//    private static final String GERP_NAME = "GERP++";
+//    private static final String PHASTCONS_NAME = "PhastCons";
+//    private static final String PHYLOP_NAME = "PhyloP";
     private static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
     private static final String HPO_NAME = "HPO";
     private static final String DISGENET_NAME = "DisGeNET";

@@ -47,7 +47,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class AbstractDownloadManager {
-    private static final String CADD_NAME = "CADD";
+
     private static final String DGV_NAME = "DGV";
 
     private static final String GNOMAD_NAME = "gnomAD";
@@ -214,26 +214,7 @@ public class AbstractDownloadManager {
         }
     }
 
-    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
-            return null;
-        }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens") && assemblyConfiguration.getName()
-        .equalsIgnoreCase("GRCh37")) {
-            logger.info("Downloading CADD scores information ...");
 
-            Path variationFunctionalScoreFolder = downloadFolder.resolve("variation_functional_score");
-            Files.createDirectories(variationFunctionalScoreFolder);
-
-            // Downloads CADD scores
-            String url = configuration.getDownload().getCadd().getHost();
-
-            saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
-                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
-            return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
-        }
-        return null;
-    }
 
     protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         return downloadFile(url, outputFileName, null);

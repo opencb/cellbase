@@ -130,11 +130,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.VARIATION_DATA:
                             loadVariationData();
                             break;
-//                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-//                            loadIfExists(input.resolve("cadd.json.gz"), "cadd");
-//                            loadIfExists(input.resolve("caddVersion.json"), METADATA);
-//                            createIndex("variation_functional_score");
-//                            break;
+                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
+                            loadIfExists(input.resolve("cadd.json.gz"), "cadd");
+                            loadIfExists(input.resolve("caddVersion.json"), METADATA);
+                            createIndex("variation_functional_score");
+                            break;
                         case EtlCommons.CONSERVATION_DATA:
                             loadConservation();
                             break;

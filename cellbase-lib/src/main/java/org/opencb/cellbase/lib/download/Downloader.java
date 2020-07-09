@@ -78,4 +78,9 @@ public class Downloader {
         OntologyDownloadManager manager = new OntologyDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadCaddScores() throws IOException, CellbaseException, InterruptedException {
+        CaddDownloadManager manager = new CaddDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }
