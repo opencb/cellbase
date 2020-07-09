@@ -1125,7 +1125,7 @@ public class VariantAnnotationCalculator {
         query.setRegions(Collections.singletonList(new Region(chromosome, position)));
         CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
 
-        if (cellBaseDataResult.getNumMatches() > 0) {
+        if (cellBaseDataResult.getNumResults() > 0) {
             overlapsRegulatoryRegion[0] = true;
             boolean tfbsFound = false;
             for (int i = 0; (i < cellBaseDataResult.getResults().size() && !tfbsFound); i++) {
