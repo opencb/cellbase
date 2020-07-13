@@ -158,7 +158,6 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             // if there is a gap between the last entry and this one.
             if (previousEndValue != initialValue && start - previousEndValue != 1) {
-                // the gap is larger than the chunkSize. save previous batch now.
                 storeScores(dataSource, startOfBatch, chromosome, conservationScores);
 
                 // reset values for current batch

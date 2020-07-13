@@ -290,7 +290,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
                 resultList.add(conservedRegionChunk);
             }
             conservationCellBaseDataResult.setResults(resultList);
+            conservationCellBaseDataResult.setNumResults(resultList.size());
+            conservationCellBaseDataResult.setNumMatches(-1);
             conservationCellBaseDataResults.add(conservationCellBaseDataResult);
+
         }
 
         return conservationCellBaseDataResults;
