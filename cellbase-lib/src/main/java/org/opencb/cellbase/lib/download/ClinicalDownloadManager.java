@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.download;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -28,10 +29,9 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
@@ -84,50 +84,46 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 
-            List<String> hgvsList = getDocmHgvsList();
-            if (!hgvsList.isEmpty()) {
-                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-                downloadFiles.add(downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-                        clinicalFolder.resolve("docmIndex.html").toString()));
-                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
-                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
-                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
-                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
-                        clinicalFolder.resolve("docmVersion.json"));
-            } else {
-                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
-                        + "assembly", assemblyConfiguration.getName());
-            }
-
-//            if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
-//                url = configuration.getDownload().getIarctp53().getHost();
-//                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
-//                        Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
-//                                + "&dataset-germlineMutationData=germlineMutationData"
-//                                + "&dataset-somaticMutationReference=somaticMutationReference"
-//                                + "&dataset-germlineMutationReference=germlineMutationReference")));
-//
-//                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-//                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//                while (entries.hasMoreElements()) {
-//                    ZipEntry entry = entries.nextElement();
-//                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-//                    if (entry.isDirectory()) {
-//                        entryDestination.mkdirs();
-//                    } else {
-//                        entryDestination.getParentFile().mkdirs();
-//                        InputStream in = zipFile.getInputStream(entry);
-//                        OutputStream out = new FileOutputStream(entryDestination);
-//                        IOUtils.copy(in, out);
-//                        IOUtils.closeQuietly(in);
-//                        out.close();
-//                    }
-//                }
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-//                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-//                                "The version of the database should be identified"), getTimeStamp(),
-//                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+//            List<String> hgvsList = getDocmHgvsList();
+//            if (!hgvsList.isEmpty()) {
+//                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
+//                downloadFiles.add(downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+//                        clinicalFolder.resolve("docmIndex.html").toString()));
+//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
+//                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
+//                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
+//                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
+//                        clinicalFolder.resolve("docmVersion.json"));
+//            } else {
+//                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
+//                        + "assembly", assemblyConfiguration.getName());
 //            }
+
+            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
+                url = configuration.getDownload().getIarctp53().getHost();
+                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString()));
+
+                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+                    if (entry.isDirectory()) {
+                        entryDestination.mkdirs();
+                    } else {
+                        entryDestination.getParentFile().mkdirs();
+                        InputStream in = zipFile.getInputStream(entry);
+                        OutputStream out = new FileOutputStream(entryDestination);
+                        IOUtils.copy(in, out);
+                        IOUtils.closeQuietly(in);
+                        out.close();
+                    }
+                }
+                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+                                "The version of the database should be identified"), getTimeStamp(),
+                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+            }
 
             if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
                 Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));

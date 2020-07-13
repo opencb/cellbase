@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConservationBuilderTest {
 
-    private final int BATCH_SIZE = 10;
+    private final int BATCH_SIZE = 100;
 
     @Test
     public void testParse() throws Exception {

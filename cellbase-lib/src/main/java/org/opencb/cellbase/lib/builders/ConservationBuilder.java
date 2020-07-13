@@ -72,6 +72,10 @@ public class ConservationBuilder extends CellBaseBuilder {
             logger.debug("GERP data not found: " + gerpFolderPath.toString());
         }
 
+        if (true) {
+            return;
+        }
+
         /*
          * UCSC phastCons and phylop are stored in the same format. They are processed together.
          */
@@ -113,52 +117,111 @@ public class ConservationBuilder extends CellBaseBuilder {
         logger.info("parsing {}", gerpProcessFilePath);
         BufferedReader bufferedReader = FileUtils.newBufferedReader(gerpProcessFilePath);
         final String dataSource = "gerp";
+        final int initialValue = -1;
         String line;
         int counter = 1;
-        int startOfBatch = -1;
-        String chromosome = "-1";
+        int startOfBatch = initialValue;
+        int previousEndValue = initialValue;
+        String chromosome = String.valueOf(initialValue);
+        String previousChromosomeValue = String.valueOf(initialValue);
         List<Float> conservationScores = new ArrayList<>(chunkSize);
         while ((line = bufferedReader.readLine()) != null) {
             String[] fields = line.split("\t");
 
             // file is wrong. throw an exception instead?
             if (fields.length != 4) {
-                logger.error("skipping invalid line: " + line);
+                logger.error("skipping invalid line: " + line.length());
                 continue;
             }
 
             chromosome = fields[0];
 
-            // start coordinate for this batch
-            if (startOfBatch == -1) {
-                // file is american! starts at zero
-                startOfBatch = Integer.parseInt(fields[1]) + 1;
+            // new chromosome, store batch
+            if (!previousChromosomeValue.equals(String.valueOf(initialValue)) && !previousChromosomeValue.equals(chromosome)) {
+                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+
+                // reset values for current batch
+                counter = 0;
+                conservationScores.clear();
+                startOfBatch = initialValue;
             }
 
-            // add score to our collection for this batch
+            // reset value
+            previousChromosomeValue = chromosome;
+
+            // file is american! starts at zero, add one
+            int start = Integer.parseInt(fields[1]) + 1;
+            // end is not inclusive, so don't need to +1.
+            int end = Integer.parseInt(fields[2]);
+
+            // start coordinate for this batch of 2,000
+            if (startOfBatch == initialValue) {
+                startOfBatch = start;
+            }
+
+            // if there is a gap between the last entry and this one.
+            if (previousEndValue != initialValue && start - previousEndValue != 1) {
+                // the gap is larger than our batch size
+                if (start - previousEndValue > chunkSize) {
+                    // the gap is larger than the chunkSize. save previous batch now.
+                    storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+
+                    // reset values for current batch
+                    counter = 0;
+                    conservationScores.clear();
+                    startOfBatch = start;
+                } else {
+                    // small gaps in the file, fill them with zeros
+                    while(previousEndValue < start) {
+                        conservationScores.add(Float.valueOf(0));
+                        previousEndValue++;
+                        // keep track of how many in batch
+                        counter++;
+                    }
+                }
+            }
+
+            // score for these coordinates
             String score = fields[3];
-            conservationScores.add(Float.valueOf(score));
 
-            // keep track of how many in batch
-            counter++;
+            // add the score for each coordinate included in the range start-end
+            while (start <= end) {
 
-            if (counter == chunkSize) {
-                GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
-                        startOfBatch + conservationScores.size(), dataSource, conservationScores);
-                fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+                // add score to batch
+                conservationScores.add(Float.valueOf(score));
+
+                // increment coordinate
+                start++;
+
+                // keep track of how many in batch
+                counter++;
+            }
+
+            // reset value
+            previousEndValue = end;
+
+            if (counter >= chunkSize) {
+                // we have a full batch, store
+                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
 
                 // reset everything
                 counter = 0;
-                startOfBatch = -1;
+                startOfBatch = initialValue;
                 conservationScores.clear();
             }
         }
         // we need to serialize the last chunk that might be incomplete
-        GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
-                startOfBatch + conservationScores.size() - 1, dataSource, conservationScores);
-        fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+        storeScores(dataSource, startOfBatch, chromosome, conservationScores);
 
         bufferedReader.close();
+    }
+
+    private void storeScores(String dataSource, int startOfBatch, String chromosome, List<Float> conservationScores) {
+        if (!conservationScores.isEmpty()) {
+            GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
+                    startOfBatch + conservationScores.size() - 1, dataSource, conservationScores);
+            fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+        }
     }
 
 //    @Deprecated
