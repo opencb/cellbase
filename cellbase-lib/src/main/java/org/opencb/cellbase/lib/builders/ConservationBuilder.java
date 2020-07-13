@@ -138,12 +138,13 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             // new chromosome, store batch
             if (!previousChromosomeValue.equals(String.valueOf(initialValue)) && !previousChromosomeValue.equals(chromosome)) {
-                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+                storeScores(dataSource, startOfBatch, previousChromosomeValue, conservationScores);
 
                 // reset values for current batch
                 counter = 0;
                 conservationScores.clear();
                 startOfBatch = initialValue;
+                previousEndValue = initialValue;
             }
 
             // reset value
@@ -161,24 +162,13 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             // if there is a gap between the last entry and this one.
             if (previousEndValue != initialValue && start - previousEndValue != 1) {
-                // the gap is larger than our batch size
-                if (start - previousEndValue > chunkSize) {
-                    // the gap is larger than the chunkSize. save previous batch now.
-                    storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+                // the gap is larger than the chunkSize. save previous batch now.
+                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
 
-                    // reset values for current batch
-                    counter = 0;
-                    conservationScores.clear();
-                    startOfBatch = start;
-                } else {
-                    // small gaps in the file, fill them with zeros
-                    while(previousEndValue < start) {
-                        conservationScores.add(Float.valueOf(0));
-                        previousEndValue++;
-                        // keep track of how many in batch
-                        counter++;
-                    }
-                }
+                // reset values for current batch
+                counter = 0;
+                conservationScores.clear();
+                startOfBatch = start;
             }
 
             // score for these coordinates
