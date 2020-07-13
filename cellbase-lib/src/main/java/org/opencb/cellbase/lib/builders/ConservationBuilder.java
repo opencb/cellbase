@@ -72,10 +72,6 @@ public class ConservationBuilder extends CellBaseBuilder {
             logger.debug("GERP data not found: " + gerpFolderPath.toString());
         }
 
-        if (true) {
-            return;
-        }
-
         /*
          * UCSC phastCons and phylop are stored in the same format. They are processed together.
          */
