@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.download;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -29,9 +28,9 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
@@ -99,31 +98,32 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 //                        + "assembly", assemblyConfiguration.getName());
 //            }
 
-            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
-                url = configuration.getDownload().getIarctp53().getHost();
-                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString()));
-
-                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-                    if (entry.isDirectory()) {
-                        entryDestination.mkdirs();
-                    } else {
-                        entryDestination.getParentFile().mkdirs();
-                        InputStream in = zipFile.getInputStream(entry);
-                        OutputStream out = new FileOutputStream(entryDestination);
-                        IOUtils.copy(in, out);
-                        IOUtils.closeQuietly(in);
-                        out.close();
-                    }
-                }
-                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-                                "The version of the database should be identified"), getTimeStamp(),
-                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
-            }
+            // I am only able to download these files manually
+//            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
+//                url = configuration.getDownload().getIarctp53().getHost();
+//                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString()));
+//
+//                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+//                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+//                while (entries.hasMoreElements()) {
+//                    ZipEntry entry = entries.nextElement();
+//                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+//                    if (entry.isDirectory()) {
+//                        entryDestination.mkdirs();
+//                    } else {
+//                        entryDestination.getParentFile().mkdirs();
+//                        InputStream in = zipFile.getInputStream(entry);
+//                        OutputStream out = new FileOutputStream(entryDestination);
+//                        IOUtils.copy(in, out);
+//                        IOUtils.closeQuietly(in);
+//                        out.close();
+//                    }
+//                }
+//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+//                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+//                                "The version of the database should be identified"), getTimeStamp(),
+//                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+//            }
 
             if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
                 Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));

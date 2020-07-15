@@ -75,10 +75,10 @@ public class EtlCommons {
     public static final String DOCM_DATA = "docm";
     public static final String COSMIC_DATA = "cosmic";
     public static final String GWAS_DATA = "gwas";
-    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R18.txt";
-    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R18.txt";
-    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R18.txt";
-    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R18.txt";
+    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R20.txt";
+    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
+    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
+    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
 
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
