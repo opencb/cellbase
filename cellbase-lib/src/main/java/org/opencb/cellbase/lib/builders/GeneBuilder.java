@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.builders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import htsjdk.tribble.readers.TabixReader;
-import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -573,7 +572,7 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
-        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashedMap();
+        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashMap();
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
@@ -588,7 +587,7 @@ public class GeneBuilder extends CellBaseBuilder {
             if (gtfMap.containsKey(geneId)) {
                 gtfMapGeneEntry =  gtfMap.get(geneId);
             } else {
-                gtfMapGeneEntry = new HashedMap();
+                gtfMapGeneEntry = new HashMap();
                 gtfMap.put(geneId, gtfMapGeneEntry);
             }
 
@@ -598,7 +597,7 @@ public class GeneBuilder extends CellBaseBuilder {
             if (gtfMapGeneEntry.containsKey(transcriptId)) {
                 gtfMapTranscriptEntry =  gtfMapGeneEntry.get(transcriptId);
             } else {
-                gtfMapTranscriptEntry = new HashedMap();
+                gtfMapTranscriptEntry = new HashMap();
                 gtfMapGeneEntry.put(transcriptId, gtfMapTranscriptEntry);
             }
 
