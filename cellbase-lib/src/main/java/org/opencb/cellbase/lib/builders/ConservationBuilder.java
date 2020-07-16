@@ -158,12 +158,34 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             // if there is a gap between the last entry and this one.
             if (previousEndValue != initialValue && start - previousEndValue != 1) {
-                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+                int gap = end - startOfBatch;
 
-                // reset values for current batch
-                counter = 0;
-                conservationScores.clear();
-                startOfBatch = start;
+                // this batch is too big, store PART of this entry
+                if (gap > chunkSize) {
+
+                    int batchEnd = startOfBatch + chunkSize;
+                    // score for these coordinates
+                    String score = fields[3];
+
+                    while (start < batchEnd) {
+                        conservationScores.add(Float.valueOf(score));
+                        start++;
+                    }
+
+                    storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+
+                    // reset values for current batch
+                    counter = 0;
+                    conservationScores.clear();
+                    startOfBatch = start;
+                } else {
+
+                    // fill in the gap with zeroes
+                    while (previousEndValue < start - 1) {
+                        conservationScores.add(Float.valueOf(0));
+                        previousEndValue++;
+                    }
+                }
             }
 
             // score for these coordinates
@@ -203,6 +225,12 @@ public class ConservationBuilder extends CellBaseBuilder {
 
     private void storeScores(String dataSource, int startOfBatch, String chromosome, List<Float> conservationScores) {
         if (!conservationScores.isEmpty()) {
+
+            // if this is a small batch, fill in the missing coordinates with 0
+            while (conservationScores.size() < chunkSize) {
+                conservationScores.add(Float.valueOf(0));
+            }
+
             GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
                     startOfBatch + conservationScores.size() - 1, dataSource, conservationScores);
             fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
