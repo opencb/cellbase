@@ -14,13 +14,8 @@ Test
 |smartrics.rest.fitnesse.fixture|
 
 !|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
-<<<<<<< HEAD
-|let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.6.0-SNAPSHOT/webservices/rest/v4|
-|let|baseURL_hsapiens|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}/hsapiens|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.6.0-SNAPSHOT/webservices/rest/v4/hsapiens|
-=======
 |let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.5/webservices/rest/v4|
 |let|baseURL_hsapiens|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}/hsapiens|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.5/webservices/rest/v4/hsapiens|
->>>>>>> hotfix-4.5.x
 |let|useCache|const|false|false|
 
 | Table: Rest Fixture Config |  with-compareJSON.js |
