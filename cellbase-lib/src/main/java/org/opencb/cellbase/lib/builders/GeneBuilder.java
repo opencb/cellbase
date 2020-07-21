@@ -200,7 +200,7 @@ public class GeneBuilder extends CellBaseBuilder {
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
-                            gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
+                            gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),
                             gtf.getAttributes().get("gene_biotype"), "KNOWN", gtf.getSource(), indexer.getDescription(geneId),
                             new ArrayList<>(), indexer.getMirnaGene(transcriptId), geneAnnotation);
                 }
@@ -363,7 +363,7 @@ public class GeneBuilder extends CellBaseBuilder {
                         ? gtfAttributes.get("transcript_biotype")
                         : gtf.getSource(),
                 "KNOWN", gtfAttributes.get("transcript_source"), transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")),
+                gtf.getStrand(), gtfAttributes.get("transcript_version"),
                 gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
                 0, "", "", indexer.getXrefs(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
