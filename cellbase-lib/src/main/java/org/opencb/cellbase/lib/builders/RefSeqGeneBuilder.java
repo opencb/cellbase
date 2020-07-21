@@ -277,7 +277,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String xrefs = gtf.getAttributes().get("db_xref");
         if (StringUtils.isNotEmpty(xrefs)) {
             for (String xrefString : xrefs.split(",")) {
-                String[] dbxrefParts = xrefString.split(":");
+                String[] dbxrefParts = xrefString.split(":", 2);
+                if (dbxrefParts.length != 2) {
+                    throw new RuntimeException(" bad xref " + dbxrefParts[0] + " + " + xrefString + " + " + dbxrefParts.length);
+                }
                 String dbName = dbxrefParts[0];
                 String id = dbxrefParts[1];
                 Xref xref = new Xref();
