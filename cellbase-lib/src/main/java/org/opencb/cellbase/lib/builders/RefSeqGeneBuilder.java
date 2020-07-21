@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.models.core.Exon;
@@ -46,7 +47,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Exon exon = null;
     private Integer cdna = 1;
     private Integer cds = 1;
-    private Set<Xref> dbxrefs = new HashSet<>();;
+    private Set<Xref> dbxrefs = new HashSet<>();
+    private Set<Xref> geneDbxrefs = new HashSet<>();
 
     public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
@@ -112,6 +114,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
         }
 
+        // add xrefs to last transcript
+        dbxrefs.addAll(geneDbxrefs);
+        transcript.setXrefs(new ArrayList<>(dbxrefs));
+
         // last gene must be serialized
         store();
 
@@ -122,8 +128,6 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     // store right before parsing the previous gene, or the very last gene.
     private void store() {
-        // all genes, transcripts, exons and CDSs have been parsed, so set xrefs here
-        transcript.setXrefs(new ArrayList<>(dbxrefs));
         serializer.serialize(gene);
         reset();
     }
@@ -133,6 +137,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         transcriptDict.clear();
         exonDict.clear();
         dbxrefs = new HashSet<>();
+        geneDbxrefs = new HashSet<>();
+        gene = null;
+        transcript = null;
+        exon = null;
+        cdna = 1;
+        cds = 1;
     }
 
     private void parseStopCodon(Gtf gtf, Transcript transcript, Exon exon, Integer cdna, Integer cds) {
@@ -166,7 +176,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         transcript.setProteinId(gtf.getAttributes().get("protein_id"));
 
-        exon.setPhase(Integer.valueOf(gtf.getFrame()));
+        exon.setPhase(Integer.parseInt(gtf.getFrame()));
+
+        dbxrefs.addAll(parseXrefs(gtf));
 
         if (gtf.getStrand().equals("+")) {
 
@@ -270,11 +282,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), geneVersion, geneBiotype,
                 status, source, geneDescription, new ArrayList<>(), null, null);
-        parseXrefs(gtf);
+        geneDbxrefs = parseXrefs(gtf);
     }
 
-    private void parseXrefs(Gtf gtf) {
+    private Set<Xref> parseXrefs(Gtf gtf) {
         String xrefs = gtf.getAttributes().get("db_xref");
+        Set<Xref> xrefSet = new HashSet();
         if (StringUtils.isNotEmpty(xrefs)) {
             for (String xrefString : xrefs.split(",")) {
                 String[] dbxrefParts = xrefString.split(":", 2);
@@ -287,17 +300,33 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 xref.setId(id);
                 xref.setDbDisplayName(dbName);
                 xref.setDbName(dbName);
-                dbxrefs.add(xref);
+                xrefSet.add(xref);
             }
         }
+        return xrefSet;
     }
 
     private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex) {
         String transcriptId = gtf.getAttributes().get("transcript_id");
-        String transcriptVersion = transcriptId.split("\\.")[1];
+        String transcriptVersion = "1";
+        if (transcriptId.contains(".")) {
+            transcriptVersion = transcriptId.split("\\.")[1];
+        }
 
+        // new transcript.
         if (!transcriptDict.containsKey(transcriptId)) {
-            transcript = getTranscript(gtf, chromosome, transcriptId, Integer.valueOf(transcriptVersion));
+            // previous transcript is done being parsed, we have all the xrefs.
+            if (transcript != null) {
+                dbxrefs.addAll(geneDbxrefs);
+                transcript.setXrefs(new ArrayList<>(dbxrefs));
+            }
+
+            Integer version = -1; // FIXME
+            // create new transcript
+            if (NumberUtils.isParsable(transcriptVersion)) {
+                version = Integer.valueOf(transcriptVersion);
+            }
+            transcript = getTranscript(gtf, chromosome, transcriptId, version);
         } else {
             transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
         }
@@ -314,6 +343,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 Integer.parseInt(exonNumber), exonSequence);
         transcript.getExons().add(exon);
         exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
+
+        dbxrefs.addAll(parseXrefs(gtf));
 
         if (gtf.getAttributes().get("exon_number").equals("1")) {
             cdna = 1;
