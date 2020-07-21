@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -169,11 +169,57 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private void parseCDS(Gtf gtf) {
-        exon.setGenomicCodingStart(gtf.getStart());
-        exon.setGenomicCodingEnd(gtf.getEnd());
+        Exon exon = exonDict.get("");
 
-        exon.setCdsStart(cds);
-        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
+        // Forward strand
+        if (exon.getExonNumber() == 1) {
+            exon.setGenomicCodingStart(gtf.getStart());
+            exon.setGenomicCodingEnd(gtf.getEnd());
+
+            exon.setCdnaCodingStart(exon.getCdnaCodingStart() - exon.getStart() + 1);
+            exon.setCdnaCodingEnd(exon.getGenomicCodingEnd() - exon.getEnd() + 1);
+
+            exon.setCdsStart(exon.getCdnaCodingStart() - exon.getStart() + 1);
+            exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getEnd() + 1);
+
+            exon.setPhase(Integer.parseInt(gtf.getFrame()));
+//            transcript.setProteinId(gtf.getAttributes().get("protein_id"));
+//            dbxrefs.addAll(parseXrefs(gtf));
+        } else {
+            // Fetch prev exon
+            Exon prevExon = exonDict.get("");
+
+            exon.setGenomicCodingStart(gtf.getStart());
+            exon.setGenomicCodingEnd(gtf.getEnd());
+
+            int cdnaCodingStart = 0;
+            int cdnaCodingEnd;
+            // Prev exon is a UTR
+            if (prevExon.getCdnaCodingStart() == 0) {
+                // Just in case there is a UTR part
+                int exonNumber = exon.getExonNumber();
+                for (int i = 0; i < exonNumber; i++) {
+                    Exon e = exonDict.get("");
+                    cdnaCodingStart = e.getEnd() - e.getStart() + 1;
+                }
+                cdnaCodingStart += gtf.getStart() - exon.getStart() + 1;
+
+                cdnaCodingEnd = cdnaCodingStart + (exon.getCdnaCodingEnd() - exon.getCdnaCodingStart());
+            } else {
+                cdnaCodingStart = prevExon.getGenomicCodingEnd() + 1;
+                cdnaCodingEnd = cdnaCodingStart + (exon.getCdnaCodingEnd() - exon.getCdnaCodingStart());
+            }
+
+            exon.setCdnaCodingStart(cdnaCodingStart);
+            exon.setCdnaCodingEnd(cdnaCodingEnd);
+        }
+
+//
+//        this.exon.setGenomicCodingStart(gtf.getStart());
+//        this.exon.setGenomicCodingEnd(gtf.getEnd());
+//
+//        this.exon.setCdsStart(cds);
+//        this.exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
         transcript.setProteinId(gtf.getAttributes().get("protein_id"));
 
@@ -184,11 +230,11 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         if (gtf.getStrand().equals("+")) {
 
             // cDNA coordinates
-            exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
-            exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+            this.exon.setCdnaCodingStart(gtf.getStart() - this.exon.getStart() + cdna);
+            this.exon.setCdnaCodingEnd(gtf.getEnd() - this.exon.getStart() + cdna);
 
             // Set cdnaCodingEnd to prevent those cases without stop_codon
-            transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+            transcript.setCdnaCodingEnd(gtf.getEnd() - this.exon.getStart() + cdna);
 
             if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                 transcript.setGenomicCodingStart(gtf.getStart());
@@ -198,18 +244,18 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
             // only first time
             if (transcript.getCdnaCodingStart() == 0) {
-                transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
+                transcript.setCdnaCodingStart(gtf.getStart() - this.exon.getStart() + cdna);
             }
         } else {
 
             // cDNA coordinates
             // cdnaCodingStart points to the same base position than genomicCodingEnd
-            exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+            this.exon.setCdnaCodingStart(this.exon.getEnd() - gtf.getEnd() + cdna);
             // cdnaCodingEnd points to the same base position than genomicCodingStart
-            exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+            this.exon.setCdnaCodingEnd(this.exon.getEnd() - gtf.getStart() + cdna);
 
             // Set cdnaCodingEnd to prevent those cases without stop_codon
-            transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+            transcript.setCdnaCodingEnd(this.exon.getEnd() - gtf.getStart() + cdna);
 
             if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                 transcript.setGenomicCodingStart(gtf.getStart());
@@ -220,7 +266,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             // only first time
             if (transcript.getCdnaCodingStart() == 0) {
                 // cdnaCodingStart points to the same base position than genomicCodingEnd
-                transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                transcript.setCdnaCodingStart(this.exon.getEnd() - gtf.getEnd() + cdna);
             }
         }
 
@@ -286,27 +332,6 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         geneDbxrefs = parseXrefs(gtf);
     }
 
-    private Set<Xref> parseXrefs(Gtf gtf) {
-        String xrefs = gtf.getAttributes().get("db_xref");
-        Set<Xref> xrefSet = new HashSet();
-        if (StringUtils.isNotEmpty(xrefs)) {
-            for (String xrefString : xrefs.split(",")) {
-                String[] dbxrefParts = xrefString.split(":", 2);
-                if (dbxrefParts.length != 2) {
-                    throw new RuntimeException(" bad xref " + dbxrefParts[0] + " + " + xrefString + " + " + dbxrefParts.length);
-                }
-                String dbName = dbxrefParts[0];
-                String id = dbxrefParts[1];
-                Xref xref = new Xref();
-                xref.setId(id);
-                xref.setDbDisplayName(dbName);
-                xref.setDbName(dbName);
-                xrefSet.add(xref);
-            }
-        }
-        return xrefSet;
-    }
-
     private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex) {
         String transcriptId = gtf.getAttributes().get("transcript_id");
         String transcriptVersion = "1";
@@ -335,6 +360,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 //        String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         String exonSequence = "FIXME-NEED-FASTA"; // FIXME need fasta
         String exonNumber = gtf.getAttributes().get("exon_number");
+        // RefSeq does not provode Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;
 
         // default value. can be overwritten in the CDS entry
@@ -347,14 +373,32 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         dbxrefs.addAll(parseXrefs(gtf));
 
-        if (gtf.getAttributes().get("exon_number").equals("1")) {
-            cdna = 1;
-            cds = 1;
-        } else {
-            // with every exon we update cDNA length with the previous exon length
-            cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
-                    - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
+//        if (gtf.getAttributes().get("exon_number").equals("1")) {
+//            cdna = 1;
+//            cds = 1;
+//        } else {
+//            // with every exon we update cDNA length with the previous exon length
+//            cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
+//                    - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
+//        }
+    }
+
+    private Set<Xref> parseXrefs(Gtf gtf) {
+        String xrefs = gtf.getAttributes().get("db_xref");
+        Set<Xref> xrefSet = new HashSet<>();
+        if (StringUtils.isNotEmpty(xrefs)) {
+            for (String xrefString : xrefs.split(",")) {
+                String[] dbxrefParts = xrefString.split(":", 2);
+                if (dbxrefParts.length != 2) {
+                    throw new RuntimeException(" bad xref " + dbxrefParts[0] + " + " + xrefString + " + " + dbxrefParts.length);
+                }
+                String id = dbxrefParts[1];
+                String dbName = dbxrefParts[0];
+                Xref xref = new Xref(id, dbName, dbName);
+                xrefSet.add(xref);
+            }
         }
+        return xrefSet;
     }
 
     private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, int version) {
