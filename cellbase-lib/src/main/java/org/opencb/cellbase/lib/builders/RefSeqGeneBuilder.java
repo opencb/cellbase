@@ -93,6 +93,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         while ((gtf = gtfReader.read()) != null) {
 
             String chromosome = getSequenceName(gtf.getSequenceName());
+
             switch (gtf.getFeature()) {
                 case "gene":
                     parseGene(gtf, chromosome, geneVersion);
@@ -359,6 +360,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, int version) {
         Map<String, String> gtfAttributes = gtf.getAttributes();
         String biotype = gtfAttributes.get("gbkey");
+        if ("mRNA".equals(biotype)) {
+            biotype = "protein_coding";
+        }
         String transcriptName = gene.getName();
 
         transcript = new Transcript(transcriptId, transcriptName, biotype, status, source, chromosome, gtf.getStart(), gtf.getEnd(),
@@ -396,7 +400,11 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // just get the first part, e.g. NC_000024.11
         String sequenceName = sequenceNameParts[0];
-        return REFSEQ_CHROMOSOMES.get(sequenceName);
+        if (REFSEQ_CHROMOSOMES.containsKey(sequenceName)) {
+            return REFSEQ_CHROMOSOMES.get(sequenceName);
+        }
+        // scaffold
+        return fullSequenceName;
     }
 
     static {
