@@ -217,13 +217,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 exon.setGenomicCodingStart(gtf.getStart());
                 exon.setGenomicCodingEnd(gtf.getEnd());
 
-                // start going to be 1, unless there's a UTR and there's a gap between the start of the exon and the
-                // coding start
-                exon.setCdnaCodingStart(exon.getGenomicCodingStart() - exon.getStart() + 1);
-                exon.setCdnaCodingEnd(exon.getGenomicCodingEnd() - exon.getEnd() + 1);
+                int cdnaCodingStart = exon.getGenomicCodingStart() - exon.getStart() + 1;
+                exon.setCdnaCodingStart(cdnaCodingStart);
+                exon.setCdnaCodingEnd(exon.getGenomicCodingEnd() - cdnaCodingStart + 1);
 
-                exon.setCdsStart(exon.getGenomicCodingStart() - exon.getStart() + 1);
-                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getEnd() + 1);
+                exon.setCdsStart(1);
+                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
             } else {
                 // Fetch prev exon
                 String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
@@ -242,7 +241,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     // previous exon was a UTR. check that the exon BEFORE that one also. could be two in a row!
                     for (int i = 0; i < exonNumber; i++) {
                         Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
-                        cdnaCodingStart = beforePreviousExon.getEnd() - beforePreviousExon.getStart() + 1;
+                        cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart() + 1;
                     }
                     cdnaCodingStart += gtf.getStart() - exon.getStart() + 1;
                     cdnaCodingEnd = cdnaCodingStart + (exon.getCdnaCodingEnd() - exon.getCdnaCodingStart());
@@ -253,6 +252,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
                 exon.setCdnaCodingStart(cdnaCodingStart);
                 exon.setCdnaCodingEnd(cdnaCodingEnd);
+
+                int cdsStart = prevExon.getCdsEnd() + 1;
+                int cdsEnd = cdsStart + (exon.getCdnaCodingEnd() - exon.getCdnaCodingStart());
+
+                exon.setCdsStart(cdsStart);
+                exon.setCdsEnd(cdsEnd);
             }
 
             // Set cdnaCodingEnd to prevent those cases without stop_codon
