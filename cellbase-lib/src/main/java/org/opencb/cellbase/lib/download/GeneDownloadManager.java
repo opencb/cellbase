@@ -73,6 +73,9 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         Path geneFolder = downloadFolder.resolve("gene");
         Files.createDirectories(geneFolder);
 
+        Path refseqFolder = downloadFolder.resolve("refseq");
+        Files.createDirectories(refseqFolder);
+
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         downloadFiles.addAll(downloadEnsemblData(geneFolder));
@@ -82,9 +85,21 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
+        downloadFiles.add(downloadRefSeq(refseqFolder));
         runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
+    }
+
+    private DownloadFile downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading RefSeq...");
+            String url = configuration.getDownload().getRefSeq().getHost();
+            saveVersionData(EtlCommons.GENE_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
+                    refSeqFolder.resolve("refSeqVersion.json"));
+            return downloadFile(url, refSeqFolder.resolve("refSeq.gtf.gz").toString());
+        }
+        return null;
     }
 
     private DownloadFile downloadGO(Path geneFolder) throws IOException, InterruptedException {

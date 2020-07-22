@@ -63,6 +63,7 @@ public class DownloadProperties {
     private URLProperties goObo;
     private URLProperties doidObo;
     private URLProperties goAnnotation;
+    private URLProperties refSeq;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -404,6 +405,15 @@ public class DownloadProperties {
 
     public DownloadProperties setGoAnnotation(URLProperties goAnnotation) {
         this.goAnnotation = goAnnotation;
+        return this;
+    }
+
+    public URLProperties getRefSeq() {
+        return refSeq;
+    }
+
+    public DownloadProperties setRefSeq(URLProperties refSeq) {
+        this.refSeq = refSeq;
         return this;
     }
 

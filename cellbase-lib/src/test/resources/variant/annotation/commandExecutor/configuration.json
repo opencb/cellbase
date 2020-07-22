@@ -1,5 +1,5 @@
 {
-	"version": "v4",
+	"version": "v5",
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"maintenanceFlagFile": "/tmp/maintenance",
