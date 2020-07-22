@@ -38,6 +38,7 @@ public class EtlCommons {
 
     public static final String GENOME_DATA = "genome";
     public static final String GENE_DATA = "gene";
+    public static final String REFSEQ_DATA = "refseq";
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";

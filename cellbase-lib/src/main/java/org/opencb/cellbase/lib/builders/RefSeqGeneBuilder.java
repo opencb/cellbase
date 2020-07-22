@@ -204,7 +204,13 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void parseCDS(Gtf gtf) {
         transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
-        String exonId = transcript.getId() + "_" + gtf.getAttributes().get("exon_number");
+        String exonNumber = gtf.getAttributes().get("exon_number");
+        if (StringUtils.isEmpty(exonNumber)) {
+            // this CDS doesn't know which exon it belongs to. skip
+            return;
+        }
+        String exonId = transcript.getId() + "_" + exonNumber;
+
         Exon exon = exonDict.get(exonId);
 
         // doesn't matter which strand

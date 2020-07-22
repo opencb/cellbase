@@ -125,6 +125,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
+                        case EtlCommons.REFSEQ_DATA:
+                            parser = buildRefSeq();
+                            break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
                             break;
@@ -261,6 +264,13 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "gene");
         return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
+    }
+
+    private CellBaseBuilder buildRefSeq() {
+        Path refseqFolderPath = downloadFolder.resolve("refseq");
+        copyVersionFiles(Arrays.asList(refseqFolderPath.resolve("refSeqVersion.json")));
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "refseq");
+        return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
     }
 
     private CellBaseBuilder buildCadd() {
