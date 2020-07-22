@@ -179,7 +179,7 @@ public class GeneBuilderTest {
         Transcript transcript = getTranscript("ENST00000456328", genes);
         assertNotNull(transcript);
         assertEquals(TRANSCRIPT_SEQUENCE, transcript.getcDnaSequence());
-        assertEquals(2, transcript.getVersion());
+        assertEquals("2", transcript.getVersion());
         assertEquals("havana", transcript.getSource());
         assertEquals("1", transcript.getSupportLevel());
     }
@@ -214,7 +214,7 @@ public class GeneBuilderTest {
                     }
                 }
                 assertEquals("havana", gene.getSource());
-                assertEquals(5, gene.getVersion());
+                assertEquals("5", gene.getVersion());
             }
         }
     }
