@@ -517,7 +517,15 @@ public class VariantAnnotationCalculator {
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
-        return new CellBaseDataResult(geneManager.search(geneQuery)).getResults();
+
+        List<Gene> geneList = new ArrayList<>();
+//        if (both == true || ensembl == true) {}
+        geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
+//        if (StringUtils.isNotEmpty(genesetSource) && genesetSource.equalsIgnoreCase("RefSeq")) {
+//            geneQuery.setSource("RefSeq");
+//            geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
+//        }
+        return geneList;
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {

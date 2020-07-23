@@ -203,14 +203,14 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private void parseCDS(Gtf gtf) {
-        transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
         String exonNumber = gtf.getAttributes().get("exon_number");
         if (StringUtils.isEmpty(exonNumber)) {
             // this CDS doesn't know which exon it belongs to. skip
             return;
         }
-        String exonId = transcript.getId() + "_" + exonNumber;
 
+        transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
+        String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
 
         // doesn't matter which strand
@@ -224,7 +224,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
             int cdnaCodingStart = exon.getGenomicCodingStart() - exon.getStart() + 1;
             exon.setCdnaCodingStart(cdnaCodingStart);
-            exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()) + cdnaCodingStart);
+            exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
 
             exon.setCdsStart(1);
             exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
@@ -245,37 +245,37 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
                     cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart();
                 }
-                cdnaCodingStart += gtf.getStart() - prevExon.getStart() + 1;
-                cdnaCodingEnd = cdnaCodingStart + (gtf.getEnd() - gtf.getStart());
+                cdnaCodingStart += exon.getGenomicCodingStart() - exon.getStart() + 1;
+                cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
             } else {
                 cdnaCodingStart = prevExon.getCdnaCodingEnd() + 1;
-                cdnaCodingEnd = cdnaCodingStart + (gtf.getEnd() - gtf.getStart());
+                cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
             }
 
             exon.setCdnaCodingStart(cdnaCodingStart);
             exon.setCdnaCodingEnd(cdnaCodingEnd);
 
+            // Set CDS
             int cdsStart = prevExon.getCdsEnd() + 1;
-            int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart);
-
+            int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart + 1);
             exon.setCdsStart(cdsStart);
             exon.setCdsEnd(cdsEnd);
         }
 
         // Set cdnaCodingEnd to prevent those cases without stop_codon
-        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+        transcript.setCdnaCodingEnd(exon.getGenomicCodingEnd() - exon.getStart() + cdna);
 
-        if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
-            transcript.setGenomicCodingStart(gtf.getStart());
+        if (transcript.getGenomicCodingStart() == 0) {
+            transcript.setGenomicCodingStart(exon.getGenomicCodingStart());
         }
-        if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
+        if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < exon.getGenomicCodingEnd()) {
             transcript.setGenomicCodingEnd(gtf.getEnd());
         }
+
         // only first time
         if (transcript.getCdnaCodingStart() == 0) {
             transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
         }
-
 
         // Set cdnaCodingEnd to prevent those cases without stop_codon
         transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
