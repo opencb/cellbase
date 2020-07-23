@@ -85,19 +85,35 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-        downloadFiles.add(downloadRefSeq(refseqFolder));
+        downloadFiles.addAll(downloadRefSeq(refseqFolder));
         runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
     }
 
-    private DownloadFile downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException {
+    private List<DownloadFile> downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading RefSeq...");
+
+            List<DownloadFile> downloadFiles = new ArrayList<>();
+
             String url = configuration.getDownload().getRefSeq().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
+            saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
                     refSeqFolder.resolve("refSeqVersion.json"));
-            return downloadFile(url, refSeqFolder.resolve("refSeq.gtf.gz").toString());
+            downloadFiles.add(downloadFile(url, refSeqFolder.resolve("refSeq.gtf.gz").toString()));
+
+
+            url = configuration.getDownload().getRefSeqFasta().getHost();
+            String outputFileName = StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fna.gz";
+            logger.info("downloading " + url);
+            Path outputPath = refSeqFolder.resolve(outputFileName);
+            saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(),
+                    Collections.singletonList(url), refSeqFolder.resolve("refSeqFastaVersion.json"));
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
+            logger.info("Unzipping file: " + outputFileName);
+            EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
+            return downloadFiles;
+
         }
         return null;
     }

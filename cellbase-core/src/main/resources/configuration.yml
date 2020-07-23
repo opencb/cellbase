@@ -126,6 +126,8 @@ download:
   host: http://geneontology.org/gene-associations/goa_human.gaf.gz
  refSeq:
   host: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_genomic.gtf.gz
+ refSeqFasta:
+  host: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_genomic.fna.gz
 
 species:
  vertebrates:

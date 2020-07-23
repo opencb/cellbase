@@ -26,15 +26,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -44,19 +41,19 @@ import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RefSeqBuilderTest {
+public class RefSeqGeneBuilderTest {
     private RefSeqGeneBuilder geneParser;
     private ObjectMapper jsonObjectMapper;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
-    public RefSeqBuilderTest() throws Exception {
+    public RefSeqGeneBuilderTest() throws Exception {
         init();
     }
 
     @BeforeAll
     public void init() throws Exception {
         Path genomeSequenceFastaFile
-                = Paths.get(RefSeqBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
-        Path geneDirectoryPath = Paths.get(RefSeqBuilderTest.class.getResource("/gene_refseq").toURI());
+                = Paths.get(RefSeqGeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
+        Path geneDirectoryPath = Paths.get(RefSeqGeneBuilderTest.class.getResource("/gene_refseq").toURI());
         // put the results in /tmp
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "refseq",
                 true);
@@ -75,7 +72,6 @@ public class RefSeqBuilderTest {
 
         List<Gene> genes = loadGenes(Paths.get("/tmp/refseq.json.gz"));
         assertEquals(1, genes.size());
-
 
         assertEquals(loadGenes(Paths.get(getClass().getResource("/gene_refseq/refseq.json.gz").getFile())),
                 loadGenes(Paths.get("/tmp/refseq.json.gz")));
