@@ -102,7 +102,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     // should I be doing something here?
                     break;
                 case "stop_codon":
-                    parseStopCodon(gtf);
+                    //parseStopCodon(gtf);
                     break;
                 default:
                     throw new RuntimeException("Unexpected feature type: " + gtf.getFeature());
@@ -191,6 +191,13 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
 
         exonDbxrefs.addAll(parseXrefs(gtf));
+
+        if (transcript.getStart() == 0) {
+            transcript.setStart(exon.getStart());
+        }
+        if (transcript.getEnd() == 0 || transcript.getEnd() < exon.getEnd()) {
+            transcript.setEnd(exon.getEnd());
+        }
     }
 
     private void parseCDS(Gtf gtf) {
@@ -218,7 +225,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
 
             exon.setCdsStart(1);
-            exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
+            exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1 + exon.getCdsStart());
         } else {
             // Fetch prev exon
             String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
@@ -248,7 +255,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
             // Set CDS
             int cdsStart = prevExon.getCdsEnd() + 1;
-            int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart + 1);
+            int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart);
             exon.setCdsStart(cdsStart);
             exon.setCdsEnd(cdsEnd);
         }
@@ -301,8 +308,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private void parseStopCodon(Gtf gtf) {
+        String exonNumber = gtf.getAttributes().get("exon_number");
+        if (StringUtils.isEmpty(exonNumber)) {
+            return;
+        }
         Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
-        String exonId = transcript.getId() + "_" + gtf.getAttributes().get("exon_number");
+        String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
 
         if (exon.getStrand().equals("+")) {
