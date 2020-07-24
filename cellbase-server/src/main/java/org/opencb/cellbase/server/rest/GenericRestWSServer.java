@@ -262,10 +262,14 @@ public class GenericRestWSServer implements IWSServer {
 //    }
 //
     protected void logQuery(String status) {
+        StringBuilder params = new StringBuilder();
+        uriParams.forEach((key, value) -> params.append(key).append(": ").append(value + ", "));
+
         try {
             logger.info("{}\t{}\t{}\t{}\t{}",
                     uriInfo.getAbsolutePath().toString(),
                     jsonObjectWriter.writeValueAsString(query),
+                    params.toString(),
 //                    jsonObjectWriter.writeValueAsString(queryOptions),
                     new Long(System.currentTimeMillis() - startTime).intValue(),
                     status);

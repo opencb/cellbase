@@ -70,7 +70,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void getFastaFileFromDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
-            if (fileName.endsWith(".fa") || fileName.endsWith(".fa.gz")) {
+            if (fileName.endsWith(".fna") || fileName.endsWith(".fna.gz")) {
                 fastaFile = geneDirectoryPath.resolve(fileName);
                 break;
             }
@@ -79,8 +79,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     public void parse() throws Exception {
         // Preparing the fasta file for fast accessing
-        //FastaIndex fastaIndex = new FastaIndex(fastaFile);
-        FastaIndex fastaIndex = null; // FIXME which fasta to use?
+        FastaIndex fastaIndex = new FastaIndex(fastaFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -176,8 +175,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript = transcriptDict.get(transcriptId);
         }
 
-//        String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-        String exonSequence = "FIXME-NEED-FASTA"; // FIXME need fasta
+        String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         String exonNumber = gtf.getAttributes().get("exon_number");
         // RefSeq does not provode Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;

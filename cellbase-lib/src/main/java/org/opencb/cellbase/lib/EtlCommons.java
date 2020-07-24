@@ -119,7 +119,7 @@ public class EtlCommons {
         // This small hack allow to configure the appropriate Logger level from the command line, this is done
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
         org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stdout");
         stderr.setThreshold(Level.toLevel("debug"));
         Logger logger = LoggerFactory.getLogger("EtlCommons");
 
