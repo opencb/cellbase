@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -54,7 +55,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     @Override
-    public void parse() throws IOException {
+    public void parse() throws IOException, CellbaseException {
         System.out.println("conservedRegionPath = " + conservedRegionPath.toString());
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory does not exist, is not a directory or cannot be read");
@@ -108,18 +109,17 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
     }
 
-    private void gerpParser(Path gerpFolderPath) throws IOException {
+    private void gerpParser(Path gerpFolderPath) throws IOException, CellbaseException {
         Path gerpProcessFilePath = gerpFolderPath.resolve(EtlCommons.GERP_PROCESSED_FILE);
         logger.info("parsing {}", gerpProcessFilePath);
         BufferedReader bufferedReader = FileUtils.newBufferedReader(gerpProcessFilePath);
-        final String dataSource = "gerp";
-        final int initialValue = -1;
+
         String line;
-        int counter = 1;
-        int startOfBatch = initialValue;
-        int previousEndValue = initialValue;
-        String chromosome = String.valueOf(initialValue);
-        String previousChromosomeValue = String.valueOf(initialValue);
+        int startOfBatch = 0;
+        int previousEndValue = 0;
+        String chromosome = null;
+        String previousChromosomeValue = null;
+
         List<Float> conservationScores = new ArrayList<>(chunkSize);
         while ((line = bufferedReader.readLine()) != null) {
             String[] fields = line.split("\t");
@@ -133,108 +133,97 @@ public class ConservationBuilder extends CellBaseBuilder {
             chromosome = fields[0];
 
             // new chromosome, store batch
-            if (!previousChromosomeValue.equals(String.valueOf(initialValue)) && !previousChromosomeValue.equals(chromosome)) {
-                storeScores(dataSource, startOfBatch, previousChromosomeValue, conservationScores);
+            if (previousChromosomeValue != null && !previousChromosomeValue.equals(chromosome)) {
+                storeScores(startOfBatch, previousChromosomeValue, conservationScores);
 
                 // reset values for current batch
-                counter = 0;
-                conservationScores.clear();
-                startOfBatch = initialValue;
-                previousEndValue = initialValue;
+                startOfBatch = 0;
+                previousEndValue = 0;
             }
 
-            // reset value
+            // reset chromosome for next entry
             previousChromosomeValue = chromosome;
 
             // file is american! starts at zero, add one
             int start = Integer.parseInt(fields[1]) + 1;
-            // end is not inclusive, so don't need to +1.
-            int end = Integer.parseInt(fields[2]);
+            int end = Integer.parseInt(fields[2]) + 1;
 
             // start coordinate for this batch of 2,000
-            if (startOfBatch == initialValue) {
+            if (startOfBatch == 0) {
                 startOfBatch = start;
             }
 
             // if there is a gap between the last entry and this one.
-            if (previousEndValue != initialValue && start - previousEndValue != 1) {
-                int gap = end - startOfBatch;
-
-                // this batch is too big, store PART of this entry
-                if (gap > chunkSize) {
-
-                    int batchEnd = startOfBatch + chunkSize;
-                    // score for these coordinates
-                    String score = fields[3];
-
-                    while (start < batchEnd) {
-                        conservationScores.add(Float.valueOf(score));
-                        start++;
-                    }
-
-                    storeScores(dataSource, startOfBatch, chromosome, conservationScores);
-
-                    // reset values for current batch
-                    counter = 0;
-                    conservationScores.clear();
-                    startOfBatch = start;
+            if (previousEndValue != 0 && start - previousEndValue != 0) {
+                // gap is too big! store what we already have before processing more
+                if (start - previousEndValue + startOfBatch >= chunkSize) {
+                    // we have a full batch, store
+                    storeScores(startOfBatch, chromosome, conservationScores);
                 } else {
-
                     // fill in the gap with zeroes
-                    while (previousEndValue < start - 1) {
-                        conservationScores.add(Float.valueOf(0));
+                    while (previousEndValue < start) {
+                        conservationScores.add((float) 0);
                         previousEndValue++;
                     }
                 }
             }
 
+            // reset value
+            previousEndValue = end;
+
             // score for these coordinates
             String score = fields[3];
 
             // add the score for each coordinate included in the range start-end
-            while (start <= end) {
+            while (start < end) {
+                // we have a full batch, store
+                if (conservationScores.size() == chunkSize) {
+                    storeScores(startOfBatch, chromosome, conservationScores);
+
+                    // reset
+                    startOfBatch = start;
+                    previousEndValue = 0;
+                }
 
                 // add score to batch
                 conservationScores.add(Float.valueOf(score));
 
                 // increment coordinate
                 start++;
-
-                // keep track of how many in batch
-                counter++;
             }
 
-            // reset value
-            previousEndValue = end;
+            // we have a full batch, store
+            if (conservationScores.size() == chunkSize) {
+                storeScores(startOfBatch, chromosome, conservationScores);
 
-            if (counter >= chunkSize) {
-                // we have a full batch, store
-                storeScores(dataSource, startOfBatch, chromosome, conservationScores);
-
-                // reset everything
-                counter = 0;
-                startOfBatch = initialValue;
-                conservationScores.clear();
+                // reset
+                startOfBatch = start;
+                previousEndValue = 0;
             }
         }
         // we need to serialize the last chunk that might be incomplete
-        storeScores(dataSource, startOfBatch, chromosome, conservationScores);
+        storeScores(startOfBatch, chromosome, conservationScores);
 
         bufferedReader.close();
     }
 
-    private void storeScores(String dataSource, int startOfBatch, String chromosome, List<Float> conservationScores) {
-        if (!conservationScores.isEmpty()) {
-
-            // if this is a small batch, fill in the missing coordinates with 0
-            while (conservationScores.size() < chunkSize) {
-                conservationScores.add(Float.valueOf(0));
-            }
-
-            GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
-                    startOfBatch + conservationScores.size() - 1, dataSource, conservationScores);
-            fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+    private void storeScores(int startOfBatch, String chromosome, List<Float> conservationScores)
+            throws CellbaseException {
+        // if this is a small batch, fill in the missing coordinates with 0
+        while (conservationScores.size() < chunkSize) {
+            conservationScores.add((float) 0);
         }
+
+        if (conservationScores.size() != chunkSize) {
+            throw new CellbaseException("invalid chunk size " + conservationScores.size() + " for " + chromosome + ":" + startOfBatch);
+        }
+
+        GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,
+                startOfBatch + conservationScores.size() - 1, "gerp", conservationScores);
+        fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+
+        // reset
+        conservationScores.clear();
     }
 
 //    @Deprecated

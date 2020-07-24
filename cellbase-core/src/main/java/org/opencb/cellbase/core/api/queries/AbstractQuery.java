@@ -381,10 +381,10 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         queryOptions.put(QueryOptions.LIMIT, limit);
         queryOptions.put(QueryOptions.COUNT, count);
         if (CollectionUtils.isNotEmpty(includes)) {
-            queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(this.includes, ","));
+            queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes, ","));
         }
         if (CollectionUtils.isNotEmpty(excludes)) {
-            queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(excludes.get(0)));
+            queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes, ","));
         }
         if (StringUtils.isNotEmpty(sort)) {
             queryOptions.put(QueryOptions.SORT, sort);
