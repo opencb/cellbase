@@ -27,7 +27,6 @@ import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -243,8 +242,10 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Integer cnvExtraPadding,
                                             Boolean checkAminoAcidChange) {
         try {
-            List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(new QueryOptions(), variants,
-                    normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding, checkAminoAcidChange);
+            VariantQuery query = new VariantQuery(uriParams);
+            List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
+                    variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
+                    checkAminoAcidChange);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
