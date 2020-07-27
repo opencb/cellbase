@@ -138,7 +138,6 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 // reset values for current batch
                 startOfBatch = 0;
-                previousEndValue = 0;
             }
 
             // reset chromosome for next entry
@@ -146,24 +145,38 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             // file is american! starts at zero, add one
             int start = Integer.parseInt(fields[1]) + 1;
+            // inclusive
             int end = Integer.parseInt(fields[2]) + 1;
 
             // start coordinate for this batch of 2,000
             if (startOfBatch == 0) {
                 startOfBatch = start;
+                previousEndValue = 0;
             }
 
             // if there is a gap between the last entry and this one.
-            if (previousEndValue != 0 && start - previousEndValue != 0) {
+            if (previousEndValue != 0 && (start - previousEndValue) != 0) {
                 // gap is too big! store what we already have before processing more
-                if (start - previousEndValue + startOfBatch >= chunkSize) {
+                if (start - previousEndValue >= chunkSize) {
                     // we have a full batch, store
                     storeScores(startOfBatch, chromosome, conservationScores);
+
+                    // reset batch to start at this record
+                    startOfBatch = start;
                 } else {
                     // fill in the gap with zeroes
-                    while (previousEndValue < start) {
+                    // don't overfill the batch
+                    while (previousEndValue < start && conservationScores.size() < chunkSize) {
                         conservationScores.add((float) 0);
                         previousEndValue++;
+                    }
+
+                    // we have a full batch, store
+                    if (conservationScores.size() == chunkSize) {
+                        storeScores(startOfBatch, chromosome, conservationScores);
+
+                        // reset. start a new batch
+                        startOfBatch = start;
                     }
                 }
             }
@@ -180,9 +193,8 @@ public class ConservationBuilder extends CellBaseBuilder {
                 if (conservationScores.size() == chunkSize) {
                     storeScores(startOfBatch, chromosome, conservationScores);
 
-                    // reset
+                    // reset. start a new batch
                     startOfBatch = start;
-                    previousEndValue = 0;
                 }
 
                 // add score to batch
@@ -196,19 +208,20 @@ public class ConservationBuilder extends CellBaseBuilder {
             if (conservationScores.size() == chunkSize) {
                 storeScores(startOfBatch, chromosome, conservationScores);
 
-                // reset
-                startOfBatch = start;
-                previousEndValue = 0;
+                // reset, start a new batch
+                startOfBatch = 0;
             }
         }
         // we need to serialize the last chunk that might be incomplete
-        storeScores(startOfBatch, chromosome, conservationScores);
-
+        if (!conservationScores.isEmpty()) {
+            storeScores(startOfBatch, chromosome, conservationScores);
+        }
         bufferedReader.close();
     }
 
     private void storeScores(int startOfBatch, String chromosome, List<Float> conservationScores)
             throws CellbaseException {
+
         // if this is a small batch, fill in the missing coordinates with 0
         while (conservationScores.size() < chunkSize) {
             conservationScores.add((float) 0);

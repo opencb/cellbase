@@ -98,10 +98,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     parseCDS(gtf);
                     break;
                 case "start_codon":
-                    // should I be doing something here?
+                    parseStartCodon(gtf);
                     break;
                 case "stop_codon":
-                    //parseStopCodon(gtf);
+                    parseStopCodon(gtf);
                     break;
                 default:
                     throw new RuntimeException("Unexpected feature type: " + gtf.getFeature());
@@ -190,7 +190,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         exonDbxrefs.addAll(parseXrefs(gtf));
 
-        if (transcript.getStart() == 0) {
+        if (transcript.getStart() == 0 || transcript.getStart() > exon.getStart()) {
             transcript.setStart(exon.getStart());
         }
         if (transcript.getEnd() == 0 || transcript.getEnd() < exon.getEnd()) {
@@ -214,51 +214,101 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         exon.setPhase(Integer.parseInt(gtf.getFrame()));
         exonDbxrefs.addAll(parseXrefs(gtf));
 
-        if (exon.getExonNumber() == 1) {
-            exon.setGenomicCodingStart(gtf.getStart());
-            exon.setGenomicCodingEnd(gtf.getEnd());
+        if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
 
-            int cdnaCodingStart = exon.getGenomicCodingStart() - exon.getStart() + 1;
-            exon.setCdnaCodingStart(cdnaCodingStart);
-            exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
+            if (exon.getExonNumber() == 1) {
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
 
-            exon.setCdsStart(1);
-            exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1 + exon.getCdsStart());
-        } else {
-            // Fetch prev exon
-            String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
-            Exon prevExon = exonDict.get(prevExonId);
+                int cdnaCodingStart = exon.getGenomicCodingStart() - exon.getStart() + 1;
+                exon.setCdnaCodingStart(cdnaCodingStart);
+                exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
 
-            exon.setGenomicCodingStart(gtf.getStart());
-            exon.setGenomicCodingEnd(gtf.getEnd());
-
-            int cdnaCodingStart = 0;
-            int cdnaCodingEnd;
-            // Prev exon is a UTR
-            if (prevExon.getCdnaCodingStart() == 0) {
-                // previous exon was a UTR. check that the exon BEFORE that one also. could be two in a row!
-                for (int i = 1; i <= prevExon.getExonNumber(); i++) {
-                    Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
-                    cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart();
-                }
-                cdnaCodingStart += exon.getGenomicCodingStart() - exon.getStart() + 1;
-                cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                exon.setCdsStart(1);
+                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1 + exon.getCdsStart());
             } else {
-                cdnaCodingStart = prevExon.getCdnaCodingEnd() + 1;
-                cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                // Fetch prev exon
+                String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
+                Exon prevExon = exonDict.get(prevExonId);
+
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
+
+                int cdnaCodingStart = 0;
+                int cdnaCodingEnd;
+                // Prev exon is a UTR
+                if (prevExon.getCdnaCodingStart() == 0) {
+                    // previous exon was a UTR. check that the exon BEFORE that one also. could be two in a row!
+                    for (int i = 1; i <= prevExon.getExonNumber(); i++) {
+                        Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
+                        cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart();
+                    }
+                    cdnaCodingStart += exon.getGenomicCodingStart() - exon.getStart() + 1;
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                } else {
+                    cdnaCodingStart = prevExon.getCdnaCodingEnd() + 1;
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                }
+
+                exon.setCdnaCodingStart(cdnaCodingStart);
+                exon.setCdnaCodingEnd(cdnaCodingEnd);
+
+                // Set CDS
+                int cdsStart = prevExon.getCdsEnd() + 1;
+                int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart);
+                exon.setCdsStart(cdsStart);
+                exon.setCdsEnd(cdsEnd);
             }
+        } else {
+            // negative strand
 
-            exon.setCdnaCodingStart(cdnaCodingStart);
-            exon.setCdnaCodingEnd(cdnaCodingEnd);
+            if (exon.getExonNumber() == 1) {
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
 
-            // Set CDS
-            int cdsStart = prevExon.getCdsEnd() + 1;
-            int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart);
-            exon.setCdsStart(cdsStart);
-            exon.setCdsEnd(cdsEnd);
+                int cdnaCodingStart = exon.getEnd() - exon.getGenomicCodingEnd() + 1;
+                exon.setCdnaCodingStart(cdnaCodingStart);
+                exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
+
+                exon.setCdsStart(1);
+                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
+            } else {
+                // Fetch prev exon
+                String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
+                Exon prevExon = exonDict.get(prevExonId);
+
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
+
+                int cdnaCodingStart = 0;
+                int cdnaCodingEnd;
+                // Prev exon is a UTR
+                if (prevExon.getCdnaCodingStart() == 0) {
+                    // previous exon was a UTR. check that the exon BEFORE that one also. could be two in a row!
+                    for (int i = 1; i <= prevExon.getExonNumber(); i++) {
+                        Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
+                        cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart();
+                    }
+                    cdnaCodingStart += exon.getEnd() - exon.getGenomicCodingEnd() + 1;
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                } else {
+                    cdnaCodingStart = prevExon.getCdnaCodingEnd() + 1;
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                }
+
+                exon.setCdnaCodingStart(cdnaCodingStart);
+                exon.setCdnaCodingEnd(cdnaCodingEnd);
+
+                // Set CDS
+                int cdsStart = prevExon.getCdsEnd() + 1;
+                int cdsEnd = cdsStart + (cdnaCodingEnd - cdnaCodingStart);
+                exon.setCdsStart(cdsStart);
+                exon.setCdsEnd(cdsEnd);
+            }
         }
 
-        if (transcript.getGenomicCodingStart() == 0) {
+        // strand doesn't matter
+        if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > exon.getGenomicCodingStart()) {
             transcript.setGenomicCodingStart(exon.getGenomicCodingStart());
         }
         if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < exon.getGenomicCodingEnd()) {
@@ -266,7 +316,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
 
         // only first time
-        if (transcript.getCdnaCodingStart() == 0) {
+        if (transcript.getCdnaCodingStart() == 0 || transcript.getCdnaCodingStart() > exon.getCdnaCodingStart()) {
             transcript.setCdnaCodingStart(exon.getCdnaCodingStart());
         }
         // Set cdnaCodingEnd to prevent those cases without stop_codon
@@ -287,6 +337,36 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
     }
 
+    private void parseStartCodon(Gtf gtf) {
+        if (gtf.getStrand().equals("+")) {
+            return;
+        }
+        parseCodon(gtf);
+    }
+
+    private void parseStopCodon(Gtf gtf) {
+        if (gtf.getStrand().equals("-")) {
+            return;
+        }
+        parseCodon(gtf);
+    }
+
+    private void parseCodon(Gtf gtf) {
+        String exonNumber = gtf.getAttributes().get("exon_number");
+        if (StringUtils.isEmpty(exonNumber)) {
+            // some codons don't have an exon number, discard
+            return;
+        }
+        Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
+        String exonId = transcript.getId() + "_" + exonNumber;
+        Exon exon = exonDict.get(exonId);
+
+        exon.setGenomicCodingEnd(gtf.getEnd());
+        if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < exon.getGenomicCodingEnd()) {
+            transcript.setGenomicCodingEnd(exon.getGenomicCodingEnd());
+        }
+    }
+
     private Set<Xref> parseXrefs(Gtf gtf) {
         String xrefs = gtf.getAttributes().get("db_xref");
         Set<Xref> xrefSet = new HashSet<>();
@@ -303,76 +383,6 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
         }
         return xrefSet;
-    }
-
-    private void parseStopCodon(Gtf gtf) {
-        String exonNumber = gtf.getAttributes().get("exon_number");
-        if (StringUtils.isEmpty(exonNumber)) {
-            return;
-        }
-        Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
-        String exonId = transcript.getId() + "_" + exonNumber;
-        Exon exon = exonDict.get(exonId);
-
-        if (exon.getStrand().equals("+")) {
-            updateStopCodingDataPositiveExon(gtf, exon);
-
-            cds += gtf.getEnd() - gtf.getStart();
-            // If stop_codon appears, overwrite values
-            transcript.setGenomicCodingEnd(gtf.getEnd());
-            transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-            transcript.setCdsLength(cds - 1);
-        } else {
-            updateNegativeExonCodingData(gtf, exon);
-
-            cds += gtf.getEnd() - gtf.getStart();
-            // If stop_codon appears, overwrite values
-            transcript.setGenomicCodingStart(gtf.getStart());
-            // cdnaCodingEnd points to the same base position than genomicCodingStart
-            transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-            transcript.setCdsLength(cds - 1);
-        }
-    }
-
-    private void updateStopCodingDataPositiveExon(Gtf gtf, Exon exon) {
-        // we need to increment 3 nts, the stop_codon length.
-        exon.setGenomicCodingEnd(gtf.getEnd());
-        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-
-        // If the STOP codon corresponds to the first three nts of the exon then no CDS will be defined
-        // in the gtf -as technically the STOP codon is non-coding- and we must manually set coding
-        // starts
-        if (exon.getGenomicCodingStart() == 0) {
-            exon.setGenomicCodingStart(exon.getGenomicCodingEnd() - 2);
-        }
-        if (exon.getCdnaCodingStart() == 0) {
-            exon.setCdnaCodingStart(exon.getCdnaCodingEnd() - 2);
-        }
-        if (exon.getCdsStart() == 0) {
-            exon.setCdsStart(exon.getCdsEnd() - 2);
-        }
-    }
-
-    private void updateNegativeExonCodingData(Gtf gtf, Exon exon) {
-        // we need to increment 3 nts, the stop_codon length.
-        exon.setGenomicCodingStart(gtf.getStart());
-        // cdnaCodingEnd points to the same base position than genomicCodingStart
-        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-
-        // If the STOP codon corresponds to the first three nts of the exon then no CDS will be defined
-        // in the gtf -as technically the STOP codon is non-coding- and we must manually set coding
-        // starts
-        if (exon.getGenomicCodingEnd() == 0) {
-            exon.setGenomicCodingEnd(exon.getGenomicCodingStart() + 2);
-        }
-        if (exon.getCdnaCodingStart() == 0) {
-            exon.setCdnaCodingStart(exon.getCdnaCodingEnd() - 2);
-        }
-        if (exon.getCdsStart() == 0) {
-            exon.setCdsStart(exon.getCdsEnd() - 2);
-        }
     }
 
     private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, String version) {

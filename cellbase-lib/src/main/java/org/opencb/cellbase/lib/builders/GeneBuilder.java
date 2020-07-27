@@ -333,8 +333,6 @@ public class GeneBuilder extends CellBaseBuilder {
                 }
             }
 
-
-
             // last gene must be serialized
             serializer.serialize(gene);
 
@@ -794,13 +792,13 @@ public class GeneBuilder extends CellBaseBuilder {
         return previousGene == null || !newGeneId.equals(previousGene.getId());
     }
 
-    private int getChunk(int position) {
-        return (position / CHUNK_SIZE);
-    }
-
-    private int getOffset(int position) {
-        return (position % CHUNK_SIZE);
-    }
+//    private int getChunk(int position) {
+//        return (position / CHUNK_SIZE);
+//    }
+//
+//    private int getOffset(int position) {
+//        return (position % CHUNK_SIZE);
+//    }
 
     private void updateTranscriptAndGeneCoords(Transcript transcript, Gene gene, Gtf gtf) {
         if (transcript.getStart() > gtf.getStart()) {
