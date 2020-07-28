@@ -46,9 +46,9 @@ public class ConservationBuilderTest {
         (new ConservationBuilder(conservationDir, BATCH_SIZE, serializer)).parse();
         serializer.close();
 
-        List<GenomicScoreRegion<Float>> actual = loadConservationScores(Paths.get("/tmp/conservation_1.json.gz"));
+        List<GenomicScoreRegion<Float>> actual = loadConservationScores(Paths.get("/tmp/conservation_19.json.gz"));
         List<GenomicScoreRegion<Float>> expected = loadConservationScores(Paths.get(ConservationBuilderTest.class.getResource(
-                "/conservation/gerp/conservation_1.json.gz").getFile()));
+                "/conservation/gerp/conservation_19.json.gz").getFile()));
 
         assertEquals(expected, actual);
     }

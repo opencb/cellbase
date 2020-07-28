@@ -51,8 +51,6 @@ public class RefSeqGeneBuilderTest {
 
     @BeforeAll
     public void init() throws Exception {
-        Path genomeSequenceFastaFile
-                = Paths.get(RefSeqGeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
         Path geneDirectoryPath = Paths.get(RefSeqGeneBuilderTest.class.getResource("/gene_refseq").toURI());
         // put the results in /tmp
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "refseq",
