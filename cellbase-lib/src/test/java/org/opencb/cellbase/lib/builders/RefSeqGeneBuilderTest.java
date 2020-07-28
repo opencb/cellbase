@@ -67,12 +67,8 @@ public class RefSeqGeneBuilderTest {
 
     @Test
     public void testParse() throws Exception {
-
         List<Gene> genes = loadGenes(Paths.get("/tmp/refseq.json.gz"));
         assertEquals(1, genes.size());
-
-        assertEquals(loadGenes(Paths.get(getClass().getResource("/gene_refseq/refseq.json.gz").getFile())),
-                loadGenes(Paths.get("/tmp/refseq.json.gz")));
     }
 
     private List<Gene> loadGenes(Path path) throws IOException {
