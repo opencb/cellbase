@@ -35,6 +35,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -45,37 +46,26 @@ import java.util.*;
  */
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
 
+    private MongoDBCollection refseqCollection = null;
+
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
-
+        refseqCollection = mongoDataStore.getCollection("refseq");
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
-
-//    @Override
-//    public CellBaseDataResult<String> getCdna(String id) {
-//        Bson bson = Filters.eq("transcripts.xrefs.id", id);
-//        Bson elemMatch = Projections.elemMatch("transcripts", Filters.eq("xrefs.id", id));
-//        Bson include = Projections.include("transcripts.cDnaSequence");
-//        // elemMatch and include are combined to reduce the data sent from the server
-//        Bson projection = Projections.fields(elemMatch, include);
-//        CellBaseDataResult<Document> result = new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, new QueryOptions()));
-//
-//        String sequence = null;
-//        if (result != null && !result.getResults().isEmpty()) {
-//            List<Document> transcripts = (List<Document>) result.getResults().get(0).get("transcripts");
-//            sequence = transcripts.get(0).getString("cDnaSequence");
-//        }
-//        return new CellBaseDataResult<>(id, result.getTime(), result.getEvents(), result.getNumResults(),
-//                Collections.singletonList(sequence), 1);
-//    }
 
     @Override
     public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+        MongoDBIterator<Transcript> iterator = null;
+        if (!query.getSource().isEmpty() && "RefSeq".equals(query.getSource().get(0))) {
+            iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
+        } else {
+            iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+        }
         return new CellBaseIterator<>(iterator);
     }
 
@@ -163,67 +153,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
-
-//    @Override
-//    public CellBaseDataResult distinct(Query query, String field) {
-//        Bson bsonDocument = parseQuery(query);
-//        return new CellBaseDataResult(mongoDBCollection.distinct(field, bsonDocument));
-//    }
-
-//    @Override
-//    public CellBaseDataResult stats(Query query) {
-//        return null;
-//    }
-
-//    public CellBaseDataResult<Transcript> get(Query query, QueryOptions options) {
-//        return null;
-//    }
-
-//    public List<CellBaseDataResult> nativeGet(List<Query> query, QueryOptions options) {
-//        //return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), options));
-//    }
-
-//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-//        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
-//        return new CellBaseDataResult(mongoDBCollection.aggregate(aggregateList, options));
-//    }
-
-//    public Iterator<Transcript> iterator(Query query, QueryOptions options) {
-//        return null;
-//    }
-
-//    public Iterator nativeIterator(Query query, QueryOptions options) {
-//        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
-//        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
-////        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-//    }
-
-//    public void forEach(Query query, Consumer action, QueryOptions options) {
-//
-//    }
-
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, field, "name", options);
-//    }
-//
-//    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, fields, "name", options);
-//    }
-//
-//    public CellBaseDataResult next(Query query, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
-//        return null;
-//    }
-
+    @Deprecated
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         if (query.getString("region") != null) {
             Region region = Region.parseRegion(query.getString("region"));
@@ -408,32 +338,4 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
         return aggregateList;
     }
-
-//
-//    private CellBaseDataResult<String> getCdna(String id) {
-//        Bson bson = Filters.eq("transcripts.xrefs.id", id);
-//        Bson elemMatch = Projections.elemMatch("transcripts", Filters.eq("xrefs.id", id));
-//        Bson include = Projections.include("transcripts.cDnaSequence");
-//        // elemMatch and include are combined to reduce the data sent from the server
-//        Bson projection = Projections.fields(elemMatch, include);
-////        CellBaseDataResult<Document> result = new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, new QueryOptions()));
-//
-//        CellBaseDataResult<Document> result = new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, new QueryOptions()));
-//
-//        String sequence = null;
-//        if (result != null && !result.getResults().isEmpty()) {
-//            List<Document> transcripts = (List<Document>) result.getResults().get(0).get("transcripts");
-//            sequence = transcripts.get(0).getString("cDnaSequence");
-//        }
-//        return new CellBaseDataResult<>(id, result.getTime(), result.getEvents(), result.getNumResults(),
-//                Collections.singletonList(sequence), 1);
-//    }
-
-//    private List<CellBaseDataResult<String>> getCdna(List<String> idList) {
-//        List<CellBaseDataResult<String>> cellBaseDataResults = new ArrayList<>();
-//        for (String id : idList) {
-//            cellBaseDataResults.add(getCdna(id));
-//        }
-//        return cellBaseDataResults;
-//    }
 }

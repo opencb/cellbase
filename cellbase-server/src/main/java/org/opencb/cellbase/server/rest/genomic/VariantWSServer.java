@@ -177,7 +177,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 value = "true/false to specify whether variant match in the clinical variant collection "
                                                         + "should also be performed at the aminoacid change level",
                                                 allowableValues = "false,true",
-                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
+                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange,
+                                                @QueryParam("consequenceTypeSource")
+                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either Ensembl (default) "
+                                                        + "or RefSeq", allowableValues = "Ensembl,RefSeq", required = false)
+                                                        String consequenceTypeSource) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -187,7 +191,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 imprecise,
                 svExtraPadding,
                 cnvExtraPadding,
-                checkAminoAcidChange);
+                checkAminoAcidChange,
+                consequenceTypeSource);
     }
 
     @GET
@@ -251,7 +256,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @ApiParam(name = "checkAminoAcidChange",
                                                            value = "<DESCRIPTION GOES HERE>",
                                                            allowableValues = "false,true",
-                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
+                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange,
+                                               @QueryParam("consequenceTypeSource")
+                                               @ApiParam(name = "consequenceTypeSource", value = "Gene set, either Ensembl (default) "
+                                                           + "or RefSeq", allowableValues = "Ensembl,RefSeq", required = false)
+                                                           String consequenceTypeSource) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -260,7 +269,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 imprecise,
                 svExtraPadding,
                 cnvExtraPadding,
-                checkAminoAcidChange);
+                checkAminoAcidChange,
+                consequenceTypeSource);
     }
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
@@ -270,12 +280,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Boolean imprecise,
                                             Integer svExtraPadding,
                                             Integer cnvExtraPadding,
-                                            Boolean checkAminoAcidChange) {
+                                            Boolean checkAminoAcidChange,
+                                            String consequenceTypeSource) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange);
+                    checkAminoAcidChange, consequenceTypeSource);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

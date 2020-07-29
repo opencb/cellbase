@@ -79,6 +79,7 @@ public class VariantAnnotationCalculator {
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
+    private String consequenceTypeSource = null;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
@@ -506,7 +507,8 @@ public class VariantAnnotationCalculator {
         return variantAnnotationList;
     }
 
-    public List<Gene> getBatchGeneList(List<Variant> variantList) throws QueryException, IllegalAccessException {
+    public List<Gene> getBatchGeneList(List<Variant> variantList)
+            throws QueryException, IllegalAccessException {
         List<Region> regionList = variantListToRegionList(variantList);
         // Add +-5Kb for gene search
         for (Region region : regionList) {
@@ -521,6 +523,9 @@ public class VariantAnnotationCalculator {
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
+        if (StringUtils.isNotEmpty(consequenceTypeSource)) {
+            geneQuery.setSource(Collections.singletonList(consequenceTypeSource));
+        }
 
         List<Gene> geneList = new ArrayList<>();
 //        if (both == true || ensembl == true) {}
@@ -578,6 +583,10 @@ public class VariantAnnotationCalculator {
 
         checkAminoAcidChange = (queryOptions.get("checkAminoAcidChange") != null && (Boolean) queryOptions.get("checkAminoAcidChange"));
         logger.debug("checkAminoAcidChange = {}", checkAminoAcidChange);
+
+        consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
+                ? (String) queryOptions.get("consequenceTypeSource") : null);
+        logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
     }
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {

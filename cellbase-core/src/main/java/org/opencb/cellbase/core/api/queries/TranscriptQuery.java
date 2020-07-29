@@ -24,6 +24,9 @@ import java.util.Map;
 
 public class TranscriptQuery extends AbstractQuery {
 
+    @QueryParameter(id = "source", allowedValues = {"Ensembl", "RefSeq"})
+    private List<String> source;
+
     @QueryParameter(id = "region")
     private List<Region> regions;
 
@@ -68,7 +71,8 @@ public class TranscriptQuery extends AbstractQuery {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TranscriptQuery{");
-        sb.append("regions=").append(regions);
+        sb.append("source=").append(source);
+        sb.append(", regions=").append(regions);
         sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
         sb.append(", transcriptsId=").append(transcriptsId);
@@ -190,6 +194,15 @@ public class TranscriptQuery extends AbstractQuery {
         return this;
     }
 
+    public List<String> getSource() {
+        return source;
+    }
+
+    public TranscriptQuery setSource(List<String> source) {
+        this.source = source;
+        return this;
+    }
+
     public static final class TranscriptQueryBuilder {
         protected Integer limit;
         protected Integer skip;
@@ -199,6 +212,7 @@ public class TranscriptQuery extends AbstractQuery {
         protected String facet;
         protected List<String> includes;
         protected List<String> excludes;
+        private List<String> source;
         private List<Region> regions;
         private List<String> transcriptsBiotype;
         private List<String> transcriptsXrefs;
@@ -216,6 +230,11 @@ public class TranscriptQuery extends AbstractQuery {
 
         public static TranscriptQueryBuilder aTranscriptQuery() {
             return new TranscriptQueryBuilder();
+        }
+
+        public TranscriptQueryBuilder withSource(List<String> source) {
+            this.source = source;
+            return this;
         }
 
         public TranscriptQueryBuilder withRegions(List<Region> regions) {
@@ -315,6 +334,7 @@ public class TranscriptQuery extends AbstractQuery {
 
         public TranscriptQuery build() {
             TranscriptQuery transcriptQuery = new TranscriptQuery();
+            transcriptQuery.setSource(source);
             transcriptQuery.setRegions(regions);
             transcriptQuery.setTranscriptsBiotype(transcriptsBiotype);
             transcriptQuery.setTranscriptsXrefs(transcriptsXrefs);

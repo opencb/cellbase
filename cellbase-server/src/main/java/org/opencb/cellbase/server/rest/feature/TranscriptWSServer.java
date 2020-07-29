@@ -188,6 +188,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = ParamConstants.GENE_SOURCE, value = ParamConstants.GENE_SOURCE_DESCRIPTION, required = false,
+                    allowableValues="Ensembl,RefSeq", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_XREFS_PARAM, value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
