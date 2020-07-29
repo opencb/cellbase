@@ -159,8 +159,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             store();
         }
 
-        String geneId = getGeneId(gtf);
-        String geneName = gtf.getAttributes().get("gene_id");
+        String geneId = gtf.getAttributes().get("gene_id");
+        String geneName = geneId;
         String geneDescription = gtf.getAttributes().get("description");
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,

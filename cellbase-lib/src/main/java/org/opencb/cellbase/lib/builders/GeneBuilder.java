@@ -62,6 +62,8 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path miRTarBaseFile;
     private boolean flexibleGTFParsing;
 
+    // source for genes is either ensembl or refseq
+    private static final String SOURCE = "Ensembl";
     private SpeciesConfiguration speciesConfiguration;
 
 //    private Connection sqlConn;
@@ -201,7 +203,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),
-                            gtf.getAttributes().get("gene_biotype"), "KNOWN", gtf.getSource(), indexer.getDescription(geneId),
+                            gtf.getAttributes().get("gene_biotype"), "KNOWN", SOURCE, indexer.getDescription(geneId),
                             new ArrayList<>(), indexer.getMirnaGene(transcriptId), geneAnnotation);
                 }
 
@@ -359,8 +361,8 @@ public class GeneBuilder extends CellBaseBuilder {
         transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
-                        : gtf.getSource(),
-                "KNOWN", gtfAttributes.get("transcript_source"), transcriptChromosome, gtf.getStart(), gtf.getEnd(),
+                        : SOURCE,
+                "KNOWN", SOURCE, transcriptChromosome, gtf.getStart(), gtf.getEnd(),
                 gtf.getStrand(), gtfAttributes.get("transcript_version"),
                 gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
                 0, "", "", indexer.getXrefs(transcriptId), new ArrayList<Exon>(),

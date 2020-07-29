@@ -108,6 +108,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append("ids=").append(ids);
         sb.append(", names=").append(names);
         sb.append(", biotypes=").append(biotypes);
+        sb.append(", source=").append(source);
         sb.append(", regions=").append(regions);
         sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
@@ -319,6 +320,15 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
+    public List<String> getSource() {
+        return source;
+    }
+
+    public GeneQuery setSource(List<String> source) {
+        this.source = source;
+        return this;
+    }
+
     public static final class GeneQueryBuilder {
         protected Integer limit;
         protected Integer skip;
@@ -331,6 +341,7 @@ public class GeneQuery extends AbstractQuery {
         private List<String> ids;
         private List<String> names;
         private List<String> biotypes;
+        private List<String> source;
         private List<Region> regions;
         private List<String> transcriptsBiotype;
         private List<String> transcriptsXrefs;
@@ -369,6 +380,11 @@ public class GeneQuery extends AbstractQuery {
 
         public GeneQueryBuilder withBiotypes(List<String> biotypes) {
             this.biotypes = biotypes;
+            return this;
+        }
+
+        public GeneQueryBuilder withSource(List<String> source) {
+            this.source = source;
             return this;
         }
 
@@ -507,6 +523,7 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.setIds(ids);
             geneQuery.setNames(names);
             geneQuery.setBiotypes(biotypes);
+            geneQuery.setSource(source);
             geneQuery.setRegions(regions);
             geneQuery.setTranscriptsBiotype(transcriptsBiotype);
             geneQuery.setTranscriptsXrefs(transcriptsXrefs);

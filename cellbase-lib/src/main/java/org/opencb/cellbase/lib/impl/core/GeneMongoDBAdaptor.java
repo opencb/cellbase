@@ -51,38 +51,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         logger.debug("GeneMongoDBAdaptor: in 'constructor'" + mongoDBCollection.count());
     }
 
-//    @Override
-//    public CellBaseDataResult<Gene> next(Query geneQuery, QueryOptions queryOptions) {
-//        return null;
-//    }
-//
-//    @Override
-//    public CellBaseDataResult nativeNext(Query geneQuery, QueryOptions queryOption) {
-//        return null;
-//    }
-//
-//    @Override
-//    public CellBaseDataResult getIntervalFrequencies(Query geneQuery, int intervalSize, QueryOptions options) {
-//        if (geneQuery.getString(QueryParams.REGION.key()) != null) {
-//            Region region = Region.parseRegion(geneQuery.getString(QueryParams.REGION.key()));
-//            Bson bsonDocument = parseQuery(geneQuery);
-//            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
-//        }
-//        return null;
-//    }
-
-//    @Override
-//    public CellBaseDataResult<Long> count(Query geneQuery) {
-//        Bson bsonDocument = parseQuery(geneQuery);
-//        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
-//    }
-
-//    @Override
-//    public CellBaseDataResult<Long> count(GeneQuery query) {
-//        Bson bsonDocument = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
-//    }
-
     @Override
     public CellBaseDataResult<Gene> aggregationStats(GeneQuery query) {
         return null;
@@ -108,7 +76,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Gene> converter = new GenericDocumentComplexConverter<>(Gene.class);
-        MongoDBIterator<Gene> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Gene> iterator = null;
+        if (!query.getSource().isEmpty() && "RefSeq".equals(query.getSource().get(0))) {
+            iterator = refseqCollection.iterator(null, bson, projection, converter, queryOptions);
+        } else {
+            iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        }
         return new CellBaseIterator<>(iterator);
     }
 
@@ -167,6 +140,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         break;
                     case "mirna":
                         createMirnaQuery(value, andBsonList);
+                        break;
+                    case "source":
+                        // do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
