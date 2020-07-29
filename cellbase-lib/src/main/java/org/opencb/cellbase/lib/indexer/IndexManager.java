@@ -85,10 +85,12 @@ public class IndexManager {
 
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
             MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
+            logger.info("Loaded all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
                 MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collection, dropIndexesFirst);
+                logger.info("Loaded index for {} ", collection);
             }
         }
     }

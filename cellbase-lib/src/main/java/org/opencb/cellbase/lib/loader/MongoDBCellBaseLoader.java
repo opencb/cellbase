@@ -266,6 +266,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "gene":
                 collection = "gene";
                 break;
+            case "refseq":
+                collection = "refseq";
+                break;
             case "variation":
                 collection = "variation";
                 break;

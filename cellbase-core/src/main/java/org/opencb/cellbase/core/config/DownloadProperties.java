@@ -65,6 +65,7 @@ public class DownloadProperties {
     private URLProperties goAnnotation;
     private URLProperties refSeq;
     private URLProperties refSeqFasta;
+    private URLProperties refSeqProteinFasta;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -424,6 +425,15 @@ public class DownloadProperties {
 
     public DownloadProperties setRefSeqFasta(URLProperties refSeqFasta) {
         this.refSeqFasta = refSeqFasta;
+        return this;
+    }
+
+    public URLProperties getRefSeqProteinFasta() {
+        return refSeqProteinFasta;
+    }
+
+    public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {
+        this.refSeqProteinFasta = refSeqProteinFasta;
         return this;
     }
 

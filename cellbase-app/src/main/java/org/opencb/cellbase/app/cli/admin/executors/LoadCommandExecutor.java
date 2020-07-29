@@ -97,11 +97,11 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             String[] loadOptions;
             if (loadCommandOptions.data.equals("all")) {
-                loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.CONSERVATION_DATA,
-                        EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
+                loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
+                        EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA,
-                        EtlCommons.REPEATS_DATA, EtlCommons.STRUCTURAL_VARIANTS_DATA, EtlCommons.OBO_DATA};
+                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
+                        EtlCommons.OBO_DATA};
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -126,6 +126,10 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("disgenetVersion.json"), METADATA);
                             loadIfExists(input.resolve("gnomadVersion.json"), METADATA);
                             createIndex("gene");
+                            break;
+                        case EtlCommons.REFSEQ_DATA:
+                            loadIfExists(input.resolve("refseq.json.gz"), "refseq");
+                            createIndex("refseq");
                             break;
                         case EtlCommons.VARIATION_DATA:
                             loadVariationData();
@@ -338,6 +342,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (!createIndexes) {
             return;
         }
+        logger.info("Loading indexes for '{}' collection ...", collectionName);
         try {
             indexManager.createMongoDBIndexes(collectionName, database, true);
         } catch (CellbaseException | IOException e) {

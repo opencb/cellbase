@@ -97,21 +97,36 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
+            // gtf
             String url = configuration.getDownload().getRefSeq().getHost();
             saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
                     refSeqFolder.resolve("refSeqVersion.json"));
-            downloadFiles.add(downloadFile(url, refSeqFolder.resolve("refSeq.gtf.gz").toString()));
-
-
-            url = configuration.getDownload().getRefSeqFasta().getHost();
-            String outputFileName = StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fna.gz";
+            String outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName()
+                    + ".gtf.gz";
             logger.info("downloading " + url);
             Path outputPath = refSeqFolder.resolve(outputFileName);
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
+
+            // genomic fasta
+            url = configuration.getDownload().getRefSeqFasta().getHost();
+            outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fna.gz";
+            logger.info("downloading " + url);
+            outputPath = refSeqFolder.resolve(outputFileName);
             saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(),
                     Collections.singletonList(url), refSeqFolder.resolve("refSeqFastaVersion.json"));
             downloadFiles.add(downloadFile(url, outputPath.toString()));
             logger.info("Unzipping file: " + outputFileName);
             EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
+
+            // protein fasta
+            url = configuration.getDownload().getRefSeqProteinFasta().getHost();
+            outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName()
+                    + "_protein.faa.gz";
+            outputPath = refSeqFolder.resolve(outputFileName);
+            saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
+                    refSeqFolder.resolve("refSeqProteinFastaVersion.json"));
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
+
             return downloadFiles;
 
         }

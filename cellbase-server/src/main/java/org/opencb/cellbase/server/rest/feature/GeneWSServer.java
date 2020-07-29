@@ -275,6 +275,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_XREFS_PARAM,
                     value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = ParamConstants.GENE_SOURCE, value = ParamConstants.GENE_SOURCE_DESCRIPTION, required = false,
+                    allowableValues="Ensembl,RefSeq", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_BIOTYPES_PARAM,
                     value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),

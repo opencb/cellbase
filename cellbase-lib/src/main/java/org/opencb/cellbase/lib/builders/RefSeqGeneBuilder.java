@@ -27,6 +27,7 @@ import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.rocksdb.RocksDBException;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -37,6 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Map<String, Exon> exonDict;
     private Path gtfFile;
     private Path fastaFile;
+    private Path proteinFastaFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -52,24 +54,34 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         getGtfFileFromDirectoryPath(refSeqDirectoryPath);
         getFastaFileFromDirectoryPath(refSeqDirectoryPath);
+        getProteinFastaFileFromDirectoryPath(refSeqDirectoryPath);
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
 
-    private void getGtfFileFromDirectoryPath(Path geneDirectoryPath) {
-        for (String fileName : geneDirectoryPath.toFile().list()) {
+    private void getGtfFileFromDirectoryPath(Path refSeqDirectoryPath) {
+        for (String fileName : refSeqDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
-                gtfFile = geneDirectoryPath.resolve(fileName);
+                gtfFile = refSeqDirectoryPath.resolve(fileName);
                 break;
             }
         }
     }
 
-    private void getFastaFileFromDirectoryPath(Path geneDirectoryPath) {
-        for (String fileName : geneDirectoryPath.toFile().list()) {
+    private void getFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
+        for (String fileName : refSeqDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".fna") || fileName.endsWith(".fna.gz")) {
-                fastaFile = geneDirectoryPath.resolve(fileName);
+                fastaFile = refSeqDirectoryPath.resolve(fileName);
+                break;
+            }
+        }
+    }
+
+    private void getProteinFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
+        for (String fileName : refSeqDirectoryPath.toFile().list()) {
+            if (fileName.endsWith(".faa") || fileName.endsWith(".faa.gz")) {
+                proteinFastaFile = refSeqDirectoryPath.resolve(fileName);
                 break;
             }
         }
@@ -78,9 +90,13 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     public void parse() throws Exception {
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
-        if (fastaIndex != null) {
+        if (fastaFile != null) {
             fastaIndex = new FastaIndex(fastaFile);
         }
+
+        // index protein sequences for later
+        RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(proteinFastaFile.getParent());
+        indexer.index(proteinFastaFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -96,7 +112,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     parseExon(gtf, chromosome, fastaIndex);
                     break;
                 case "CDS":
-                    parseCDS(gtf);
+                    parseCDS(gtf, indexer);
                     break;
                 case "start_codon":
                     //parseStartCodon(gtf);
@@ -200,7 +216,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private void parseCDS(Gtf gtf) {
+    private void parseCDS(Gtf gtf, RefSeqGeneBuilderIndexer indexer) throws RocksDBException {
         String exonNumber = gtf.getAttributes().get("exon_number");
         if (StringUtils.isEmpty(exonNumber)) {
             // this CDS doesn't know which exon it belongs to. skip
@@ -212,7 +228,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         Exon exon = exonDict.get(exonId);
 
         // doesn't matter which strand
-        transcript.setProteinId(gtf.getAttributes().get("protein_id"));
+        String proteinId = gtf.getAttributes().get("protein_id");
+        transcript.setProteinId(proteinId);
+        transcript.setProteinSequence(indexer.getProteinFasta(proteinId));
         exon.setPhase(Integer.parseInt(gtf.getFrame()));
         exonDbxrefs.addAll(parseXrefs(gtf));
 
