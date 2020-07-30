@@ -61,7 +61,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
         MongoDBIterator<Transcript> iterator = null;
-        if (!query.getSource().isEmpty() && "RefSeq".equals(query.getSource().get(0))) {
+        if (query.getSource() != null && !query.getSource().isEmpty() && "RefSeq".equalsIgnoreCase(query.getSource().get(0))) {
             iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
         } else {
             iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);

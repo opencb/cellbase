@@ -845,23 +845,24 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-        private void serializeRDB(RocksDB rdb) throws IOException {
-            // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
-            // named "iterator"
-            RocksIterator rocksIterator = rdb.newIterator();
+    @Deprecated
+    private void serializeRDB(RocksDB rdb) throws IOException {
+        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+        // named "iterator"
+        RocksIterator rocksIterator = rdb.newIterator();
 
-            ObjectMapper mapper = new ObjectMapper();
-            logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
-                    serializer.getOutdir().resolve(serializer.getFileName()));
-            int counter = 0;
-            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-                serializer.serialize(mapper.readValue(rocksIterator.value(), Gene.class));
-                counter++;
-                if (counter % 10000 == 0) {
-                    logger.info("{} written", counter);
-                }
+        ObjectMapper mapper = new ObjectMapper();
+        logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
+                serializer.getOutdir().resolve(serializer.getFileName()));
+        int counter = 0;
+        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+            serializer.serialize(mapper.readValue(rocksIterator.value(), Gene.class));
+            counter++;
+            if (counter % 10000 == 0) {
+                logger.info("{} written", counter);
             }
-            serializer.close();
-            logger.info("Done.");
         }
+        serializer.close();
+        logger.info("Done.");
+    }
 }

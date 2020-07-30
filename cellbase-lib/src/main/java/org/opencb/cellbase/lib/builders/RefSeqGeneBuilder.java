@@ -135,6 +135,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         // cleaning
         gtfReader.close();
         serializer.close();
+        if (fastaIndex != null) {
+            fastaIndex.close();
+        }
+        indexer.close();
     }
 
     // store right before parsing the previous gene, or the very last gene.
