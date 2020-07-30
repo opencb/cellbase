@@ -234,7 +234,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         exon.setPhase(Integer.parseInt(gtf.getFrame()));
         exonDbxrefs.addAll(parseXrefs(gtf));
 
-        if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
+        if (gtf.getStrand().equals("+")) {
 
             if (exon.getExonNumber() == 1) {
                 exon.setGenomicCodingStart(gtf.getStart());
@@ -242,10 +242,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
                 int cdnaCodingStart = exon.getGenomicCodingStart() - exon.getStart() + 1;
                 exon.setCdnaCodingStart(cdnaCodingStart);
-                exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
+                exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()) + cdnaCodingStart);
 
                 exon.setCdsStart(1);
-                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1 + exon.getCdsStart());
+                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + exon.getCdsStart());
             } else {
                 // Fetch prev exon
                 String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
@@ -263,11 +263,11 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                         Exon beforePreviousExon = exonDict.get(transcript.getId() + "_" + i);
                         cdnaCodingStart += beforePreviousExon.getEnd() - beforePreviousExon.getStart();
                     }
-                    cdnaCodingStart += exon.getGenomicCodingStart() - exon.getStart() + 1;
-                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                    cdnaCodingStart += exon.getGenomicCodingStart() - exon.getStart();
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()) + cdnaCodingStart;
                 } else {
                     cdnaCodingStart = prevExon.getCdnaCodingEnd() + 1;
-                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart;
+                    cdnaCodingEnd = (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()) + cdnaCodingStart;
                 }
 
                 exon.setCdnaCodingStart(cdnaCodingStart);
@@ -287,9 +287,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 exon.setGenomicCodingEnd(gtf.getEnd());
 
                 // add 1 for 0-base
-                int cdnaCodingStart = (exon.getEnd() - exon.getGenomicCodingEnd() + 1) + 1;
+                int cdnaCodingStart = exon.getEnd() - exon.getGenomicCodingEnd() + 1;
                 exon.setCdnaCodingStart(cdnaCodingStart);
-                exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1) + cdnaCodingStart);
+                exon.setCdnaCodingEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + cdnaCodingStart);
 
                 exon.setCdsStart(1);
                 exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
