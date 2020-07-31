@@ -42,6 +42,7 @@ public class EtlCommons {
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
+    public static final String MISSENSE_PREDICTION_SCORE_DATA = "missense_prediction_score";
     public static final String REGULATION_DATA = "regulation";
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";

@@ -66,6 +66,7 @@ public class DownloadProperties {
     private URLProperties refSeq;
     private URLProperties refSeqFasta;
     private URLProperties refSeqProteinFasta;
+    private URLProperties revel;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -430,6 +431,15 @@ public class DownloadProperties {
 
     public URLProperties getRefSeqProteinFasta() {
         return refSeqProteinFasta;
+    }
+
+    public URLProperties getRevel() {
+        return revel;
+    }
+
+    public DownloadProperties setRevel(URLProperties revel) {
+        this.revel = revel;
+        return this;
     }
 
     public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {

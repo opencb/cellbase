@@ -83,4 +83,9 @@ public class Downloader {
         CaddDownloadManager manager = new CaddDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadPredictionScores() throws IOException, CellbaseException, InterruptedException {
+        PredictionScoresDownloadManager manager = new PredictionScoresDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }

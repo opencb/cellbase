@@ -130,7 +130,8 @@ download:
   host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
  refSeqProteinFasta:
    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
-
+ revel:
+   host: https://rothsj06.u.hpc.mssm.edu/revel_grch38_all_chromosomes.csv.zip
 species:
  vertebrates:
   - id: hsapiens
