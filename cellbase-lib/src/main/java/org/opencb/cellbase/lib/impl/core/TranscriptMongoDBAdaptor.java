@@ -185,6 +185,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                     case "transcripts.supportLevel":
                         andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
+                    case "source":
+                        // do nothing
+                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
