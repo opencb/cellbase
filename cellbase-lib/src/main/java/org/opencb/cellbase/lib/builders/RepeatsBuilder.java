@@ -69,7 +69,6 @@ public class RepeatsBuilder extends CellBaseBuilder {
             logger.warn("Skipping WindowMasker file parsing. WindowMasker data models will not be built.");
         }
         logger.info("Done.");
-
     }
 
     private void parseTrfFile(Path filePath) throws IOException {

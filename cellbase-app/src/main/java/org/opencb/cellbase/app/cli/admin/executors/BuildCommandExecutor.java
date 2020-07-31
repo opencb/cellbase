@@ -131,6 +131,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
                             break;
+                        case EtlCommons.MISSENSE_PREDICTION_SCORE_DATA:
+                            parser = buildRevel();
+                            break;
                         case EtlCommons.REGULATION_DATA:
                             parser = buildRegulation();
                             break;
@@ -279,6 +282,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path caddFilePath = variationFunctionalScorePath.resolve("whole_genome_SNVs.tsv.gz");
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "cadd");
         return new CaddScoreBuilder(caddFilePath, serializer);
+    }
+
+    private CellBaseBuilder buildRevel() {
+        Path missensePredictionScorePath = downloadFolder.resolve("missense_prediction_score");
+        copyVersionFiles(Arrays.asList(missensePredictionScorePath.resolve("revelVersion.json")));
+        Path revelFilePath = missensePredictionScorePath.resolve("revel_grch38_all_chromosomes.csv.zip");
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "missense_prediction_score");
+        return new RevelScoreBuilder(revelFilePath, serializer);
     }
 
     private CellBaseBuilder buildRegulation() {

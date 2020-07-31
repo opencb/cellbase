@@ -19,12 +19,13 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.biodata.models.core.MissensePredictions;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -33,28 +34,30 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ConservationBuilderTest {
-
-    private final int BATCH_SIZE = 100;
+public class RevelScoreBuilderTest {
 
     @Test
     public void testParse() throws Exception {
-        Path conservationDir = Paths.get(ConservationBuilderTest.class.getResource("/conservation").toURI());
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gerp.test");
-        (new ConservationBuilder(conservationDir, BATCH_SIZE, serializer)).parse();
-        serializer.close();
+        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "missense_prediction_score");
 
-        List<GenomicScoreRegion<Float>> actual = loadConservationScores(Paths.get("/tmp/conservation_19.json.gz"));
-        List<GenomicScoreRegion<Float>> expected = loadConservationScores(Paths.get(ConservationBuilderTest.class.getResource(
-                "/conservation/gerp/conservation_19.json.gz").getFile()));
+        Path inputPath = Paths.get(getClass().getResource("/revel/revel_grch38_all_chromosomes.csv.zip").toURI());
+        RevelScoreBuilder builder = new RevelScoreBuilder(inputPath, cellBaseSerializer);
+        builder.parse();
+
+        cellBaseSerializer.close();
+
+        List<MissensePredictions> actual = loadScores(Paths.get("/tmp/missense_prediction_score.json.gz"));
+        List<MissensePredictions> expected = loadScores(Paths.get(RevelScoreBuilderTest.class.getResource(
+                "/revel/missense_prediction_score.json.gz").getFile()));
 
         assertEquals(expected, actual);
     }
 
-    private List<GenomicScoreRegion<Float>> loadConservationScores(Path path) throws IOException {
-        List<GenomicScoreRegion<Float>> conservationScores = new ArrayList<>(10);
+    private List<MissensePredictions> loadScores(Path path) throws IOException {
+        List<MissensePredictions> scores = new ArrayList<>(10);
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -62,11 +65,11 @@ public class ConservationBuilderTest {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(path)) {
             String line = bufferedReader.readLine();
             while (line != null) {
-                conservationScores.add(jsonObjectMapper.convertValue(JSON.parse(line), GenomicScoreRegion.class));
+                scores.add(jsonObjectMapper.convertValue(JSON.parse(line), MissensePredictions.class));
                 line = bufferedReader.readLine();
             }
         }
 
-        return conservationScores;
+        return scores;
     }
 }
