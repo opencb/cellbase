@@ -59,7 +59,13 @@ public class RevelScoreBuilder extends CellBaseBuilder {
         while ((line = bufferedReader.readLine()) != null) {
             fields = line.split(",");
             String chromosome = fields[0];
+            if (".".equalsIgnoreCase(fields[2])) {
+                // 1,12855835,.,C,A,A,D,0.175
+                // skip if invalid position
+                continue;
+            }
             int position = Integer.parseInt(fields[2]);
+
             String reference = fields[3];
             String alternate = fields[4];
             String aaReference = fields[5];
