@@ -19,11 +19,9 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mortbay.util.ajax.JSON;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.MissensePredictions;
+import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -41,7 +39,8 @@ public class RevelScoreBuilderTest {
 
     @Test
     public void testParse() throws Exception {
-        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "missense_prediction_score");
+        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"),
+                "missense_variation_functional_score");
 
         Path inputPath = Paths.get(getClass().getResource("/revel/revel_grch38_all_chromosomes.csv.zip").toURI());
         RevelScoreBuilder builder = new RevelScoreBuilder(inputPath, cellBaseSerializer);
@@ -49,15 +48,15 @@ public class RevelScoreBuilderTest {
 
         cellBaseSerializer.close();
 
-        List<MissensePredictions> actual = loadScores(Paths.get("/tmp/missense_prediction_score.json.gz"));
-        List<MissensePredictions> expected = loadScores(Paths.get(RevelScoreBuilderTest.class.getResource(
-                "/revel/missense_prediction_score.json.gz").getFile()));
+        List<MissenseVariantFunctionalScore> actual = loadScores(Paths.get("/tmp/missense_variation_functional_score.json.gz"));
+        List<MissenseVariantFunctionalScore> expected = loadScores(Paths.get(RevelScoreBuilderTest.class.getResource(
+                "/revel/missense_variation_functional_score.json.gz").getFile()));
 
         assertEquals(expected, actual);
     }
 
-    private List<MissensePredictions> loadScores(Path path) throws IOException {
-        List<MissensePredictions> scores = new ArrayList<>(10);
+    private List<MissenseVariantFunctionalScore> loadScores(Path path) throws IOException {
+        List<MissenseVariantFunctionalScore> scores = new ArrayList<>(10);
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -65,7 +64,7 @@ public class RevelScoreBuilderTest {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(path)) {
             String line = bufferedReader.readLine();
             while (line != null) {
-                scores.add(jsonObjectMapper.convertValue(JSON.parse(line), MissensePredictions.class));
+                scores.add(jsonObjectMapper.convertValue(JSON.parse(line), MissenseVariantFunctionalScore.class));
                 line = bufferedReader.readLine();
             }
         }

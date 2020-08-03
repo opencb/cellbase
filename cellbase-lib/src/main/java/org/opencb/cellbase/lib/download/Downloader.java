@@ -85,7 +85,7 @@ public class Downloader {
     }
 
     public List<DownloadFile> downloadPredictionScores() throws IOException, CellbaseException, InterruptedException {
-        PredictionScoresDownloadManager manager = new PredictionScoresDownloadManager(species, assembly, outputDirectory, configuration);
+        MissenseScoresDownloadManager manager = new MissenseScoresDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 }

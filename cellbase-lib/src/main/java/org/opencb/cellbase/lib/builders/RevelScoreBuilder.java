@@ -17,28 +17,23 @@
 package org.opencb.cellbase.lib.builders;
 
 
-import org.opencb.biodata.models.core.MissensePredictedScore;
-import org.opencb.biodata.models.core.MissensePredictions;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
+import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.commons.utils.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class RevelScoreBuilder extends CellBaseBuilder {
 
     private Path revelFilePath = null;
+    private static final String SOURCE = "Revel";
 
     public RevelScoreBuilder(Path revelFilePath, CellBaseSerializer serializer) {
         super(serializer);
@@ -60,7 +55,7 @@ public class RevelScoreBuilder extends CellBaseBuilder {
         String line = bufferedReader.readLine();
         String[] fields = null;
         int lastPosition = 0;
-        List<MissensePredictedScore> scores = new ArrayList<>();
+        List<TranscriptMissenseVariantFunctionalScore> scores = new ArrayList<>();
         while ((line = bufferedReader.readLine()) != null) {
             fields = line.split(",");
             String chromosome = fields[0];
@@ -69,15 +64,17 @@ public class RevelScoreBuilder extends CellBaseBuilder {
             String alternate = fields[4];
             String aaReference = fields[5];
             String aaAlternate = fields[6];
-            float score = Float.parseFloat(fields[7]);
+            double score = Double.parseDouble(fields[7]);
 
             if (lastPosition != 0 && position != lastPosition) {
-                MissensePredictions predictions = new MissensePredictions(chromosome, position, scores);
+                MissenseVariantFunctionalScore predictions = new MissenseVariantFunctionalScore(chromosome, position, reference, SOURCE,
+                    scores);
                 serializer.serialize(predictions);
                 scores = new ArrayList<>();
             }
 
-            MissensePredictedScore predictedScore = new MissensePredictedScore(reference, alternate, aaReference, aaAlternate, score);
+            TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore(null,
+                    alternate, aaReference, aaAlternate, score);
             scores.add(predictedScore);
             lastPosition = position;
         }

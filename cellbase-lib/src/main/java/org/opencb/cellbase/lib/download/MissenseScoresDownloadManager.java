@@ -26,9 +26,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-public class PredictionScoresDownloadManager extends AbstractDownloadManager {
+public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
-    public PredictionScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
+    public MissenseScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, targetDirectory, configuration);
     }
@@ -42,12 +42,12 @@ public class PredictionScoresDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading Revel data ...");
 
-            Path missensePredictionScore = downloadFolder.resolve("missense_prediction_score");
+            Path missensePredictionScore = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
             Files.createDirectories(missensePredictionScore);
 
             String url = configuration.getDownload().getRevel().getHost();
 
-            saveVersionData(EtlCommons.MISSENSE_PREDICTION_SCORE_DATA, "Revel", null, getTimeStamp(),
+            saveVersionData(EtlCommons.MISSENSE_VARIATION_SCORE_DATA, "Revel", null, getTimeStamp(),
                     Collections.singletonList(url), missensePredictionScore.resolve("revelVersion.json"));
             return downloadFile(url, missensePredictionScore.resolve("revel_grch38_all_chromosomes.csv.zip").toString());
         }

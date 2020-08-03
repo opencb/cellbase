@@ -46,19 +46,16 @@
 {"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}}
 
+{"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 
-{"collection": "refseq", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"biotype": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"_chunkIds": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.supportLevel": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
-
+{"collection": "ontology", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"namespace": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"synonyms": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"xrefs": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"parents": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"children": 1}, "options": {"background": true}}
 
 {"collection": "protein", "fields": {"accession": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"name": 1}, "options": {"background": true}}
@@ -77,6 +74,28 @@
 {"collection": "protein_functional_prediction", "fields": {"uniprotId": 1}, "options": {"background": true}}
 {"collection": "protein_functional_prediction", "fields": {"transcriptId": 1}, "options": {"background": true}}
 
+{"collection": "refseq", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"biotype": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.supportLevel": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
+
+{"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"transcriptionFactors": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"threshold": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"unit": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"maxPositionSum": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"length": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"elementsString": 1}, "options": {"background": true}}
+
 {"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"name": 1}, "options": {"background": true}}
@@ -94,22 +113,3 @@
 {"collection": "variation_functional_score", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "variation_functional_score", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "variation_functional_score", "fields": {"source": 1}, "options": {"background": true}}
-
-{"collection": "ontology", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"namespace": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"synonyms": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"xrefs": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"parents": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"children": 1}, "options": {"background": true}}
-
-{"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"transcriptionFactors": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"threshold": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"unit": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"maxPositionSum": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"length": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"elementsString": 1}, "options": {"background": true}}
