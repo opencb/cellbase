@@ -44,7 +44,7 @@ public class CellBaseIterator<E> implements Iterator<E>, Closeable {
 
     @Override
     public void close() throws IOException {
-
+        iterator.close();
     }
 
     public long getNumMatches() {

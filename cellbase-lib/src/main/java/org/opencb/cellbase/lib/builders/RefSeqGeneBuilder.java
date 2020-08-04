@@ -296,7 +296,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 exon.setCdnaCodingEnd((exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()) + cdnaCodingStart);
 
                 exon.setCdsStart(1);
-                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart());
+                exon.setCdsEnd(exon.getGenomicCodingEnd() - exon.getGenomicCodingStart() + 1);
             } else {
                 // Fetch prev exon
                 String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
@@ -361,6 +361,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
         String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
+        if (exon == null) {
+            // exon hasn't been seen. it's a mistake
+            return;
+        }
 
         if (gtf.getStrand().equals("+")) {
             // In the positive strand, genomicCodingEnd for the last exon should be the "STOP CODON end"
