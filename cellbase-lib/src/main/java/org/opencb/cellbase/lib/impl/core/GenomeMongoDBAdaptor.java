@@ -441,30 +441,6 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
-//    public Iterator iterator(Query query, QueryOptions options) {
-//        return null;
-//    }
-
-//    public Iterator nativeIterator(Query query, QueryOptions options) {
-//        Bson bson = parseQuery(query);
-//        return mongoDBCollection.nativeQuery().find(bson, options);
-//    }
-
-//    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
-//    }
-
-
-//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-//        return null;
-//    }
-//
-//
-//    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
-//        return null;
-//    }
-
     @Deprecated
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();

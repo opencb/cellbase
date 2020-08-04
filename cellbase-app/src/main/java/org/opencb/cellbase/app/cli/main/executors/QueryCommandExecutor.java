@@ -18,12 +18,14 @@ package org.opencb.cellbase.app.cli.main.executors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.core.*;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -155,11 +157,12 @@ public class QueryCommandExecutor extends CommandExecutor {
                 case "info":
                     query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
                     //fix me
-                    Iterator iterator = geneManager.iterator(new GeneQuery());
+                    CellBaseIterator<Gene> iterator = geneManager.iterator(new GeneQuery());
                     while (iterator.hasNext()) {
                         Object next = iterator.next();
                         output.println(objectMapper.writeValueAsString(next));
                     }
+                    iterator.close();
                     break;
                 case "variation":
                     VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);

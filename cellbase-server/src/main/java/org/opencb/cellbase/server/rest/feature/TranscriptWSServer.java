@@ -83,53 +83,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
         return createModelResponse(Transcript.class);
     }
 
-//    @GET
-//    @Path("/first")
-//    @Override
-//    @Deprecated
-//    @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
-//        responseContainer = "QueryResponse", hidden = true)
-//    public Response first() throws Exception {
-//        parseQueryParams();
-//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-//        return createOkResponse(transcriptDBAdaptor.first(queryOptions));
-//    }
-
-//    @GET
-//    @Path("/count")
-//    @Deprecated
-//    @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
-//        responseContainer = "QueryResponse", hidden = true)
-//    public Response count(@DefaultValue("")
-//                          @QueryParam("region")
-//                          @ApiParam(name = "region",
-//                                  value = ParamConstants.REGION_DESCRIPTION,
-//                                  required = false) String region,
-//                          @DefaultValue("")
-//                          @QueryParam("biotype")
-//                          @ApiParam(name = "biotype",
-//                                  value = ParamConstants.GENE_BIOTYPES,
-//                                  required = false) String biotype,
-//                          @DefaultValue("")
-//                          @QueryParam("xrefs")
-//                          @ApiParam(name = "xrefs",
-//                                  value = ParamConstants.TRANSCRIPT_XREFS,
-//                                  required = false) String xrefs) throws Exception {
-//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-//        query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-//        query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
-//        query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
-//        return createOkResponse(transcriptDBAdaptor.count(query));
-//    }
-
-//    @GET
-//    @Path("/stats")
-//    @Override
-//    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
-//    public Response stats() {
-//        return super.stats();
-//    }
-
     @GET
     @Path("/{transcripts}/info")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified transcripts(s)", response = Transcript.class,

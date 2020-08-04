@@ -204,8 +204,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         }
     }
 
-
-
     // add regions and IDs to the query, joined with OR
     private void createRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
         if (CollectionUtils.isEmpty(regions) && CollectionUtils.isEmpty(ids)) {
@@ -239,42 +237,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         }
         logger.info("transcript parsed query: " + andBsonList.toString());
     }
-
-//    private Bson parseQuery(Query query) {
-//        List<Bson> andBsonList = new ArrayList<>();
-//
-//        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE,
-//        andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
-//        if (andBsonList.size() > 0) {
-//            return Filters.and(andBsonList);
-//        } else {
-//            return new Document();
-//        }
-//    }
-
-//    private Bson parseQueryUnwindTranscripts(Query query) {
-//        List<Bson> andBsonList = new ArrayList<>();
-//
-//        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "biotype", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "xrefs.id", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "tfbs.name", andBsonList);
-//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ANNOTATION_FLAGS.key(), "annotationFlags", andBsonList);
-//
-//        if (andBsonList.size() > 0) {
-//            return Filters.and(andBsonList);
-//        } else {
-//            return new Document();
-//        }
-//    }
 
     private List<Bson> unwindAndMatchTranscripts(TranscriptQuery query, QueryOptions options) {
         Bson bson = parseQuery(query);

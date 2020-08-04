@@ -22,7 +22,6 @@ import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,12 +38,10 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
             T next = iterator.next();
             results.add(next);
         }
-        try {
-            // close the database connection
-            iterator.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        // close the database connection
+        iterator.close();
+
         time = System.currentTimeMillis() - time;
 
         CellBaseDataResult<T> result = new CellBaseDataResult<>();

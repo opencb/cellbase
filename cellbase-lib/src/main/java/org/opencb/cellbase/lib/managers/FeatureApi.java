@@ -18,12 +18,12 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public interface FeatureApi<Q extends AbstractQuery, T> {
@@ -54,7 +54,7 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
         return getDBAdaptor().distinct(query);
     }
 
-    default Iterator<T> iterator(Q query) {
+    default CellBaseIterator<T> iterator(Q query) {
         return getDBAdaptor().iterator(query);
     }
 }

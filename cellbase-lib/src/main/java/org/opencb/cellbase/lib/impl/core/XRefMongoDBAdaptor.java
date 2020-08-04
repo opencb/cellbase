@@ -171,6 +171,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 xrefs.add(iterator.next());
             }
             results.add(new CellBaseDataResult<>(id, 0, new ArrayList<>(), xrefs.size(), xrefs, -1));
+            iterator.close();
         }
         return results;
     }

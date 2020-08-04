@@ -19,7 +19,6 @@ package org.opencb.cellbase.core.api.queries;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Iterator;
 
 public class CellBaseIterator<E> implements Iterator<E>, Closeable {
@@ -43,7 +42,7 @@ public class CellBaseIterator<E> implements Iterator<E>, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         iterator.close();
     }
 
