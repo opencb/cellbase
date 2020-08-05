@@ -63,7 +63,7 @@ public class MongoDBAdaptorFactory {
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
-    private MongoDataStoreManager mongoDataStoreManager;
+    private static MongoDataStoreManager mongoDataStoreManager;
     private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
