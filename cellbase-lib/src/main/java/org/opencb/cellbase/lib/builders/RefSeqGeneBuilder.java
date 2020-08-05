@@ -47,6 +47,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Transcript transcript = null;
     private Set<Xref> exonDbxrefs = new HashSet<>();
     private Set<Xref> geneDbxrefs = new HashSet<>();
+    // sometimes there are two stop codons (eg NM_018159.4). Only parse the first one, skip the second
+    private boolean seenStopCodon = false;
 
     public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
@@ -115,10 +117,13 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     parseCDS(gtf, indexer);
                     break;
                 case "start_codon":
-                    //parseStartCodon(gtf);
+                    seenStopCodon = false;
                     break;
                 case "stop_codon":
-                    parseStopCodon(gtf);
+                    if (!seenStopCodon) {
+                        parseStopCodon(gtf);
+                        seenStopCodon = true;
+                    }
                     break;
                 default:
                     throw new RuntimeException("Unexpected feature type: " + gtf.getFeature());
@@ -361,10 +366,6 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
         String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
-        if (exon == null) {
-            // exon hasn't been seen. it's a mistake
-            return;
-        }
 
         if (gtf.getStrand().equals("+")) {
             // In the positive strand, genomicCodingEnd for the last exon should be the "STOP CODON end"
@@ -377,6 +378,24 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript.setCdnaCodingEnd(exon.getCdnaCodingEnd());
             transcript.setCdsLength(transcript.getCdnaCodingEnd() - transcript.getCdnaCodingStart());
 
+            // For NM_212554.4, the stop codon is split across the last intron with the first two bases of the codon in exon six
+            // and the third base of the stop codon in exon seven
+            if (gtf.getEnd() - gtf.getStart() == 1) {
+                String nextExonId = transcript.getId() + "_" + (exon.getExonNumber() + 1);
+                Exon nextExon = exonDict.get(nextExonId);
+
+                nextExon.setGenomicCodingStart(nextExon.getStart());
+                nextExon.setGenomicCodingEnd(nextExon.getStart());
+                nextExon.setCdnaCodingStart(exon.getCdnaCodingEnd() + 1);
+                nextExon.setCdnaCodingEnd(exon.getCdnaCodingEnd() + 1);
+                nextExon.setCdsStart(exon.getCdsEnd() + 1);
+                nextExon.setCdsEnd(exon.getCdsEnd() + 1);
+
+                transcript.setGenomicCodingEnd(nextExon.getStart());
+                transcript.setCdnaCodingEnd(transcript.getCdnaCodingEnd() + 1);
+                transcript.setCdsLength(transcript.getCdnaCodingEnd() - transcript.getCdnaCodingStart());
+            }
+
         } else {
             // In the negative strand, genomicCodingStart for the first exon should be the "STOP CODON start".
             exon.setGenomicCodingStart(gtf.getStart());
@@ -387,6 +406,23 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript.setCdnaCodingEnd(exon.getCdnaCodingEnd());
             transcript.setCdsLength(transcript.getCdnaCodingEnd() - transcript.getCdnaCodingStart());
 
+            // For NM_212554.4, the stop codon is split across the last intron with the first two bases of the codon in exon six
+            // and the third base of the stop codon in exon seven
+            if (gtf.getEnd() - gtf.getStart() == 1) {
+                String nextExonId = transcript.getId() + "_" + (exon.getExonNumber() + 1);
+                Exon nextExon = exonDict.get(nextExonId);
+
+                nextExon.setGenomicCodingStart(nextExon.getStart());
+                nextExon.setGenomicCodingEnd(nextExon.getStart());
+                nextExon.setCdnaCodingStart(exon.getCdnaCodingEnd() + 1);
+                nextExon.setCdnaCodingEnd(exon.getCdnaCodingEnd() + 1);
+                nextExon.setCdsStart(exon.getCdsEnd() + 1);
+                nextExon.setCdsEnd(exon.getCdsEnd() + 1);
+
+                transcript.setGenomicCodingStart(nextExon.getEnd());
+                transcript.setCdnaCodingEnd(transcript.getCdnaCodingEnd() + 1);
+                transcript.setCdsLength(transcript.getCdnaCodingEnd() - transcript.getCdnaCodingStart());
+            }
         }
     }
 
