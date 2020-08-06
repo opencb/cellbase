@@ -368,10 +368,29 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         Exon exon = exonDict.get(exonId);
 
         if (gtf.getStrand().equals("+")) {
-            // In the positive strand, genomicCodingEnd for the last exon should be the "STOP CODON end"
-            exon.setGenomicCodingEnd(gtf.getEnd());
-            exon.setCdnaCodingEnd(exon.getCdnaCodingStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
-            exon.setCdsEnd(exon.getCdsStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+            if (exon.getGenomicCodingStart() == 0) {
+                // this exon has no CDS, set all values
+
+                String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
+                Exon prevExon = exonDict.get(prevExonId);
+
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
+
+                exon.setCdnaCodingStart(prevExon.getCdnaCodingEnd() + 1);
+                exon.setCdnaCodingEnd(prevExon.getCdnaCodingEnd() + 3);
+
+                // Set CDS
+                int cdsStart = prevExon.getCdsEnd() + 1;
+                int cdsEnd = cdsStart + 2;
+                exon.setCdsStart(cdsStart);
+                exon.setCdsEnd(cdsEnd);
+            } else {
+                // In the positive strand, genomicCodingEnd for the last exon should be the "STOP CODON end"
+                exon.setGenomicCodingEnd(gtf.getEnd());
+                exon.setCdnaCodingEnd(exon.getCdnaCodingStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+                exon.setCdsEnd(exon.getCdsStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+            }
 
             // overwrite transcript values
             transcript.setGenomicCodingEnd(exon.getGenomicCodingEnd());
@@ -397,10 +416,29 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
 
         } else {
-            // In the negative strand, genomicCodingStart for the first exon should be the "STOP CODON start".
-            exon.setGenomicCodingStart(gtf.getStart());
-            exon.setCdnaCodingEnd(exon.getCdnaCodingStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
-            exon.setCdsEnd(exon.getCdsStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+            if (exon.getGenomicCodingStart() == 0) {
+                // this exon has no CDS, set all values
+
+                String prevExonId = transcript.getId() + "_" + (exon.getExonNumber() - 1);
+                Exon prevExon = exonDict.get(prevExonId);
+
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setGenomicCodingEnd(gtf.getEnd());
+
+                exon.setCdnaCodingStart(prevExon.getCdnaCodingEnd() + 1);
+                exon.setCdnaCodingEnd(prevExon.getCdnaCodingEnd() + 3);
+
+                // Set CDS
+                int cdsStart = prevExon.getCdsEnd() + 1;
+                int cdsEnd = cdsStart + 2;
+                exon.setCdsStart(cdsStart);
+                exon.setCdsEnd(cdsEnd);
+            } else {
+                // In the negative strand, genomicCodingStart for the first exon should be the "STOP CODON start".
+                exon.setGenomicCodingStart(gtf.getStart());
+                exon.setCdnaCodingEnd(exon.getCdnaCodingStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+                exon.setCdsEnd(exon.getCdsStart() + (exon.getGenomicCodingEnd() - exon.getGenomicCodingStart()));
+            }
 
             transcript.setGenomicCodingStart(exon.getGenomicCodingStart());
             transcript.setCdnaCodingEnd(exon.getCdnaCodingEnd());
