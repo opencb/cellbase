@@ -278,6 +278,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "cadd":
                 collection = "variation_functional_score";
                 break;
+            case "missense_variation_functional_score":
+                collection = "missense_variation_functional_score";
+                break;
             case "regulatory_region":
                 collection = "regulatory_region";
                 break;

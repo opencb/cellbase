@@ -140,7 +140,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("variation_functional_score");
                             break;
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA:
-                            loadIfExists(input.resolve("missense_variation_functional_score.json.gz"), "cadd");
+                            loadIfExists(input.resolve("missense_variation_functional_score.json.gz"),
+                                    "missense_variation_functional_score");
                             loadIfExists(input.resolve("revelVersion.json"), METADATA);
                             createIndex("missense_variation_functional_score");
                             break;

@@ -33,7 +33,7 @@ import java.util.zip.ZipInputStream;
 public class RevelScoreBuilder extends CellBaseBuilder {
 
     private Path revelFilePath = null;
-    private static final String SOURCE = "Revel";
+    private static final String SOURCE = "revel";
 
     public RevelScoreBuilder(Path revelFilePath, CellBaseSerializer serializer) {
         super(serializer);
@@ -79,7 +79,7 @@ public class RevelScoreBuilder extends CellBaseBuilder {
                 scores = new ArrayList<>();
             }
 
-            TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore(null,
+            TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore("",
                     alternate, aaReference, aaAlternate, score);
             scores.add(predictedScore);
             lastPosition = position;
