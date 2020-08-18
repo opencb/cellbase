@@ -159,8 +159,9 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         // coordinate of the codon containing the variant
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
 
+        // FIXME transcript sequence will be null for refseq (temporarily)
         String transcriptSequence = transcript.getcDnaSequence();
-        if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
+        if (transcriptSequence != null && modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
             // -1 and +2 because of base 0 String indexing
             char[] modifiedCodonArray = transcriptSequence
                     .substring(modifiedCodonStart - 1, modifiedCodonStart + 2)

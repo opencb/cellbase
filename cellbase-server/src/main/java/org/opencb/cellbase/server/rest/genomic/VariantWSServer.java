@@ -253,14 +253,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                                                + " CNVs",
                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
                                                @QueryParam("checkAminoAcidChange")
-                                               @ApiParam(name = "checkAminoAcidChange",
-                                                           value = "<DESCRIPTION GOES HERE>",
-                                                           allowableValues = "false,true",
-                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange,
+                                               @ApiParam(name = "checkAminoAcidChange", value = "<DESCRIPTION GOES HERE>",
+                                                       allowableValues = "false,true", defaultValue = "false", required = false)
+                                                       Boolean checkAminoAcidChange,
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either Ensembl (default) "
-                                                           + "or RefSeq", allowableValues = "Ensembl,RefSeq", required = false)
-                                                           String consequenceTypeSource) {
+                                                            + "or RefSeq", allowableValues = "Ensembl,RefSeq", allowMultiple = true,
+                                                       defaultValue = "Ensembl", required = false) String consequenceTypeSource) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -286,7 +285,7 @@ public class VariantWSServer extends GenericRestWSServer {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSource);
+                    checkAminoAcidChange, uriParams.get("consequenceTypeSource"));
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

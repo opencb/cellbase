@@ -261,7 +261,8 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("expression")) {
             variantAnnotation.setGeneExpression(new ArrayList<>());
             for (Gene gene : geneList) {
-                if (gene.getAnnotation().getExpression() != null) {
+                // refseq genes don't have annotation (yet)
+                if (gene.getAnnotation() != null && gene.getAnnotation().getExpression() != null) {
                     variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
                 }
             }
@@ -270,7 +271,7 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("geneDisease")) {
             variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
             for (Gene gene : geneList) {
-                if (gene.getAnnotation().getDiseases() != null) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getDiseases() != null) {
                     variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
                 }
             }
@@ -279,7 +280,7 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("drugInteraction")) {
             variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
             for (Gene gene : geneList) {
-                if (gene.getAnnotation().getDrugs() != null) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getDrugs() != null) {
                     variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
                 }
             }
@@ -516,24 +517,27 @@ public class VariantAnnotationCalculator {
             region.setEnd(region.getEnd() + 5000);
         }
 
-        // Just return required fields
-        // MERGE = true essential so that just one query will be raised with all regions
-//        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, includeGeneFields);
-//        queryOptions.put(MERGE, true);
+        List<Gene> geneList = new ArrayList<>();
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
         if (StringUtils.isNotEmpty(consequenceTypeSource)) {
-            geneQuery.setSource(Collections.singletonList(consequenceTypeSource));
-        }
+            String[] sources = consequenceTypeSource.split(",");
+            for (String source : sources) {
+                if (source.equalsIgnoreCase("ensembl")) {
+                    geneQuery.setSource(Collections.singletonList("Ensembl"));
+                    geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
+                }
+                if (source.equalsIgnoreCase("refseq")) {
+                    geneQuery.setSource(Collections.singletonList("RefSeq"));
+                    geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
 
-        List<Gene> geneList = new ArrayList<>();
-//        if (both == true || ensembl == true) {}
-        geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
-//        if (StringUtils.isNotEmpty(genesetSource) && genesetSource.equalsIgnoreCase("RefSeq")) {
-//            geneQuery.setSource("RefSeq");
-//            geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
-//        }
+                }
+            }
+        } else {
+            geneQuery.setSource(Collections.singletonList("Ensembl"));
+            geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
+        }
         return geneList;
     }
 
