@@ -223,8 +223,6 @@ public abstract class ConsequenceTypeCalculator {
             }
         }
 
-
-
 //        if (regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
 //            ConsequenceType consequenceType = new ConsequenceType();
 //            SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
@@ -406,6 +404,12 @@ public abstract class ConsequenceTypeCalculator {
         return firstCodon;
     }
 
-
+    // determine the consequence type source (the geneset) based on the gene ID
+    protected String getSource(String geneId) {
+        if (!geneId.startsWith("ENS")) {
+            return "refseq";
+        }
+        return "ensembl";
+    }
 
 }

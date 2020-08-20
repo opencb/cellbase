@@ -522,20 +522,22 @@ public class VariantAnnotationCalculator {
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
         if (StringUtils.isNotEmpty(consequenceTypeSource)) {
+            // sources can be "ensembl" and/or "refseq". query is validated before execution, will fail if invalid value
             String[] sources = consequenceTypeSource.split(",");
             for (String source : sources) {
                 if (source.equalsIgnoreCase("ensembl")) {
-                    geneQuery.setSource(Collections.singletonList("Ensembl"));
+                    geneQuery.setSource(Collections.singletonList("ensembl"));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
                 }
                 if (source.equalsIgnoreCase("refseq")) {
-                    geneQuery.setSource(Collections.singletonList("RefSeq"));
+                    geneQuery.setSource(Collections.singletonList("refseq"));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
 
                 }
             }
         } else {
-            geneQuery.setSource(Collections.singletonList("Ensembl"));
+            // if no source specified, default to ensembl
+            geneQuery.setSource(Collections.singletonList("ensembl"));
             geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
         }
         return geneList;

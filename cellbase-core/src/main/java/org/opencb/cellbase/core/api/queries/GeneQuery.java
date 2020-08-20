@@ -32,7 +32,7 @@ public class GeneQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "biotype")
     private List<String> biotypes;
-    @QueryParameter(id = "source", allowedValues = {"Ensembl", "RefSeq"})
+    @QueryParameter(id = "source", allowedValues = {"ensembl", "refseq"})
     private List<String> source;
 
     @QueryParameter(id = "region")

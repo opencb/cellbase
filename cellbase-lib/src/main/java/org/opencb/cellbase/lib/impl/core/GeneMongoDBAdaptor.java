@@ -73,7 +73,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Gene> converter = new GenericDocumentComplexConverter<>(Gene.class);
         MongoDBIterator<Gene> iterator = null;
-        if (query.getSource() != null && !query.getSource().isEmpty() && "RefSeq".equals(query.getSource().get(0))) {
+        if (query.getSource() != null && !query.getSource().isEmpty() && "refseq".equalsIgnoreCase(query.getSource().get(0))) {
             iterator = refseqCollection.iterator(null, bson, projection, converter, queryOptions);
         } else {
             iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);

@@ -46,15 +46,21 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
+            String source = getSource(gene.getId());
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
                 consequenceType.setGeneName(gene.getName());
-                consequenceType.setEnsemblGeneId(gene.getId());
-                consequenceType.setEnsemblTranscriptId(transcript.getId());
+                consequenceType.setGeneId(gene.getId());
+                consequenceType.setTranscriptId(transcript.getId());
+                if ("ensembl".equalsIgnoreCase(source)) {
+                    consequenceType.setEnsemblGeneId(gene.getId());
+                    consequenceType.setEnsemblTranscriptId(transcript.getId());
+                }
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
+                consequenceType.setSource(source);
                 consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
                         ? new ArrayList<>(transcript.getAnnotationFlags()) : null);
                 SoNames.clear();
