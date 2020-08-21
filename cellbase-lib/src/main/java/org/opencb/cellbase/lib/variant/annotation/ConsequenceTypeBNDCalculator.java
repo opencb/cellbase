@@ -21,6 +21,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -82,15 +83,21 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
             // Check this gene is in the same chromosome of current position - the gene may be here because overlaps the mate
             if (variant.getChromosome().equals(currentGene.getChromosome())) {
                 gene = currentGene;
+                String source = getSource(gene.getId());
                 for (Transcript currentTranscript : gene.getTranscripts()) {
                     isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
                     transcript = currentTranscript;
                     consequenceType = new ConsequenceType();
                     consequenceType.setGeneName(gene.getName());
-                    consequenceType.setEnsemblGeneId(gene.getId());
-                    consequenceType.setEnsemblTranscriptId(transcript.getId());
+                    consequenceType.setGeneId(gene.getId());
+                    consequenceType.setTranscriptId(transcript.getId());
+                    if (VariantDBAdaptor.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
+                        consequenceType.setEnsemblGeneId(gene.getId());
+                        consequenceType.setEnsemblTranscriptId(transcript.getId());
+                    }
                     consequenceType.setStrand(transcript.getStrand());
                     consequenceType.setBiotype(transcript.getBiotype());
+                    consequenceType.setSource(source);
                     consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
                             ? new ArrayList<>(transcript.getAnnotationFlags()) : null);
                     SoNames.clear();

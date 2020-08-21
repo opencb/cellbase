@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -223,8 +224,6 @@ public abstract class ConsequenceTypeCalculator {
             }
         }
 
-
-
 //        if (regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
 //            ConsequenceType consequenceType = new ConsequenceType();
 //            SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
@@ -406,6 +405,12 @@ public abstract class ConsequenceTypeCalculator {
         return firstCodon;
     }
 
-
+    // determine the consequence type source (the geneset) based on the gene ID
+    protected String getSource(String geneId) {
+        if (!geneId.startsWith("ENS")) {
+            return VariantDBAdaptor.QueryParams.REFSEQ.key();
+        }
+        return VariantDBAdaptor.QueryParams.ENSEMBL.key();
+    }
 
 }

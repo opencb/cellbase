@@ -53,7 +53,9 @@ public interface VariantDBAdaptor {
         IMPRECISE("imprecise", BOOLEAN, ""),
         SV_TYPE("svType", STRING, ""),
         PHASE("phased", TEXT_ARRAY, ""),
-        TYPE("type", STRING, "");
+        TYPE("type", STRING, ""),
+        REFSEQ("refseq", STRING, ""),
+        ENSEMBL("ensembl", STRING, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;

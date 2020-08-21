@@ -65,7 +65,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
                                   CellBaseConfiguration configuration) throws CellbaseException {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
+        ensemblCollection = mongoDataStore.getCollection("clinical_variants");
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
@@ -98,12 +98,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
 
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.count(bson));
+        return new CellBaseDataResult<>(ensemblCollection.count(bson));
     }
 
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
+        return new CellBaseDataResult<>(ensemblCollection.distinct(field, bson));
     }
 
 //    @Override
@@ -117,7 +117,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
+        return new CellBaseDataResult<>(ensemblCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
@@ -126,7 +126,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
+        return new CellBaseDataResult<>(ensemblCollection.find(bson, parsedOptions));
     }
 
     public Iterator<Variant> iterator(Query query, QueryOptions options) {
@@ -135,7 +135,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
 
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options);
+        return ensemblCollection.nativeQuery().find(bson, options);
     }
 
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
@@ -417,7 +417,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         GenericDocumentComplexConverter<org.opencb.biodata.models.clinical.interpretation.ClinicalVariant> converter
                 = new GenericDocumentComplexConverter<>(
                 org.opencb.biodata.models.clinical.interpretation.ClinicalVariant.class);
-        MongoDBIterator<ClinicalVariant> iterator = mongoDBCollection.iterator(null, bson, projection,
+        MongoDBIterator<ClinicalVariant> iterator = ensemblCollection.iterator(null, bson, projection,
                 converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }

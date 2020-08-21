@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
@@ -29,10 +30,8 @@ import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
-import org.opencb.cellbase.core.api.queries.RegulationQuery;
-import org.opencb.cellbase.core.api.queries.RepeatsQuery;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
@@ -522,20 +521,22 @@ public class VariantAnnotationCalculator {
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
         if (StringUtils.isNotEmpty(consequenceTypeSource)) {
+            // sources can be "ensembl" and/or "refseq". query is validated before execution, will fail if invalid value
             String[] sources = consequenceTypeSource.split(",");
             for (String source : sources) {
-                if (source.equalsIgnoreCase("ensembl")) {
-                    geneQuery.setSource(Collections.singletonList("Ensembl"));
+                if (source.equalsIgnoreCase(VariantDBAdaptor.QueryParams.ENSEMBL.key())) {
+                    geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.ENSEMBL.key()));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
                 }
-                if (source.equalsIgnoreCase("refseq")) {
-                    geneQuery.setSource(Collections.singletonList("RefSeq"));
+                if (source.equalsIgnoreCase(VariantDBAdaptor.QueryParams.REFSEQ.key())) {
+                    geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.REFSEQ.key()));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
 
                 }
             }
         } else {
-            geneQuery.setSource(Collections.singletonList("Ensembl"));
+            // if no source specified, default to ensembl
+            geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.ENSEMBL.key()));
             geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
         }
         return geneList;
@@ -1428,8 +1429,13 @@ public class VariantAnnotationCalculator {
                                 ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
                                 : region).collect(Collectors.toList());
 
-                List<CellBaseDataResult> tmpCellBaseDataResultList = genomeManager
-                        .getAllScoresByRegionList(regionList, queryOptions);
+//                List<CellBaseDataResult> tmpCellBaseDataResultList = genomeManager
+//                        .getAllScoresByRegionList(regionList, queryOptions);
+
+                GenomeQuery query = new GenomeQuery();
+                query.setRegions(regionList);
+                List<CellBaseDataResult<GenomicScoreRegion<Float>>> tmpCellBaseDataResultList = genomeManager.getConservation(
+                        queryOptions, regionList);
 
                 // There may be more than one CellBaseDataResult per variant for breakends
                 // Reuse one of the CellBaseDataResult objects returned by the adaptor

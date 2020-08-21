@@ -108,6 +108,11 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return queryResult;
     }
 
+    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, List<Region> regionList) {
+        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);
+        return queryResultList;
+    }
+
     public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);
         List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);

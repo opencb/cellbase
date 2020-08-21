@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -56,15 +57,21 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             gene = currentGene;
+            String source = getSource(gene.getId());
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
                 consequenceType.setGeneName(gene.getName());
-                consequenceType.setEnsemblGeneId(gene.getId());
-                consequenceType.setEnsemblTranscriptId(transcript.getId());
+                consequenceType.setGeneId(gene.getId());
+                consequenceType.setTranscriptId(transcript.getId());
+                if (VariantDBAdaptor.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
+                    consequenceType.setEnsemblGeneId(gene.getId());
+                    consequenceType.setEnsemblTranscriptId(transcript.getId());
+                }
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
+                consequenceType.setSource(source);
                 consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
                         ? new ArrayList<>(transcript.getAnnotationFlags())
                         : null);

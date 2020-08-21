@@ -67,7 +67,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         super(species, assembly, mongoDataStore);
 
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
-        mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
+        ensemblCollection = mongoDataStore.getCollection("genome_sequence");
         conservationMongoDBCollection = mongoDataStore.getCollection("conservation");
 
         logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
@@ -438,7 +438,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
+        return new CellBaseDataResult<>(ensemblCollection.find(bson, options));
     }
 
     @Deprecated
@@ -527,7 +527,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Chromosome>(mongoDBCollection.find(bson, projection, Chromosome.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<Chromosome>(ensemblCollection.find(bson, projection, Chromosome.class, new QueryOptions())));
         }
         return results;
     }

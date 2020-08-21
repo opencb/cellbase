@@ -37,9 +37,9 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
         DataResult<Document> expected = new DataResult<>();
         expected.setNumResults(15);
 
-        String expectedToString = "[Document{{v=2, key=Document{{_id=1}}, name=_id_, ns=cellbase_hsapiens_grch37_v4.repeats}}, Document{{v=2, key=Document{{_chunkIds=1, start=1, end=1}}, name=_chunkIds_1_start_1_end_1, ns=cellbase_hsapiens_grch37_v4.repeats, background=true}}]";
+        String expectedToString = "[Document{{v=2, key=Document{{_id=1}}, name=_id_, ns=cellbase_hsapiens_grch37_v4.repeats}}, Document{{v=2, key=Document{{_chunkIds=1, start=1, end=1}}, name=_chunkIds_1_start_1_end_1, ns=cellbase_hsapiens_grch37_v4.repeats, background=true}}, Document{{v=2, key=Document{{chromosome=1, start=1, end=1}}, name=chromosome_1_start_1_end_1, ns=cellbase_hsapiens_grch37_v4.repeats, background=true}}, Document{{v=2, key=Document{{_chunkIds=1}}, name=_chunkIds_1, ns=cellbase_hsapiens_grch37_v4.repeats, background=true}}]";
 
-        assertTrue(expectedToString.equalsIgnoreCase(index.getResults().toString()));
+        assertEquals(expectedToString, index.getResults().toString());
     }
 
     @Test
