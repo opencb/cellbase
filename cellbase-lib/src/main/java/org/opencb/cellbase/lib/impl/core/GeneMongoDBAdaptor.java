@@ -23,6 +23,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
@@ -42,9 +43,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        ensemblCollection = mongoDataStore.getCollection("gene");
         refseqCollection = mongoDataStore.getCollection("refseq");
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'" + mongoDBCollection.count());
+        logger.debug("GeneMongoDBAdaptor: in 'constructor'" + ensemblCollection.count());
     }
 
     @Override
@@ -61,7 +62,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Gene>(mongoDBCollection.find(bson, projection, Gene.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<Gene>(ensemblCollection.find(bson, projection, Gene.class, new QueryOptions())));
         }
         return results;
     }
@@ -73,10 +74,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Gene> converter = new GenericDocumentComplexConverter<>(Gene.class);
         MongoDBIterator<Gene> iterator = null;
-        if (query.getSource() != null && !query.getSource().isEmpty() && "refseq".equalsIgnoreCase(query.getSource().get(0))) {
+        if (query.getSource() != null && !query.getSource().isEmpty() && VariantDBAdaptor.QueryParams.REFSEQ.key()
+                .equalsIgnoreCase(query.getSource().get(0))) {
             iterator = refseqCollection.iterator(null, bson, projection, converter, queryOptions);
         } else {
-            iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+            iterator = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
         }
         return new CellBaseIterator<>(iterator);
     }
@@ -84,7 +86,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     @Override
     public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
         Bson bsonDocument = parseQuery(geneQuery);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(ensemblCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -407,9 +408,9 @@ public abstract class ConsequenceTypeCalculator {
     // determine the consequence type source (the geneset) based on the gene ID
     protected String getSource(String geneId) {
         if (!geneId.startsWith("ENS")) {
-            return "refseq";
+            return VariantDBAdaptor.QueryParams.REFSEQ.key();
         }
-        return "ensembl";
+        return VariantDBAdaptor.QueryParams.ENSEMBL.key();
     }
 
 }

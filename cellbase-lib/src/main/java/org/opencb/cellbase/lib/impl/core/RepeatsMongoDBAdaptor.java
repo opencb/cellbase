@@ -43,7 +43,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     public RepeatsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDatastore) {
         super(species, assembly, mongoDatastore);
-        mongoDBCollection = mongoDataStore.getCollection(REPEAT_COLLECTION);
+        ensemblCollection = mongoDataStore.getCollection(REPEAT_COLLECTION);
 
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
 
@@ -167,7 +167,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Repeat> converter = new GenericDocumentComplexConverter<>(Repeat.class);
-        MongoDBIterator<Repeat> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Repeat> iterator = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 

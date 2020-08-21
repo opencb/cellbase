@@ -42,7 +42,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
     public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
+        ensemblCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
     }
@@ -184,7 +184,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<RegulatoryFeature> converter = new GenericDocumentComplexConverter<>(RegulatoryFeature.class);
         MongoDBIterator<RegulatoryFeature> iterator
-                = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+                = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -196,7 +196,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     @Override
     public CellBaseDataResult<String> distinct(RegulationQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(ensemblCollection.distinct(query.getFacet(), bsonDocument));
     }
     @Override
     public CellBaseDataResult<Long> count(RegulationQuery query) {

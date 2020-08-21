@@ -50,7 +50,7 @@ public class MongoDBAdaptor {
     protected String assembly;
 
     protected MongoDataStore mongoDataStore;
-    protected MongoDBCollection mongoDBCollection;
+    protected MongoDBCollection ensemblCollection;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -348,18 +348,18 @@ public class MongoDBAdaptor {
     protected CellBaseDataResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
         Boolean count = options.getBoolean("count", false);
         List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);
-        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, options));
+        return new CellBaseDataResult<>(ensemblCollection.aggregate(groupBy, options));
     }
 
     protected CellBaseDataResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
         Boolean count = options.getBoolean("count", false);
         List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);
-        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, options));
+        return new CellBaseDataResult<>(ensemblCollection.aggregate(groupBy, options));
     }
 
     protected CellBaseDataResult groupBy(Bson bsonQuery, AbstractQuery abstractQuery, String featureIdField) {
         List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(bsonQuery, abstractQuery.getFacet(), featureIdField, abstractQuery.getCount());
-        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, abstractQuery.toQueryOptions()));
+        return new CellBaseDataResult<>(ensemblCollection.aggregate(groupBy, abstractQuery.toQueryOptions()));
     }
 
     public CellBaseDataResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
@@ -390,7 +390,7 @@ public class MongoDBAdaptor {
 
         Document sort = new Document("$sort", new Document("_id", 1));
 
-        CellBaseDataResult<Document> aggregationOutput = new CellBaseDataResult<>(mongoDBCollection.aggregate(
+        CellBaseDataResult<Document> aggregationOutput = new CellBaseDataResult<>(ensemblCollection.aggregate(
                 Arrays.asList(match, group, sort), options));
 
         Map<Long, Document> ids = new HashMap<>();
@@ -438,13 +438,13 @@ public class MongoDBAdaptor {
     }
 
     protected CellBaseDataResult executeDistinct(Object id, String fields, Document query) {
-        CellBaseDataResult cellBaseDataResult = new CellBaseDataResult<>(mongoDBCollection.distinct(fields, query));
+        CellBaseDataResult cellBaseDataResult = new CellBaseDataResult<>(ensemblCollection.distinct(fields, query));
         cellBaseDataResult.setId(id.toString());
         return cellBaseDataResult;
     }
 
     protected CellBaseDataResult executeQuery(Object id, Document query, QueryOptions options) {
-        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
+        return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, ensemblCollection).get(0);
     }
 
     protected CellBaseDataResult executeQuery(Object id, Document query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
@@ -452,7 +452,7 @@ public class MongoDBAdaptor {
     }
 
     protected List<CellBaseDataResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
-        return executeQueryList2(ids, queries, options, mongoDBCollection);
+        return executeQueryList2(ids, queries, options, ensemblCollection);
     }
 
     protected List<CellBaseDataResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options,
@@ -496,12 +496,12 @@ public class MongoDBAdaptor {
     }
 
     protected CellBaseDataResult executeAggregation2(Object id, List<Bson> pipeline, QueryOptions options) {
-        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, mongoDBCollection).get(0);
+        return executeAggregationist2(Arrays.asList(id), Arrays.asList(pipeline), options, ensemblCollection).get(0);
     }
 
     protected List<CellBaseDataResult> executeAggregationList2(List<? extends Object> ids, List<List<Bson>> queries,
                                                         QueryOptions options) {
-        return executeAggregationist2(ids, queries, options, mongoDBCollection);
+        return executeAggregationist2(ids, queries, options, ensemblCollection);
     }
 
     protected List<CellBaseDataResult> executeAggregationist2(List<? extends Object> ids, List<List<Bson>> pipelines,

@@ -45,7 +45,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        ensemblCollection = mongoDataStore.getCollection("gene");
 
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
     }
@@ -155,7 +155,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
-        MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+        MongoDBIterator<Xref> iterator = ensemblCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
