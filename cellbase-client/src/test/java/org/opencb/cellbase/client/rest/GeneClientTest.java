@@ -152,7 +152,7 @@ public class GeneClientTest {
         queryOptions.add(QueryOptions.COUNT, true);
         transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", queryOptions);
         assertNotNull(transcript.firstResult());
-        assertEquals(3, transcript.getResponses().get(0).getNumMatches(), "Number of transcripts with biotype protein_coding");
+        assertEquals(5, transcript.getResponses().get(0).getNumResults(), "Number of transcripts with biotype protein_coding");
     }
 
 //    @Test

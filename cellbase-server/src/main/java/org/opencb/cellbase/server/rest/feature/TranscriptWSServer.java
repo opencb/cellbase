@@ -40,9 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author imedina
@@ -118,8 +116,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
                                     value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
         try {
-            GeneQuery query = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query);
+            List<GeneQuery> queries = new ArrayList<>();
+            String[] ids = id.split(",");
+            for (String transcriptId : ids) {
+                GeneQuery query = new GeneQuery(uriParams);
+                query.setTranscriptsXrefs(Collections.singletonList(transcriptId));
+                queries.add(query);
+            }
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -238,8 +242,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String transcripts) {
         try {
-            ProteinQuery query = new ProteinQuery(uriParams);
-            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(transcripts.split(",")), query);
+            List<ProteinQuery> queries = new ArrayList<>();
+            String[] ids = transcripts.split(",");
+            for (String transcriptId : ids) {
+                ProteinQuery query = new ProteinQuery(uriParams);
+                query.setXrefs(Collections.singletonList(transcriptId));
+                queries.add(query);
+            }
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

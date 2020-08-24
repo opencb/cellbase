@@ -64,11 +64,11 @@ public class GenericClientTest {
         CellBaseDataResponse<ObjectMap> queryResponse2 = cellBaseClient.getGenericClient().get("meta", "about", new QueryOptions(),
                 ObjectMap.class);
         assertEquals(5, queryResponse2.firstResult().size());
-        assertTrue(queryResponse2.firstResult().containsKey("Program: "));
-        assertTrue(queryResponse2.firstResult().containsKey("Description: "));
-        assertTrue(queryResponse2.firstResult().containsKey("Git commit: "));
-        assertTrue(queryResponse2.firstResult().containsKey("Version: "));
-        assertTrue(queryResponse2.firstResult().containsKey("Git branch: "));
+        assertTrue(queryResponse2.firstResult().containsKey("Program"));
+        assertTrue(queryResponse2.firstResult().containsKey("Description"));
+        assertTrue(queryResponse2.firstResult().containsKey("Git commit"));
+        assertTrue(queryResponse2.firstResult().containsKey("Version"));
+        assertTrue(queryResponse2.firstResult().containsKey("Git branch"));
 
         queryResponse2 = cellBaseClient.getGenericClient().get("meta", null, "hsapiens",
                 "versions", new QueryOptions(), ObjectMap.class);
@@ -77,7 +77,7 @@ public class GenericClientTest {
                 .allResults()
                 .stream()
                 .map((value) -> value.get("data"))
-                .collect(Collectors.toSet()), CoreMatchers.hasItems("variation", "conservation"));
+                .collect(Collectors.toSet()), CoreMatchers.hasItems("gene", "ontology"));
 
     }
 

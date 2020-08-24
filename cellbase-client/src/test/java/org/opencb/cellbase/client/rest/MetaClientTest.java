@@ -57,11 +57,11 @@ public class MetaClientTest {
     public void about() throws Exception {
         CellBaseDataResponse<ObjectMap> about = cellBaseClient.getMetaClient().about();
         assertEquals(5, about.firstResult().size());
-        assertTrue(about.firstResult().containsKey("Program: "));
-        assertTrue(about.firstResult().containsKey("Description: "));
-        assertTrue(about.firstResult().containsKey("Git commit: "));
-        assertTrue(about.firstResult().containsKey("Version: "));
-        assertTrue(about.firstResult().containsKey("Git branch: "));
+        assertTrue(about.firstResult().containsKey("Program"));
+        assertTrue(about.firstResult().containsKey("Description"));
+        assertTrue(about.firstResult().containsKey("Git commit"));
+        assertTrue(about.firstResult().containsKey("Version"));
+        assertTrue(about.firstResult().containsKey("Git branch"));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class MetaClientTest {
                 .allResults()
                 .stream()
                 .map((value) -> value.get("data"))
-                .collect(Collectors.toSet()), CoreMatchers.hasItems("variation", "conservation"));
+                .collect(Collectors.toSet()), CoreMatchers.hasItems("gene", "ontology"));
     }
 
 }

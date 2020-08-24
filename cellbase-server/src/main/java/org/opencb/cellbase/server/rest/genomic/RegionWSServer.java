@@ -364,6 +364,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
+            query.setRegions(Region.parseRegions(regions));
             List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

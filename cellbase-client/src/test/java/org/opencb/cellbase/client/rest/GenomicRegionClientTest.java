@@ -94,7 +94,7 @@ public class GenomicRegionClientTest {
     @Test
     public void getSequence() throws Exception {
         CellBaseDataResponse<GenomeSequenceFeature> response = cellBaseClient.getGenomicRegionClient().getSequence(Arrays.asList("10:69999-77777"), null);
-        assertTrue(response.firstResult().getSequence().startsWith("GATTACCAAAGGC"));
+        assertTrue(response.firstResult().getSequence().startsWith("AACCAAGCTAAAC"));
     }
 
     @Test
@@ -113,7 +113,7 @@ public class GenomicRegionClientTest {
 
     @Test
     public void getConservation() throws Exception {
-        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:555-66666"), null);
+        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:6635137-6635325"), null);
         assertNotNull(conservation.firstResult());
 
     }
