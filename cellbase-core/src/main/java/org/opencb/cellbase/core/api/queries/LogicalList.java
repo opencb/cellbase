@@ -52,6 +52,7 @@ public class LogicalList<T> extends ArrayList<T> {
     public String toString() {
         final StringBuilder sb = new StringBuilder("LogicalList{");
         sb.append("and=").append(and);
+        sb.append("defaultList=").append(this.toString());
         sb.append('}');
         return sb.toString();
     }

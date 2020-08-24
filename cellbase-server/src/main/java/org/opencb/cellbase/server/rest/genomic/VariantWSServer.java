@@ -331,14 +331,6 @@ public class VariantWSServer extends GenericRestWSServer {
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-//            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,

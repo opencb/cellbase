@@ -40,7 +40,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
 
     public OntologyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        ensemblCollection = mongoDataStore.getCollection("ontology");
+        mongoDBCollection = mongoDataStore.getCollection("ontology");
         logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
     }
 
@@ -50,7 +50,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<OntologyTerm> converter = new GenericDocumentComplexConverter<>(OntologyTerm.class);
-        MongoDBIterator<OntologyTerm> iterator = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -63,7 +63,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<OntologyTerm>(ensemblCollection.find(bson, projection,
+            results.add(new CellBaseDataResult<OntologyTerm>(mongoDBCollection.find(bson, projection,
                     OntologyTerm.class, new QueryOptions())));
         }
         return results;
@@ -77,7 +77,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     @Override
     public CellBaseDataResult<String> distinct(OntologyQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(ensemblCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Override

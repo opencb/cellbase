@@ -570,19 +570,12 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-//            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query",
-//                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
@@ -593,8 +586,14 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getSNPByGenes(@PathParam("genes")
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
-            VariantQuery query = new VariantQuery(uriParams);
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(genes.split(",")), query);
+            List<VariantQuery> queries = new ArrayList<>();
+            String[] ids = genes.split(",");
+            for (String id : ids) {
+                VariantQuery query = new VariantQuery(uriParams);
+                query.setGenes(new LogicalList<String>(Collections.singletonList(id)));
+                queries.add(query);
+            }
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

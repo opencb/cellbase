@@ -78,7 +78,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        ensemblCollection = mongoDataStore.getCollection("protein");
+        mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
 
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
@@ -324,7 +324,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Entry> converter = new GenericDocumentComplexConverter<>(Entry.class);
-        MongoDBIterator<Entry> iterator = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Entry> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -337,7 +337,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             orBsonList.add(Filters.eq("accession", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Entry>(ensemblCollection.find(bson, projection,
+            results.add(new CellBaseDataResult<Entry>(mongoDBCollection.find(bson, projection,
                     Entry.class, new QueryOptions())));
         }
         return results;
@@ -358,7 +358,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     @Override
     public CellBaseDataResult<String> distinct(ProteinQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(ensemblCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
 //    public Iterator nativeIterator(Query query, QueryOptions options) {

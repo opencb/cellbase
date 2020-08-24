@@ -50,7 +50,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        ensemblCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
         refseqCollection = mongoDataStore.getCollection("refseq");
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
@@ -64,7 +64,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         if (query.getSource() != null && !query.getSource().isEmpty() && "RefSeq".equalsIgnoreCase(query.getSource().get(0))) {
             iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
         } else {
-            iterator = ensemblCollection.iterator(pipeline, converter, queryOptions);
+            iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         }
         return new CellBaseIterator<>(iterator);
     }
@@ -83,7 +83,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             // unwind results
             List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
             GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-            MongoDBIterator<Transcript> iterator = ensemblCollection.iterator(pipeline, converter, queryOptions);
+            MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
             List<Transcript> transcripts = new ArrayList<>();
             while (iterator.hasNext()) {
                 transcripts.add(iterator.next());
@@ -127,7 +127,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         List<Bson> projections = unwind(query);
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
         projections.add(group);
-        CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult(ensemblCollection.aggregate(projections, null));
+        CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult(mongoDBCollection.aggregate(projections, null));
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();
         return new CellBaseDataResult<>(null, cellBaseDataResult.getTime(), cellBaseDataResult.getEvents(),
@@ -150,7 +150,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     public CellBaseDataResult<String> distinct(TranscriptQuery query) {
         Bson bsonDocument = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult<>(ensemblCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Deprecated

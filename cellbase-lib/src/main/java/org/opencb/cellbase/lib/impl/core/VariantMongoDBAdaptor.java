@@ -67,7 +67,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        ensemblCollection = mongoDataStore.getCollection("variation");
+        mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
 
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
@@ -128,12 +128,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     public CellBaseDataResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return new CellBaseDataResult(ensemblCollection.count(document));
+        return new CellBaseDataResult(mongoDBCollection.count(document));
     }
 
     public CellBaseDataResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
-        return new CellBaseDataResult(ensemblCollection.distinct(field, document));
+        return new CellBaseDataResult(mongoDBCollection.distinct(field, document));
     }
 
 //    @Override
@@ -152,7 +152,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult<>(ensemblCollection.find(bson, null, Variant.class, options));
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, options));
     }
 
     // FIXME: patch to exclude annotation.additionalAttributes from the results - to remove as soon as the variation
@@ -179,18 +179,18 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult(ensemblCollection.find(bson, options));
+        return new CellBaseDataResult(mongoDBCollection.find(bson, options));
     }
 
     public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        return new VariantMongoIterator(ensemblCollection.nativeQuery().find(bson, options));
+        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options));
     }
 
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return ensemblCollection.nativeQuery().find(bson, options);
+        return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
@@ -441,7 +441,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             QueryOptions options = new QueryOptions("upsert", false);
             options.put("multi", false);
             try {
-                bulkWriteResult = new CellBaseDataResult<>(ensemblCollection.update(queries, updates, options));
+                bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
             } catch (BulkWriteException e) {
                 throw e;
             }
@@ -495,7 +495,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             QueryOptions options = new QueryOptions("upsert", true);
             options.put("multi", false);
             try {
-                bulkWriteResult = new CellBaseDataResult<>(ensemblCollection.update(queries, updates, options));
+                bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
             } catch (BulkWriteException e) {
                 throw e;
             }
@@ -707,7 +707,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Variant> converter = new GenericDocumentComplexConverter<>(Variant.class);
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        MongoDBIterator<Variant> iterator = ensemblCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -734,8 +734,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Variant>(ensemblCollection.find(bson, projection, Variant.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<Variant>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
         }
         return results;
     }
 }
+
+

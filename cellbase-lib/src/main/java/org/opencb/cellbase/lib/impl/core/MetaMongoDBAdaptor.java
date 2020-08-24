@@ -35,17 +35,17 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     public MetaMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        ensemblCollection = mongoDataStore.getCollection("metadata");
+        mongoDBCollection = mongoDataStore.getCollection("metadata");
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
     }
 
     public CellBaseDataResult getAll() {
-        return new CellBaseDataResult<>(ensemblCollection.find(new BsonDocument(), new QueryOptions()));
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), new QueryOptions()));
     }
 
     @Override
     public CellBaseDataResult query(AbstractQuery query) {
-        return new CellBaseDataResult<>(ensemblCollection.find(new BsonDocument(), null));
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

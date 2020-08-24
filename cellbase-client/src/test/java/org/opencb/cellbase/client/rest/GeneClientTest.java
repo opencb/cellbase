@@ -87,7 +87,7 @@ public class GeneClientTest {
         CellBaseDataResponse<String> biotypes = cellBaseClient.getGeneClient().getBiotypes(null);
         assertNotNull(biotypes.firstResult());
 
-        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:65342-66500"));
+        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:65100-65200"));
         assertNull(biotypes.firstResult());
 
         biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:20000-70000"));
@@ -125,15 +125,17 @@ public class GeneClientTest {
         CellBaseDataResponse<Entry> protein = cellBaseClient.getGeneClient().getProtein("BRCA2", null);
         assertNotNull(protein.firstResult());
     }
-//
+
     @Test
     public void getSnp() throws Exception {
         QueryOptions queryOptions = new QueryOptions("exclude", "annotation");
-        CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("BRCA1", "TFF1"), queryOptions);
+        queryOptions.add(QueryOptions.LIMIT, 3);
+        CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("TUG1", "VPREB1"),
+                queryOptions);
         assertNotNull(variantCellBaseDataResponse.firstResult());
         assertNotNull(variantCellBaseDataResponse.getResponses().get(1).getResults());
     }
-//
+
     @Test
     public void getTfbs() throws Exception {
         CellBaseDataResponse<TranscriptTfbs> tfbs = cellBaseClient.getGeneClient().getTfbs("BRCA2", null);

@@ -67,7 +67,7 @@ public class ParentRestClient<T> {
     protected static ObjectMapper jsonObjectMapper;
     protected final Logger logger;
 
-    public static final int LIMIT = 1000;
+    public static final int LIMIT = 10;
     public static final int REST_CALL_BATCH_SIZE = 200;
     public static final int DEFAULT_NUM_THREADS = 4;
 
