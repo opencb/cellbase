@@ -503,10 +503,16 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            TranscriptQuery query = new TranscriptQuery(uriParams);
-            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(genes.split(",")),
-                    query);
+            List<TranscriptQuery> queries = new ArrayList<>();
+            String[] ids = genes.split(",");
+            for (String id : ids) {
+                TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setTranscriptsXrefs(new LogicalList<String>(Collections.singletonList(id)));
+                queries.add(query);
+            }
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.search(queries);
             return createOkResponse(queryResults);
+
         } catch (Exception e) {
             return createErrorResponse(e);
         }

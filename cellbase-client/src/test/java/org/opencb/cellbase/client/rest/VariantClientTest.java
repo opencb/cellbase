@@ -88,11 +88,11 @@ public class VariantClientTest {
 
     }
 
-    @Test
-    public void count() throws Exception {
-        CellBaseDataResponse<Long> count = cellBaseClient.getVariationClient().count(new Query());
-        assertTrue("Number of returned variants do not match", count.firstResult().longValue() > 329000000 );
-    }
+//    @Test
+//    public void count() throws Exception {
+//        CellBaseDataResponse<Long> count = cellBaseClient.getVariationClient().count(new Query());
+//        assertTrue("Number of returned variants do not match", count.firstResult().longValue() > 329000000 );
+//    }
 
 //    @Test
 //    public void first() throws Exception {

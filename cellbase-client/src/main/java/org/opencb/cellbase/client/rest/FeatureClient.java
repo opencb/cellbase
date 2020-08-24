@@ -44,10 +44,10 @@ public class FeatureClient<T> extends ParentRestClient<T> {
     }
 
     public CellBaseDataResponse<GroupByFields> group(Query query, QueryOptions queryOptions) throws IOException {
-        return execute("group", query, queryOptions, GroupByFields.class);
+        return execute("groupBy", query, queryOptions, GroupByFields.class);
     }
 
     public CellBaseDataResponse<GroupCount> groupCount(Query query, QueryOptions queryOptions) throws IOException {
-        return execute("group", query, queryOptions, GroupCount.class);
+        return execute("aggregationStats", query, queryOptions, GroupCount.class);
     }
 }

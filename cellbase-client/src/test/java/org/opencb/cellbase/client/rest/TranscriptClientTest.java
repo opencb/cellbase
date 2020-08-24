@@ -54,11 +54,11 @@ public class TranscriptClientTest {
         }
     }
 
-    @Test
-    public void count() throws Exception {
-        CellBaseDataResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
-        assertEquals(196501, count.firstResult().longValue(), "Number of returned transcripts do not match");
-    }
+//    @Test
+//    public void count() throws Exception {
+//        CellBaseDataResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
+//        assertEquals(196501, count.firstResult().longValue(), "Number of returned transcripts do not match");
+//    }
 
 //    @Test
 //    public void first() throws Exception {
