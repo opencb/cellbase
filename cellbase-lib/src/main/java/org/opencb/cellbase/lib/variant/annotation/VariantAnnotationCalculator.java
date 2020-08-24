@@ -218,8 +218,7 @@ public class VariantAnnotationCalculator {
         if (!StringUtils.isBlank(previousCall)) {
             String call = getCall(variant);
             if (StringUtils.isNotBlank(call)) {
-                // FIXME should this be return previousCall.equals(variant.getStudies().get(0).getFiles().get(0).getCall().getVariantId())?
-                return previousCall.equals(variant.getStudies().get(0).getFiles().get(0).getCall());
+                return previousCall.equals(variant.getStudies().get(0).getFiles().get(0).getCall().getVariantId());
             }
         }
 

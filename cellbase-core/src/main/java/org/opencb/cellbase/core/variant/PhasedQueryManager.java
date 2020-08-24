@@ -64,8 +64,8 @@ public abstract class PhasedQueryManager {
             // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
             // TODO: arbitrarily selecting the first one
             StudyEntry studyEntry = studyEntryList.get(0);
-            int attributePosition = studyEntry.getSampleDataKeyPosition(attributeName);
-            if (attributePosition != -1) {
+            Integer attributePosition = studyEntry.getSampleDataKeyPosition(attributeName);
+            if (attributePosition != null && attributePosition != -1) {
                 List<SampleEntry> samplesData = studyEntry.getSamples();
                 if (samplesData != null && !samplesData.isEmpty()) {
                     SampleEntry firstEntry = samplesData.get(0);

@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
@@ -28,66 +30,77 @@ import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by fjlopez on 07/07/17.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ClinicalVariantClientTest {
 
     private CellBaseClient cellBaseClient;
 
     public ClinicalVariantClientTest() {
+
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
             cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 
     @Test
     public void search() throws Exception {
+        assertNotNull(cellBaseClient);
         CellBaseDataResponse<Variant> queryResponse = cellBaseClient
                 .getClinicalClient()
                 .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar"),
                         new QueryOptions(QueryOptions.LIMIT, 3));
-        assertTrue(queryResponse.getResponses().get(0).getNumTotalResults() > 100000);
+        assertNotNull(queryResponse.getResponses());
+        assertTrue(queryResponse.getResponses().get(0).getNumResults() > 100000);
 
         queryResponse = cellBaseClient
                 .getClinicalClient()
                 .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic"),
                         new QueryOptions(QueryOptions.LIMIT, 3));
-        assertTrue(queryResponse.getResponses().get(0).getNumTotalResults() > 2000000);
+        assertNotNull(queryResponse.getResponses());
+        assertTrue(queryResponse.getResponses().get(0).getNumResults() > 2000000);
     }
 
     @Test
     public void alleleOriginLabels() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getClinicalClient().alleleOriginLabels();
-        assertTrue(queryResponse.allResults().size() > 0);
+        assertTrue(queryResponse.getResponses().size() > 0);
     }
 
     @Test
     public void clinsigLabels() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getClinicalClient().clinsigLabels();
-        assertTrue(queryResponse.allResults().size() > 0);
+        assertTrue(queryResponse.getResponses().size() > 0);
     }
 
     @Test
     public void consistencyLabels() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getClinicalClient().consistencyLabels();
-        assertTrue(queryResponse.allResults().size() > 0);
+        assertTrue(queryResponse.getResponses().size() > 0);
     }
 
     @Test
     public void modeInheritanceLabels() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getClinicalClient().modeInheritanceLabels();
-        assertTrue(queryResponse.allResults().size() > 0);
+        assertTrue(queryResponse.getResponses().size() > 0);
     }
 
     @Test
     public void variantTypes() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getClinicalClient().variantTypes();
-        assertTrue(queryResponse.allResults().size() > 0);
+        assertNotNull(queryResponse.getResponses());
+        assertTrue(queryResponse.getResponses().size() > 0);
     }
 
 }

@@ -231,9 +231,11 @@ public class ParentRestClient<T> {
                 prevIdList = newIdsList;
             }
             newIdsList = new ArrayList<>();
-            for (int i = 0; i < queryResponse.getResponses().size(); i++) {
-                if (queryResponse.getResponses().get(i).getNumResults() == LIMIT) {
-                    newIdsList.add(prevIdList.get(i));
+            if (queryResponse.getResponses() != null) {
+                for (int i = 0; i < queryResponse.getResponses().size(); i++) {
+                    if (queryResponse.getResponses().get(i).getNumResults() == LIMIT) {
+                        newIdsList.add(prevIdList.get(i));
+                    }
                 }
             }
 
@@ -297,7 +299,7 @@ public class ParentRestClient<T> {
             }
         }
 
-        if (queryResponse != null && queryResponse.getResponses().size() != idList.size()) {
+        if (queryResponse != null && queryResponse.getResponses() != null && queryResponse.getResponses().size() != idList.size()) {
             logger.warn("DataResponse size (" + queryResponse.getResponses().size() + ") != id list size ("
                     + idList.size() + ").");
         }

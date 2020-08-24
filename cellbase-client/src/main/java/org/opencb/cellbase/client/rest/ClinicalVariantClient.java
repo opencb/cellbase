@@ -44,19 +44,19 @@ public class ClinicalVariantClient extends ParentRestClient<Variant> {
     }
 
     public CellBaseDataResponse<String> alleleOriginLabels() throws IOException {
-        return execute("allele_origin_labels", new Query(), new QueryOptions(), String.class);
+        return execute("alleleOriginLabels", new Query(), new QueryOptions(), String.class);
     }
 
     public CellBaseDataResponse<String> clinsigLabels() throws IOException {
-        return execute("clinsig_labels", new Query(), new QueryOptions(), String.class);
+        return execute("clinsigLabels", new Query(), new QueryOptions(), String.class);
     }
 
     public CellBaseDataResponse<String> consistencyLabels() throws IOException {
-        return execute("consistency_labels", new Query(), new QueryOptions(), String.class);
+        return execute("consistencyLabels", new Query(), new QueryOptions(), String.class);
     }
 
     public CellBaseDataResponse<String> modeInheritanceLabels() throws IOException {
-        return execute("mode_inheritance_labels", new Query(), new QueryOptions(), String.class);
+        return execute("modeInheritanceLabels", new Query(), new QueryOptions(), String.class);
     }
 
     public CellBaseDataResponse<String> variantTypes() throws IOException {

@@ -41,10 +41,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -83,6 +80,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "C",
                 "T");
         variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesPosition(new LinkedHashMap<>());
 
         SampleEntry sampleEntry = new SampleEntry();
         sampleEntry.setData(Arrays.asList("100653362", "1"));
@@ -96,6 +94,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "T",
                 "C");
         variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamplesPosition(new LinkedHashMap<>());
         variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653363", "0|1"))));
         Variant variant1 = variantBuilder.build();
 
@@ -381,6 +380,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "C");
         variantBuilder.setSampleDataKeys("PS");
         variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528"))));
+        variantBuilder.setSamplesPosition(new LinkedHashMap<>());
         variant = variantBuilder.build();
         variant1 = new Variant("1", 115256529, "T", "A");
 
@@ -395,7 +395,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "C"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(1, variantCellBaseDataResult.getResults().get(0).getAnnotation().getTraitAssociation().size());
 
@@ -405,7 +405,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "A"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(1, variantCellBaseDataResult.getResults().get(0).getAnnotation().getTraitAssociation().size());
 
@@ -444,7 +444,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "A"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(3, variantCellBaseDataResult.getResults().get(0).getAnnotation().getTraitAssociation().size());
 
@@ -462,7 +462,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "C"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(1, variantCellBaseDataResult.getResults().get(0).getAnnotation().getTraitAssociation().size());
 
@@ -472,7 +472,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "A"));
         assertNotNull(variantCellBaseDataResult);
         assertEquals(1, variantCellBaseDataResult.getNumResults());
-        assertEquals(1, variantCellBaseDataResult.getNumMatches());
+        assertEquals(-1, variantCellBaseDataResult.getNumMatches());
         assertEquals(1, variantCellBaseDataResult.getResults().size());
         assertEquals(1, variantCellBaseDataResult.getResults().get(0).getAnnotation().getTraitAssociation().size());
 
