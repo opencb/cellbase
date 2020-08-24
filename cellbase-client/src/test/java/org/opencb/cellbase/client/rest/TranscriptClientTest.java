@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -36,16 +38,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Created by swaathi on 20/05/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TranscriptClientTest {
     private CellBaseClient cellBaseClient;
 
     public TranscriptClientTest() {
-        ClientConfiguration clientConfiguration;
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
-            clientConfiguration = ClientConfiguration.load(getClass().getResource("/client-configuration-test.yml").openStream());
-            cellBaseClient = new CellBaseClient(clientConfiguration);
+            cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 
@@ -55,11 +60,11 @@ public class TranscriptClientTest {
         assertEquals(196501, count.firstResult().longValue(), "Number of returned transcripts do not match");
     }
 
-    @Test
-    public void first() throws Exception {
-        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().first();
-        assertNotNull(transcript, "First transcript in the collection must be returned");
-    }
+//    @Test
+//    public void first() throws Exception {
+//        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().first();
+//        assertNotNull(transcript, "First transcript in the collection must be returned");
+//    }
 
     @Test
     public void get() throws Exception {

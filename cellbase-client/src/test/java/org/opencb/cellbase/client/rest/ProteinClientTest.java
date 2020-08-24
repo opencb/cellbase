@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -29,14 +31,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Created by swaathi on 25/05/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ProteinClientTest {
     private CellBaseClient cellBaseClient;
 
     public ProteinClientTest() {
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
             cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 
@@ -49,7 +56,7 @@ public class ProteinClientTest {
     @Test
     public void getSequence() throws Exception {
         CellBaseDataResponse<String> queryResponse = cellBaseClient.getProteinClient().getSequence("Q9UL59", new QueryOptions());
-        assertEquals("Sequence is not the same", "MAVTFEDVTIIFTWEEWKFLDSSQKRLYREVMWENYTNVMSVENWNESYKSQEEKFRYLEYENF" +
+        assertEquals("MAVTFEDVTIIFTWEEWKFLDSSQKRLYREVMWENYTNVMSVENWNESYKSQEEKFRYLEYENF" +
                 "SYWQGWWNAGAQMYENQNYGETVQGTDSKDLTQQDRSQCQEWLILSTQVPGYGNYELTFESKSLRNLKYKNFMPWQSLETKTTQDYGREIYMSGSHGFQG" +
                 "GRYRLGISRKNLSMEKEQKLIVQHSYIPVEEALPQYVGVICQEDLLRDSMEEKYCGCNKCKGIYYWNSRCVFHKRNQPGENLCQCSICKACFSQRSDLYR" +
                 "HPRNHIGKKLYGCDEVDGNFHQSSGVHFHQRVHIGEVPYSCNACGKSFSQISSLHNHQRVHTEEKFYKIECDKDLSRNSLLHIHQRLHIGEKPFKCNQCGKS" +

@@ -102,9 +102,9 @@ public class ParentRestClient<T> {
         return execute("count", query, new QueryOptions(), Long.class);
     }
 
-    public CellBaseDataResponse<T> first() throws IOException {
-        return execute("first", new Query(), new QueryOptions(), clazz);
-    }
+//    public CellBaseDataResponse<T> first() throws IOException {
+//        return execute("first", new Query(), new QueryOptions(), clazz);
+//    }
 
     public CellBaseDataResponse<T> get(List<String> id, QueryOptions queryOptions) throws IOException {
         return execute(id, "info", queryOptions, clazz);

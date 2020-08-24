@@ -45,7 +45,7 @@ public class GeneClient extends FeatureClient<Gene> {
 
 
     public CellBaseDataResponse<String> getBiotypes(Query query) throws IOException {
-        return execute("biotype", query, new QueryOptions(), String.class);
+        return execute("distinct", query, new QueryOptions("field", "biotype"), String.class);
     }
 
     @Deprecated
@@ -62,7 +62,7 @@ public class GeneClient extends FeatureClient<Gene> {
     }
 
     public CellBaseDataResponse<Variant> getVariation(List<String> id, QueryOptions queryOptions) throws IOException {
-        return execute(id, "snp", queryOptions, Variant.class);
+        return execute(id, "variant", queryOptions, Variant.class);
     }
 
     public CellBaseDataResponse<Entry> getProtein(String id, QueryOptions queryOptions) throws IOException {

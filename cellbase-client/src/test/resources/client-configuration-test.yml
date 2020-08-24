@@ -1,12 +1,12 @@
 ---
-version: "v4"
+version: "v5"
 defaultSpecies: "hsapiens"
 logLevel: "info"
 logFile: ""
 rest:
   hosts:
-  - "http://bioinfo.hpc.cam.ac.uk/cellbase"
-#  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"
+#  - "http://bioinfo.hpc.cam.ac.uk/cellbase"
+  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-5.0.0-SNAPSHOT"
   #- "http://localhost:8080/cellbase-4.5.5"
   timeout: 2000
 

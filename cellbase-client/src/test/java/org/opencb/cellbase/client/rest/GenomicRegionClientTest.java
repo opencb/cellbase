@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
@@ -35,15 +37,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Created by imedina on 26/05/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GenomicRegionClientTest {
 
     private CellBaseClient cellBaseClient;
 
     public GenomicRegionClientTest() {
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
             cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 

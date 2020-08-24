@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -45,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Created by imedina on 12/05/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GeneClientTest {
 
     private CellBaseClient cellBaseClient;
@@ -53,10 +56,14 @@ public class GeneClientTest {
 //    public TestRule globalTimeout = new Timeout(2000);
 
     public GeneClientTest() {
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
             cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 
@@ -69,11 +76,11 @@ public class GeneClientTest {
         assertEquals(20356, count.firstResult().longValue(), "Number of returned protein-coding genes do not match");
     }
 
-    @Test
-    public void first() throws Exception {
-        CellBaseDataResponse<Gene> gene = cellBaseClient.getGeneClient().first();
-        assertNotNull(gene, "First gene in the collection must be returned");
-    }
+//    @Test
+//    public void first() throws Exception {
+//        CellBaseDataResponse<Gene> gene = cellBaseClient.getGeneClient().first();
+//        assertNotNull(gene, "First gene in the collection must be returned");
+//    }
 
     @Test
     public void getBiotypes() throws Exception {
@@ -138,9 +145,12 @@ public class GeneClientTest {
         CellBaseDataResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
         assertNotNull(transcript.firstResult());
 
-        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", new QueryOptions("biotype", "protein_coding"));
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("biotype", "protein_coding");
+        queryOptions.add(QueryOptions.COUNT, true);
+        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", queryOptions);
         assertNotNull(transcript.firstResult());
-        assertEquals(3, transcript.getResponses().get(0).getNumTotalResults(), "Number of transcripts with biotype protein_coding");
+        assertEquals(3, transcript.getResponses().get(0).getNumMatches(), "Number of transcripts with biotype protein_coding");
     }
 
 //    @Test

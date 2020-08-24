@@ -17,7 +17,9 @@
 package org.opencb.cellbase.client.rest;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.config.SpeciesProperties;
@@ -34,15 +36,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Created by fjlopez on 06/07/17.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MetaClientTest {
 
     private CellBaseClient cellBaseClient;
 
     public MetaClientTest() {
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         try {
             cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(" didn't initialise client correctly ");
         }
     }
 

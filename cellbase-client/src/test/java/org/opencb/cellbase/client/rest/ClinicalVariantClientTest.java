@@ -30,8 +30,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 07/07/17.
@@ -56,20 +55,20 @@ public class ClinicalVariantClientTest {
 
     @Test
     public void search() throws Exception {
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add(QueryOptions.COUNT, true);
+        queryOptions.add(QueryOptions.LIMIT, 3);
         assertNotNull(cellBaseClient);
         CellBaseDataResponse<Variant> queryResponse = cellBaseClient
                 .getClinicalClient()
-                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar"),
-                        new QueryOptions(QueryOptions.LIMIT, 3));
-        assertNotNull(queryResponse.getResponses());
-        assertTrue(queryResponse.getResponses().get(0).getNumResults() > 100000);
+                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar"), queryOptions);
+        assertTrue(queryResponse.getResponses().get(0).getNumMatches() > 100000);
 
         queryResponse = cellBaseClient
                 .getClinicalClient()
-                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic"),
-                        new QueryOptions(QueryOptions.LIMIT, 3));
+                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic"), queryOptions);
         assertNotNull(queryResponse.getResponses());
-        assertTrue(queryResponse.getResponses().get(0).getNumResults() > 2000000);
+        assertTrue(queryResponse.getResponses().get(0).getNumMatches() > 2000000);
     }
 
     @Test
