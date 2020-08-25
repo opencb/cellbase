@@ -77,18 +77,18 @@ public class GenomicRegionClientTest {
     }
 
     @Test
-    public void getVariation() throws Exception {
-        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,id");
+    public void getVariant() throws Exception {
+        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end,id");
         CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGenomicRegionClient()
-                .getVariation(Arrays.asList("22:35490160-35490161"), queryOptions);
+                .getVariant(Arrays.asList("22:35490160-35490161", "22:10510033-10510034"), queryOptions);
 
         assertNotNull(variantCellBaseDataResponse.firstResult());
-        assertEquals(variantCellBaseDataResponse.getResponses().get(0).getNumMatches(),
+        assertEquals(variantCellBaseDataResponse.getResponses().get(0).getNumResults(),
                 variantCellBaseDataResponse.getResponses().get(0).getResults().size());
-        assertTrue(variantCellBaseDataResponse.getResponses().get(0).getResults().size() >= 2699);
-//        assertEquals(variantCellBaseDataResponse.getResponses().get(1).getNumTotalResults(),
-//                variantCellBaseDataResponse.getResponses().get(1).getResults().size());
-//        assertTrue(variantCellBaseDataResponse.getResponses().get(1).getResults().size() >= 12029);
+        assertTrue(variantCellBaseDataResponse.getResponses().get(0).getResults().size() == 3);
+        assertEquals(variantCellBaseDataResponse.getResponses().get(1).getNumResults(),
+                variantCellBaseDataResponse.getResponses().get(1).getResults().size());
+        assertTrue(variantCellBaseDataResponse.getResponses().get(1).getResults().size() == 1);
     }
 
     @Test
@@ -113,7 +113,8 @@ public class GenomicRegionClientTest {
 
     @Test
     public void getConservation() throws Exception {
-        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:6635137-6635325"), null);
+        QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 10);
+        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:6635137-6635325"), queryOptions);
         assertNotNull(conservation.firstResult());
 
     }

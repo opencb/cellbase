@@ -279,20 +279,15 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{regions}/variation")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions. If query param "
-            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false Variant objects will be returned "
-            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
-            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned."
-            + "Please NOTE that regions must be smaller than 10Mb",
-            responseContainer = "QueryResponse")
+    @Path("/{regions}/variant")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions.", notes = "Please NOTE that regions "
+            + "must be smaller than 10Mb", responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = "Comma separated list of rs ids, e.g.: rs6025",
+            @ApiImplicitParam(name = "id", value = "Comma separated list of ids, e.g.: 22:35490160:G:A",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -307,12 +302,12 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getVariationByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getVariantByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                                  required = true) String regions) {
         try {
             List<VariantQuery> queries = new ArrayList<>();
             if (!variantManager.validateRegionInput(regions)) {
-                return createErrorResponse("getVariationByRegion", "Regions must be smaller than 10Mb");
+                return createErrorResponse("getVariantByRegion", "Regions must be smaller than 10Mb");
             }
             List<Region> regionList = Region.parseRegions(regions);
             for (Region region : regionList) {

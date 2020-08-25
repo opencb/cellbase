@@ -54,8 +54,8 @@ public class GenomicRegionClient extends ParentRestClient<GenomeSequenceFeature>
         return execute(id, "repeat", options, Repeat.class);
     }
 
-    public CellBaseDataResponse<Variant> getVariation(List<String> id, QueryOptions options) throws IOException {
-        return execute(id, "variation", options, Variant.class);
+    public CellBaseDataResponse<Variant> getVariant(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "variant", options, Variant.class);
     }
 
     public CellBaseDataResponse<GenomeSequenceFeature> getSequence(List<String> id, QueryOptions options) throws IOException {
