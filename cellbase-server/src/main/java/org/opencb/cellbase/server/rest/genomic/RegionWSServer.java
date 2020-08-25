@@ -288,12 +288,6 @@ public class RegionWSServer extends GenericRestWSServer {
             + "Please NOTE that regions must be smaller than 10Mb",
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "histogram",
-                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
-                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
-            @ApiImplicitParam(name = "interval",
-                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
-                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
@@ -502,6 +496,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
                 query.setFeatureTypes(Collections.singletonList("TF_binding_site"));
                 logger.info("REST RegulationQuery: {}", query.toString());
+                queries.add(query);
             }
             List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.search(queries);
             return createOkResponse(queryResults);

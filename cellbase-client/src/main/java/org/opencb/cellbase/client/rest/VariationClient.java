@@ -30,6 +30,7 @@ import java.io.IOException;
 /**
  * Created by swaathi on 23/05/16.
  */
+@Deprecated
 public class VariationClient extends FeatureClient<Variant> {
 
     public VariationClient(String species, String assembly, ClientConfiguration configuration) {

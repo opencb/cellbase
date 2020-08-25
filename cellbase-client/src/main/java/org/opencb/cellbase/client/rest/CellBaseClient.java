@@ -71,9 +71,9 @@ public class CellBaseClient {
         return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, clientConfiguration));
     }
 
-    public VariationClient getVariationClient() {
-        return getClient("VARIATION", () -> new VariationClient(species, assembly, clientConfiguration));
-    }
+//    public VariationClient getVariationClient() {
+//        return getClient("VARIATION", () -> new VariationClient(species, assembly, clientConfiguration));
+//    }
 
     public VariantClient getVariantClient() {
         return getClient("VARIANT", () -> new VariantClient(species, assembly, clientConfiguration));

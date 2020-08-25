@@ -542,9 +542,6 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
                     case "name":
                         createAndOrQuery(value, "chromosomes.name", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "region":
-                        createRegionQuery(query, value, andBsonList);
-                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;

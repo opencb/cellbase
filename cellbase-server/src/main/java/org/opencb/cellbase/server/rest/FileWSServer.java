@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.server.rest;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.FileQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
@@ -29,16 +32,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.List;
 
-@Path("/{apiVersion}/file")
-@Produces("application/json")
-@Api(value = "File", description = "File RESTful Web Services API")
+//@Path("/{apiVersion}/file")
+//@Produces("application/json")
+//@Api(value = "File", description = "File RESTful Web Services API")
 public class FileWSServer extends GenericRestWSServer {
 
     private FileManager fileManager;

@@ -21,10 +21,11 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -230,4 +231,32 @@ public final class VariantClient extends FeatureClient<Variant> {
         }
         return queryResponse;
     }
+
+    public CellBaseDataResponse<String> getAllConsequenceTypes(Query query) throws IOException {
+        return execute("consequenceTypes", query, new QueryOptions(), String.class);
+    }
+
+//    public CellBaseDataResponse<String> getConsequenceTypeById(String id, QueryOptions options) throws IOException {
+//        return execute(id, "consequence_type", options, String.class);
+//    }
+//    //    check data model returned
+//    public CellBaseDataResponse<RegulatoryFeature> getRegulatory(String id, QueryOptions options) throws IOException {
+//        return execute(id, "regulatory", options, RegulatoryFeature.class);
+//    }
+//
+//    public CellBaseDataResponse<String> getPhenotype(String id, QueryOptions options) throws IOException {
+//        return execute(id, "phenotype", options, String.class);
+//    }
+//
+//    public CellBaseDataResponse<String> getSequence(String id, QueryOptions options) throws IOException {
+//        return execute(id, "sequence", options, String.class);
+//    }
+//
+//    public CellBaseDataResponse<String> getPopulationFrequency(String id, QueryOptions options) throws IOException {
+//        return execute(id, "population_frequency", options, String.class);
+//    }
+//
+//    public CellBaseDataResponse<org.opencb.biodata.models.core.Xref> getXref(String id, QueryOptions options) throws IOException {
+//        return execute(id, "xref", options, Xref.class);
+//    }
 }
