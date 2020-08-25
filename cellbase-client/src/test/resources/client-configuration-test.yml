@@ -6,7 +6,7 @@ logFile: ""
 rest:
   hosts:
 #  - "http://bioinfo.hpc.cam.ac.uk/cellbase"
-  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-5.0.0-SNAPSHOT"
-  #- "http://localhost:8080/cellbase-4.5.5"
+   - "http://bioinfodev.hpc.cam.ac.uk/cellbase-5.0.0-SNAPSHOT"
+#  - "http://localhost:9090/cellbase-5.0.0-SNAPSHOT"
   timeout: 2000
 

@@ -153,7 +153,8 @@ public abstract class CommandExecutor {
 
         if (Files.exists(confPath.resolve("configuration.json"))) {
             logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
-            this.configuration = CellBaseConfiguration.load(new FileInputStream(confPath.resolve("configuration.json").toFile()));
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(confPath.resolve("configuration.json").toFile()),
+                    CellBaseConfiguration.ConfigurationFileFormat.JSON);
         } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
             logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
             this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));

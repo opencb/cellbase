@@ -20,7 +20,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
@@ -50,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Created by fjlopez on 07/10/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantAnnotationCommandExecutorTest {
 
     private static final String OUTPUT_FILENAME = "/tmp/test.json.gz";
@@ -59,6 +62,11 @@ public class VariantAnnotationCommandExecutorTest {
     private ObjectMapper jsonObjectMapper;
 
     public VariantAnnotationCommandExecutorTest() throws URISyntaxException {
+
+    }
+
+    @BeforeAll
+    public void setUp() throws Exception {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -70,7 +78,7 @@ public class VariantAnnotationCommandExecutorTest {
         cleanUp();
         // Load test data
         AdminCliOptionsParser.LoadCommandOptions loadCommandOptions = new AdminCliOptionsParser().getLoadCommandOptions();
-        loadCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+        loadCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor").toString();
         loadCommandOptions.data = "clinical_variants,gene";
         loadCommandOptions.database = GRCH37_DBNAME;
         loadCommandOptions.input = resourcesFolder.resolve("commandExecutor/proteinChangeMatch").toString();
@@ -81,7 +89,7 @@ public class VariantAnnotationCommandExecutorTest {
         CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
                 = new CellBaseCliOptionsParser().getVariantAnnotationCommandOptions();
         variantAnnotationCommandOptions.assembly = "GRCh37";
-        variantAnnotationCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+        variantAnnotationCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor").toString();
         variantAnnotationCommandOptions.input
                 = resourcesFolder.resolve("commandExecutor/proteinChangeMatch/proband.duprem.atomic.left.split.vcf.gz").toString();
         variantAnnotationCommandOptions.output = OUTPUT_FILENAME;

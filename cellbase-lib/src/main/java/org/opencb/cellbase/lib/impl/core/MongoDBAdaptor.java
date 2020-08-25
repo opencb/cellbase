@@ -480,7 +480,8 @@ public class MongoDBAdaptor {
                 cellBaseDataResult.setResults(dbObjectList);
 
                 // Limit is set in queryOptions, count number of total results
-                if (options != null && options.getInt("limit", 0) > 0) {
+                if (options != null && options.getInt("limit", 0) > 0
+                        && mongoDBCollection2.count(query).getResults().size() > 0) {
                     cellBaseDataResult.setNumMatches(mongoDBCollection2.count(query).first());
                 } else {
                     cellBaseDataResult.setNumMatches(dbObjectList.size());

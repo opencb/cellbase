@@ -113,8 +113,9 @@ public class GenomicRegionClientTest {
 
     @Test
     public void getConservation() throws Exception {
-        QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 10);
-        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:6635137-6635325"), queryOptions);
+        //QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 10);
+        CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1"
+                + ":6635137-6635325"), null);
         assertNotNull(conservation.firstResult());
 
     }

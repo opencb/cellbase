@@ -67,7 +67,7 @@ public class ParamConstants {
     public static final String GENE_BIOTYPES = "Comma separated list of gene gencode biotypes,"
             + " e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
     public static final String GENE_SOURCE = "source";
-    public static final String GENE_SOURCE_DESCRIPTION = "Name of gene set. Ensembl (default) or RefSeq.";
+    public static final String GENE_SOURCE_DESCRIPTION = "Name of gene set. ensembl (default) or refseq.";
 
     // ---------------------------------------------
 
