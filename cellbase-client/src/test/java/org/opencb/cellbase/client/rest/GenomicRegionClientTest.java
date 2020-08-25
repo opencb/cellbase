@@ -58,14 +58,14 @@ public class GenomicRegionClientTest {
     public void getGene() throws Exception {
         CellBaseDataResponse<Gene> geneCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getGene(Arrays.asList("3:555-77777"), null);
         assertNotNull(geneCellBaseDataResponse.firstResult());
-        assertEquals("AY269186.1", geneCellBaseDataResponse.firstResult().getName());
+        assertEquals("LINC01986", geneCellBaseDataResponse.firstResult().getName());
     }
 
     @Test
     public void getTranscript() throws Exception {
         CellBaseDataResponse<Transcript> transcriptCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getTranscript(Arrays.asList("3:555-77777"), null);
         assertNotNull(transcriptCellBaseDataResponse.firstResult());
-        assertEquals("AY269186.1-001", transcriptCellBaseDataResponse.firstResult().getName());
+        assertEquals("LINC01986-206", transcriptCellBaseDataResponse.firstResult().getName());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class GenomicRegionClientTest {
     public void getRegulatory() throws Exception {
         CellBaseDataResponse<RegulatoryFeature> regulatoryFeatureCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getRegulatory(Arrays.asList("10:69999-77777"), null);
         assertNotNull(regulatoryFeatureCellBaseDataResponse.firstResult());
-        assertEquals(39, regulatoryFeatureCellBaseDataResponse.getResponses().get(0).getResults().size());
+        assertEquals(4, regulatoryFeatureCellBaseDataResponse.getResponses().get(0).getResults().size());
     }
 
     @Test

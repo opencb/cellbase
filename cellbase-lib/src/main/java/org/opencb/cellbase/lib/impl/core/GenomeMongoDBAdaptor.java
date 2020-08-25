@@ -532,15 +532,18 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return results;
     }
 
-    public Bson parseQuery(GenomeQuery geneQuery) {
+    public Bson parseQuery(GenomeQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
         try {
-            for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
+            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "name":
                         createAndOrQuery(value, "chromosomes.name", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "region":
+                        createRegionQuery(query, value, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -551,7 +554,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             e.printStackTrace();
         }
 
-        logger.info("chromosome parsed query: {}", andBsonList.toString());
+        logger.info("genome region parsed query: {}", andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
