@@ -867,7 +867,7 @@ public class VariantAnnotationCommandExecutorTest {
 
         variantAnnotationCommandOptions.cellBaseAnnotation = false;
         variantAnnotationCommandOptions.commonOptions.conf
-                = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+                = resourcesFolder.resolve("commandExecutor").toString();
 
         return variantAnnotationCommandOptions;
     }
