@@ -87,7 +87,8 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         }
 
         for (int i = 0; i < variantList.size(); i++) {
-            if (!variantCellBaseDataResult.get(i).getResults().isEmpty()) {
+            if (variantCellBaseDataResult != null && variantCellBaseDataResult.get(i).getResults() != null
+                    && !variantCellBaseDataResult.get(i).getResults().isEmpty()) {
                 // Assuming if it gets to this point the variant has VariantAnnotation
                 // Only one variant  can be returned per query to RocksDB
                 Map<String, AdditionalAttribute> customAnnotation

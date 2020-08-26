@@ -32,7 +32,8 @@ public class CustomAnnotationPhasedQueryManager extends PhasedQueryManager {
         // Go through all input variants and their corresponding query results
         for (int j = 0; j < variantCellBaseDataResultList.size(); j++) {
             CellBaseDataResult<Variant> variantCellBaseDataResult = variantCellBaseDataResultList.get(j);
-            if (!variantCellBaseDataResult.getResults().isEmpty()) {
+            if (variantCellBaseDataResult != null && variantCellBaseDataResult.getResults() != null
+                    && !variantCellBaseDataResult.getResults().isEmpty()) {
                 // Variants are normalised and data from each of the sources (COSMIC, ClinVar, DOCM, etc.) integrated
                 // during the build process. Only one variant record should be present per assembly.
                 if (variantCellBaseDataResult.getResults().size() > 1) {
