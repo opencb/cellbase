@@ -24,6 +24,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.tools.sequence.FastaIndex;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -42,7 +43,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
-    private final String source = "RefSeq";
+    private static final String SOURCE = VariantDBAdaptor.QueryParams.REFSEQ.key();
     private Gene gene = null;
     private Transcript transcript = null;
     private Set<Xref> exonDbxrefs = new HashSet<>();
@@ -192,7 +193,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String geneDescription = gtf.getAttributes().get("description");
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
-                status, source, geneDescription, new ArrayList<>(), null, null);
+                status, SOURCE, geneDescription, new ArrayList<>(), null, null);
         geneDbxrefs = parseXrefs(gtf);
     }
 
@@ -507,7 +508,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             biotype = "protein_coding";
         }
         String transcriptName = gene.getName();
-        transcript = new Transcript(transcriptId, transcriptName, biotype, status, source, chromosome, gtf.getStart(), gtf.getEnd(),
+        transcript = new Transcript(transcriptId, transcriptName, biotype, status, SOURCE, chromosome, gtf.getStart(), gtf.getEnd(),
                 gtf.getStrand(), version, null, 0, 0, 0, 0, 0, "", "", null, new ArrayList<Exon>(), null, null);
         transcriptDict.put(transcriptId, transcript);
         gene.getTranscripts().add(transcript);

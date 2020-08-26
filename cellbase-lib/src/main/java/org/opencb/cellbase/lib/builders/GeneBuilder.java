@@ -24,6 +24,7 @@ import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -63,7 +64,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private boolean flexibleGTFParsing;
 
     // source for genes is either ensembl or refseq
-    private static final String SOURCE = "Ensembl";
+    private final String SOURCE = VariantDBAdaptor.QueryParams.ENSEMBL.key();
     private SpeciesConfiguration speciesConfiguration;
 
 //    private Connection sqlConn;
