@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -36,6 +37,7 @@ public class GenerateCellbaseLibPropertiesTest {
     String USER_HOME = System.getProperty("user.home");
 
     @Test
+    @Disabled
     public void generateCellbaseProperties() throws IOException {
         Path p = Paths.get(USER_HOME + "/appl/cellbase/cellbase-build/installation-dir/bin/genome-fetcher/species_info.json");
         BufferedReader br = Files.newBufferedReader(p, Charset.defaultCharset());
