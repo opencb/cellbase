@@ -22,11 +22,13 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
@@ -71,6 +73,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
     @Override
     public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions) {
+        return info(ids, projectionQueryOptions, null);
+    }
+
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source) {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
@@ -83,7 +89,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             // unwind results
             List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
             GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-            MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+            MongoDBIterator<Transcript> iterator = null;
+            if (StringUtils.isNotEmpty(source) && VariantDBAdaptor.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
+                iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
+            } else {
+                iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+            }
+
             List<Transcript> transcripts = new ArrayList<>();
             while (iterator.hasNext()) {
                 transcripts.add(iterator.next());

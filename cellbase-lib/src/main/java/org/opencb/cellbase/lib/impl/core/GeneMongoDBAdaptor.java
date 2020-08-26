@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
@@ -55,6 +56,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     @Override
     public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+        return info(ids, queryOptions, null);
+    }
+
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source) {
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);
@@ -62,7 +67,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Gene>(mongoDBCollection.find(bson, projection, Gene.class, new QueryOptions())));
+            if (StringUtils.isNotEmpty(source) && VariantDBAdaptor.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
+                results.add(new CellBaseDataResult<Gene>(refseqCollection.find(bson, projection, Gene.class, new QueryOptions())));
+            } else {
+                results.add(new CellBaseDataResult<Gene>(mongoDBCollection.find(bson, projection, Gene.class, new QueryOptions())));
+            }
         }
         return results;
     }

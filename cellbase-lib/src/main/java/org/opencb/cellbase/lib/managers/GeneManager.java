@@ -49,6 +49,14 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneDBAdaptor;
     }
 
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, GeneQuery query) {
+        String source = null;
+        if (query.getSource() != null && !query.getSource().isEmpty()) {
+            source = query.getSource().get(0);
+        }
+        return geneDBAdaptor.info(ids, query, source);
+    }
+
     public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) {
         // get the coordinates for the gene
         CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);

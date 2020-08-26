@@ -46,6 +46,15 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return transcriptDBAdaptor;
     }
 
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, TranscriptQuery query) {
+        String source = null;
+        if (query.getSource() != null && !query.getSource().isEmpty()) {
+            source = query.getSource().get(0);
+        }
+        return transcriptDBAdaptor.info(ids, query, source);
+    }
+
+
     public CellBaseDataResult<String> getCdna(String id) {
         TranscriptQuery query = new TranscriptQuery();
         query.setTranscriptsXrefs(Collections.singletonList(id));

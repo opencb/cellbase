@@ -131,8 +131,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
 
         // add xrefs to last transcript
-        exonDbxrefs.addAll(geneDbxrefs);
-        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+        addXrefs(transcript, geneDbxrefs, exonDbxrefs);
 
         // last gene must be serialized
         store();
@@ -162,6 +161,26 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         transcript = null;
     }
 
+    private void addXrefs(Transcript transcript, Set<Xref> geneDbxrefs, Set<Xref> exonDbxrefs) {
+        exonDbxrefs.addAll(geneDbxrefs);
+        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+        // transcript has version, e.g. XR_002957988.1. put both XR_002957988 AND XR_002957988.1 in xrefs
+        String transcriptId = transcript.getId();
+        Xref transcriptWithVersion = new Xref();
+        transcriptWithVersion.setDbDisplayName("RefSeq");
+        transcriptWithVersion.setDbName("RefSeq");
+        transcriptWithVersion.setId(transcriptId);
+        transcript.getXrefs().add(transcriptWithVersion);
+        String[] transcriptAndVersion = transcriptId.split("\\.");
+        if (transcriptAndVersion.length == 2) {
+            Xref transcriptWithoutVersion = new Xref();
+            transcriptWithoutVersion.setDbDisplayName("RefSeq");
+            transcriptWithoutVersion.setDbName("RefSeq");
+            transcriptWithoutVersion.setId(transcriptAndVersion[0]);
+            transcript.getXrefs().add(transcriptWithoutVersion);
+        }
+    }
+
     private void parseGene(Gtf gtf, String chromosome) throws CellbaseException {
         // If new geneId is different from the current then we must serialize before data new gene
         if (gene != null) {
@@ -184,8 +203,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         if (!transcriptDict.containsKey(transcriptId)) {
             // previous transcript is done being parsed, we have all the xrefs now.
             if (transcript != null) {
-                exonDbxrefs.addAll(geneDbxrefs);
-                transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+                addXrefs(transcript, geneDbxrefs, exonDbxrefs);
             }
 
             // microRNAs for example do not have a version. default to 1.
