@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class TranscriptQuery extends AbstractQuery {
 
-    @QueryParameter(id = "source", allowedValues = {"Ensembl", "RefSeq"})
+    @QueryParameter(id = "source", allowedValues = {"ensembl", "refseq"})
     private List<String> source;
 
     @QueryParameter(id = "region")

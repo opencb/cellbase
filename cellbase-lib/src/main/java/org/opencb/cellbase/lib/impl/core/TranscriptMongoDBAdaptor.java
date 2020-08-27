@@ -83,6 +83,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             // make query to look in id OR name
             List<Bson> orBsonList = new ArrayList<>(2);
             orBsonList.add(Filters.eq("transcripts.id", id));
+            if (id.contains("\\.")) {
+                // transcript contains version, e.g. ENST00000671466.1
+                orBsonList.add(Filters.eq("transcripts.id", id));
+            } else {
+                // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
+                orBsonList.add(Filters.regex("transcripts.id", "^" + id + "\\."));
+            }
             orBsonList.add(Filters.eq("transcripts.name", id));
             Bson bson = Filters.or(orBsonList);
 

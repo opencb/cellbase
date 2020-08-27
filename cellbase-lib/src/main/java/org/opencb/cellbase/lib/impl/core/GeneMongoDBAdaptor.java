@@ -179,7 +179,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 andBsonList.add(Filters.eq("transcripts.id", transcriptId));
             } else {
                 // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
-                andBsonList.add(Filters.regex("transcripts.id", "^" + transcriptId));
+                andBsonList.add(Filters.regex("transcripts.id", "^" + transcriptId + "\\."));
             }
         }
     }
