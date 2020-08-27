@@ -109,6 +109,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             String chromosome = getSequenceName(gtf.getSequenceName());
             switch (gtf.getFeature()) {
                 case "gene":
+                    // we've finished the previous transcript, store xrefs
+                    addXrefs(transcript, geneDbxrefs, exonDbxrefs);
                     parseGene(gtf, chromosome);
                     break;
                 case "exon":
@@ -163,21 +165,20 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private void addXrefs(Transcript transcript, Set<Xref> geneDbxrefs, Set<Xref> exonDbxrefs) {
+        if (transcript == null) {
+            return;
+        }
         exonDbxrefs.addAll(geneDbxrefs);
         transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+        transcript.getXrefs().add(new Xref(transcript.getName(), "HGNC", "HGNC Symbol"));
+
         // transcript has version, e.g. XR_002957988.1. put both XR_002957988 AND XR_002957988.1 in xrefs
         String transcriptId = transcript.getId();
-        Xref transcriptWithVersion = new Xref();
-        transcriptWithVersion.setDbDisplayName("RefSeq");
-        transcriptWithVersion.setDbName("RefSeq");
-        transcriptWithVersion.setId(transcriptId);
+        Xref transcriptWithVersion = new Xref(transcriptId, "RefSeq", "RefSeq");
         transcript.getXrefs().add(transcriptWithVersion);
         String[] transcriptAndVersion = transcriptId.split("\\.");
         if (transcriptAndVersion.length == 2) {
-            Xref transcriptWithoutVersion = new Xref();
-            transcriptWithoutVersion.setDbDisplayName("RefSeq");
-            transcriptWithoutVersion.setDbName("RefSeq");
-            transcriptWithoutVersion.setId(transcriptAndVersion[0]);
+            Xref transcriptWithoutVersion = new Xref(transcriptAndVersion[0], "RefSeq", "RefSeq");
             transcript.getXrefs().add(transcriptWithoutVersion);
         }
     }
@@ -494,7 +495,11 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 }
                 String id = dbxrefParts[1];
                 String dbName = dbxrefParts[0];
-                Xref xref = new Xref(id, dbName, dbName);
+                String dbDisplayName = dbName;
+                if ("HGNC".equalsIgnoreCase(dbName)) {
+                    dbDisplayName = "HGNC ID";
+                }
+                Xref xref = new Xref(id, dbName, dbDisplayName);
                 xrefSet.add(xref);
             }
         }

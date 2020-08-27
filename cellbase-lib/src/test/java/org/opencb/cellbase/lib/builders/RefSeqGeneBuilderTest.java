@@ -87,7 +87,7 @@ public class RefSeqGeneBuilderTest {
 
 
         Transcript transcript = getTranscript(gene,"NM_002265.6");
-        String expectedXrefs = "[Xref{id='HGNC:6400', dbName='HGNC', dbDisplayName='HGNC', description=''}, Xref{id='CCDS11513.1', dbName='CCDS', dbDisplayName='CCDS', description=''}, Xref{id='3837', dbName='GeneID', dbDisplayName='GeneID', description=''}, Xref{id='602738', dbName='MIM', dbDisplayName='MIM', description=''}, Xref{id='NM_002265.6', dbName='RefSeq', dbDisplayName='RefSeq', description='null'}, Xref{id='NM_002265', dbName='RefSeq', dbDisplayName='RefSeq', description='null'}]";
+        String expectedXrefs = "[Xref{id='HGNC:6400', dbName='HGNC', dbDisplayName='HGNC ID', description=''}, Xref{id='CCDS11513.1', dbName='CCDS', dbDisplayName='CCDS', description=''}, Xref{id='3837', dbName='GeneID', dbDisplayName='GeneID', description=''}, Xref{id='602738', dbName='MIM', dbDisplayName='MIM', description=''}, Xref{id='KPNB1', dbName='HGNC', dbDisplayName='HGNC Symbol', description=''}, Xref{id='NM_002265.6', dbName='RefSeq', dbDisplayName='RefSeq', description=''}, Xref{id='NM_002265', dbName='RefSeq', dbDisplayName='RefSeq', description=''}]";
         assertEquals(expectedXrefs, transcript.getXrefs().toString());
 
         assertEquals("NM_002265.6", transcript.getId());
