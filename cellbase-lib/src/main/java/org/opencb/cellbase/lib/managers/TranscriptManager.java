@@ -62,7 +62,8 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         String cdnaSequence = null;
         if (transcriptCellBaseDataResult != null && !transcriptCellBaseDataResult.getResults().isEmpty()) {
             for (Transcript transcript: transcriptCellBaseDataResult.getResults()) {
-                if (id.equals(transcript.getId())) {
+                // transcript.id will have version. id is from the user, so can include the version or not.
+                if (transcript.getId().startsWith(id)) {
                     cdnaSequence = transcript.getcDnaSequence();
                     break;
                 }
