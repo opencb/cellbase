@@ -227,8 +227,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             Bson end = Filters.gte("transcripts.end", regions.get(0).getStart());
             andBsonList.add(Filters.and(chromosome, start, end));
         } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
-            Bson idFilter = Filters.eq("transcripts.id", ids.get(0));
-            andBsonList.add(idFilter);
+            String transcriptId = ids.get(0);
+            if (transcriptId.contains("\\.")) {
+                // transcript contains version, e.g. ENST00000671466.1
+                andBsonList.add(Filters.eq("transcripts.id", transcriptId));
+            } else {
+                // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
+                andBsonList.add(Filters.regex("transcripts.id", "^" + transcriptId + "\\."));
+            }
         } else {
             List<Bson> orBsonList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(regions)) {
@@ -241,8 +247,13 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             }
             if (CollectionUtils.isNotEmpty(ids)) {
                 for (String id : ids) {
-                    Bson idFilter = Filters.eq("transcripts.id", id);
-                    orBsonList.add(idFilter);
+                    if (id.contains("\\.")) {
+                        // transcript contains version, e.g. ENST00000671466.1
+                        orBsonList.add(Filters.eq("transcripts.id", id));
+                    } else {
+                        // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
+                        orBsonList.add(Filters.regex("transcripts.id", "^" + id + "\\."));
+                    }
                 }
             }
             andBsonList.add(Filters.or(orBsonList));

@@ -220,6 +220,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 // lower, and end the higher
                 updateTranscriptAndGeneCoords(transcript, gene, gtf);
 
+                String transcriptIdWithoutVersion = transcript.getId().split("\\.")[0];
                 if (gtf.getFeature().equalsIgnoreCase("exon")) {
                     // Obtaining the exon sequence
                     //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
@@ -229,17 +230,18 @@ public class GeneBuilder extends CellBaseBuilder {
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
                             .getAttributes().get("exon_number")), exonSequence);
                     transcript.getExons().add(exon);
-                    exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
+
+                    exonDict.put(transcriptIdWithoutVersion + "_" + exon.getExonNumber(), exon);
                     if (gtf.getAttributes().get("exon_number").equals("1")) {
                         cdna = 1;
                         cds = 1;
                     } else {
                         // with every exon we update cDNA length with the previous exon length
-                        cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
-                                - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
+                        cdna += exonDict.get(transcriptIdWithoutVersion + "_" + (exon.getExonNumber() - 1)).getEnd()
+                                - exonDict.get(transcriptIdWithoutVersion + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
                     }
                 } else {
-                    exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
+                    exon = exonDict.get(transcriptIdWithoutVersion + "_" + exon.getExonNumber());
                     if (gtf.getFeature().equalsIgnoreCase("CDS")) {
                         if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
                             // CDS states the beginning of coding start
@@ -359,7 +361,9 @@ public class GeneBuilder extends CellBaseBuilder {
         List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId), indexer);
 
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, indexer.getConstraints(transcriptId));
-        transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
+        // to match Ensembl, we set the ID as transcript+version. This also matches the Ensembl website.
+        String transcriptIdWithVersion = transcriptId + "." + gtfAttributes.get("transcript_version");
+        transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
                         : SOURCE,

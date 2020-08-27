@@ -87,7 +87,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = ParamConstants.GENE_SOURCE, value = ParamConstants.GENE_SOURCE_DESCRIPTION, required = false,
-                    allowableValues="Ensembl,RefSeq", dataType = "java.util.List", paramType = "query"),
+                    allowableValues="ensembl,refseq", defaultValue = "ensembl", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
@@ -148,7 +148,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.GENE_SOURCE, value = ParamConstants.GENE_SOURCE_DESCRIPTION, required = false,
-                    allowableValues="Ensembl,RefSeq", dataType = "java.util.List", paramType = "query"),
+                    allowableValues="ensembl,refseq", defaultValue = "ensembl", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_XREFS_PARAM, value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,

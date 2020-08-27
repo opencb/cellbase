@@ -120,6 +120,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                             visited = true;
                         }
                         break;
+                    case "transcripts.id":
+                        createTranscriptIdQuery(value, andBsonList);
+                        break;
                     case "transcripts.annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
@@ -165,6 +168,19 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    private void createTranscriptIdQuery(Object value, List<Bson> andBsonList) {
+        if (value != null) {
+            String transcriptId = String.valueOf(value);
+            if (transcriptId.contains("\\.")) {
+                // transcript contains version, e.g. ENST00000671466.1
+                andBsonList.add(Filters.eq("transcripts.id", transcriptId));
+            } else {
+                // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
+                andBsonList.add(Filters.regex("transcripts.id", "^" + transcriptId));
+            }
         }
     }
 
