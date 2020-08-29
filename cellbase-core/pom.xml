@@ -17,24 +17,13 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.commons</groupId>
-            <artifactId>commons-datastore-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.commons</groupId>
             <artifactId>commons-datastore-mongodb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-tools</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
@@ -62,7 +51,6 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>

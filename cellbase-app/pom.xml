@@ -33,10 +33,11 @@
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>commons-io</groupId>-->
+<!--            <artifactId>commons-io</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -57,6 +58,15 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/java/org/opencb/cellbase/app/cli</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>CliOptionsParser.java</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -187,16 +197,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/java/org/opencb/cellbase/app/cli</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>CliOptionsParser.java</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
-
 
 </project>
