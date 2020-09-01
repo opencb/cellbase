@@ -282,6 +282,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                     case "gene":
                         createRegionQuery(query, query.getRegions(), andBsonList);
                         break;
+                    case "consequenceType":
+                        createAndOrQuery(value, "annotation.consequenceTypes.sequenceOntologyTerms.name",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
