@@ -179,9 +179,9 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 allowableValues = "false,true",
                                                 defaultValue = "false", required = false) Boolean checkAminoAcidChange,
                                                 @QueryParam("consequenceTypeSource")
-                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either Ensembl (default) "
-                                                        + "or RefSeq", allowableValues = "Ensembl,RefSeq", required = false)
-                                                        String consequenceTypeSource) {
+                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
+                                                        + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
+                                                        required = false) String consequenceTypeSource) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -257,9 +257,9 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        allowableValues = "false,true", defaultValue = "false", required = false)
                                                        Boolean checkAminoAcidChange,
                                                @QueryParam("consequenceTypeSource")
-                                               @ApiParam(name = "consequenceTypeSource", value = "Gene set, either Ensembl (default) "
-                                                            + "or RefSeq", allowableValues = "Ensembl,RefSeq", allowMultiple = true,
-                                                       defaultValue = "Ensembl", required = false) String consequenceTypeSource) {
+                                               @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
+                                                            + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
+                                                       defaultValue = "ensembl", required = false) String consequenceTypeSource) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
