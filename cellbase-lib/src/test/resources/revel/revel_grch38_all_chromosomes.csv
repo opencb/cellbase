@@ -8,3 +8,4 @@ chr,hg19_pos,grch38_pos,ref,alt,aaref,aaalt,REVEL
 1,35144,35144,A,C,C,W,0.012
 1,35145,35145,C,A,C,F,0.023
 1,35145,35145,C,G,C,S,0.029
+13,42,42,A,G,C,Y,0.987

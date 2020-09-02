@@ -54,8 +54,10 @@ public class RevelScoreBuilder extends CellBaseBuilder {
         // skip header
         String line = bufferedReader.readLine();
         String[] fields = null;
-        int lastPosition = 0;
+        String lastEntry = null;
+        String currentEntry = null;
         List<TranscriptMissenseVariantFunctionalScore> scores = new ArrayList<>();
+        MissenseVariantFunctionalScore predictions = null;
         while ((line = bufferedReader.readLine()) != null) {
             fields = line.split(",");
             String chromosome = fields[0];
@@ -65,25 +67,33 @@ public class RevelScoreBuilder extends CellBaseBuilder {
                 continue;
             }
             int position = Integer.parseInt(fields[2]);
-
             String reference = fields[3];
             String alternate = fields[4];
             String aaReference = fields[5];
             String aaAlternate = fields[6];
             double score = Double.parseDouble(fields[7]);
 
-            if (lastPosition != 0 && position != lastPosition) {
-                MissenseVariantFunctionalScore predictions = new MissenseVariantFunctionalScore(chromosome, position, reference, SOURCE,
-                    scores);
+            currentEntry = chromosome + position;
+
+            // new chromosome + position, store previous entry
+            if (lastEntry != null && !currentEntry.equals(lastEntry)) {
                 serializer.serialize(predictions);
                 scores = new ArrayList<>();
+                predictions = null;
+            }
+
+            if (predictions == null) {
+                predictions = new MissenseVariantFunctionalScore(chromosome, position, reference, SOURCE, scores);
             }
 
             TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore("",
                     alternate, aaReference, aaAlternate, score);
             scores.add(predictedScore);
-            lastPosition = position;
+            lastEntry = chromosome + position;
         }
+
+        // serialise last entry
+        serializer.serialize(predictions);
 
         zis.close();
         zipFile.close();
