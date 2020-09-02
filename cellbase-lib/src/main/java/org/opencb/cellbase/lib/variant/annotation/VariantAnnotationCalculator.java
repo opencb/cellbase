@@ -17,10 +17,7 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -706,7 +703,7 @@ public class VariantAnnotationCalculator {
                         consequenceType3.setCdsPosition(cdsPosition);
                         consequenceType3.setCodon(codon);
                         consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
-                        newProteinVariantAnnotation = getProteinAnnotation(consequenceType3);
+                        newProteinVariantAnnotation = getProteinAnnotation(variant2, consequenceType3);
                         consequenceType3.setProteinVariantAnnotation(newProteinVariantAnnotation);
                         consequenceType3.setSequenceOntologyTerms(soTerms);
 
@@ -740,7 +737,7 @@ public class VariantAnnotationCalculator {
                     consequenceType1.setCodon(codon);
                     consequenceType1.getProteinVariantAnnotation().setAlternate(alternateAA);
                     consequenceType1.setProteinVariantAnnotation(newProteinVariantAnnotation == null
-                            ? getProteinAnnotation(consequenceType1) : newProteinVariantAnnotation);
+                            ? getProteinAnnotation(variant1, consequenceType1) : newProteinVariantAnnotation);
                     consequenceType1.setSequenceOntologyTerms(soTerms);
                     consequenceType2.setCdnaPosition(cdnaPosition);
                     consequenceType2.setCdsPosition(cdsPosition);
@@ -1063,19 +1060,46 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
+    private ProteinVariantAnnotation getProteinAnnotation(Variant variant, ConsequenceType consequenceType) {
+        ProteinVariantAnnotation proteinVariantAnnotation = null;
         if (consequenceType.getProteinVariantAnnotation() != null) {
-            CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinManager.getVariantAnnotation(
-                    consequenceType.getEnsemblTranscriptId(),
+            String transcriptId = consequenceType.getTranscriptId();
+            // transcript may contain version, e.g. ENST00000382011.9. sift/polyphen do NOT contain version, so remove version
+            if (transcriptId != null && transcriptId.contains("\\.")) {
+                transcriptId = transcriptId.split("\\.")[0];
+            }
+            CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(
+                    transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
                     consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
 
-            if (proteinVariantAnnotation.getNumResults() > 0) {
-                return proteinVariantAnnotation.getResults().get(0);
+            if (results.getNumResults() > 0) {
+                proteinVariantAnnotation = results.getResults().get(0);
+            }
+
+            // get revel
+            CellBaseDataResult<MissenseVariantFunctionalScore> revelResults = proteinManager.getRevelScores(variant.getChromosome(),
+                    variant.getStart(), variant.getReference(), variant.getAlternate());
+
+            String aaReference =
+                    VariantAnnotationUtils.TO_ABBREVIATED_AA.get(consequenceType.getProteinVariantAnnotation().getReference());
+            String aaAlternate
+                    = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(consequenceType.getProteinVariantAnnotation().getAlternate());
+
+            if (revelResults.getNumResults() > 0) {
+                List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
+                for (MissenseVariantFunctionalScore score : scores) {
+                    for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
+                        if (transcriptScore.getAaReference().equalsIgnoreCase(aaReference)
+                                && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternate)) {
+                            proteinVariantAnnotation.getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
+                        }
+                    }
+                }
             }
         }
-        return null;
+        return proteinVariantAnnotation;
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
@@ -1225,7 +1249,7 @@ public class VariantAnnotationCalculator {
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
-                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(variant, consequenceType));
                 }
             }
         }

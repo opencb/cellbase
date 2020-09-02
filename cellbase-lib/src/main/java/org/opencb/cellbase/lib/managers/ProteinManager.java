@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
+import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -162,6 +163,11 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
                                                                              String aaAlternate, QueryOptions options) {
         return proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId, position, aaReference, aaAlternate, options);
+    }
+
+    public CellBaseDataResult<MissenseVariantFunctionalScore> getRevelScores(String chromosome, int position, String reference,
+                                                                             String alternate) {
+        return proteinDBAdaptor.getRevelScores(chromosome, position, reference, alternate);
     }
 }
 
