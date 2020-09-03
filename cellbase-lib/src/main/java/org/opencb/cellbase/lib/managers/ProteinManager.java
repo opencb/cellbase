@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
@@ -27,8 +29,10 @@ import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.MissenseVariationFunctionalScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ProteinMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
 
     private ProteinMongoDBAdaptor proteinDBAdaptor;
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
+    private MissenseVariationFunctionalScoreMongoDBAdaptor missenseVariationFunctionalScoreMongoDBAdaptor;
 
     public ProteinManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -48,6 +53,8 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     private void init() {
         proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+        missenseVariationFunctionalScoreMongoDBAdaptor = dbAdaptorFactory.getMissenseVariationFunctionalScoreMongoDBAdaptor(species,
+                assembly);
     }
 
     @Override
@@ -160,14 +167,30 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         return result;
     }
 
-    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
-                                                                             String aaAlternate, QueryOptions options) {
-        return proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId, position, aaReference, aaAlternate, options);
-    }
+    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int position,
+                                                                             String aaReference, String aaAlternate, QueryOptions options) {
+        CellBaseDataResult<ProteinVariantAnnotation> results = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
+                position, aaReference, aaAlternate, options);
+        CellBaseDataResult<MissenseVariantFunctionalScore> revelResults =
+                missenseVariationFunctionalScoreMongoDBAdaptor.getRevelScores(
+                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate());
 
-    public CellBaseDataResult<MissenseVariantFunctionalScore> getRevelScores(String chromosome, int position, String reference,
-                                                                             String alternate) {
-        return proteinDBAdaptor.getRevelScores(chromosome, position, reference, alternate);
+        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
+        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
+
+        if (revelResults.getNumResults() > 0) {
+            List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
+            for (MissenseVariantFunctionalScore score : scores) {
+                for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
+                    if (transcriptScore.getAaReference().equalsIgnoreCase(aaReferenceAbbreviation)
+                            && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternateAbbreviation)) {
+                        results.getResults().get(0).getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
+                        break;
+                    }
+                }
+            }
+        }
+        return results;
     }
 }
 

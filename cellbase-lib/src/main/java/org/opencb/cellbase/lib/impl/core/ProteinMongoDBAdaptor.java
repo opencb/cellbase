@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
-import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -48,7 +47,6 @@ import java.util.*;
 public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
 
     private MongoDBCollection proteinSubstitutionMongoDBCollection;
-    private MongoDBCollection missenseMongoDBCollection;
 
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
@@ -82,7 +80,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
-        missenseMongoDBCollection = mongoDataStore.getCollection("missense_variation_functional_score");
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
 
@@ -145,19 +142,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         }
         // Return null if no transcript id is provided
         return result;
-
-    }
-
-    public CellBaseDataResult<MissenseVariantFunctionalScore> getRevelScores(String chromosome, int position, String reference,
-                                                                             String alternate) {
-        List<Bson> andBsonList = new ArrayList<>();
-        andBsonList.add(Filters.eq("chromosome", chromosome));
-        andBsonList.add(Filters.eq("position", position));
-        andBsonList.add(Filters.eq("reference", reference));
-        andBsonList.add(Filters.eq("scores.alternate", alternate));
-        Bson query = Filters.and(andBsonList);
-        return new CellBaseDataResult<MissenseVariantFunctionalScore>(missenseMongoDBCollection.find(query, null,
-                MissenseVariantFunctionalScore.class, new QueryOptions()));
 
     }
 

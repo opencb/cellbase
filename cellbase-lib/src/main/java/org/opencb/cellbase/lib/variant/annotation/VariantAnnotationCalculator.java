@@ -1068,7 +1068,7 @@ public class VariantAnnotationCalculator {
             if (transcriptId != null && transcriptId.contains("\\.")) {
                 transcriptId = transcriptId.split("\\.")[0];
             }
-            CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(
+            CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(variant,
                     transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
@@ -1078,26 +1078,6 @@ public class VariantAnnotationCalculator {
                 proteinVariantAnnotation = results.getResults().get(0);
             }
 
-            // get revel
-            CellBaseDataResult<MissenseVariantFunctionalScore> revelResults = proteinManager.getRevelScores(variant.getChromosome(),
-                    variant.getStart(), variant.getReference(), variant.getAlternate());
-
-            String aaReference =
-                    VariantAnnotationUtils.TO_ABBREVIATED_AA.get(consequenceType.getProteinVariantAnnotation().getReference());
-            String aaAlternate
-                    = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(consequenceType.getProteinVariantAnnotation().getAlternate());
-
-            if (revelResults.getNumResults() > 0) {
-                List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
-                for (MissenseVariantFunctionalScore score : scores) {
-                    for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
-                        if (transcriptScore.getAaReference().equalsIgnoreCase(aaReference)
-                                && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternate)) {
-                            proteinVariantAnnotation.getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
-                        }
-                    }
-                }
-            }
         }
         return proteinVariantAnnotation;
     }
