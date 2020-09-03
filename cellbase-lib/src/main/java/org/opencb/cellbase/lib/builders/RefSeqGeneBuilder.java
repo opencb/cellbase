@@ -19,10 +19,7 @@ package org.opencb.cellbase.lib.builders;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
-import org.opencb.biodata.models.core.Exon;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -30,6 +27,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDBException;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -40,6 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile;
+    private Path disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -51,16 +50,27 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     // sometimes there are two stop codons (eg NM_018159.4). Only parse the first one, skip the second
     private boolean seenStopCodon = false;
 
-    public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
+
+    public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration,
+                             CellBaseSerializer serializer) {
         super(serializer);
         this.speciesConfiguration = speciesConfiguration;
 
         getGtfFileFromDirectoryPath(refSeqDirectoryPath);
         getFastaFileFromDirectoryPath(refSeqDirectoryPath);
         getProteinFastaFileFromDirectoryPath(refSeqDirectoryPath);
+        setAnnotationFiles(refSeqDirectoryPath);
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
+    }
+
+    private void setAnnotationFiles(Path refSeqDirectoryPath) {
+        Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
+        geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
+        disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
+        hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
+        miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
     }
 
     private void getGtfFileFromDirectoryPath(Path refSeqDirectoryPath) {
@@ -99,7 +109,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(proteinFastaFile.getParent());
-        indexer.index(proteinFastaFile);
+        indexer.index(proteinFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -111,7 +121,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 case "gene":
                     // we've finished the previous transcript, store xrefs
                     addXrefs(transcript, geneDbxrefs, exonDbxrefs);
-                    parseGene(gtf, chromosome);
+                    parseGene(gtf, chromosome, indexer);
                     break;
                 case "exon":
                     parseExon(gtf, chromosome, fastaIndex);
@@ -183,7 +193,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private void parseGene(Gtf gtf, String chromosome) throws CellbaseException {
+    private void parseGene(Gtf gtf, String chromosome, RefSeqGeneBuilderIndexer indexer)
+            throws CellbaseException, IOException, RocksDBException {
         // If new geneId is different from the current then we must serialize before data new gene
         if (gene != null) {
             store();
@@ -193,8 +204,12 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String geneName = gtf.getAttributes().get("gene_id");
         String geneDescription = gtf.getAttributes().get("description");
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
+
+        GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
+                null, indexer.getMirnaTargets(geneName));
+
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
-                status, SOURCE, geneDescription, new ArrayList<>(), null, null);
+                status, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);
         geneDbxrefs = parseXrefs(gtf);
     }
 
