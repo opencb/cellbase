@@ -281,6 +281,24 @@ public class VariantAnnotationCalculator {
             }
         }
 
+        if (annotatorSet.contains("geneConstraints")) {
+            variantAnnotation.setGeneConstraints(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getConstraints() != null) {
+                    variantAnnotation.getGeneConstraints().addAll(gene.getAnnotation().getConstraints());
+                }
+            }
+        }
+
+        if (annotatorSet.contains("mirnaTargets")) {
+            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getTargets() != null) {
+                    variantAnnotation.getGeneMirnaTargets().addAll(gene.getAnnotation().getTargets());
+                }
+            }
+        }
+
         return geneList;
 
     }
@@ -997,8 +1015,8 @@ public class VariantAnnotationCalculator {
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
-                    "repeats", "cytoband", "hgvs"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
+                    "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1024,6 +1042,12 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("drugInteraction")) {
             includeGeneFields.add("annotation.drugs");
+        }
+        if (annotatorSet.contains("geneConstraints")) {
+            includeGeneFields.add("annotation.constraints");
+        }
+        if (annotatorSet.contains("mirnaTargets")) {
+            includeGeneFields.add("annotation.targets");
         }
         return includeGeneFields;
     }
@@ -1077,7 +1101,6 @@ public class VariantAnnotationCalculator {
             if (results.getNumResults() > 0) {
                 proteinVariantAnnotation = results.getResults().get(0);
             }
-
         }
         return proteinVariantAnnotation;
     }

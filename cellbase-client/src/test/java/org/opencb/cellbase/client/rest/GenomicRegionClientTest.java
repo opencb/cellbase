@@ -55,21 +55,21 @@ public class GenomicRegionClientTest {
     }
 
     @Test
-    public void getGene() throws Exception {
+    public void testgetGene() throws Exception {
         CellBaseDataResponse<Gene> geneCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getGene(Arrays.asList("3:555-77777"), null);
         assertNotNull(geneCellBaseDataResponse.firstResult());
         assertEquals("LINC01986", geneCellBaseDataResponse.firstResult().getName());
     }
 
     @Test
-    public void getTranscript() throws Exception {
+    public void testgetTranscript() throws Exception {
         CellBaseDataResponse<Transcript> transcriptCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getTranscript(Arrays.asList("3:555-77777"), null);
         assertNotNull(transcriptCellBaseDataResponse.firstResult());
         assertEquals("LINC01986-206", transcriptCellBaseDataResponse.firstResult().getName());
     }
 
     @Test
-    public void getRepeat() throws Exception {
+    public void testgetRepeat() throws Exception {
         CellBaseDataResponse<Repeat> queryResponse = cellBaseClient
                 .getGenomicRegionClient().getRepeat(Arrays.asList("3:555-77777"), null);
         // MAY need fixing
@@ -77,7 +77,7 @@ public class GenomicRegionClientTest {
     }
 
     @Test
-    public void getVariant() throws Exception {
+    public void testgetVariant() throws Exception {
         QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end,id");
         CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGenomicRegionClient()
                 .getVariant(Arrays.asList("22:35490160-35490161", "22:10510033-10510034"), queryOptions);
@@ -92,27 +92,27 @@ public class GenomicRegionClientTest {
     }
 
     @Test
-    public void getSequence() throws Exception {
+    public void testgetSequence() throws Exception {
         CellBaseDataResponse<GenomeSequenceFeature> response = cellBaseClient.getGenomicRegionClient().getSequence(Arrays.asList("10:69999-77777"), null);
         assertTrue(response.firstResult().getSequence().startsWith("AACCAAGCTAAAC"));
     }
 
     @Test
-    public void getRegulatory() throws Exception {
+    public void testgetRegulatory() throws Exception {
         CellBaseDataResponse<RegulatoryFeature> regulatoryFeatureCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getRegulatory(Arrays.asList("10:69999-77777"), null);
         assertNotNull(regulatoryFeatureCellBaseDataResponse.firstResult());
         assertEquals(4, regulatoryFeatureCellBaseDataResponse.getResponses().get(0).getResults().size());
     }
 
     @Test
-    public void getTfbs() throws Exception {
+    public void testgetTfbs() throws Exception {
         CellBaseDataResponse<RegulatoryFeature> response = cellBaseClient.getGenomicRegionClient().getTfbs(Arrays.asList("1:555-66666"), null);
         assertNotNull(response.firstResult());
         assertEquals(1, response.getResponses().get(0).getResults().size());
     }
 
     @Test
-    public void getConservation() throws Exception {
+    public void testgetConservation() throws Exception {
         //QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 10);
         CellBaseDataResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1"
                 + ":6635137-6635325"), null);

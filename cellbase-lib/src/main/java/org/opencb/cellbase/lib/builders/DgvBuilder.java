@@ -228,7 +228,7 @@ public class DgvBuilder extends CellBaseBuilder {
                 null, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, null, additionalAttributes);
+                null, null, null, null, null, additionalAttributes);
 
         return annotation;
     }

@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencb.biodata.models.core.Constraint;
+import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
