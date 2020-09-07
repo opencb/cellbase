@@ -196,6 +196,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(getLogicalListFilter(queryValues, "mirna.id"));
             orBsonList.add(getLogicalListFilter(queryValues, "mirna.accession"));
+            orBsonList.add(getLogicalListFilter(queryValues, "mirna.matures.id"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }

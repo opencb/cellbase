@@ -245,7 +245,7 @@ public class VariantAnnotationCalculator {
         return variantCellBaseDataResult.first();
     }
 
-    private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) {
+    private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) throws QueryException, IllegalAccessException {
         // Fetch overlapping genes for this variant
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
         VariantAnnotation variantAnnotation = variant.getAnnotation();
@@ -293,14 +293,27 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("mirnaTargets")) {
             variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
             for (Gene gene : geneList) {
-                if (gene.getAnnotation() != null && gene.getAnnotation().getTargets() != null) {
-                    variantAnnotation.getGeneMirnaTargets().addAll(gene.getAnnotation().getTargets());
+                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
+                    variantAnnotation.setGeneMirnaTargets(getTargets(gene.getMirna().getMatures()));
                 }
             }
         }
-
         return geneList;
+    }
 
+    private List<String> getTargets(List<MiRnaMature> matures) throws QueryException, IllegalAccessException {
+        List<String> mirnas = new ArrayList<>();
+        for (MiRnaMature mature : matures) {
+            mirnas.add(mature.getId());
+        }
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setIncludes(Collections.singletonList("id"));
+        geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
+        List<String> geneIds = new ArrayList<>();
+        for (Gene gene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
+            geneIds.add(gene.getId());
+        }
+        return geneIds;
     }
 
     private boolean isPhased(Variant variant) {
