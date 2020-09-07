@@ -32,6 +32,7 @@ import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -244,7 +245,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
         createOrQuery(query, VariantDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
+//        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -280,7 +281,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                     case "ciEndLeft":
                         createImprecisePositionQueryEnd(query, andBsonList);
                     case "gene":
-                        createRegionQuery(query, query.getRegions(), andBsonList);
+                        createGeneOrQuery(query, andBsonList);
                         break;
                     case "consequenceType":
                         createAndOrQuery(value, "annotation.consequenceTypes.sequenceOntologyTerms.name",
@@ -295,7 +296,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             e.printStackTrace();
         }
 
-        logger.info("gene parsed query: " + andBsonList.toString());
+        logger.info("variant parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -380,9 +381,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         }
     }
 
-    private void createGeneOrQuery(Query query, String queryParam, List<Bson> andBsonList) {
+    private void createGeneOrQuery(VariantQuery query, List<Bson> andBsonList) {
         if (query != null) {
-            List<String> geneList = query.getAsStringList(queryParam);
+            LogicalList<String> geneList = query.getGenes();
             if (geneList != null && !geneList.isEmpty()) {
                 if (geneList.size() == 1) {
                     andBsonList.add(getGeneQuery(geneList.get(0)));
@@ -391,7 +392,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                     for (String geneId : geneList) {
                         orBsonList.add(getGeneQuery(geneId));
                     }
-                    andBsonList.add(Filters.or(orBsonList));
+                    if (geneList.isAnd()) {
+                        andBsonList.add(Filters.and(orBsonList));
+                    } else {
+                        andBsonList.add(Filters.or(orBsonList));
+                    }
                 }
             }
         }

@@ -34,7 +34,6 @@
 {"collection": "gene", "fields": {"transcripts.tfbs.transcriptionFactors": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.annotation.ontologies.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.annotation.constraints.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.annotation.constraints.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.expression": 1}, "options": {"background": true}}

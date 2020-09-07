@@ -294,24 +294,26 @@ public class VariantAnnotationCalculator {
             variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
             for (Gene gene : geneList) {
                 if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
-                    variantAnnotation.setGeneMirnaTargets(getTargets(gene.getMirna().getMatures()));
+                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
                 }
             }
         }
         return geneList;
     }
 
-    private List<String> getTargets(List<MiRnaMature> matures) throws QueryException, IllegalAccessException {
+    private List<String> getTargets(Gene mirna) throws QueryException, IllegalAccessException {
         List<String> mirnas = new ArrayList<>();
-        for (MiRnaMature mature : matures) {
-            mirnas.add(mature.getId());
+        for (MiRnaMature mature : mirna.getMirna().getMatures()) {
+            if (mature.getId() != null) {
+                mirnas.add(mature.getId());
+            }
         }
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(Collections.singletonList("id"));
         geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
         List<String> geneIds = new ArrayList<>();
-        for (Gene gene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
-            geneIds.add(gene.getId());
+        for (Gene targetGene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
+            geneIds.add(targetGene.getId());
         }
         return geneIds;
     }
@@ -1061,6 +1063,7 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("mirnaTargets")) {
             includeGeneFields.add("annotation.targets");
+            includeGeneFields.add("mirna.matures.id");
         }
         return includeGeneFields;
     }
