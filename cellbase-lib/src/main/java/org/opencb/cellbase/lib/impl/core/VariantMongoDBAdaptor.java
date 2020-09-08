@@ -245,7 +245,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
         createOrQuery(query, VariantDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-//        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
+        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -378,6 +378,24 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         if (query.getCiEndLeft() != null && query.getCiEndRight() != null) {
             andBsonList.add(Filters.lte("ciEndLeft", query.getCiEndRight()));
             andBsonList.add(Filters.gte("ciEndRight", query.getCiEndLeft()));
+        }
+    }
+
+    @Deprecated
+    private void createGeneOrQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            List<String> geneList = query.getAsStringList(queryParam);
+            if (geneList != null && !geneList.isEmpty()) {
+                if (geneList.size() == 1) {
+                    andBsonList.add(getGeneQuery(geneList.get(0)));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(geneList.size());
+                    for (String geneId : geneList) {
+                        orBsonList.add(getGeneQuery(geneId));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
         }
     }
 

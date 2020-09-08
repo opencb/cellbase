@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
@@ -53,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Created by fjlopez on 07/10/16.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Disabled
 public class VariantAnnotationCommandExecutorTest {
 
     private static final String OUTPUT_FILENAME = "/tmp/test.json.gz";
@@ -538,6 +540,7 @@ public class VariantAnnotationCommandExecutorTest {
         String phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertEquals("2:1:AA:-,2:5:-:GG", phaseSet);
         assertNotNull(variant.getAnnotation());
+
         assertNotNull(variant.getAnnotation().getPopulationFrequencies());
         assertEquals(3, variant.getAnnotation().getPopulationFrequencies().size());
         List<PopulationFrequency> populationFrequencyList
