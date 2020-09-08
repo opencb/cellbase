@@ -167,29 +167,29 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         return result;
     }
 
-    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int position,
+    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int aaPosition,
                                                                              String aaReference, String aaAlternate, QueryOptions options) {
         CellBaseDataResult<ProteinVariantAnnotation> results = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
-                position, aaReference, aaAlternate, options);
-        CellBaseDataResult<MissenseVariantFunctionalScore> revelResults =
-                missenseVariationFunctionalScoreMongoDBAdaptor.getRevelScores(
-                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate());
+                aaPosition, aaReference, aaAlternate, options);
+        CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> revelResults =
+                missenseVariationFunctionalScoreMongoDBAdaptor.getScores(
+                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(), aaReference, aaAlternate);
+        results.getResults().get(0).getSubstitutionScores().add(new Score(revelResults.first().getScore(), "revel", ""));
 
-        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
-        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
-
-        if (revelResults.getNumResults() > 0) {
-            List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
-            for (MissenseVariantFunctionalScore score : scores) {
-                for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
-                    if (transcriptScore.getAaReference().equalsIgnoreCase(aaReferenceAbbreviation)
-                            && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternateAbbreviation)) {
-                        results.getResults().get(0).getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
-                        break;
-                    }
-                }
-            }
-        }
+//        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
+//        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
+//        if (revelResults.getNumResults() > 0) {
+//            List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
+//            for (MissenseVariantFunctionalScore score : scores) {
+//                for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
+//                    if (transcriptScore.getAaReference().equalsIgnoreCase(aaReferenceAbbreviation)
+//                            && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternateAbbreviation)) {
+//                        results.getResults().get(0).getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
+//                        break;
+//                    }
+//                }
+//            }
+//        }
         return results;
     }
 }

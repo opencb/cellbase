@@ -19,7 +19,11 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
+import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -35,17 +39,46 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends MongoDBAdapt
         logger.debug("MissenseVariationFunctionalScoreMongoDBAdaptor: in 'constructor'");
     }
 
-    public CellBaseDataResult<MissenseVariantFunctionalScore> getRevelScores(String chromosome, int position, String reference,
-                                                                             String alternate) {
+    public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference, String alternate) {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));
         andBsonList.add(Filters.eq("reference", reference));
         andBsonList.add(Filters.eq("scores.alternate", alternate));
         Bson query = Filters.and(andBsonList);
-        return new CellBaseDataResult<MissenseVariantFunctionalScore>(mongoDBCollection.find(query, null,
+        return new CellBaseDataResult<>(mongoDBCollection.find(query, null,
                 MissenseVariantFunctionalScore.class, new QueryOptions()));
 
+    }
+
+    public CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> getScores(String chromosome, int position, String reference,
+                                                                                  String alternate, String aaReference, String aaAlternate) {
+        List<Bson> andBsonList = new ArrayList<>();
+        andBsonList.add(Filters.eq("chromosome", chromosome));
+        andBsonList.add(Filters.eq("position", position));
+        andBsonList.add(Filters.eq("reference", reference));
+        andBsonList.add(Filters.eq("scores.alternate", alternate));
+        Bson query = Filters.and(andBsonList);
+
+        DataResult<MissenseVariantFunctionalScore> missenseVariantFunctionalScoreDataResult =
+                mongoDBCollection.find(query, null, MissenseVariantFunctionalScore.class, new QueryOptions());
+
+        // Search for the right aa change
+        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
+        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
+        TranscriptMissenseVariantFunctionalScore transcriptMissenseVariantFunctionalScore;
+        if (missenseVariantFunctionalScoreDataResult.getNumResults() > 0) {
+            for (MissenseVariantFunctionalScore score : missenseVariantFunctionalScoreDataResult.getResults()) {
+                for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
+                    if (transcriptScore.getAaReference().equalsIgnoreCase(aaReferenceAbbreviation)
+                            && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternateAbbreviation)) {
+                        transcriptMissenseVariantFunctionalScore = transcriptScore;
+                        break;
+                    }
+                }
+            }
+        }
+        return new CellBaseDataResult<>();  // transcriptMissenseVariantFunctionalScore
     }
 
 }
