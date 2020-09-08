@@ -45,6 +45,7 @@
 {"collection": "gene", "fields": {"annotation.targets.sourceId": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"mirna.matures.id": 1}, "options": {"background": true}}
 
 {"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 
