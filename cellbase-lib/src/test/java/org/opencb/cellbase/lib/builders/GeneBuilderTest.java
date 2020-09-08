@@ -26,9 +26,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.avro.Constraint;
-import org.opencb.biodata.models.variant.avro.MiRnaTarget;
-import org.opencb.biodata.models.variant.avro.TargetGene;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -110,8 +107,8 @@ public class GeneBuilderTest {
         }
 
         GeneAnnotation annotation = gene.getAnnotation();
-        assertEquals(1, annotation.getTargets().size());
-        MiRnaTarget target = annotation.getTargets().get(0);
+        assertEquals(1, annotation.getMirnaTargets().size());
+        MirnaTarget target = annotation.getMirnaTargets().get(0);
         assertEquals("MIRT000002", target.getId());
         assertEquals("miRTarBase", target.getSource());
         assertEquals("hsa-miR-20a-5p", target.getSourceId());

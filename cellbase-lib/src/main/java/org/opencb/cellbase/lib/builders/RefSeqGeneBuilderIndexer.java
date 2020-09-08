@@ -22,8 +22,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
-import org.opencb.biodata.models.variant.avro.MiRnaTarget;
-import org.opencb.biodata.models.variant.avro.TargetGene;
+import org.opencb.biodata.models.core.MirnaTarget;
+import org.opencb.biodata.models.core.TargetGene;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
@@ -232,7 +232,7 @@ public class RefSeqGeneBuilderIndexer {
             String currentMiRNA = null;
             String currentGene = null;
             List<TargetGene> targetGenes = new ArrayList();
-            Map<String, List<MiRnaTarget>> geneToMirna = new HashMap();
+            Map<String, List<MirnaTarget>> geneToMirna = new HashMap();
             while (iterator.hasNext()) {
 
                 Row currentRow = iterator.next();
@@ -272,7 +272,7 @@ public class RefSeqGeneBuilderIndexer {
 
                 if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
                     // new entry, store current one
-                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+                    MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
                             targetGenes);
                     addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
                     targetGenes = new ArrayList();
@@ -303,11 +303,11 @@ public class RefSeqGeneBuilderIndexer {
             }
 
             // parse last entry
-            MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+            MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
                     targetGenes);
             addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
 
-            for (Map.Entry<String, List<MiRnaTarget>> entry : geneToMirna.entrySet()) {
+            for (Map.Entry<String, List<MirnaTarget>> entry : geneToMirna.entrySet()) {
                 rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
             }
         } else {
@@ -315,7 +315,7 @@ public class RefSeqGeneBuilderIndexer {
         }
     }
 
-    public List<MiRnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
+    public List<MirnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
         String key = geneName + MIRTARBASE_SUFFIX;
         return rocksDbManager.getMirnaTargets(rocksdb, key);
     }

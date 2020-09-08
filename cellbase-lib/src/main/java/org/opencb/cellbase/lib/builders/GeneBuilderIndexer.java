@@ -31,8 +31,6 @@ import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.models.variant.avro.Constraint;
-import org.opencb.biodata.models.variant.avro.MiRnaTarget;
-import org.opencb.biodata.models.variant.avro.TargetGene;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -592,7 +590,7 @@ public class GeneBuilderIndexer {
             String currentMiRNA = null;
             String currentGene = null;
             List<TargetGene> targetGenes = new ArrayList();
-            Map<String, List<MiRnaTarget>> geneToMirna = new HashMap();
+            Map<String, List<MirnaTarget>> geneToMirna = new HashMap();
             while (iterator.hasNext()) {
 
                 Row currentRow = iterator.next();
@@ -632,7 +630,7 @@ public class GeneBuilderIndexer {
 
                 if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
                     // new entry, store current one
-                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+                    MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
                             targetGenes);
                     addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
                     targetGenes = new ArrayList();
@@ -663,11 +661,11 @@ public class GeneBuilderIndexer {
             }
 
             // parse last entry
-            MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+            MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
                     targetGenes);
             addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
 
-            for (Map.Entry<String, List<MiRnaTarget>> entry : geneToMirna.entrySet()) {
+            for (Map.Entry<String, List<MirnaTarget>> entry : geneToMirna.entrySet()) {
                 rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
             }
         } else {
@@ -675,7 +673,7 @@ public class GeneBuilderIndexer {
         }
     }
 
-    public List<MiRnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
+    public List<MirnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
         String key = geneName + MIRTARBASE_SUFFIX;
         return rocksDbManager.getMirnaTargets(rocksdb, key);
     }

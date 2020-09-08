@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
-import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
 import org.opencb.biodata.models.variant.Variant;
@@ -32,7 +31,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MissenseVariationFunctionalScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ProteinMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
-import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -169,12 +167,16 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
 
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int aaPosition,
                                                                              String aaReference, String aaAlternate, QueryOptions options) {
-        CellBaseDataResult<ProteinVariantAnnotation> results = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
+        CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
                 aaPosition, aaReference, aaAlternate, options);
         CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> revelResults =
                 missenseVariationFunctionalScoreMongoDBAdaptor.getScores(
-                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(), aaReference, aaAlternate);
-        results.getResults().get(0).getSubstitutionScores().add(new Score(revelResults.first().getScore(), "revel", ""));
+                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
+                        aaReference, aaAlternate);
+        if (proteinVariantAnnotation.getResults() != null && revelResults.getResults() != null) {
+            proteinVariantAnnotation.getResults().get(0).getSubstitutionScores().add(
+                    new Score(revelResults.first().getScore(), "revel", ""));
+        }
 
 //        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
 //        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
@@ -190,7 +192,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
 //                }
 //            }
 //        }
-        return results;
+        return proteinVariantAnnotation;
     }
 }
 

@@ -301,7 +301,7 @@ public class VariantAnnotationCalculator {
         return geneList;
     }
 
-    private List<String> getTargets(Gene mirna) throws QueryException, IllegalAccessException {
+    private List<GeneMirnaTarget> getTargets(Gene mirna) throws QueryException, IllegalAccessException {
         List<String> mirnas = new ArrayList<>();
         for (MiRnaMature mature : mirna.getMirna().getMatures()) {
             if (mature.getId() != null) {
@@ -311,11 +311,11 @@ public class VariantAnnotationCalculator {
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(Collections.singletonList("id"));
         geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
-        List<String> geneIds = new ArrayList<>();
-        for (Gene targetGene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
-            geneIds.add(targetGene.getId());
+        List<GeneMirnaTarget> geneMirnaTargets = new ArrayList<>();
+        for (Gene gene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
+            geneMirnaTargets.add(new GeneMirnaTarget(gene.getId(), gene.getName(), gene.getBiotype()));
         }
-        return geneIds;
+        return geneMirnaTargets;
     }
 
     private boolean isPhased(Variant variant) {
