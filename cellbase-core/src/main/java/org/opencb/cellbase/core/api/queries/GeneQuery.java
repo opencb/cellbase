@@ -79,7 +79,7 @@ public class GeneQuery extends AbstractQuery {
     private LogicalList<String> annotationDrugsName;
     @QueryParameter(id = "constraints", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_PARAM})
     private LogicalList<String> annotationConstraints;
-    @QueryParameter(id = "annotation.targets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
+    @QueryParameter(id = "annotation.mirnaTargets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
     private LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;

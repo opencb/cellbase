@@ -139,7 +139,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "constraints":
                         createConstraintsQuery(geneQuery, andBsonList);
                         break;
-                    case "annotation.targets":
+                    case "annotation.mirnaTargets":
                         createTargetQuery(value, andBsonList);
                         break;
                     case "ontology":
@@ -215,8 +215,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void createTargetQuery(Object queryValues, List<Bson> andBsonList) {
         if (queryValues != null) {
             List<Bson> orBsonList = new ArrayList<>();
-            orBsonList.add(getLogicalListFilter(queryValues, "annotation.targets.id"));
-            orBsonList.add(getLogicalListFilter(queryValues, "annotation.targets.sourceId"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.mirnaTargets.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.mirnaTargets.sourceId"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }

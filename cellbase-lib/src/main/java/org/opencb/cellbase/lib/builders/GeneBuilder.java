@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.builders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import htsjdk.tribble.readers.TabixReader;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -363,13 +364,13 @@ public class GeneBuilder extends CellBaseBuilder {
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, indexer.getConstraints(transcriptId));
         // to match Ensembl, we set the ID as transcript+version. This also matches the Ensembl website.
         String transcriptIdWithVersion = transcriptId + "." + gtfAttributes.get("transcript_version");
+
         transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
                         : SOURCE,
                 "KNOWN", SOURCE, transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), gtfAttributes.get("transcript_version"),
-                gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
+                gtf.getStrand(), gtfAttributes.get("transcript_version"), 0, 0, 0, 0,
                 0, "", "", indexer.getXrefs(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
 
@@ -381,6 +382,10 @@ public class GeneBuilder extends CellBaseBuilder {
         String tags = gtf.getAttributes().get("tag");
         if (tags != null) {
             transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
+        }
+        String supportLevel = gtfAttributes.get("transcript_support_level");
+        if (StringUtils.isNotEmpty(supportLevel)) {
+            transcript.getAnnotationFlags().add("TS:" + supportLevel);
         }
 
         transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));

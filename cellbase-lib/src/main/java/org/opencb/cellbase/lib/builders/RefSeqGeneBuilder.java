@@ -37,7 +37,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Map<String, Exon> exonDict;
     private Path gtfFile;
     private Path fastaFile;
-    private Path proteinFastaFile;
+    private Path proteinFastaFile, cdnaFastaFile;
     private Path disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
@@ -59,6 +59,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         getGtfFileFromDirectoryPath(refSeqDirectoryPath);
         getFastaFileFromDirectoryPath(refSeqDirectoryPath);
         getProteinFastaFileFromDirectoryPath(refSeqDirectoryPath);
+        getCdnaFastaFileFromDirectoryPath(refSeqDirectoryPath);
         setAnnotationFiles(refSeqDirectoryPath);
 
         transcriptDict = new HashMap<>(250000);
@@ -84,7 +85,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void getFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
         for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith(".fna") || fileName.endsWith(".fna.gz")) {
+            if (fileName.endsWith("genomic.fna") || fileName.endsWith("genomic.fna.gz")) {
                 fastaFile = refSeqDirectoryPath.resolve(fileName);
                 break;
             }
@@ -100,6 +101,15 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
     }
 
+    private void getCdnaFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
+        for (String fileName : refSeqDirectoryPath.toFile().list()) {
+            if (fileName.endsWith("cdna.fna") || fileName.endsWith("cdna.fna.gz")) {
+                cdnaFastaFile = refSeqDirectoryPath.resolve(fileName);
+                break;
+            }
+        }
+    }
+
     public void parse() throws Exception {
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
@@ -109,7 +119,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(proteinFastaFile.getParent());
-        indexer.index(proteinFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
+        indexer.index(proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -124,7 +134,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     parseGene(gtf, chromosome, indexer);
                     break;
                 case "exon":
-                    parseExon(gtf, chromosome, fastaIndex);
+                    parseExon(gtf, chromosome, fastaIndex, indexer);
                     break;
                 case "CDS":
                     parseCDS(gtf, indexer);
@@ -213,7 +223,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         geneDbxrefs = parseXrefs(gtf);
     }
 
-    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex) {
+    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex, RefSeqGeneBuilderIndexer indexer) throws RocksDBException {
         String transcriptId = gtf.getAttributes().get("transcript_id");
 
         // new transcript
@@ -229,7 +239,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 transcriptVersion = transcriptId.split("\\.")[1];
             }
 
-            transcript = getTranscript(gtf, chromosome, transcriptId, transcriptVersion);
+            transcript = getTranscript(gtf, chromosome, transcriptId, transcriptVersion, indexer);
         } else {
             transcript = transcriptDict.get(transcriptId);
         }
@@ -521,7 +531,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         return xrefSet;
     }
 
-    private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, String version) {
+    private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, String version, RefSeqGeneBuilderIndexer indexer)
+            throws RocksDBException {
         Map<String, String> gtfAttributes = gtf.getAttributes();
         String biotype = gtfAttributes.get("gbkey");
         if ("mRNA".equals(biotype)) {
@@ -529,9 +540,11 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
         String transcriptName = gene.getName();
         transcript = new Transcript(transcriptId, transcriptName, biotype, status, SOURCE, chromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), version, null, 0, 0, 0, 0, 0, "", "", null, new ArrayList<Exon>(), null, null);
+                gtf.getStrand(), version, 0, 0, 0, 0, 0,
+                "", "", null, new ArrayList<Exon>(), null, null);
         transcriptDict.put(transcriptId, transcript);
         gene.getTranscripts().add(transcript);
+        transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
         return transcript;
     }
 

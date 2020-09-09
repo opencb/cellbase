@@ -309,10 +309,10 @@ public class VariantAnnotationCalculator {
             }
         }
         GeneQuery geneQuery = new GeneQuery();
-        geneQuery.setIncludes(Collections.singletonList("id"));
         geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
         List<GeneMirnaTarget> geneMirnaTargets = new ArrayList<>();
-        for (Gene gene : new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults()) {
+        List<Gene> genes = (geneManager.search(geneQuery)).getResults();
+        for (Gene gene : genes) {
             geneMirnaTargets.add(new GeneMirnaTarget(gene.getId(), gene.getName(), gene.getBiotype()));
         }
         return geneMirnaTargets;

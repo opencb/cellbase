@@ -44,6 +44,7 @@ public class RefSeqGeneBuilderIndexer {
 
     private RocksDB rocksdb;
     private static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
+    private static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
     private static final String DISEASE_SUFFIX = "_disease";
     private static final String DRUGS_SUFFIX = "_drug";
     private static final String MIRTARBASE_SUFFIX = "_mirtarbase";
@@ -66,9 +67,11 @@ public class RefSeqGeneBuilderIndexer {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    public void index(Path proteinFastaFile, Path geneDrugFile, Path hpoFilePath, Path disgenetFile, Path miRTarBaseFile)
+    public void index(Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath, Path disgenetFile,
+                      Path miRTarBaseFile)
             throws IOException, RocksDBException, FileFormatException {
         indexProteinSequences(proteinFastaFile);
+        indexCdnaSequences(cDnaFastaFile);
         indexDrugs(geneDrugFile);
         indexDiseases(hpoFilePath, disgenetFile);
         indexMiRTarBase(miRTarBaseFile);
@@ -92,6 +95,31 @@ public class RefSeqGeneBuilderIndexer {
 
     public String getProteinFasta(String id) throws RocksDBException {
         String key = id + PROTEIN_SEQUENCE_SUFFIX;
+        byte[] value = rocksdb.get(key.getBytes());
+        if (value != null) {
+            return new String(value);
+        }
+        return null;
+    }
+
+    private void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
+        logger.info("Loading RefSeq's cDNA sequences...");
+        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
+                && Files.size(cDnaFastaFile) > 0) {
+            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
+            List<Fasta> fastaList = fastaReader.readAll();
+            fastaReader.close();
+            for (Fasta fasta : fastaList) {
+                rocksDbManager.update(rocksdb, fasta.getId() + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
+            }
+        } else {
+            logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
+            logger.warn("RefSeq's cDNA sequences not loaded");
+        }
+    }
+
+    public String getCdnaFasta(String id) throws RocksDBException {
+        String key = id + CDNA_SEQUENCE_SUFFIX;
         byte[] value = rocksdb.get(key.getBytes());
         if (value != null) {
             return new String(value);

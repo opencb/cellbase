@@ -66,6 +66,7 @@ public class DownloadProperties {
     private URLProperties refSeq;
     private URLProperties refSeqFasta;
     private URLProperties refSeqProteinFasta;
+    private URLProperties refSeqCdna;
     private URLProperties revel;
 
     public EnsemblProperties getEnsembl() {
@@ -444,6 +445,15 @@ public class DownloadProperties {
 
     public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {
         this.refSeqProteinFasta = refSeqProteinFasta;
+        return this;
+    }
+
+    public URLProperties getRefSeqCdna() {
+        return refSeqCdna;
+    }
+
+    public DownloadProperties setRefSeqCdna(URLProperties refSeqCdna) {
+        this.refSeqCdna = refSeqCdna;
         return this;
     }
 

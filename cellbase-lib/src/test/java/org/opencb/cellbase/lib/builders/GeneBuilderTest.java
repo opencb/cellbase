@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -181,7 +182,8 @@ public class GeneBuilderTest {
         assertEquals(TRANSCRIPT_SEQUENCE, transcript.getcDnaSequence());
         assertEquals("2", transcript.getVersion());
         assertEquals("ensembl", transcript.getSource());
-        assertEquals("1", transcript.getSupportLevel());
+        Set<String> flags = transcript.getAnnotationFlags();
+        assertTrue(flags.contains("TS:1"));
     }
 
     private Transcript getTranscript(Gene gene, String transcriptId) {
