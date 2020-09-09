@@ -39,7 +39,8 @@ public class TranscriptQuery extends AbstractQuery {
     @QueryParameter(id = "transcripts.name", alias = {"name"})
     private List<String> transcriptsName;
 
-    @QueryParameter(id = "transcripts.flags", alias = {"annotationFlags", "transcripts.annotationFlags", "transcriptsAnnotationFlags"})
+    @QueryParameter(id = "transcripts.flags", alias = {"flags", "annotationFlags", "transcripts.annotationFlags",
+            "transcriptsAnnotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.id", alias = {ParamConstants.TRANSCRIPT_TFBS_IDS_PARAM, "tfbs.id", "transcriptsTfbsId",
             "tfbsId"})

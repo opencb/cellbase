@@ -51,7 +51,7 @@ public class GeneQuery extends AbstractQuery {
     private List<String> transcriptsName;
 
     @QueryParameter(id = "transcripts.flags", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM,
-            "transcriptsAnnotationFlags", "transcripts.annotationFlags"})
+            "transcriptsAnnotationFlags", "transcripts.annotationFlags", "flags"})
     private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.id", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM, "transcriptsTfbsId", "tfbsId"})
     private LogicalList<String> transcriptsTfbsId;

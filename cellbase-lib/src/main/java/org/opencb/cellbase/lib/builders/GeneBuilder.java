@@ -390,7 +390,7 @@ public class GeneBuilder extends CellBaseBuilder {
         if (StringUtils.isNotEmpty(supportLevel)) {
             // split on space so "5 (assigned to previous version 3)" and "5" both become "TS:5"
             String truncatedSupportLevel = supportLevel.split(" ")[0];
-            transcript.getFlags().add("TS:" + truncatedSupportLevel);
+            transcript.getFlags().add("TSL:" + truncatedSupportLevel);
         }
 
         transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
