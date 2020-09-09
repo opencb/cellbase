@@ -17,10 +17,7 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -248,7 +245,7 @@ public class VariantAnnotationCalculator {
         return variantCellBaseDataResult.first();
     }
 
-    private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) {
+    private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) throws QueryException, IllegalAccessException {
         // Fetch overlapping genes for this variant
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
         VariantAnnotation variantAnnotation = variant.getAnnotation();
@@ -284,8 +281,41 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        return geneList;
+        if (annotatorSet.contains("geneConstraints")) {
+            variantAnnotation.setGeneConstraints(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getConstraints() != null) {
+                    variantAnnotation.getGeneConstraints().addAll(gene.getAnnotation().getConstraints());
+                }
+            }
+        }
 
+        if (annotatorSet.contains("mirnaTargets")) {
+            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
+                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
+                }
+            }
+        }
+        return geneList;
+    }
+
+    private List<GeneMirnaTarget> getTargets(Gene mirna) throws QueryException, IllegalAccessException {
+        List<String> mirnas = new ArrayList<>();
+        for (MiRnaMature mature : mirna.getMirna().getMatures()) {
+            if (mature.getId() != null) {
+                mirnas.add(mature.getId());
+            }
+        }
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
+        List<GeneMirnaTarget> geneMirnaTargets = new ArrayList<>();
+        List<Gene> genes = (geneManager.search(geneQuery)).getResults();
+        for (Gene gene : genes) {
+            geneMirnaTargets.add(new GeneMirnaTarget(gene.getId(), gene.getName(), gene.getBiotype()));
+        }
+        return geneMirnaTargets;
     }
 
     private boolean isPhased(Variant variant) {
@@ -706,7 +736,7 @@ public class VariantAnnotationCalculator {
                         consequenceType3.setCdsPosition(cdsPosition);
                         consequenceType3.setCodon(codon);
                         consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
-                        newProteinVariantAnnotation = getProteinAnnotation(consequenceType3);
+                        newProteinVariantAnnotation = getProteinAnnotation(variant2, consequenceType3);
                         consequenceType3.setProteinVariantAnnotation(newProteinVariantAnnotation);
                         consequenceType3.setSequenceOntologyTerms(soTerms);
 
@@ -740,7 +770,7 @@ public class VariantAnnotationCalculator {
                     consequenceType1.setCodon(codon);
                     consequenceType1.getProteinVariantAnnotation().setAlternate(alternateAA);
                     consequenceType1.setProteinVariantAnnotation(newProteinVariantAnnotation == null
-                            ? getProteinAnnotation(consequenceType1) : newProteinVariantAnnotation);
+                            ? getProteinAnnotation(variant1, consequenceType1) : newProteinVariantAnnotation);
                     consequenceType1.setSequenceOntologyTerms(soTerms);
                     consequenceType2.setCdnaPosition(cdnaPosition);
                     consequenceType2.setCdsPosition(cdsPosition);
@@ -1000,8 +1030,8 @@ public class VariantAnnotationCalculator {
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
-                    "repeats", "cytoband", "hgvs"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
+                    "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1027,6 +1057,13 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("drugInteraction")) {
             includeGeneFields.add("annotation.drugs");
+        }
+        if (annotatorSet.contains("geneConstraints")) {
+            includeGeneFields.add("annotation.constraints");
+        }
+        if (annotatorSet.contains("mirnaTargets")) {
+            includeGeneFields.add("annotation.targets");
+            includeGeneFields.add("mirna.matures.id");
         }
         return includeGeneFields;
     }
@@ -1063,19 +1100,25 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
+    private ProteinVariantAnnotation getProteinAnnotation(Variant variant, ConsequenceType consequenceType) {
+        ProteinVariantAnnotation proteinVariantAnnotation = null;
         if (consequenceType.getProteinVariantAnnotation() != null) {
-            CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinManager.getVariantAnnotation(
-                    consequenceType.getEnsemblTranscriptId(),
+            String transcriptId = consequenceType.getTranscriptId();
+            // transcript may contain version, e.g. ENST00000382011.9. sift/polyphen do NOT contain version, so remove version
+            if (transcriptId != null && transcriptId.contains("\\.")) {
+                transcriptId = transcriptId.split("\\.")[0];
+            }
+            CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(variant,
+                    transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
                     consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
 
-            if (proteinVariantAnnotation.getNumResults() > 0) {
-                return proteinVariantAnnotation.getResults().get(0);
+            if (results.getNumResults() > 0) {
+                proteinVariantAnnotation = results.getResults().get(0);
             }
         }
-        return null;
+        return proteinVariantAnnotation;
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
@@ -1225,7 +1268,7 @@ public class VariantAnnotationCalculator {
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
-                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(variant, consequenceType));
                 }
             }
         }

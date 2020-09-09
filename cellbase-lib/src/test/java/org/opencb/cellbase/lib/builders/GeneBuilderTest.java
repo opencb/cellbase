@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -107,8 +108,8 @@ public class GeneBuilderTest {
         }
 
         GeneAnnotation annotation = gene.getAnnotation();
-        assertEquals(1, annotation.getTargets().size());
-        MiRnaTarget target = annotation.getTargets().get(0);
+        assertEquals(1, annotation.getMirnaTargets().size());
+        MirnaTarget target = annotation.getMirnaTargets().get(0);
         assertEquals("MIRT000002", target.getId());
         assertEquals("miRTarBase", target.getSource());
         assertEquals("hsa-miR-20a-5p", target.getSourceId());
@@ -181,7 +182,8 @@ public class GeneBuilderTest {
         assertEquals(TRANSCRIPT_SEQUENCE, transcript.getcDnaSequence());
         assertEquals("2", transcript.getVersion());
         assertEquals("ensembl", transcript.getSource());
-        assertEquals("1", transcript.getSupportLevel());
+        Set<String> flags = transcript.getFlags();
+        assertTrue(flags.contains("TS:1"));
     }
 
     private Transcript getTranscript(Gene gene, String transcriptId) {

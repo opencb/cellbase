@@ -446,4 +446,10 @@ public class MongoDBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
+
+    public MissenseVariationFunctionalScoreMongoDBAdaptor getMissenseVariationFunctionalScoreMongoDBAdaptor(
+            String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new MissenseVariationFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 }

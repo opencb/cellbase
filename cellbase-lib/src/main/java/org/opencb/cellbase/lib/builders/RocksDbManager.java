@@ -24,7 +24,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.models.core.MiRnaTarget;
+import org.opencb.biodata.models.variant.avro.Constraint;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -117,12 +117,12 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, FeatureOntologyTermAnnotation[].class));
     }
 
-    public List<MiRnaTarget> getMirnaTargets(RocksDB rdb, String key) throws RocksDBException, IOException {
+    public List<MirnaTarget> getMirnaTargets(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             return null;
         }
-        return Arrays.asList(mapper.readValue(dbContent, MiRnaTarget[].class));
+        return Arrays.asList(mapper.readValue(dbContent, MirnaTarget[].class));
     }
 
     public MiRnaGene getMirnaGene(RocksDB rdb, String key) throws RocksDBException, IOException {

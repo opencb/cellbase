@@ -319,7 +319,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         document.put("xrefs", "$transcripts.xrefs");
         document.put("exons", "$transcripts.exons");
         document.put("tfbs", "$transcripts.tfbs");
-        document.put("annotationFlags", "$transcripts.annotationFlags");
+        document.put("flags", "$transcripts.flags");
         document.put("annotation", "$transcripts.annotation");
         Bson project = Aggregates.project(document);
 

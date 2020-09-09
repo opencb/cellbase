@@ -123,9 +123,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "transcripts.id":
                         createTranscriptIdQuery(value, andBsonList);
                         break;
-                    case "transcripts.annotationFlags":
+                    case "transcripts.flags":
                         // TODO use unwind to filter out unwanted transcripts
-                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "transcripts.flags", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "transcripts.supportLevel":
                         createSupportLevelQuery(value, andBsonList);
@@ -139,7 +139,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "constraints":
                         createConstraintsQuery(geneQuery, andBsonList);
                         break;
-                    case "annotation.targets":
+                    case "annotation.mirnaTargets":
                         createTargetQuery(value, andBsonList);
                         break;
                     case "ontology":
@@ -196,6 +196,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(getLogicalListFilter(queryValues, "mirna.id"));
             orBsonList.add(getLogicalListFilter(queryValues, "mirna.accession"));
+            orBsonList.add(getLogicalListFilter(queryValues, "mirna.matures.id"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }
@@ -214,8 +215,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void createTargetQuery(Object queryValues, List<Bson> andBsonList) {
         if (queryValues != null) {
             List<Bson> orBsonList = new ArrayList<>();
-            orBsonList.add(getLogicalListFilter(queryValues, "annotation.targets.id"));
-            orBsonList.add(getLogicalListFilter(queryValues, "annotation.targets.sourceId"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.mirnaTargets.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.mirnaTargets.sourceId"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }

@@ -109,7 +109,8 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
             // genomic fasta
             url = configuration.getDownload().getRefSeqFasta().getHost();
-            outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fna.gz";
+            outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName()
+                    + "_genomic.fna.gz";
             logger.info("downloading " + url);
             outputPath = refSeqFolder.resolve(outputFileName);
             saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(),
@@ -127,6 +128,14 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                     refSeqFolder.resolve("refSeqProteinFastaVersion.json"));
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
+            // cDNA
+            url = configuration.getDownload().getRefSeqCdna().getHost();
+            outputFileName = "refSeq_" + StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName()
+                    + "_cdna.fna.gz";
+            outputPath = refSeqFolder.resolve(outputFileName);
+            saveVersionData(EtlCommons.REFSEQ_DATA, "RefSeq", null, getTimeStamp(), Collections.singletonList(url),
+                    refSeqFolder.resolve("refSeqCdnaFastaVersion.json"));
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
             return downloadFiles;
 
         }

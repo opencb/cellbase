@@ -80,10 +80,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
-
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
-
 
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {
@@ -91,7 +89,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
         // Ensembl transcript id is needed for this collection
         if (query.getTranscriptsId() != null && query.getTranscriptsId().get(0) != null) {
-            Bson transcript = Filters.eq("transcriptId", query.getTranscriptsId().get(0));
+            String transcriptId = query.getTranscriptsId().get(0).split("\\.")[0];
+            Bson transcript = Filters.eq("transcriptId", transcriptId);
 
             String aaShortName = null;
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
@@ -273,50 +272,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         cellBaseDataResult.setResults(Collections.singletonList(proteinVariantAnnotation));
         return cellBaseDataResult;
     }
-
-//    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
-//    }
-
-//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, field, "name", options);
-//    }
-//
-//    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, fields, "name", options);
-//    }
-//
-//    public CellBaseDataResult<Long> count(Query query) {
-//        Bson document = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.count(document));
-//    }
-//
-//    public CellBaseDataResult distinct(Query query, String field) {
-//        Bson document = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, document));
-//    }
-
-//    @Override
-//    public CellBaseDataResult stats(Query query) {
-//        return null;
-//    }
-
-//    public CellBaseDataResult<Entry> get(Query query, QueryOptions options) {
-//        Bson bson = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Entry.class, options));
-//    }
-//
-//    public CellBaseDataResult nativeGet(AbstractQuery query) {
-//        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
-//    }
-//
-//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-//        Bson bson = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
-//    }
 
     @Override
     public CellBaseIterator<Entry> iterator(ProteinQuery query) {

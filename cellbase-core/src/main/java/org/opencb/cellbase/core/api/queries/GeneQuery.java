@@ -53,8 +53,8 @@ public class GeneQuery extends AbstractQuery {
     allowedValues = {"1", "2", "3", "4", "5", "NA"})
     private List<String> transcriptsSupportLevel;
 
-    @QueryParameter(id = "transcripts.annotationFlags", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM,
-            "transcriptsAnnotationFlags"})
+    @QueryParameter(id = "transcripts.flags", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM,
+            "transcriptsAnnotationFlags", "transcripts.annotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.id", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM, "transcriptsTfbsId", "tfbsId"})
     private LogicalList<String> transcriptsTfbsId;
@@ -79,7 +79,7 @@ public class GeneQuery extends AbstractQuery {
     private LogicalList<String> annotationDrugsName;
     @QueryParameter(id = "constraints", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_PARAM})
     private LogicalList<String> annotationConstraints;
-    @QueryParameter(id = "annotation.targets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
+    @QueryParameter(id = "annotation.mirnaTargets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
     private LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;
