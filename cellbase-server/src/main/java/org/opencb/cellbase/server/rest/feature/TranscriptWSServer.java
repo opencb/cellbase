@@ -167,7 +167,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ONTOLOGY_PARAM, value = ParamConstants.ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_DESCRIPTION,
+            @ApiImplicitParam(name = "flags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_DESCRIPTION,
                     dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),

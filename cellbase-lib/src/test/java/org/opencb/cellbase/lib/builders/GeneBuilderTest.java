@@ -182,7 +182,7 @@ public class GeneBuilderTest {
         assertEquals(TRANSCRIPT_SEQUENCE, transcript.getcDnaSequence());
         assertEquals("2", transcript.getVersion());
         assertEquals("ensembl", transcript.getSource());
-        Set<String> flags = transcript.getAnnotationFlags();
+        Set<String> flags = transcript.getFlags();
         assertTrue(flags.contains("TS:1"));
     }
 

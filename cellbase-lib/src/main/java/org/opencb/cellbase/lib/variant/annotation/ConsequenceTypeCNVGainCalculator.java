@@ -59,8 +59,8 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
                 consequenceType.setSource(source);
-                consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
-                        ? new ArrayList<>(transcript.getAnnotationFlags()) : null);
+                consequenceType.setTranscriptAnnotationFlags(transcript.getFlags() != null
+                        ? new ArrayList<>(transcript.getFlags()) : null);
                 SoNames.clear();
 
                 if (transcript.getStrand().equals("+")) {

@@ -123,9 +123,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "transcripts.id":
                         createTranscriptIdQuery(value, andBsonList);
                         break;
-                    case "transcripts.annotationFlags":
+                    case "transcripts.flags":
                         // TODO use unwind to filter out unwanted transcripts
-                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "transcripts.flags", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "transcripts.supportLevel":
                         createSupportLevelQuery(value, andBsonList);

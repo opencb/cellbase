@@ -59,8 +59,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
                 consequenceType.setSource(source);
-                consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
-                        ? new ArrayList<>(transcript.getAnnotationFlags())
+                consequenceType.setTranscriptAnnotationFlags(transcript.getFlags() != null
+                        ? new ArrayList<>(transcript.getFlags())
                         : null);
                 SoNames.clear();
 

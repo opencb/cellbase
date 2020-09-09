@@ -379,13 +379,17 @@ public class GeneBuilder extends CellBaseBuilder {
         // that the xrefs array contains all ids present in the GTF file
         addGtfXrefs(transcript, gene);
 
+        // initialise
+        transcript.setFlags(new HashSet<>());
+
         String tags = gtf.getAttributes().get("tag");
         if (tags != null) {
-            transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
+            transcript.setFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
         }
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
-            transcript.getAnnotationFlags().add("TS:" + supportLevel);
+            // split on space so "5 (assigned to previous version 3)" and "5" both become "TS:5"
+            transcript.getFlags().add("TS:" + supportLevel.split(" ")[0]);
         }
 
         transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
