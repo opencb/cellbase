@@ -389,7 +389,8 @@ public class GeneBuilder extends CellBaseBuilder {
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
             // split on space so "5 (assigned to previous version 3)" and "5" both become "TS:5"
-            transcript.getFlags().add("TS:" + supportLevel.split(" ")[0]);
+            String truncatedSupportLevel = supportLevel.split(" ")[0];
+            transcript.getFlags().add("TS:" + truncatedSupportLevel);
         }
 
         transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));

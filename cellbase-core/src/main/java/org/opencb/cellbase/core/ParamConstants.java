@@ -122,11 +122,6 @@ public class ParamConstants {
             + "e.g. MYBL1,MAX"
             + " Exact text matches will be returned";
     public static final String TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM = "transcriptionFactor";
-    public static final String TRANSCRIPT_SUPPORT_LEVEL_DESCRIPTION = "This highlights the well-supported and poorly-supported "
-            + "transcript models. Valid values are 1 (all splice junctions of the transcript are supported) "
-            + "to 5 (no single transcript supports the model structure) and NA (not analysed), "
-            + "see https://www.ensembl.org/info/genome/genebuild/transcript_quality_tags.html for details.";
-    public static final String TRANSCRIPT_SUPPORT_LEVEL_PARAM = "transcriptSupportLevel";
 
     // ---------------------------------------------
 

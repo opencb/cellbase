@@ -38,8 +38,6 @@ public class TranscriptQuery extends AbstractQuery {
     private List<String> transcriptsId;
     @QueryParameter(id = "transcripts.name", alias = {"name"})
     private List<String> transcriptsName;
-    @QueryParameter(id = "transcripts.supportLevel", alias = {"supportLevel"}, allowedValues = {"1", "2", "3", "4", "5", "NA"})
-    private List<String> transcriptSupportLevels;
 
     @QueryParameter(id = "transcripts.annotationFlags", alias = {"annotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
@@ -77,7 +75,6 @@ public class TranscriptQuery extends AbstractQuery {
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
         sb.append(", transcriptsId=").append(transcriptsId);
         sb.append(", transcriptsName=").append(transcriptsName);
-        sb.append(", transcriptSupportLevels=").append(transcriptSupportLevels);
         sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
         sb.append(", transcriptsTfbsId=").append(transcriptsTfbsId);
         sb.append(", transcriptsTfbsPfmId=").append(transcriptsTfbsPfmId);
@@ -137,15 +134,6 @@ public class TranscriptQuery extends AbstractQuery {
 
     public TranscriptQuery setTranscriptsName(List<String> transcriptsName) {
         this.transcriptsName = transcriptsName;
-        return this;
-    }
-
-    public List<String> getTranscriptSupportLevels() {
-        return transcriptSupportLevels;
-    }
-
-    public TranscriptQuery setTranscriptSupportLevels(List<String> transcriptSupportLevels) {
-        this.transcriptSupportLevels = transcriptSupportLevels;
         return this;
     }
 
@@ -218,7 +206,6 @@ public class TranscriptQuery extends AbstractQuery {
         private List<String> transcriptsXrefs;
         private List<String> transcriptsId;
         private List<String> transcriptsName;
-        private List<String> transcriptSupportLevels;
         private LogicalList<String> transcriptsAnnotationFlags;
         private LogicalList<String> transcriptsTfbsId;
         private LogicalList<String> transcriptsTfbsPfmId;
@@ -259,11 +246,6 @@ public class TranscriptQuery extends AbstractQuery {
 
         public TranscriptQueryBuilder withTranscriptsName(List<String> transcriptsName) {
             this.transcriptsName = transcriptsName;
-            return this;
-        }
-
-        public TranscriptQueryBuilder withTranscriptSupportLevels(List<String> transcriptSupportLevels) {
-            this.transcriptSupportLevels = transcriptSupportLevels;
             return this;
         }
 
@@ -340,7 +322,6 @@ public class TranscriptQuery extends AbstractQuery {
             transcriptQuery.setTranscriptsXrefs(transcriptsXrefs);
             transcriptQuery.setTranscriptsId(transcriptsId);
             transcriptQuery.setTranscriptsName(transcriptsName);
-            transcriptQuery.setTranscriptSupportLevels(transcriptSupportLevels);
             transcriptQuery.setTranscriptsAnnotationFlags(transcriptsAnnotationFlags);
             transcriptQuery.setTranscriptsTfbsId(transcriptsTfbsId);
             transcriptQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
