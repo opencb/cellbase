@@ -94,14 +94,10 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 cellbaseManagerFactory);
-        logger.error("variantList " + variantList.toString());
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
-        logger.error("batchList " + batchGeneList.toString());
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
-            logger.error("variantGeneList " + variantGeneList.toString());
             List<String> hgvsStrings = hgvsCalculator.run(variant, variantGeneList, false);
-            logger.error("hgvsStrings " + hgvsStrings.toString());
             results.add(new CellBaseDataResult<>(variant.getId(), 0, new ArrayList<>(), hgvsStrings.size(), hgvsStrings, -1));
         }
         return results;
