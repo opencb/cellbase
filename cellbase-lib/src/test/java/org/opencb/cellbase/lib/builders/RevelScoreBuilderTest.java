@@ -19,9 +19,11 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -35,18 +37,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 public class RevelScoreBuilderTest {
 
     @Test
     public void testParse() throws Exception {
-        CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"),
-                "missense_variation_functional_score");
+        Path revelDir = Paths.get(RevelScoreBuilderTest.class.getResource("/revel").toURI());
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "missense_variation_functional_score");
+        (new RevelScoreBuilder(revelDir, serializer)).parse();
+        serializer.close();
 
-        Path inputPath = Paths.get(RevelScoreBuilderTest.class.getResource("/revel").toURI());
-        RevelScoreBuilder builder = new RevelScoreBuilder(inputPath, cellBaseSerializer);
-        builder.parse();
-
-        cellBaseSerializer.close();
 
         List<MissenseVariantFunctionalScore> actual = loadScores(Paths.get("/tmp/missense_variation_functional_score.json.gz"));
         List<MissenseVariantFunctionalScore> expected = loadScores(Paths.get(RevelScoreBuilderTest.class.getResource(

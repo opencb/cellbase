@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
@@ -42,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
+@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantClientTest {
 
