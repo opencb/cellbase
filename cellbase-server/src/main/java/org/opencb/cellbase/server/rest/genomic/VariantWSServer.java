@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.rest.genomic;
 
 import io.swagger.annotations.*;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.ParamConstants;
@@ -120,8 +121,8 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/annotation")
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
-            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
+            + " values from the following set: {variation, traitAssociation, conservation, consequenceType,"
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse", hidden = true)
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                         + "annotate, e.g. "
@@ -199,8 +200,8 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{variants}/annotation")
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
-            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
+            + " values from the following set: {variation, traitAssociation, conservation, consequenceType,"
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
@@ -283,9 +284,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                             String consequenceTypeSource) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
+            // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
+            String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource :
+                    uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, uriParams.get("consequenceTypeSource"));
+                    checkAminoAcidChange, consequenceTypeSources);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -43,7 +43,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author Jacobo Coll &lt;jacobo167@gmail.com&gt;
  */
-@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantClientTest {
 
