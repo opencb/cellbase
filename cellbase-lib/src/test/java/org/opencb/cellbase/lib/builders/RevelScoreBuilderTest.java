@@ -42,7 +42,7 @@ public class RevelScoreBuilderTest {
         CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"),
                 "missense_variation_functional_score");
 
-        Path inputPath = Paths.get(getClass().getResource("/revel").getPath());
+        Path inputPath = Paths.get(RevelScoreBuilderTest.class.getResource("/revel").toURI());
         RevelScoreBuilder builder = new RevelScoreBuilder(inputPath, cellBaseSerializer);
         builder.parse();
 
