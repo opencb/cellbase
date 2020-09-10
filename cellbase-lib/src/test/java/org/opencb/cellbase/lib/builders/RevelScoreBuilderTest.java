@@ -37,8 +37,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 public class RevelScoreBuilderTest {
+
+    public RevelScoreBuilderTest() throws Exception {
+    }
 
     @Test
     public void testParse() throws Exception {

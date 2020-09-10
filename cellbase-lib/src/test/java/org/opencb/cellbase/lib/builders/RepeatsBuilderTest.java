@@ -39,7 +39,9 @@ import java.util.Set;
 public class RepeatsBuilderTest extends GenericBuilderTest<Repeat> {
 
     public RepeatsBuilderTest() {
+
         super(Repeat.class);
+
     }
 
     @Test
