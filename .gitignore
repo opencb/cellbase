@@ -16,7 +16,6 @@ dist
 *.so.*
 *.out
 *.log
-*.zip
 sonar-project.properties
 git.properties
 *~
