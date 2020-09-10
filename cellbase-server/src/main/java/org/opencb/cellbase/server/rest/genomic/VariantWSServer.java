@@ -285,8 +285,8 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
-            String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource :
-                    uriParams.get("consequenceTypeSource"));
+            String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource
+                    : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
                     checkAminoAcidChange, consequenceTypeSources);
