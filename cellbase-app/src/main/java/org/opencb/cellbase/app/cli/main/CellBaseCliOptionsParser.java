@@ -143,10 +143,12 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
         public String url = "https://bioinfo.hpc.cam.ac.uk:80/cellbase";
 
-        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are "
+                + "{variation, populationFrequencies, conservation, functionalScore, traitAssociation, consequenceType, expression, "
+                + "geneDisease, drugInteraction, cytoband, repeats, hgvs, geneConstraints, mirnaTargets}", required = false)
         public String include;
 
-        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, traitAssociation, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs, geneConstraints, mirnaTargets}", required = false)
         public String exclude;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)

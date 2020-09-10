@@ -318,36 +318,36 @@ public class VariantAnnotationCalculator {
         return geneMirnaTargets;
     }
 
-    private boolean isPhased(Variant variant) {
-        return (variant.getStudies() != null && !variant.getStudies().isEmpty())
-            && variant.getStudies().get(0).getSampleDataKeys().contains("PS");
-    }
-
-    private String getCachedVariationIncludeFields() {
-        StringBuilder stringBuilder = new StringBuilder("annotation.chromosome,annotation.start,annotation.reference");
-        stringBuilder.append(",annotation.alternate,annotation.id");
-
-        if (annotatorSet.contains("variation")) {
-            stringBuilder.append(",annotation.id,annotation.additionalAttributes.dgvSpecificAttributes");
-        }
-        if (annotatorSet.contains("clinical")) {
-            stringBuilder.append(",annotation.variantTraitAssociation");
-        }
-        if (annotatorSet.contains("conservation")) {
-            stringBuilder.append(",annotation.conservation");
-        }
-        if (annotatorSet.contains("functionalScore")) {
-            stringBuilder.append(",annotation.functionalScore");
-        }
-        if (annotatorSet.contains("consequenceType")) {
-            stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
-        }
-        if (annotatorSet.contains("populationFrequencies")) {
-            stringBuilder.append(",annotation.populationFrequencies");
-        }
-
-        return stringBuilder.toString();
-    }
+//    private boolean isPhased(Variant variant) {
+//        return (variant.getStudies() != null && !variant.getStudies().isEmpty())
+//            && variant.getStudies().get(0).getSampleDataKeys().contains("PS");
+//    }
+//
+//    private String getCachedVariationIncludeFields() {
+//        StringBuilder stringBuilder = new StringBuilder("annotation.chromosome,annotation.start,annotation.reference");
+//        stringBuilder.append(",annotation.alternate,annotation.id");
+//
+//        if (annotatorSet.contains("variation")) {
+//            stringBuilder.append(",annotation.id,annotation.additionalAttributes.dgvSpecificAttributes");
+//        }
+//        if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
+//            stringBuilder.append(",annotation.variantTraitAssociation");
+//        }
+//        if (annotatorSet.contains("conservation")) {
+//            stringBuilder.append(",annotation.conservation");
+//        }
+//        if (annotatorSet.contains("functionalScore")) {
+//            stringBuilder.append(",annotation.functionalScore");
+//        }
+//        if (annotatorSet.contains("consequenceType")) {
+//            stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
+//        }
+//        if (annotatorSet.contains("populationFrequencies")) {
+//            stringBuilder.append(",annotation.populationFrequencies");
+//        }
+//
+//        return stringBuilder.toString();
+//    }
 
     private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
@@ -389,7 +389,8 @@ public class VariantAnnotationCalculator {
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
-        if (annotatorSet.contains("clinical")) {
+        // "clinical" is deprecated, replaced with traitAssociation
+        if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased);
             queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
@@ -1029,7 +1030,7 @@ public class VariantAnnotationCalculator {
         if (includeList.size() > 0) {
             annotatorSet = new HashSet<>(includeList);
         } else {
-            annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
+            annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "expression", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
                     "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
