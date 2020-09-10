@@ -39,11 +39,12 @@ public class RevelScoreBuilder extends CellBaseBuilder {
         super(serializer);
         this.revelFilePath = revelDirectoryPath.resolve("revel_grch38_all_chromosomes.csv.zip");
         logger = LoggerFactory.getLogger(ConservationBuilder.class);
+
     }
 
     @Override
     public void parse() throws IOException {
-
+        logger.error("processing Revel file at " + revelFilePath.toAbsolutePath());
         ZipInputStream zis = new ZipInputStream(new FileInputStream(String.valueOf(revelFilePath)));
         ZipEntry zipEntry = zis.getNextEntry();
 
