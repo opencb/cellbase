@@ -27,14 +27,12 @@ import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -49,12 +47,12 @@ public class GeneBuilderTest {
     private GeneBuilder geneParser;
     private ObjectMapper jsonObjectMapper;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
-    public GeneBuilderTest() throws URISyntaxException, CellbaseException {
+    public GeneBuilderTest() throws Exception {
         init();
     }
 
     @BeforeAll
-    public void init() throws URISyntaxException, CellbaseException {
+    public void init() throws Exception {
         Path genomeSequenceFastaFile
                 = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
         Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
@@ -67,12 +65,11 @@ public class GeneBuilderTest {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        geneParser.parse();
     }
 
     @Test
     public void testRocksdb() throws Exception {
-        geneParser.parse();
-
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
 
         Gene gene = getGene("ENSG00000227232", genes);
@@ -141,7 +138,7 @@ public class GeneBuilderTest {
      */
     @Test
     public void testEdgeExonCodingStart() throws Exception {
-        geneParser.parse();
+
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
         Exon exon = getExon("ENSE00003800362", genes);
         assertNotNull(exon);
@@ -174,7 +171,6 @@ public class GeneBuilderTest {
 
     @Test
     public void testTranscriptSequenceAndVersion() throws Exception {
-        geneParser.parse();
         final String TRANSCRIPT_SEQUENCE = "GTTAACTTGCCGTCAGCCTTTTCTTTGACCTCTTCTTTCTGTTCATGTGTATTTGCTGTCTCTTAGCCCAGACTTCCCGTGTCCTTTCCACCGGGCCTTTGAGAGGTCACAGGGTCTTGATGCTGTGGTCTTCATCTGCAGGTGTCTGACTTCCAGCAACTGCTGGCCTGTGCCAGGGTGCAAGCTGAGCACTGGAGTGGAGTTTTCCTGTGGAGAGGAGCCATGCCTAGAGTGGGATGGGCCATTGTTCATCTTCTGGCCCCTGTTGTCTGCATGTAACTTAATACCACAACCAGGCATAGGGGAAAGATTGGAGGAAAGATGAGTGAGAGCATCAACTTCTCTCACAACCTAGGCCAGTGTGTGGTGATGCCAGGCATGCCCTTCCCCAGCATCAGGTCTCCAGAGCTGCAGAAGACGACGGCCGACTTGGATCACACTCTTGTGAGTGTCCCCAGTGTTGCAGAGGCAGGGCCATCAGGCACCAAAGGGATTCTGCCAGCATAGTGCTCCTGGACCAGTGATACACCCGGCACCCTGTCCTGGACACGCTGTTGGCCTGGATCTGAGCCCTGGTGGAGGTCAAAGCCACCTTTGGTTCTGCCATTGCTGCTGTGTGGAAGTTCACTCCTGCCTTTTCCTTTCCCTAGAGCCTCCACCACCCCGAGATCACATTTCTCACTGCCTTTTGTCTGCCCAGTTTCACCAGAAGTAGGCCTCTTCCTGACAGGCAGCTGCACCACTGCCTGGCGCTGTGCCCTTCCTTTGCTCTGCCCGCTGGAGACGGTGTTTGTCATGGGCCTGGTCTGCAGGGATCCTGCTACAAAGGTGAAACCCAGGAGAGTGTGGAGTCCAGAGTGTTGCCAGGACCCAGGCACAGGCATTAGTGCCCGTTGGAGAAAACAGGGGAATCCCGAAGAAATGGTGGGTCCTGGCCATCCGTGAGATCTTCCCAGGGCAGCTCCCCTCTGTGGAATCCAATCTGTCTTCCATCCTGCGTGGCCGAGGGCCAGGCTTCTCACTGGGCCTCTGCAGGAGGCTGCCATTTGTCCTGCCCACCTTCTTAGAAGCGAGACGGAGCAGACCCATCTGCTACTGCCCTTTCTATAATAACTAAAGTTAGCTGCCCTGGACTATTCACCCCCTAGTCTCAATTTAAGAAGATCCCCATGGCCACAGGGCCCCTGCCTGGGGGCTTGTCACCTCCCCCACCTTCTTCCTGAGTCATTCCTGCAGCCTTGCTCCCTAACCTGCCCCACAGCCTTGCCTGGATTTCTATCTCCCTGGCTTGGTGCCAGTTCCTCCAAGTCGATGGCACCTCCCTCCCTCTCAACCACTTGAGCAAACTCCAAGACATCTTCTACCCCAACACCAGCAATTGTGCCAAGGGCCATTAGGCTCTCAGCATGACTATTTTTAGAGACCCCGTGTCTGTCACTGAAACCTTTTTTGTGGGAGACTATTCCTCCCATCTGCAACAGCTGCCCCTGCTGACTGCCCTTCTCTCCTCCCTCTCATCCCAGAGAAACAGGTCAGCTGGGAGCTTCTGCCCCCACTGCCTAGGGACCAACAGGGGCAGGAGGCAGTCACTGACCCCGAGACGTTTGCATCCTGCACAGCTAGAGATCCTTTATTAAAAGCACACTGTTGGTTTCTG";
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
         Transcript transcript = getTranscript("ENST00000456328.2", genes);
@@ -204,7 +200,6 @@ public class GeneBuilderTest {
 
     @Test
     public void testProteinSequence() throws Exception {
-        geneParser.parse();
         final String PROTEIN_SEQUENCE = "MVTEFIFLGLSDSQELQTFLFMLFFVFYGGIVFGNLLIVITVVSDSHLHSPMYFLLANLSLIDLSLSSVTAPKMITDFFSQRKVISFKGCLVQIFLLHFFGGSEMVILIAMGFDRYIAICKPLHYTTIMCGNACVGIMAVTWGIGFLHSVSQLAFAVHLLFCGPNEVDSFYCDLPRVIKLACTDTYRLDIMVIANSGVLTVCSFVLLIISYTIILMTIQHRPLDKSSKALSTLTAHITVVLLFFGPCVFIYAWPFPIKSLDKFLAVFYSVITPLLNPIIYTLRNKDMKTAIRQLRKWDAHSSVKF";
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
         assertEquals(15, genes.size());
@@ -223,7 +218,6 @@ public class GeneBuilderTest {
 
     @Test
     public void testaddTranscriptTfbstoList() throws Exception {
-
         String attributes = "binding_matrix_stable_id=ENSPFM0542;epigenomes_with_experimental_evidence=SK-N.%2CMCF-7%2CH1-hESC_3%2CHCT116;stable_id=ENSM00208374688;transcription_factor_complex=TEAD4::ESRRB";
         String source = null;
         String sequenceName = "1";
@@ -236,6 +230,7 @@ public class GeneBuilderTest {
 
         Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attributes);
         Gtf transcript = new Gtf(sequenceName, source, feature, start, end, score, strand, frame, new HashMap<>());
+
         List<TranscriptTfbs> transcriptTfbs = geneParser.addTranscriptTfbstoList(tfbs, transcript,"1", new ArrayList<>());
 
         assertEquals(1, transcriptTfbs.size());
