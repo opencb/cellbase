@@ -42,7 +42,7 @@ public class RevelScoreBuilderTest {
         CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"),
                 "missense_variation_functional_score");
 
-        Path inputPath = Paths.get(getClass().getResource("/revel/revel_grch38_all_chromosomes.csv.zip").toURI());
+        Path inputPath = Paths.get(getClass().getResource("/revel").getPath());
         RevelScoreBuilder builder = new RevelScoreBuilder(inputPath, cellBaseSerializer);
         builder.parse();
 

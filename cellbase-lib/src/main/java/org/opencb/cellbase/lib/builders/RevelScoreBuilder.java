@@ -35,9 +35,9 @@ public class RevelScoreBuilder extends CellBaseBuilder {
     private Path revelFilePath = null;
     private static final String SOURCE = "revel";
 
-    public RevelScoreBuilder(Path revelFilePath, CellBaseSerializer serializer) {
+    public RevelScoreBuilder(Path revelDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
-        this.revelFilePath = revelFilePath;
+        this.revelFilePath = revelDirectoryPath.resolve("revel_grch38_all_chromosomes.csv.zip");
         logger = LoggerFactory.getLogger(ConservationBuilder.class);
     }
 

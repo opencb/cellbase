@@ -287,9 +287,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseBuilder buildRevel() {
         Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
         copyVersionFiles(Arrays.asList(missensePredictionScorePath.resolve("revelVersion.json")));
-        Path revelFilePath = missensePredictionScorePath.resolve("revel_grch38_all_chromosomes.csv.zip");
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-        return new RevelScoreBuilder(revelFilePath, serializer);
+        return new RevelScoreBuilder(missensePredictionScorePath, serializer);
     }
 
     private CellBaseBuilder buildRegulation() {
