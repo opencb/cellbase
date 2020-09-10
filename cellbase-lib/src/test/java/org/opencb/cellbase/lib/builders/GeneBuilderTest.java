@@ -183,7 +183,7 @@ public class GeneBuilderTest {
         assertEquals("2", transcript.getVersion());
         assertEquals("ensembl", transcript.getSource());
         Set<String> flags = transcript.getFlags();
-        assertTrue(flags.contains("TS:1"));
+        assertTrue(flags.contains("TSL:1"));
     }
 
     private Transcript getTranscript(Gene gene, String transcriptId) {

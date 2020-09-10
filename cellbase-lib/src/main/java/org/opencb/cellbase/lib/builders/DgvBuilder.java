@@ -21,8 +21,8 @@ import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.StructuralVariation;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
 
@@ -225,7 +225,7 @@ public class DgvBuilder extends CellBaseBuilder {
         VariantAnnotation annotation = new VariantAnnotation(variant.getChromosome(), variant.getStart(),
                 variant.getEnd(), variant.getReference(), variant.getAlternate(), null, null,
                 null, null,
-                null, null, null, null,
+                null, null, null,
                 null, null, null, null,
                 null, null, null, null,
                 null, null, null, null, null, additionalAttributes);

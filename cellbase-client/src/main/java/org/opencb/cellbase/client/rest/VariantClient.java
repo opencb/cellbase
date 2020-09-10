@@ -203,30 +203,30 @@ public final class VariantClient extends FeatureClient<Variant> {
                     }
                 }
                 // TODO This data model is obsolete, this code must be removed
-                if (annotation.getVariantTraitAssociation() != null) {
-                    if (annotation.getVariantTraitAssociation().getCosmic() != null) {
-                        for (Cosmic cosmic : annotation.getVariantTraitAssociation().getCosmic()) {
-                            if (cosmic.getSiteSubtype() == null) {
-                                cosmic.setSiteSubtype("");
-                            }
-                            if (cosmic.getSampleSource() == null) {
-                                cosmic.setSampleSource("");
-                            }
-                            if (cosmic.getTumourOrigin() == null) {
-                                cosmic.setTumourOrigin("");
-                            }
-                            if (cosmic.getHistologySubtype() == null) {
-                                cosmic.setHistologySubtype("");
-                            }
-                            if (cosmic.getPrimarySite() == null) {
-                                cosmic.setPrimarySite("");
-                            }
-                            if (cosmic.getPrimaryHistology() == null) {
-                                cosmic.setPrimaryHistology("");
-                            }
-                        }
-                    }
-                }
+//                if (annotation.getVariantTraitAssociation() != null) {
+//                    if (annotation.getVariantTraitAssociation().getCosmic() != null) {
+//                        for (Cosmic cosmic : annotation.getVariantTraitAssociation().getCosmic()) {
+//                            if (cosmic.getSiteSubtype() == null) {
+//                                cosmic.setSiteSubtype("");
+//                            }
+//                            if (cosmic.getSampleSource() == null) {
+//                                cosmic.setSampleSource("");
+//                            }
+//                            if (cosmic.getTumourOrigin() == null) {
+//                                cosmic.setTumourOrigin("");
+//                            }
+//                            if (cosmic.getHistologySubtype() == null) {
+//                                cosmic.setHistologySubtype("");
+//                            }
+//                            if (cosmic.getPrimarySite() == null) {
+//                                cosmic.setPrimarySite("");
+//                            }
+//                            if (cosmic.getPrimaryHistology() == null) {
+//                                cosmic.setPrimaryHistology("");
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
         return queryResponse;

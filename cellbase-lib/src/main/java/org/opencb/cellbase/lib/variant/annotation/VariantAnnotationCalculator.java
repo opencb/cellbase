@@ -623,32 +623,32 @@ public class VariantAnnotationCalculator {
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
     }
 
-    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
-        destination.setChromosome(origin.getChromosome());
-        destination.setStart(origin.getStart());
-        destination.setReference(origin.getReference());
-        destination.setAlternate(origin.getAlternate());
-
-        if (annotatorSet.contains("variation")) {
-            destination.setId(origin.getId());
-        }
-        if (annotatorSet.contains("consequenceType")) {
-            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
-            destination.setConsequenceTypes(origin.getConsequenceTypes());
-        }
-        if (annotatorSet.contains("conservation")) {
-            destination.setConservation(origin.getConservation());
-        }
-        if (annotatorSet.contains("populationFrequencies")) {
-            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
-        }
-        if (annotatorSet.contains("clinical")) {
-            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
-        }
-        if (annotatorSet.contains("functionalScore")) {
-            destination.setFunctionalScore(origin.getFunctionalScore());
-        }
-    }
+//    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
+//        destination.setChromosome(origin.getChromosome());
+//        destination.setStart(origin.getStart());
+//        destination.setReference(origin.getReference());
+//        destination.setAlternate(origin.getAlternate());
+//
+//        if (annotatorSet.contains("variation")) {
+//            destination.setId(origin.getId());
+//        }
+//        if (annotatorSet.contains("consequenceType")) {
+//            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+//            destination.setConsequenceTypes(origin.getConsequenceTypes());
+//        }
+//        if (annotatorSet.contains("conservation")) {
+//            destination.setConservation(origin.getConservation());
+//        }
+//        if (annotatorSet.contains("populationFrequencies")) {
+//            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+//        }
+//        if (annotatorSet.contains("clinical")) {
+//            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+//        }
+//        if (annotatorSet.contains("functionalScore")) {
+//            destination.setFunctionalScore(origin.getFunctionalScore());
+//        }
+//    }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
         // Only SNVs are currently considered for phase adjustment
@@ -1041,7 +1041,7 @@ public class VariantAnnotationCalculator {
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
             List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
                 "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cDnaSequence", "transcripts.proteinSequence",
-                "transcripts.strand", "transcripts.cdsLength", "transcripts.annotationFlags", "transcripts.biotype",
+                "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
                 "transcripts.exons.cdsEnd", "transcripts.exons.sequence", "transcripts.exons.phase",
@@ -1559,12 +1559,12 @@ public class VariantAnnotationCalculator {
     }
 
     class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
-        private static final String CLINVAR = "clinvar";
-        private static final String COSMIC = "cosmic";
-        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
-        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
-        private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
-        private static final String SYMBOL = "symbol";
+//        private static final String CLINVAR = "clinvar";
+//        private static final String COSMIC = "cosmic";
+//        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
+//        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
+//        private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
+//        private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
         private List<Gene> batchGeneList;
         private QueryOptions queryOptions;
@@ -1601,100 +1601,100 @@ public class VariantAnnotationCalculator {
                         variantAnnotationList.get(i)
                                 .setTraitAssociation(clinicalCellBaseDataResult.getResults().get(0).getAnnotation()
                                         .getTraitAssociation());
-                        // DEPRECATED
-                        // TODO: remove in 4.6
-                        variantAnnotationList.get(i)
-                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalCellBaseDataResult
-                                        .getResults()
-                                        .get(0)
-                                        .getAnnotation()
-                                        .getTraitAssociation()));
+//                        // DEPRECATED
+//                        // TODO: remove in 4.6
+//                        variantAnnotationList.get(i)
+//                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalCellBaseDataResult
+//                                        .getResults()
+//                                        .get(0)
+//                                        .getAnnotation()
+//                                        .getTraitAssociation()));
                     }
                 }
             }
         }
 
-        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
-            List<ClinVar> clinvarList = new ArrayList<>();
-            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
-            for (EvidenceEntry evidenceEntry : traitAssociation) {
-                switch (evidenceEntry.getSource().getName()) {
-                    case CLINVAR:
-                        clinvarList.add(parseClinvar(evidenceEntry));
-                        break;
-                    case COSMIC:
-                        cosmicList.add(parseCosmic(evidenceEntry));
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return new VariantTraitAssociation(clinvarList, null, cosmicList);
-        }
+//        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
+//            List<ClinVar> clinvarList = new ArrayList<>();
+//            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
+//            for (EvidenceEntry evidenceEntry : traitAssociation) {
+//                switch (evidenceEntry.getSource().getName()) {
+//                    case CLINVAR:
+//                        clinvarList.add(parseClinvar(evidenceEntry));
+//                        break;
+//                    case COSMIC:
+//                        cosmicList.add(parseCosmic(evidenceEntry));
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            }
+//            return new VariantTraitAssociation(clinvarList, null, cosmicList);
+//        }
 
-        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
-            String primarySite = null;
-            String siteSubtype = null;
-            String primaryHistology = null;
-            String histologySubtype = null;
-            String sampleSource = null;
-            String tumourOrigin = null;
-            if (evidenceEntry.getSomaticInformation() != null) {
-                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
-                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
-                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
-                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
-                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
-                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
-            }
-            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
-                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
-                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
-        }
+//        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
+//            String primarySite = null;
+//            String siteSubtype = null;
+//            String primaryHistology = null;
+//            String histologySubtype = null;
+//            String sampleSource = null;
+//            String tumourOrigin = null;
+//            if (evidenceEntry.getSomaticInformation() != null) {
+//                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
+//                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
+//                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
+//                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
+//                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
+//                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
+//            }
+//            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
+//                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
+//                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
+//        }
 
-        private String parseGeneName(EvidenceEntry evidenceEntry) {
-            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
-                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
-                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
-                // is expected to be found at index 0.
-                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
-            }
-            return null;
-        }
+//        private String parseGeneName(EvidenceEntry evidenceEntry) {
+//            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
+//                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
+//                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
+//                // is expected to be found at index 0.
+//                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
+//            }
+//            return null;
+//        }
 
-        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
-            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
-            List<String> traitList = null;
-            if (evidenceEntry.getHeritableTraits() != null) {
-                traitList = evidenceEntry
-                        .getHeritableTraits()
-                        .stream()
-                        .map((heritableTrait) -> heritableTrait.getTrait())
-                        .collect(Collectors.toList());
-            }
-            List<String> geneNameList = null;
-            if (evidenceEntry.getGenomicFeatures() != null) {
-                geneNameList = evidenceEntry
-                        .getGenomicFeatures()
-                        .stream()
-                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
-                        .collect(Collectors.toList());
-            }
-            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
-            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
-                    reviewStatus);
-        }
+//        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
+//            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
+//            List<String> traitList = null;
+//            if (evidenceEntry.getHeritableTraits() != null) {
+//                traitList = evidenceEntry
+//                        .getHeritableTraits()
+//                        .stream()
+//                        .map((heritableTrait) -> heritableTrait.getTrait())
+//                        .collect(Collectors.toList());
+//            }
+//            List<String> geneNameList = null;
+//            if (evidenceEntry.getGenomicFeatures() != null) {
+//                geneNameList = evidenceEntry
+//                        .getGenomicFeatures()
+//                        .stream()
+//                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
+//                        .collect(Collectors.toList());
+//            }
+//            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
+//            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
+//                    reviewStatus);
+//        }
 
-        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
-            if (evidenceEntry.getAdditionalProperties() != null) {
-                for (Property property : evidenceEntry.getAdditionalProperties()) {
-                    if (name.equals(property.getName())) {
-                        return property.getValue();
-                    }
-                }
-            }
-            return null;
-        }
+//        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
+//            if (evidenceEntry.getAdditionalProperties() != null) {
+//                for (Property property : evidenceEntry.getAdditionalProperties()) {
+//                    if (name.equals(property.getName())) {
+//                        return property.getValue();
+//                    }
+//                }
+//            }
+//            return null;
+//        }
     }
 
     class FutureRepeatsAnnotator implements Callable<List<CellBaseDataResult<Repeat>>> {

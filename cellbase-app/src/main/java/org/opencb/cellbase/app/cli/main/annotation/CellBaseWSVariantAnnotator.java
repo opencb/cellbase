@@ -98,7 +98,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             destination.setGeneExpression(origin.getGeneExpression());
             destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
             destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
-            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+//            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
             destination.setFunctionalScore(origin.getFunctionalScore());
         }
     }
