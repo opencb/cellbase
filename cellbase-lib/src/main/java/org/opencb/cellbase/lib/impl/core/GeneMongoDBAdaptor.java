@@ -243,7 +243,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 // oe_lof<0.85585
                 for (String expression : expressions) {
                     final String[] expressionParts = expression.split(delimiter);
-                    logger.error("expression" + expressionParts.length);
                     if (expressionParts.length >= 3) {
                         String constraintName = expressionParts[0];
                         String operator = expressionParts[1];
