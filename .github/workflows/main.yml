@@ -9,6 +9,7 @@ on:
       - '**.java'
       - '**.xml'
       - '**.yml'
+      - 'Dockerfile'
 
 jobs:
   build:

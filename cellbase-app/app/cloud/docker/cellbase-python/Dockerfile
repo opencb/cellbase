@@ -14,7 +14,7 @@ LABEL org.label-schema.vendor="OpenCB" \
 ENV PYTHONUNBUFFERED=1
 
 USER root
-RUN apk add --no-cache python3 curl build-base zeromq py3-zmq python3-dev && \
+RUN apk add --no-cache python3 curl build-base zeromq py3-zmq python3-dev libffi-dev openssl-dev && \
     if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
     python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
