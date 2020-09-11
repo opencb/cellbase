@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Created by fjlopez on 07/10/16.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled
+
 public class VariantAnnotationCommandExecutorTest {
 
     private static final String OUTPUT_FILENAME = "/tmp/test.json.gz";
@@ -75,6 +75,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void proteinChangeMatchTest() throws IOException, URISyntaxException {
         // Remove database content
         cleanUp();
@@ -399,6 +400,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void additionalPopulationFrequencyUnphasedAnnotationTest() throws Exception {
         cleanUp();
         VariantAnnotationCommandExecutor variantAnnotationCommandExecutor
@@ -511,6 +513,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void additionalPopulationFrequencyPhasedAnnotationTest() throws Exception {
         cleanUp();
         VariantAnnotationCommandExecutor variantAnnotationCommandExecutor
