@@ -127,9 +127,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.flags", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "transcripts.supportLevel":
-                        createSupportLevelQuery(value, andBsonList);
-                        break;
                     case "annotation.expression.tissue":
                         createExpressionQuery(geneQuery, andBsonList);
                         break;
@@ -181,12 +178,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 // transcript does not contain version, do a fuzzy query so that ENST00000671466 will match ENST00000671466.1
                 andBsonList.add(Filters.regex("transcripts.id", "^" + transcriptId + "\\."));
             }
-        }
-    }
-
-    private void createSupportLevelQuery(Object value, List<Bson> andBsonList) {
-        if (value != null) {
-            andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
         }
     }
 

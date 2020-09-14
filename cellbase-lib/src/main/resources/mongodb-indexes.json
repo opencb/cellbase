@@ -22,18 +22,20 @@
 {"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"ba{\"collection\": \"gene\", \"fields\": {\"transcripts.biotype\": 1}, \"options\": {\"background\": true}}ckground": true}}
+{"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.supportLevel": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.flags": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.chromosome": 1, "transcripts.start": 1, "transcripts.end": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.exons.chromosome": 1, "transcripts.exons.start": 1, "transcripts.exons.end": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.tfbs.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.tfbs.pfmId": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.tfbs.transcriptionFactors": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.annotation.ontologies.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.annotation.constraints.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.annotation.ontologies.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.expression": 1}, "options": {"background": true}}
