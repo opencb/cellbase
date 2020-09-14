@@ -39,12 +39,11 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends MongoDBAdapt
         logger.debug("MissenseVariationFunctionalScoreMongoDBAdaptor: in 'constructor'");
     }
 
-    public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference, String alternate) {
+    public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference) {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));
         andBsonList.add(Filters.eq("reference", reference));
-        andBsonList.add(Filters.eq("scores.alternate", alternate));
         Bson query = Filters.and(andBsonList);
         return new CellBaseDataResult<>(mongoDBCollection.find(query, null,
                 MissenseVariantFunctionalScore.class, new QueryOptions()));
@@ -52,8 +51,8 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends MongoDBAdapt
     }
 
     public CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> getScores(String chromosome, int position, String reference,
-                                                                                  String alternate,
-                                                                                  String aaReference, String aaAlternate) {
+                                                                                  String alternate, String aaReference,
+                                                                                  String aaAlternate) {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));

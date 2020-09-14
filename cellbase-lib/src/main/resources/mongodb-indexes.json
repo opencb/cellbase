@@ -22,7 +22,7 @@
 {"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"ba{\"collection\": \"gene\", \"fields\": {\"transcripts.biotype\": 1}, \"options\": {\"background\": true}}ckground": true}}
+{"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {background": true}}
 {"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
@@ -43,11 +43,11 @@
 {"collection": "gene", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.constraints.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.constraints.value": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"mirna.matures.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}, "sparse": true}
+{"collection": "gene", "fields": {"mirna.matures.id": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 
@@ -82,12 +82,18 @@
 {"collection": "refseq", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.id": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.name": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.supportLevel": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.chromosome": 1, "transcripts.start": 1, "transcripts.end": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
-{"collection": "refseq", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"transcripts.exons.chromosome": 1, "transcripts.exons.start": 1, "transcripts.exons.end": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
+{"collection": "refseq", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}
