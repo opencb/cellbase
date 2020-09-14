@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -68,7 +69,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         } else {
             iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         }
-        return new CellBaseIterator<>(iterator);
+        return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override

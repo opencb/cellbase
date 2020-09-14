@@ -35,6 +35,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
@@ -419,7 +420,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
                 org.opencb.biodata.models.clinical.interpretation.ClinicalVariant.class);
         MongoDBIterator<ClinicalVariant> iterator = mongoDBCollection.iterator(null, bson, projection,
                 converter, queryOptions);
-        return new CellBaseIterator<>(iterator);
+        return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override

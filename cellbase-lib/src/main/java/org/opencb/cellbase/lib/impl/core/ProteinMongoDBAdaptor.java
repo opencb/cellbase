@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -280,7 +281,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Entry> converter = new GenericDocumentComplexConverter<>(Entry.class);
         MongoDBIterator<Entry> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
-        return new CellBaseIterator<>(iterator);
+        return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override

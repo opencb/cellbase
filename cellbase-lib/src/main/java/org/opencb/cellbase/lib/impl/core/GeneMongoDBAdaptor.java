@@ -27,6 +27,7 @@ import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -89,7 +90,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         } else {
             iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         }
-        return new CellBaseIterator<>(iterator);
+        return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override

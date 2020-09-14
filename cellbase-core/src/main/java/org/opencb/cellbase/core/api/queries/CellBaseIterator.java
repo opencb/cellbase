@@ -16,19 +16,17 @@
 
 package org.opencb.cellbase.core.api.queries;
 
-import org.opencb.commons.datastore.mongodb.MongoDBIterator;
-
 import java.io.Closeable;
 import java.util.Iterator;
 
-public class CellBaseIterator<E> implements Iterator<E>, Closeable {
+public abstract class CellBaseIterator<E> implements Closeable, Iterator<E> {
 
-    private MongoDBIterator<E> iterator;
-    private long numMatches;
+    protected Iterator<E> iterator;
+    protected long numMatches;
 
-    public CellBaseIterator(MongoDBIterator<E> iterator) {
+    public CellBaseIterator(Iterator<E> iterator) {
         this.iterator = iterator;
-        this.numMatches = iterator.getNumMatches();
+        //this.numMatches = iterator.getNumMatches();
     }
 
     @Override
@@ -42,9 +40,7 @@ public class CellBaseIterator<E> implements Iterator<E>, Closeable {
     }
 
     @Override
-    public void close() {
-        iterator.close();
-    }
+    public abstract void close();
 
     public long getNumMatches() {
         return numMatches;
