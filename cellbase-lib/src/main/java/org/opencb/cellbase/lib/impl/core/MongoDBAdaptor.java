@@ -52,7 +52,7 @@ public class MongoDBAdaptor {
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Logger logger;
 
     protected ObjectMapper objectMapper;
 
