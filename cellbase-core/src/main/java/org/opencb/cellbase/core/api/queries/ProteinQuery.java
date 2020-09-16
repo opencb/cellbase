@@ -137,7 +137,6 @@ public class ProteinQuery extends AbstractQuery {
 
 
     public static final class ProteinQueryBuilder {
-        public static int DEFAULT_LIMIT = 20;
         protected Integer limit;
         protected Integer skip;
         protected Boolean count = false;
