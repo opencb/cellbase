@@ -121,7 +121,7 @@
                         <id>install-app</id>
                         <phase>install</phase>
                         <configuration>
-                            <target>
+                            <target name="install cellbase">
                                 <echo>Preparing ${build.dir} folder</echo>
                                 <exec executable="rm">
                                     <arg value="-rf"/>
@@ -140,6 +140,7 @@
                                     <arg value="${project.basedir}/app/cloud"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/app/scripts"/>
+                                    <arg value="${project.basedir}/app/monitor"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../README.md"/>
@@ -194,7 +195,36 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>add-datadog</id>
+                        <phase>install</phase>
+                        <configuration>
+                        <target name="add datadog">
+                            <property name="antProperty" value="${build.dir}"/>
+                            <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                            <if>
+                                <not>
+                                    <equals arg1="${CELLBASE.MONITOR.AGENT}" arg2=""/>
+                                </not>
+                                <then>
+                                    <echo>Setting params for: ${CELLBASE.MONITOR.AGENT}</echo>
+                                    <replaceregexp file="${build.dir}/bin/cellbase-admin.sh" match="JAVA_OPTS" replace="JAVA_OPTS -javaagent:${antProperty}\/monitor\/dd-java-agent.jar -Ddd.agent.host=${CELLBASE.MONITOR.AGENT} -Ddd.agent.port=${CELLBASE.MONITOR.PORT} "  byline="true"/>
+                                </then>
+                            </if>
+                        </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>20020829</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

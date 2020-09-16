@@ -29,6 +29,8 @@ public class OntologyQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "namespace")
     private List<String> namespaces;
+    @QueryParameter(id = "source")
+    private List<String> sources;
     @QueryParameter(id = "synonyms")
     private List<String> synonyms;
     @QueryParameter(id = "xrefs")
@@ -45,23 +47,6 @@ public class OntologyQuery extends AbstractQuery {
         super(params);
     }
 
-    private OntologyQuery(Builder builder) {
-        setIncludes(builder.includes);
-        setExcludes(builder.excludes);
-        setLimit(builder.limit);
-        setSkip(builder.skip);
-        setCount(builder.count);
-        setSort(builder.sort);
-        setOrder(builder.order);
-        setFacet(builder.facet);
-        setIds(builder.ids);
-        setNames(builder.names);
-        setNamespaces(builder.namespaces);
-        setSynonyms(builder.synonyms);
-        setXrefs(builder.xrefs);
-        setParents(builder.parents);
-        setChildren(builder.children);
-    }
 
     @Override
     protected void validateQuery() {
@@ -75,19 +60,11 @@ public class OntologyQuery extends AbstractQuery {
         sb.append("ids=").append(ids);
         sb.append(", names=").append(names);
         sb.append(", namespaces=").append(namespaces);
+        sb.append(", sources=").append(sources);
         sb.append(", synonyms=").append(synonyms);
         sb.append(", xrefs=").append(xrefs);
         sb.append(", parents=").append(parents);
         sb.append(", children=").append(children);
-        sb.append(", objectMapper=").append(objectMapper);
-        sb.append(", limit=").append(limit);
-        sb.append(", skip=").append(skip);
-        sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
-        sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
-        sb.append(", includes=").append(includes);
-        sb.append(", excludes=").append(excludes);
         sb.append('}');
         return sb.toString();
     }
@@ -155,109 +132,140 @@ public class OntologyQuery extends AbstractQuery {
         return this;
     }
 
-    public static final class Builder {
-        private List<String> includes;
-        private List<String> excludes;
-        private Integer limit;
-        private Integer skip;
-        private Boolean count;
-        private String sort;
-        private Order order;
-        private String facet;
-        private ObjectMapper objectMapper;
+    public List<String> getSources() {
+        return sources;
+    }
+
+    public OntologyQuery setSources(List<String> sources) {
+        this.sources = sources;
+        return this;
+    }
+
+
+    public static final class OntologyQueryBuilder {
+        protected Integer limit;
+        protected Integer skip;
+        protected Boolean count = false;
+        protected String sort;
+        protected Order order;
+        protected String facet;
+        protected List<String> includes;
+        protected List<String> excludes;
         private List<String> ids;
         private List<String> names;
         private List<String> namespaces;
+        private List<String> sources;
         private List<String> synonyms;
         private List<String> xrefs;
         private LogicalList<String> parents;
         private LogicalList<String> children;
 
-        public Builder() {
+        private OntologyQueryBuilder() {
         }
 
-        public Builder withIncludes(List<String> val) {
-            includes = val;
+        public static OntologyQueryBuilder anOntologyQuery() {
+            return new OntologyQueryBuilder();
+        }
+
+        public OntologyQueryBuilder withIds(List<String> ids) {
+            this.ids = ids;
             return this;
         }
 
-        public Builder withExcludes(List<String> val) {
-            excludes = val;
+        public OntologyQueryBuilder withNames(List<String> names) {
+            this.names = names;
             return this;
         }
 
-        public Builder withLimit(Integer val) {
-            limit = val;
+        public OntologyQueryBuilder withNamespaces(List<String> namespaces) {
+            this.namespaces = namespaces;
             return this;
         }
 
-        public Builder withSkip(Integer val) {
-            skip = val;
+        public OntologyQueryBuilder withSources(List<String> sources) {
+            this.sources = sources;
             return this;
         }
 
-        public Builder withCount(Boolean val) {
-            count = val;
+        public OntologyQueryBuilder withSynonyms(List<String> synonyms) {
+            this.synonyms = synonyms;
             return this;
         }
 
-        public Builder withSort(String val) {
-            sort = val;
+        public OntologyQueryBuilder withXrefs(List<String> xrefs) {
+            this.xrefs = xrefs;
             return this;
         }
 
-        public Builder withOrder(Order val) {
-            order = val;
+        public OntologyQueryBuilder withParents(LogicalList<String> parents) {
+            this.parents = parents;
             return this;
         }
 
-        public Builder withFacet(String val) {
-            facet = val;
+        public OntologyQueryBuilder withChildren(LogicalList<String> children) {
+            this.children = children;
             return this;
         }
 
-        public Builder withObjectMapper(ObjectMapper val) {
-            objectMapper = val;
+        public OntologyQueryBuilder withLimit(Integer limit) {
+            this.limit = limit;
             return this;
         }
 
-        public Builder withIds(List<String> val) {
-            ids = val;
+        public OntologyQueryBuilder withSkip(Integer skip) {
+            this.skip = skip;
             return this;
         }
 
-        public Builder withNames(List<String> val) {
-            names = val;
+        public OntologyQueryBuilder withCount(Boolean count) {
+            this.count = count;
             return this;
         }
 
-        public Builder withNamespaces(List<String> val) {
-            namespaces = val;
+        public OntologyQueryBuilder withSort(String sort) {
+            this.sort = sort;
             return this;
         }
 
-        public Builder withSynonyms(List<String> val) {
-            synonyms = val;
+        public OntologyQueryBuilder withOrder(Order order) {
+            this.order = order;
             return this;
         }
 
-        public Builder withXrefs(List<String> val) {
-            xrefs = val;
+        public OntologyQueryBuilder withFacet(String facet) {
+            this.facet = facet;
             return this;
         }
 
-        public Builder withParents(LogicalList<String> val) {
-            parents = val;
+        public OntologyQueryBuilder withIncludes(List<String> includes) {
+            this.includes = includes;
             return this;
         }
 
-        public Builder withChildren(LogicalList<String> val) {
-            children = val;
+        public OntologyQueryBuilder withExcludes(List<String> excludes) {
+            this.excludes = excludes;
             return this;
         }
 
         public OntologyQuery build() {
-            return new OntologyQuery(this);
+            OntologyQuery ontologyQuery = new OntologyQuery();
+            ontologyQuery.setIds(ids);
+            ontologyQuery.setNames(names);
+            ontologyQuery.setNamespaces(namespaces);
+            ontologyQuery.setSources(sources);
+            ontologyQuery.setSynonyms(synonyms);
+            ontologyQuery.setXrefs(xrefs);
+            ontologyQuery.setParents(parents);
+            ontologyQuery.setChildren(children);
+            ontologyQuery.setLimit(limit);
+            ontologyQuery.setSkip(skip);
+            ontologyQuery.setCount(count);
+            ontologyQuery.setSort(sort);
+            ontologyQuery.setOrder(order);
+            ontologyQuery.setFacet(facet);
+            ontologyQuery.setIncludes(includes);
+            ontologyQuery.setExcludes(excludes);
+            return ontologyQuery;
         }
     }
 }

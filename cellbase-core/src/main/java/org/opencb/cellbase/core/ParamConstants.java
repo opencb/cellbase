@@ -82,6 +82,7 @@ public class ParamConstants {
     public static final String ONTOLOGY_NAMESPACES = "Comma separated list of namespaces, e.g. human_phenotype,biological_process. "
             + "For a full list of potentially available namespaces, please refer to: "
             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/ontology/distinct?field=namespace";
+    public static final String ONTOLOGY_SOURCES = "Name of ontology, e.g. HP or GO";
     public static final String ONTOLOGY_SYNONYMS = "Comma separated list of synonyms, e.g. Cerebellar ataxia";
     public static final String ONTOLOGY_XREFS = "Comma separated list of cross references, e.g. MSH:D002524";
     public static final String ONTOLOGY_PARENTS = "Comma separated list of ontology terms, e.g. GO:0019882";
