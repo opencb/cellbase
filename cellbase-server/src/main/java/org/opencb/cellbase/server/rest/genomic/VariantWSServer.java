@@ -74,7 +74,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{variants}/hgvs")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = List.class,
+    @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = List.class,
             responseContainer = "QueryResponse")
     public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
             required = true) String id) {
@@ -88,7 +88,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{variants}/normalization")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+    @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = Map.class,
             responseContainer = "QueryResponse")
     public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
             required = true) String id) {

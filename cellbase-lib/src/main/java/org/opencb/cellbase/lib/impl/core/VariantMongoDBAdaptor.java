@@ -425,9 +425,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         // For some reason Mongo does not deal properly with OR queries and indexes. It is extremely slow to perform
         // the commented query above. On the contrary this query below provides instant results
         if (geneId.startsWith(ENSEMBL_GENE_ID_PATTERN)) {
-            return Filters.eq("annotation.consequenceTypes.ensemblGeneId", geneId);
+            return Filters.eq("annotation.consequenceTypes.geneId", geneId);
         } else if (geneId.startsWith(ENSEMBL_TRANSCRIPT_ID_PATTERN)) {
-            return Filters.eq("annotation.consequenceTypes.ensemblTranscriptId", geneId);
+            return Filters.eq("annotation.consequenceTypes.transcriptId", geneId);
         } else {
             return Filters.eq("annotation.consequenceTypes.geneName", geneId);
         }

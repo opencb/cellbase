@@ -67,11 +67,11 @@
 {"collection": "protein", "fields": {"gene.name.value": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"dbReference.id": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"dbReference.type": 1}, "options": {"background": true}}
-{"collection": "protein", "fields": {"keyword.id": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"keyword.value": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"feature.id": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"feature.type": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"feature.location.position.position": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"feature.location.begin.position": 1,"feature.location.end.position": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"sequence.checksum": 1}, "options": {"background": true}}
 
 {"collection": "protein_functional_prediction", "fields": {"checksum": 1}, "options": {"background": true}}
@@ -101,14 +101,11 @@
 {"collection": "regulatory_pfm", "fields": {"transcriptionFactors": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"threshold": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"unit": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"maxPositionSum": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"length": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"elementsString": 1}, "options": {"background": true}}
 
 {"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "regulatory_region", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"featureType": 1}, "options": {"background": true}}
 
 {"collection": "repeats", "fields": {"_chunkIds": 1}, "options": {"background": true}}

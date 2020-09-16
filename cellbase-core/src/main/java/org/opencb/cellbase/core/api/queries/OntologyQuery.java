@@ -16,8 +16,6 @@
 
 package org.opencb.cellbase.core.api.queries;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.List;
 import java.util.Map;
 

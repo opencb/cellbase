@@ -86,7 +86,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @GET
     @Path("/featureType")
     @ApiOperation(httpMethod = "GET", value = "Retrieves a list of available regulatory feature types",
-            response = String.class, responseContainer = "QueryResponse")
+            response = String.class, responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = ParamConstants.REGION_DESCRIPTION,

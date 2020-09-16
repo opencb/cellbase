@@ -32,7 +32,11 @@ public class ProteinQuery extends AbstractQuery {
     @QueryParameter(id = "xrefs")
     private List<String> xrefs;
     @QueryParameter(id = "keyword")
-    private List<String> keywords;
+    private LogicalList<String> keywords;
+    @QueryParameter(id = "feature.id")
+    private LogicalList<String> featureIds;
+    @QueryParameter(id = "feature.type")
+    private LogicalList<String> featureTypes;
 
     public ProteinQuery() {
     }
@@ -41,25 +45,31 @@ public class ProteinQuery extends AbstractQuery {
         super(params);
     }
 
-    private ProteinQuery(Builder builder) {
-        setIncludes(builder.includes);
-        setExcludes(builder.excludes);
-        setLimit(builder.limit);
-        setSkip(builder.skip);
-        setCount(builder.count);
-        setSort(builder.sort);
-        setOrder(builder.order);
-        setFacet(builder.facet);
-        setAccessions(builder.accessions);
-        setNames(builder.names);
-        setGenes(builder.genes);
-        setXrefs(builder.xrefs);
-        setKeywords(builder.keywords);
-    }
-
     @Override
     protected void validateQuery() throws QueryException {
 
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProteinQuery{");
+        sb.append("accessions=").append(accessions);
+        sb.append(", names=").append(names);
+        sb.append(", genes=").append(genes);
+        sb.append(", xrefs=").append(xrefs);
+        sb.append(", keywords=").append(keywords);
+        sb.append(", featureIds=").append(featureIds);
+        sb.append(", featureTypes=").append(featureTypes);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 
     public List<String> getAccessions() {
@@ -98,121 +108,152 @@ public class ProteinQuery extends AbstractQuery {
         return this;
     }
 
-    public List<String> getKeywords() {
+    public LogicalList<String> getKeywords() {
         return keywords;
     }
 
-    public ProteinQuery setKeywords(List<String> keywords) {
+    public ProteinQuery setKeywords(LogicalList<String> keywords) {
         this.keywords = keywords;
         return this;
     }
 
+    public LogicalList<String> getFeatureIds() {
+        return featureIds;
+    }
 
-    public static final class Builder {
-        private List<String> includes;
-        private List<String> excludes;
-        private Integer limit;
-        private Integer skip;
-        private Boolean count;
-        private String sort;
-        private Order order;
-        private String facet;
+    public ProteinQuery setFeatureIds(LogicalList<String> featureIds) {
+        this.featureIds = featureIds;
+        return this;
+    }
+
+    public LogicalList<String> getFeatureTypes() {
+        return featureTypes;
+    }
+
+    public ProteinQuery setFeatureTypes(LogicalList<String> featureTypes) {
+        this.featureTypes = featureTypes;
+        return this;
+    }
+
+
+    public static final class ProteinQueryBuilder {
+        public static int DEFAULT_LIMIT = 20;
+        protected Integer limit;
+        protected Integer skip;
+        protected Boolean count = false;
+        protected String sort;
+        protected Order order;
+        protected String facet;
+        protected List<String> includes;
+        protected List<String> excludes;
         private List<String> accessions;
         private List<String> names;
         private List<String> genes;
         private List<String> xrefs;
-        private List<String> keywords;
+        private LogicalList<String> keywords;
+        private LogicalList<String> featureIds;
+        private LogicalList<String> featureTypes;
 
-        public Builder() {
+        private ProteinQueryBuilder() {
         }
 
-        public Builder withIncludes(List<String> val) {
-            includes = val;
+        public static ProteinQueryBuilder aProteinQuery() {
+            return new ProteinQueryBuilder();
+        }
+
+        public ProteinQueryBuilder withAccessions(List<String> accessions) {
+            this.accessions = accessions;
             return this;
         }
 
-        public Builder withExcludes(List<String> val) {
-            excludes = val;
+        public ProteinQueryBuilder withNames(List<String> names) {
+            this.names = names;
             return this;
         }
 
-        public Builder withLimit(Integer val) {
-            limit = val;
+        public ProteinQueryBuilder withGenes(List<String> genes) {
+            this.genes = genes;
             return this;
         }
 
-        public Builder withSkip(Integer val) {
-            skip = val;
+        public ProteinQueryBuilder withXrefs(List<String> xrefs) {
+            this.xrefs = xrefs;
             return this;
         }
 
-        public Builder withCount(Boolean val) {
-            count = val;
+        public ProteinQueryBuilder withKeywords(LogicalList<String> keywords) {
+            this.keywords = keywords;
             return this;
         }
 
-        public Builder withSort(String val) {
-            sort = val;
+        public ProteinQueryBuilder withFeatureIds(LogicalList<String> featureIds) {
+            this.featureIds = featureIds;
             return this;
         }
 
-        public Builder withOrder(Order val) {
-            order = val;
+        public ProteinQueryBuilder withFeatureTypes(LogicalList<String> featureTypes) {
+            this.featureTypes = featureTypes;
             return this;
         }
 
-        public Builder withFacet(String val) {
-            facet = val;
+        public ProteinQueryBuilder withLimit(Integer limit) {
+            this.limit = limit;
             return this;
         }
 
-        public Builder withAccessions(List<String> val) {
-            accessions = val;
+        public ProteinQueryBuilder withSkip(Integer skip) {
+            this.skip = skip;
             return this;
         }
 
-        public Builder withNames(List<String> val) {
-            names = val;
+        public ProteinQueryBuilder withCount(Boolean count) {
+            this.count = count;
             return this;
         }
 
-        public Builder withGenes(List<String> val) {
-            genes = val;
+        public ProteinQueryBuilder withSort(String sort) {
+            this.sort = sort;
             return this;
         }
 
-        public Builder withXrefs(List<String> val) {
-            xrefs = val;
+        public ProteinQueryBuilder withOrder(Order order) {
+            this.order = order;
             return this;
         }
 
-        public Builder withKeywords(List<String> val) {
-            keywords = val;
+        public ProteinQueryBuilder withFacet(String facet) {
+            this.facet = facet;
+            return this;
+        }
+
+        public ProteinQueryBuilder withIncludes(List<String> includes) {
+            this.includes = includes;
+            return this;
+        }
+
+        public ProteinQueryBuilder withExcludes(List<String> excludes) {
+            this.excludes = excludes;
             return this;
         }
 
         public ProteinQuery build() {
-            return new ProteinQuery(this);
+            ProteinQuery proteinQuery = new ProteinQuery();
+            proteinQuery.setAccessions(accessions);
+            proteinQuery.setNames(names);
+            proteinQuery.setGenes(genes);
+            proteinQuery.setXrefs(xrefs);
+            proteinQuery.setKeywords(keywords);
+            proteinQuery.setFeatureIds(featureIds);
+            proteinQuery.setFeatureTypes(featureTypes);
+            proteinQuery.setLimit(limit);
+            proteinQuery.setSkip(skip);
+            proteinQuery.setCount(count);
+            proteinQuery.setSort(sort);
+            proteinQuery.setOrder(order);
+            proteinQuery.setFacet(facet);
+            proteinQuery.setIncludes(includes);
+            proteinQuery.setExcludes(excludes);
+            return proteinQuery;
         }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ProteinQuery{");
-        sb.append("accessions=").append(accessions);
-        sb.append(", names=").append(names);
-        sb.append(", genes=").append(genes);
-        sb.append(", xrefs=").append(xrefs);
-        sb.append(", keywords=").append(keywords);
-        sb.append(", limit=").append(limit);
-        sb.append(", skip=").append(skip);
-        sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
-        sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
-        sb.append(", includes=").append(includes);
-        sb.append(", excludes=").append(excludes);
-        sb.append('}');
-        return sb.toString();
     }
 }

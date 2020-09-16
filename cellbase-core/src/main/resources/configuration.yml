@@ -32,9 +32,6 @@ databases:
 server:
  rest:
   port: "${CELLBASE.SERVER.REST.PORT}"
-monitor:
- agent: "${CELLBASE.MONITOR.AGENT}"
- port: "${CELLBASE.MONITOR.PORT}"
 defaultOutdir: "/tmp"
 download:
  ensembl:

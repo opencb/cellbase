@@ -588,11 +588,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (geneName != null) {
                     values.add(geneName);
                 }
-                String ensemblGeneId = (String) ((Document) consequenceTypeObject).get("ensemblGeneId");
+                String ensemblGeneId = (String) ((Document) consequenceTypeObject).get("geneId");
                 if (geneName != null) {
                     values.add(ensemblGeneId);
                 }
-                String ensemblTranscriptId = (String) ((Document) consequenceTypeObject).get("ensemblTranscriptId");
+                String ensemblTranscriptId = (String) ((Document) consequenceTypeObject).get("transcriptId");
                 if (geneName != null) {
                     values.add(ensemblTranscriptId);
                 }

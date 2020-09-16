@@ -179,6 +179,10 @@ public class ParamConstants {
 
     public static final String PROTEIN_KEYWORD = "Comma separated list of keywords that may be associated with the"
             + " protein(s), e.g. Transcription,Zinc. Exact text matches will be returned";
+    public static final String PROTEIN_FEATURE_ID = "Feature IDs, e.g. PRO_0000047458. Exact text matches will be "
+            + "returned";
+    public static final String PROTEIN_FEATURE_TYPE = "Feature type, e.g. chain or domain. Exact text matches will be "
+            + "returned";
     public static final String PROTEIN_XREF_IDS = "Comma separated list of xrefs ids, e.g. CCDS31418.1,Q9UL59,"
             + " ENST00000278314. Exact text matches will be returned";
     public static final String PROTEIN_XREF_ID = "String indicating one xref id, e.g.: Q9UL59, Exact text matches will be returned";
