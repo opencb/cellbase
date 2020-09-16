@@ -1,5 +1,5 @@
 ---
-description: Welcome to CellBase
+description: Welcome to CellBase!
 ---
 
 # Overview
