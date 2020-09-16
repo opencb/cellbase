@@ -10,10 +10,13 @@
   * [Python](using-cellbase/python.md)
   * [R](using-cellbase/r.md)
 * [Data Sources and Species](data-sources-and-species.md)
+* [CellBase Versioning](cellbase-versioning.md)
 * [Tutorials](tutorials.md)
 
 ## About
 
 * [Roadmap](about/roadmap.md)
 * [Release Notes](about/release-notes.md)
+* [Who is Using CellBase](about/who-is-using-cellbase.md)
+* [FAQ](about/faq.md)
 
