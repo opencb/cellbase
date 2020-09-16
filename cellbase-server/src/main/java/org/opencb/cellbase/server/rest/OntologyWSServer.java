@@ -78,6 +78,8 @@ public class OntologyWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "source",  value = ParamConstants.ONTOLOGY_SOURCES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "synonyms", value = ParamConstants.ONTOLOGY_SYNONYMS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "xrefs", value = ParamConstants.ONTOLOGY_XREFS,
