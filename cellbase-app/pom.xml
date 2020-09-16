@@ -121,7 +121,7 @@
                         <id>install-app</id>
                         <phase>install</phase>
                         <configuration>
-                            <target>
+                            <target name="install cellbase">
                                 <echo>Preparing ${build.dir} folder</echo>
                                 <exec executable="rm">
                                     <arg value="-rf"/>
@@ -134,12 +134,21 @@
                                     <arg value="${build.dir}/conf"/>
                                 </exec>
 
-                                // TODO put IF statement and only add if datadog is present
-                                <exec executable="sed">
-                                    <arg value="-i"/>
-                                    <arg value="s/JAVA_OPTS/JAVA_OPTS -javaagent:build.dir\/monitor\/dd-java-agent.jar -Ddd.agent.host=${CELLBASE.MONITOR.AGENT} -Ddd.agent.port=${CELLBASE.MONITOR.PORT} /"/>
-                                    <arg value="${project.basedir}/target/appassembler/bin/cellbase-admin.sh"/>
-                                </exec>
+                                <!-- update with datadog config only if monitoring vars are set -->
+                                <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                <if>
+                                    <not>
+                                        <equals arg1="${CELLBASE.MONITOR.AGENT}" arg2=""/>
+                                    </not>
+                                    <then>
+                                        <echo>Setting datadog params ${build.dir}</echo>
+                                        <exec executable="sed">
+                                            <arg value="-i"/>
+                                            <arg value="s/JAVA_OPTS/JAVA_OPTS -javaagent:build.dir\/monitor\/dd-java-agent.jar -Ddd.agent.host=${CELLBASE.MONITOR.AGENT} -Ddd.agent.port=${CELLBASE.MONITOR.PORT} /"/>
+                                            <arg value="${project.basedir}/target/appassembler/bin/cellbase-admin.sh"/>
+                                        </exec>
+                                    </then>
+                                </if>
 
                                 <echo>Copying to ${build.dir}</echo>
                                 <exec executable="cp">
@@ -147,6 +156,7 @@
                                     <arg value="${project.basedir}/app/cloud"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/app/scripts"/>
+                                    <arg value="${project.basedir}/app/monitor"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../README.md"/>
@@ -201,7 +211,15 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>20020829</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
