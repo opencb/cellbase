@@ -8,7 +8,7 @@ Thank you very much!
 
 #### License
 
-All OpenCB projects use Apache License v2 described here: http://www.apache.org/licenses/LICENSE-2.0.html
+All OpenCB projects use Apache License v2 described here: [http://www.apache.org/licenses/LICENSE-2.0.html](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 #### People and thanks
 
