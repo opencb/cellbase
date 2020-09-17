@@ -10,4 +10,4 @@ CellBase has been implemented in a very modular way providing a three layer arch
  language. Most frequent access will be through this top layer. Thus, the Web Services API can be queried either by provided clients in Python, R, Java and JavaScript, the Java CLI or by own user-developed methods that implement calls to the Web Services by building appropriate urls. Comprehensive RESTful API specification is provided by Swagger: http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ (Note: Python client is available in current develop branch, future 4.5.0 release. A first approach to the R client is also available and under development).
  
  
- 
+ ![architecture](images/cellbase-architecture.png)
