@@ -1,4 +1,4 @@
 # Release Notes
 
-Please see here for detailed Release Notes: https://github.com/opencb/cellbase/releases
+Please see here for detailed Release Notes: [https://github.com/opencb/cellbase/releases](https://github.com/opencb/cellbase/releases)
 
