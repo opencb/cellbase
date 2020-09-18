@@ -39,7 +39,7 @@
                     <b>Chromosome:</b> {{clinicalObj.chromosome}} <br>
                     <b>Start:</b> {{clinicalObj.start}} <br>
                     <b>End:</b> {{clinicalObj.end}} <br>
-                    <b>Reference:</b> {{clinicalObj.reference}} <br>
+                    <b>Reference:</b> {{clinicalObj.referenceStart}} <br>
                     <b>Alternate:</b> {{clinicalObj.alternate}} <br>
                     <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
                         <b>Review status:</b>
@@ -173,7 +173,7 @@
                                         _this.genomeViewer.setRegion(region);
                                     }
                                     _this.clinicalObj = clinicalResult;
-                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
+                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.referenceStart + ":" + clinicalResult.alternate;
                                     // Converting the timestamp to UTC format
                                     _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
 
@@ -293,7 +293,7 @@
                                         _this.genomeViewer.setRegion(region);
                                     }
                                     _this.clinicalObj = clinicalResult;
-                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
+                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.referenceStart + ":" + clinicalResult.alternate;
                                 }
                             });
                     }

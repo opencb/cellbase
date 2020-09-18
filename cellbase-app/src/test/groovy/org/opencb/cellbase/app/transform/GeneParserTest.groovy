@@ -193,7 +193,7 @@ class GeneParserTest extends Specification {
     }
 
     def cleanupSpec() {
-        // delete reference genome sqlLite
+        // delete referenceStart genome sqlLite
         File referenceGenomeSqlLiteFile = Paths.get(GeneParserTest.class.getResource("/geneParser/Homo_sapiens.GRCh38.fa.rdb").toURI()).toFile()
         if (referenceGenomeSqlLiteFile.exists()) {
             referenceGenomeSqlLiteFile.delete()
