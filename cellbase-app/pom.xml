@@ -181,7 +181,44 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>add-datadog</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target name="add datadog">
+                                <property name="build-dir-escaped" value="${build.dir}"/>
+                                <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+                                <if>
+                                    <not>
+                                        <equals arg1="${CELLBASE.MONITOR.AGENT}" arg2=""/>
+                                    </not>
+                                    <then>
+                                        <echo>Setting params for: ${CELLBASE.MONITOR.AGENT}</echo>
+                                        <replaceregexp file="${build.dir}/bin/cellbase.sh" match="JAVA_OPTS"
+                                                       replace="JAVA_OPTS -javaagent:${build-dir-escaped}\/monitor\/dd-java-agent.jar "
+                                                       preserveLastModified="true"/>
+                                        <!-- <exec executable="sed">
+                                            <arg value="-i"/>
+                                            <arg value="s/JAVA_OPTS/JAVA_OPTS -javaagent:${build-dir-escaped}\/monitor\/dd-java-agent.jar /"/>
+                                            <arg value="${build.dir}/bin/cellbase-admin.sh"/>
+                                        </exec> -->
+                                        <chmod perm="ugo+x" file="${build.dir}/bin/cellbase-admin.sh" />
+                                    </then>
+                                </if>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>20020829</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
         <resources>
