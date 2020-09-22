@@ -552,7 +552,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             e.printStackTrace();
         }
 
-        logger.info("genome region parsed query: {}", andBsonList.toString());
+        logger.debug("genome region parsed query: {}", andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
