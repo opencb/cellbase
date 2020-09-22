@@ -90,7 +90,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 queryMap.put(dotNotationName, value);
             }
         }
-        logger.info("toObjectMap(): " + queryMap.safeToString());
+        //logger.info("toObjectMap(): " + queryMap.safeToString());
         return queryMap;
     }
 

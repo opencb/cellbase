@@ -154,7 +154,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             e.printStackTrace();
         }
 
-        logger.info("repeats parsed query: " + andBsonList.toString());
+        //logger.info("repeats parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
