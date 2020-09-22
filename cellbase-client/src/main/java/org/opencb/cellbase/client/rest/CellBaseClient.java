@@ -48,8 +48,11 @@ public class CellBaseClient {
         if (StringUtils.isBlank(species)) {
             throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
         }
+        if (StringUtils.isBlank(assembly)) {
+            throw new IllegalArgumentException("Assembly parameter cannot be empty when building a CellBaseClient");
+        }
         this.species = species;
-        this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
+        this.assembly = assembly;
         if (clientConfiguration != null && clientConfiguration.getRest() != null
                 && clientConfiguration.getRest().getHosts() != null
                 && !clientConfiguration.getRest().getHosts().isEmpty()

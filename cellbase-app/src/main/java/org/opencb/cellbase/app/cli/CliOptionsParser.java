@@ -241,7 +241,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json "
-                + "will be used", required = false, arity = 1)
+                + "will be used", required = true, arity = 1)
         public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
