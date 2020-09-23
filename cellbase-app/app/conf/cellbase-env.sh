@@ -17,7 +17,7 @@ JAVA_HEAP="2048m"
 CELLBASE_LOG_LEVEL="INFO"
 CELLBASE_LOG_FILE="log4j2.xml"
 
-if [ $PRG = "cellbase-admin.sh" ]; then
+if [ `basename $PRG` = "cellbase-admin.sh" ]; then
     JAVA_HEAP="8192m"
     CELLBASE_LOG_FILE="log4j2-json.xml"
 fi
