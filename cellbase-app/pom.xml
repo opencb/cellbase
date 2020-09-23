@@ -84,7 +84,7 @@
                     <repositoryName>libs</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
                     <useWildcardClassPath>false</useWildcardClassPath>
-                    <environmentSetupFileName>${project.basedir}/conf/cellbase-env.sh</environmentSetupFileName>
+                    <environmentSetupFileName>../conf/cellbase-env.sh</environmentSetupFileName>
                     <programs>
                         <program>
                             <name>cellbase.sh</name>

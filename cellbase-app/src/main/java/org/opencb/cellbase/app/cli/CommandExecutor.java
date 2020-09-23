@@ -17,9 +17,6 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -111,13 +108,13 @@ public abstract class CommandExecutor {
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
 //        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel);
 
-        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
-
-        // Line above returning null - and causing NPE - in certain environments
-        if (stderr != null) {
-            stderr.setThreshold(Level.toLevel(logLevel));
-        }
+//        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
+//        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+//
+//        // Line above returning null - and causing NPE - in certain environments
+//        if (stderr != null) {
+//            stderr.setThreshold(Level.toLevel(logLevel));
+//        }
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
         this.logLevel = logLevel;
