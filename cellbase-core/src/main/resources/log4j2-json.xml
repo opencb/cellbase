@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration>
     <Appenders>
-        <File name="FileJson" fileName="${cellbase.log.file}" immediateFlush="true">
+        <File name="FileJson" fileName="cellbase-log.json" immediateFlush="true">
             <JSONLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true"/>
         </File>
     </Appenders>
     <Loggers>
-        <Root level="${cellbase.log.level}">
-            <AppenderRef ref="FileJson" />
+        <Root level="${SYS.cellbase.log.level}">
+            <AppenderRef ref="Console" />
         </Root>
     </Loggers>
 </Configuration>
