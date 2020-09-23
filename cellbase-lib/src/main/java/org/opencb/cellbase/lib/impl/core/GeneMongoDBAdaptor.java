@@ -161,7 +161,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             e.printStackTrace();
         }
 
-        logger.info("gene parsed query: " + andBsonList.toString());
+        logger.debug("gene parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
