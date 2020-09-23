@@ -24,7 +24,7 @@ if [ $PRG = "cellbase-admin.sh" ]; then
 fi
 
 #Set log4j properties file
-export JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configuration=file:${BASEDIR}/conf/${LOG_CONFIG}"
+export JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configurationFile=file:${BASEDIR}/conf/${LOG_CONFIG}"
 export JAVA_OPTS="${JAVA_OPTS} -Dcellbase.log.file=${CELLBASE_LOG_FILE} -Dcellbase.log.level=${CELLBASE_LOG_LEVEL}"
 export JAVA_OPTS="${JAVA_OPTS} ${MONITOR_AGENT}"
 export JAVA_OPTS="${JAVA_OPTS} -Dfile.encoding=UTF-8"
