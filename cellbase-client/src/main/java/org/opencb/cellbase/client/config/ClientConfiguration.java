@@ -32,6 +32,7 @@ public class ClientConfiguration {
     private String version;
     private String defaultSpecies;
     private String logLevel;
+    @Deprecated
     private String logFile;
 
     private RestConfig rest;
