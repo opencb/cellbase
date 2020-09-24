@@ -17,6 +17,8 @@
 package org.opencb.cellbase.lib;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +121,9 @@ public class EtlCommons {
 //        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
 //        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stdout");
 //        stderr.setThreshold(Level.toLevel("debug"));
+
+        Configurator.setRootLevel(Level.INFO);
+
         Logger logger = LoggerFactory.getLogger("EtlCommons");
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);

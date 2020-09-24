@@ -17,12 +17,14 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -116,6 +118,8 @@ public abstract class CommandExecutor {
 //            stderr.setThreshold(Level.toLevel(logLevel));
 //        }
 
+        Level level = Level.toLevel(logLevel, Level.INFO);
+        Configurator.setRootLevel(level);
         logger = LoggerFactory.getLogger(this.getClass().toString());
         this.logLevel = logLevel;
     }
