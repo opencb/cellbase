@@ -12,8 +12,8 @@ if [ -e "${BASEDIR}/monitor/dd-java-agent.jar" ]; then
 fi
 
 JAVA_HEAP="2048m"
-CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-`grep logLevel ${BASEDIR}/conf/configuration.yml | cut -d ':' -f 2`}
-CELLBASE_LOG_LEVEL="$(echo "${CELLBASE_LOG_LEVEL}" | tr -d '[:space:]')"
+CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-$(grep "logLevel" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
+
 CELLBASE_LOG_FILE="log4j2.xml"
 
 if [ `basename $PRG` = "cellbase-admin.sh" ]; then

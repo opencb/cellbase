@@ -6,7 +6,7 @@
     </Console>
 </Appenders>
 <Loggers>
-    <Root level="${cellbase.log.level}">
+    <Root level="${sys:cellbase.log.level}">
         <AppenderRef ref="Console" />
     </Root>
 </Loggers>

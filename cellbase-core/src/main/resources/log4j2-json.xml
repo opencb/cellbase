@@ -6,7 +6,7 @@
         </File>
     </Appenders>
     <Loggers>
-        <Root level="${cellbase.log.level}">
+        <Root level="${sys:cellbase.log.level}">
             <AppenderRef ref="FileJson" />
         </Root>
     </Loggers>
