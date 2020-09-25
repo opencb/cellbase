@@ -7,7 +7,6 @@ LABEL org.label-schema.vendor="OpenCB" \
       maintainer="Julie Sullivan <julie.sullivan@gmail.com>" \
       org.label-schema.schema-version="1.0"
 
-
 ENV CELLBASE_USER cellbase
 
 RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER

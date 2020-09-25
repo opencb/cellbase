@@ -32,6 +32,8 @@ import java.util.*;
 public class CellBaseConfiguration {
 
     private String logLevel;
+    private String logDir;
+    private String logOuput;
     private String version;
     private String apiVersion;
     private String wiki;
@@ -275,6 +277,24 @@ public class CellBaseConfiguration {
 
     public CellBaseConfiguration setLogLevel(String logLevel) {
         this.logLevel = logLevel;
+        return this;
+    }
+
+    public String getLogDir() {
+        return logDir;
+    }
+
+    public CellBaseConfiguration setLogDir(String logDir) {
+        this.logDir = logDir;
+        return this;
+    }
+
+    public String getLogOuput() {
+        return logOuput;
+    }
+
+    public CellBaseConfiguration setLogOuput(String logOuput) {
+        this.logOuput = logOuput;
         return this;
     }
 }

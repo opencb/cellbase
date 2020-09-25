@@ -4,6 +4,10 @@ wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
 maintainerContact: javier.lopez@genomicsengland.co.uk
 logLevel: "INFO"
+logDir: "./logs"
+# where to output the logs
+# can be "console" or "file", defaults to console
+logOutput: "file"
 databases:
  mongodb:
   host: "${CELLBASE.DB.MONGODB.HOST}"

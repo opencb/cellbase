@@ -14,12 +14,16 @@ fi
 JAVA_HEAP="2048m"
 CELLBASE_LOG_DIR=${CELLBASE_LOG_DIR:-$(grep "logDir" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
 CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-$(grep "logLevel" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
+CELLBASE_LOG_OUPUT=${CELLBASE_LOG_LEVEL:-$(grep "logOuput" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
 
 CELLBASE_LOG_CONFIG="log4j2.xml"
 
 if [ `basename $PRG` = "cellbase-admin.sh" ]; then
     JAVA_HEAP="8192m"
-    CELLBASE_LOG_CONFIG="log4j2-json.xml"
+  CELLBASE_LOG_CONFIG="log4j2-console.xml"
+  if [ CELLBASE_LOG_OUPUT = "file" ]; then
+    CELLBASE_LOG_CONFIG="log4j2-file.xml"
+  fi
 fi
 
 #Set log4j properties file
