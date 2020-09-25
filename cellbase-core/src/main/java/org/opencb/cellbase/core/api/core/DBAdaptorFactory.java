@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.commons.monitor.DatastoreStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

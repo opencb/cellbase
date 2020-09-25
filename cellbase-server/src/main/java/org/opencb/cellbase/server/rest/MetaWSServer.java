@@ -27,7 +27,6 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.lib.monitor.HealthStatus;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
@@ -39,6 +38,7 @@ import org.opencb.cellbase.server.rest.genomic.RegionWSServer;
 import org.opencb.cellbase.server.rest.genomic.VariantWSServer;
 import org.opencb.cellbase.server.rest.regulatory.RegulatoryWSServer;
 import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
+import org.opencb.commons.monitor.HealthStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
