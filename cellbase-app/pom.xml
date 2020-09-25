@@ -165,8 +165,8 @@
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.yml"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.xml"/>
-                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2-file.xml"/>
-                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2-console.xml"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.file.xml"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.console.xml"/>
                                     <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${build.dir}/conf"/>
                                 </exec>

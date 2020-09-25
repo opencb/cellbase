@@ -33,7 +33,7 @@ public class CellBaseConfiguration {
 
     private String logLevel;
     private String logDir;
-    private String logOuput;
+    private String logOutput;
     private String version;
     private String apiVersion;
     private String wiki;
@@ -289,12 +289,12 @@ public class CellBaseConfiguration {
         return this;
     }
 
-    public String getLogOuput() {
-        return logOuput;
+    public String getLogOutput() {
+        return logOutput;
     }
 
-    public CellBaseConfiguration setLogOuput(String logOuput) {
-        this.logOuput = logOuput;
+    public CellBaseConfiguration setLogOutput(String logOutput) {
+        this.logOutput = logOutput;
         return this;
     }
 }

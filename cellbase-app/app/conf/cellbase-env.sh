@@ -20,9 +20,9 @@ CELLBASE_LOG_CONFIG="log4j2.xml"
 
 if [ `basename $PRG` = "cellbase-admin.sh" ]; then
     JAVA_HEAP="8192m"
-  CELLBASE_LOG_CONFIG="log4j2-console.xml"
+  CELLBASE_LOG_CONFIG="log4j2.console.xml"
   if [ CELLBASE_LOG_OUPUT = "file" ]; then
-    CELLBASE_LOG_CONFIG="log4j2-file.xml"
+    CELLBASE_LOG_CONFIG="log4j2.file.xml"
   fi
 fi
 
