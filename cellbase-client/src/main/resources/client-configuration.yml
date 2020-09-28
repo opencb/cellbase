@@ -2,7 +2,6 @@
 version: "v4"
 defaultSpecies: "hsapiens"
 logLevel: "info"
-logFile: ""
 
 ## These are the RESTful configurations parameters
 rest:

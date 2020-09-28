@@ -31,7 +31,6 @@ public class ClientConfiguration {
     private String version;
     private String defaultSpecies;
     private String logLevel;
-    private String logFile;
 
     private RestConfig rest;
     private GrpcConfig grpc;
@@ -73,7 +72,6 @@ public class ClientConfiguration {
         sb.append("version='").append(version).append('\'');
         sb.append(", defaultSpecies='").append(defaultSpecies).append('\'');
         sb.append(", logLevel='").append(logLevel).append('\'');
-        sb.append(", logFile='").append(logFile).append('\'');
         sb.append(", rest=").append(rest);
         sb.append(", grpc=").append(grpc);
         sb.append('}');
@@ -104,15 +102,6 @@ public class ClientConfiguration {
 
     public ClientConfiguration setLogLevel(String logLevel) {
         this.logLevel = logLevel;
-        return this;
-    }
-
-    public String getLogFile() {
-        return logFile;
-    }
-
-    public ClientConfiguration setLogFile(String logFile) {
-        this.logFile = logFile;
         return this;
     }
 

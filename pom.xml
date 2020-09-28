@@ -33,6 +33,7 @@
         <jersey.version>2.25.1</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
         <slf4j.version>1.7.25</slf4j.version>
+        <log4j2.version>2.13.3</log4j2.version>
     </properties>
 
     <scm>
@@ -152,8 +153,18 @@
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
+                <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j2.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>

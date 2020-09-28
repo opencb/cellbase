@@ -35,7 +35,10 @@
             <!--<artifactId>bionetdb-core</artifactId>-->
             <!--<version>${bionetdb.version}</version>-->
         <!--</dependency>-->
-
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>

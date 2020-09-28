@@ -35,8 +35,7 @@ public class ClientConfigurationTest {
         ClientConfiguration clientConfiguration = new ClientConfiguration();
 
         clientConfiguration.setVersion("v4");
-        clientConfiguration.setLogFile("");
-
+        
         RestConfig restConfig = new RestConfig(Arrays.asList("bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "bioinfodev.hpc.cam.ac.uk/cellbase"), 2000);
         GrpcConfig grpcConfig = new GrpcConfig("localhost:9091");
 

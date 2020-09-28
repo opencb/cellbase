@@ -1,13 +1,11 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -88,9 +86,11 @@ public class EtlCommons {
             throws IOException, InterruptedException {
         // This small hack allow to configure the appropriate Logger level from the command line, this is done
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
-        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
-        stderr.setThreshold(Level.toLevel("debug"));
+//        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
+//        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+//        stderr.setThreshold(Level.toLevel("debug"));
+        Configurator.setRootLevel(Level.INFO);
+
         Logger logger = LoggerFactory.getLogger("EtlCommons");
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
