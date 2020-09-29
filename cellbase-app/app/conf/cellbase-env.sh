@@ -14,7 +14,7 @@ fi
 JAVA_HEAP="2048m"
 CELLBASE_LOG_DIR=${CELLBASE_LOG_DIR:-$(grep "logDir" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
 CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-$(grep "logLevel" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
-CELLBASE_LOG_OUPUT=${CELLBASE_LOG_LEVEL:-$(grep "logOuput" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
+CELLBASE_LOG_OUPUT=${CELLBASE_LOG_OUPUT:-$(grep "logOuput" "${BASEDIR}/conf/configuration.yml" | cut -d ":" -f 2 | tr -d '" ')}
 
 CELLBASE_LOG_CONFIG="log4j2.xml"
 
