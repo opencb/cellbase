@@ -168,7 +168,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
-                + "regulation, protein, ontology, clinical_variants, repeats. 'all' indexes everything", required = true, arity = 1)
+                + "regulation, protein, ontology, clinical_variants, repeats, refseq and missense_variation_functional_score. 'all' "
+                + "indexes everything", required = true,
+                arity = 1)
         public String data;
 
         @Parameter(names = {"--database"}, description = "Database name.", required = true, arity = 1)

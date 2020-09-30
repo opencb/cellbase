@@ -16,10 +16,10 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
+import org.opencb.commons.monitor.DatastoreStatus;
 
 import java.util.Map;
 

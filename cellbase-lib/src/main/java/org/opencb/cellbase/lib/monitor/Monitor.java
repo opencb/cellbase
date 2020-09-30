@@ -20,14 +20,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.opencb.cellbase.core.CellBaseDataResponse;
-import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.lib.monitor.status.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.opencb.commons.monitor.*;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;

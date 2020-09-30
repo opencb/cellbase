@@ -33,7 +33,10 @@
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>commons-io</groupId>-->
 <!--            <artifactId>commons-io</artifactId>-->
@@ -83,8 +86,8 @@
                 <configuration>
                     <repositoryName>libs</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
-                    <useWildcardClassPath>true</useWildcardClassPath>
-                    <extraJvmArguments>-Xms256m -Xmx5384m -Dfile.encoding=UTF-8</extraJvmArguments>
+                    <useWildcardClassPath>false</useWildcardClassPath>
+                    <environmentSetupFileName>../conf/cellbase-env.sh</environmentSetupFileName>
                     <programs>
                         <program>
                             <name>cellbase.sh</name>
@@ -131,13 +134,13 @@
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
                                     <arg value="${build.dir}/clients"/>
-                                    <arg value="${build.dir}/conf"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/cloud"/>
+                                    <arg value="${project.basedir}/app/conf"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/app/scripts"/>
                                     <arg value="${project.basedir}/app/monitor"/>
@@ -161,6 +164,9 @@
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.yml"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.xml"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.file.xml"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/log4j2.console.xml"/>
                                     <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${build.dir}/conf"/>
                                 </exec>
@@ -195,44 +201,7 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>add-datadog</id>
-                        <phase>install</phase>
-                        <configuration>
-                        <target name="add datadog">
-                            <property name="build-dir-escaped" value="${build.dir}"/>
-                            <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-                            <if>
-                                <not>
-                                    <equals arg1="${CELLBASE.MONITOR.AGENT}" arg2=""/>
-                                </not>
-                                <then>
-                                    <echo>Setting params for: ${CELLBASE.MONITOR.AGENT}</echo>
-                                    <replaceregexp file="${build.dir}/bin/cellbase-admin.sh" match="JAVA_OPTS"
-                                                    replace="JAVA_OPTS -javaagent:${antProperty}\/monitor\/dd-java-agent.jar "
-                                                   preserveLastModified="true"/>
-                                    <!-- <exec executable="sed">
-                                        <arg value="-i"/>
-                                        <arg value="s/JAVA_OPTS/JAVA_OPTS -javaagent:${build-dir-escaped}\/monitor\/dd-java-agent.jar /"/>
-                                        <arg value="${build.dir}/bin/cellbase-admin.sh"/>
-                                    </exec> -->
-                                    <chmod perm="ugo+x" file="${build.dir}/bin/cellbase-admin.sh" />
-                                </then>
-                            </if>
-                        </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>ant-contrib</groupId>
-                        <artifactId>ant-contrib</artifactId>
-                        <version>20020829</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>

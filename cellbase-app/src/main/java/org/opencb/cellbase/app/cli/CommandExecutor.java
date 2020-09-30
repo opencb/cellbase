@@ -17,15 +17,14 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -111,14 +110,16 @@ public abstract class CommandExecutor {
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
 //        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel);
 
-        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+//        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
+//        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+//
+//        // Line above returning null - and causing NPE - in certain environments
+//        if (stderr != null) {
+//            stderr.setThreshold(Level.toLevel(logLevel));
+//        }
 
-        // Line above returning null - and causing NPE - in certain environments
-        if (stderr != null) {
-            stderr.setThreshold(Level.toLevel(logLevel));
-        }
-
+        Level level = Level.toLevel(logLevel, Level.INFO);
+        Configurator.setRootLevel(level);
         logger = LoggerFactory.getLogger(this.getClass().toString());
         this.logLevel = logLevel;
     }

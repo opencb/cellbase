@@ -29,8 +29,8 @@
             <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -58,7 +58,9 @@
                     <include>configuration.json</include>
                     <include>configuration.yml</include>
                     <include>git.properties</include>
-                    <include>log4j.properties</include>
+                    <include>log4j2.xml</include>
+                    <include>log4j2.file.xml</include>
+                    <include>log4j2.console.xml</include>
                 </includes>
             </resource>
         </resources>

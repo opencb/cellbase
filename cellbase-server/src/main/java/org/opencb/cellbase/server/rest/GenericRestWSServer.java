@@ -125,6 +125,7 @@ public class GenericRestWSServer implements IWSServer {
             // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
             String cellbaseHome = System.getenv("CELLBASE_HOME");
             if (StringUtils.isEmpty(cellbaseHome)) {
+
                 // ENV variable isn't set, try the servlet context instead
                 ServletContext context = httpServletRequest.getServletContext();
                 if (StringUtils.isNotEmpty(context.getInitParameter("CELLBASE_HOME"))) {
@@ -135,7 +136,7 @@ public class GenericRestWSServer implements IWSServer {
                 }
             }
 
-            logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
+            logger.info("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);

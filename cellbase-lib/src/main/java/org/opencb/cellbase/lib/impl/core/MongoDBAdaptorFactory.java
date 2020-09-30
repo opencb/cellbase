@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
@@ -32,6 +31,7 @@ import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
+import org.opencb.commons.monitor.DatastoreStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
