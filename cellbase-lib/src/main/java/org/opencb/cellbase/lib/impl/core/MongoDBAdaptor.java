@@ -230,15 +230,20 @@ public class MongoDBAdaptor {
     }
 
     // add regions and IDs to the query, joined with OR
-    protected void createIdRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
+    protected void createIdRegionQuery(List<Region> regions, List<String> ids, int chunkSize, List<Bson> andBsonList) {
         if (CollectionUtils.isEmpty(regions) && CollectionUtils.isEmpty(ids)) {
             return;
         }
         if (CollectionUtils.isEmpty(ids) && regions.size() == 1) {
-            Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
-            Bson start = Filters.lte("start", regions.get(0).getEnd());
-            Bson end = Filters.gte("end", regions.get(0).getStart());
-            andBsonList.add(Filters.and(chromosome, start, end));
+            if (chunkSize <= 0) {
+                Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+                Bson start = Filters.lte("start", regions.get(0).getEnd());
+                Bson end = Filters.gte("end", regions.get(0).getStart());
+                andBsonList.add(Filters.and(chromosome, start, end));
+            } else {
+                Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                andBsonList.add(chunkQuery);
+            }
         } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
             Bson idFilter = Filters.eq("id", ids.get(0));
             andBsonList.add(idFilter);
@@ -246,10 +251,15 @@ public class MongoDBAdaptor {
             List<Bson> orBsonList = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(regions)) {
                 for (Region region : regions) {
-                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                    Bson start = Filters.lte("start", region.getEnd());
-                    Bson end = Filters.gte("end", region.getStart());
-                    orBsonList.add(Filters.and(chromosome, start, end));
+                    if (chunkSize <= 0) {
+                        Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                        Bson start = Filters.lte("start", region.getEnd());
+                        Bson end = Filters.gte("end", region.getStart());
+                        orBsonList.add(Filters.and(chromosome, start, end));
+                    } else {
+                        Bson chunkQuery = createChunkQuery(region, chunkSize);
+                        orBsonList.add(chunkQuery);
+                    }
                 }
             }
             if (CollectionUtils.isNotEmpty(ids)) {

@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
+import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -117,7 +118,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "id":
                     case "region":
                         if (!visited) {
-                            createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
+                            createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(),
+                                    MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
                             visited = true;
                         }
                         break;
@@ -161,7 +163,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             e.printStackTrace();
         }
 
-        //logger.debug("gene parsed query: " + andBsonList.toString());
+        logger.info("gene parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

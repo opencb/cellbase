@@ -171,7 +171,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             e.printStackTrace();
         }
 
-        logger.debug("regulation parsed query: " + andBsonList.toString());
+        logger.info("regulation parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
