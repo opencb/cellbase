@@ -216,7 +216,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        logger.info("transcript parsed query: " + andBsonList.toString());
+        logger.debug("transcript parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

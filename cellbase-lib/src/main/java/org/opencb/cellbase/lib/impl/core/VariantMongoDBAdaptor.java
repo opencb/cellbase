@@ -297,7 +297,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             e.printStackTrace();
         }
 
-        logger.info("variant parsed query: " + andBsonList.toString());
+        logger.debug("variant parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
