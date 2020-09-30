@@ -263,7 +263,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "region":
-                        createRegionQuery(query, query.getRegions(), andBsonList);
+                        createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
                     case "svType":
                         // don't do anything, this is parsed later

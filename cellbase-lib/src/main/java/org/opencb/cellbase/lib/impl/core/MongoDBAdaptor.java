@@ -135,6 +135,73 @@ public class MongoDBAdaptor {
         }
     }
 
+    @Deprecated
+    protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {
+        if (chunkSize <= 0) {
+            // if chunkSize is not valid we call to the default method
+            createRegionQuery(query, queryParam, andBsonList);
+        } else {
+            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+                List<Region> regions = Region.parseRegions(query.getString(queryParam));
+                if (regions != null && regions.size() > 0) {
+                    if (regions.size() == 1) {
+                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                        andBsonList.add(chunkQuery);
+                    } else {
+                        // if multiple regions we add them first to a OR list
+                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                        for (Region region : regions) {
+                            Bson chunkQuery = createChunkQuery(region, chunkSize);
+                            orRegionBsonList.add(chunkQuery);
+                        }
+                        andBsonList.add(Filters.or(orRegionBsonList));
+                    }
+                }
+            }
+        }
+    }
+
+    protected void createRegionQuery(AbstractQuery query, Object queryValues, int chunkSize, List<Bson> andBsonList) {
+        if (chunkSize <= 0) {
+            // if chunkSize is not valid we call to the default method
+            createRegionQuery(query, queryValues, andBsonList);
+        } else {
+            if (query != null && queryValues instanceof List) {
+                List<Region> regions =  (List<Region>) queryValues;
+                if (regions != null && regions.size() > 0) {
+                    if (regions.size() == 1) {
+                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                        andBsonList.add(chunkQuery);
+                    } else {
+                        // if multiple regions we add them first to a OR list
+                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                        for (Region region : regions) {
+                            Bson chunkQuery = createChunkQuery(region, chunkSize);
+                            orRegionBsonList.add(chunkQuery);
+                        }
+                        andBsonList.add(Filters.or(orRegionBsonList));
+                    }
+                }
+            }
+        }
+    }
+
+    private Bson createChunkQuery(Region region, int chunkSize) {
+        int startChunkId = getChunkId(region.getStart(), chunkSize);
+        int endChunkId = getChunkId(region.getEnd(), chunkSize);
+
+        List<String> chunkIds = new ArrayList<>(endChunkId - startChunkId + 1);
+        for (int chunkId = startChunkId; chunkId <= endChunkId; chunkId++) {
+            chunkIds.add(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
+            logger.debug(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
+        }
+
+        Bson chunk = Filters.in("_chunkIds", chunkIds);
+        Bson start = Filters.lte("start", region.getEnd());
+        Bson end = Filters.gte("end", region.getStart());
+        return Filters.and(chunk, start, end);
+    }
+
     protected void createRegionQuery(AbstractQuery query, Object queryValues, List<Bson> andBsonList) {
         if (query != null && queryValues instanceof List) {
             List<Region> regions =  (List<Region>) queryValues;
@@ -238,46 +305,7 @@ public class MongoDBAdaptor {
         return projectionResult;
     }
 
-    protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {
-        if (chunkSize <= 0) {
-            // if chunkSize is not valid we call to the default method
-            createRegionQuery(query, queryParam, andBsonList);
-        } else {
-            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-                List<Region> regions = Region.parseRegions(query.getString(queryParam));
-                if (regions != null && regions.size() > 0) {
-                    if (regions.size() == 1) {
-                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
-                        andBsonList.add(chunkQuery);
-                    } else {
-                        // if multiple regions we add them first to a OR list
-                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                        for (Region region : regions) {
-                            Bson chunkQuery = createChunkQuery(region, chunkSize);
-                            orRegionBsonList.add(chunkQuery);
-                        }
-                        andBsonList.add(Filters.or(orRegionBsonList));
-                    }
-                }
-            }
-        }
-    }
 
-    private Bson createChunkQuery(Region region, int chunkSize) {
-        int startChunkId = getChunkId(region.getStart(), chunkSize);
-        int endChunkId = getChunkId(region.getEnd(), chunkSize);
-
-        List<String> chunkIds = new ArrayList<>(endChunkId - startChunkId + 1);
-        for (int chunkId = startChunkId; chunkId <= endChunkId; chunkId++) {
-            chunkIds.add(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
-            logger.debug(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
-        }
-
-        Bson chunk = Filters.in("_chunkIds", chunkIds);
-        Bson start = Filters.lte("start", region.getEnd());
-        Bson end = Filters.gte("end", region.getStart());
-        return Filters.and(chunk, start, end);
-    }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
         createOrQuery(query, queryParam, mongoDbField, andBsonList, QueryValueType.STRING);

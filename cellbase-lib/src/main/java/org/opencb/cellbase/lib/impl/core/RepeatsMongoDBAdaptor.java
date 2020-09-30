@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.RepeatsQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
+import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -143,7 +144,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "region":
-                        createRegionQuery(query, value, andBsonList);
+                        createRegionQuery(query, value, MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
