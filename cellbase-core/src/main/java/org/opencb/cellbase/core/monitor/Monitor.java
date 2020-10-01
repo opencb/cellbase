@@ -22,9 +22,8 @@ public class Monitor {
 
     private static final String CELLBASE = "CellBase";
     private static final String REPLICA_SET = "replica_set";
-    private static final String GRCH38 = "grch38";
-    private static final String GRCH37 = "grch37";
-    private static final String SPECIES = "hsapiens";
+    private static final String COMPONENT = "Database";
+
     private static final String CELLBASE_TOKEN = "cellbase-health-token";
     private static ObjectMapper jsonObjectMapper;
     private static Logger logger;
@@ -48,30 +47,29 @@ public class Monitor {
     }
 
     public HealthCheckResponse run(String requestUri, CellBaseConfiguration configuration, String species,
-                                   String assembly, String skip, String token) {
+                                   String assembly, String token) {
         HealthCheckResponse healthCheckResponse = new HealthCheckResponse();
         healthCheckResponse.setServiceName(CELLBASE);
         healthCheckResponse.setDatetime();
-        healthCheckResponse.setComponents(Collections.singletonList("Database"));
-        // FIXME implement
-        healthCheckResponse.setStatus(HealthCheckResponse.Status.OK);
+        healthCheckResponse.setComponents(Collections.singletonList(COMPONENT));
+        HealthCheckResponse.Status mongoStatus = checkMongoStatus(species, assembly);
+        healthCheckResponse.setStatus(mongoStatus);
         healthCheckResponse.setRequestUrl(requestUri);
-        HealthCheckDependencies healthCheckDependencies = null;
 
         // only return info if token set
         if (CELLBASE_TOKEN.equals(token)) {
             Databases database = configuration.getDatabases();
-            HealthCheckDependency mongoDependency =  new HealthCheckDependency(database.getMongodb().getHost(), checkMongoStatus(),
-                    "Database", "MongoDB", null);
-            healthCheckDependencies.setDatastores(Collections.singletonList(mongoDependency));
+            HealthCheckDependency mongoDependency = new HealthCheckDependency(
+                    database.getMongodb().getHost(), mongoStatus, COMPONENT, "MongoDB", null);
+            HealthCheckDependencies healthCheckDependencies = new HealthCheckDependencies(Collections.singletonList(mongoDependency), null);
+            healthCheckResponse.setDependencies(Collections.singletonList(healthCheckDependencies));
         }
 
         return healthCheckResponse;
     }
 
-    private HealthCheckResponse.Status checkMongoStatus() {
-
-        Map<String, DatastoreStatus> datastoreStatusMap = dbAdaptorFactory.getDatabaseStatus(SPECIES, GRCH38);
+    private HealthCheckResponse.Status checkMongoStatus(String species, String assembly) {
+        Map<String, DatastoreStatus> datastoreStatusMap = dbAdaptorFactory.getDatabaseStatus(species, assembly);
 
         if (datastoreStatusMap != null && datastoreStatusMap.size() > 0) {
             int downServers = 0;

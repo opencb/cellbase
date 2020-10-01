@@ -217,36 +217,41 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     private Map<String, DatastoreStatus> getReplSetStatus(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(ADMIN_DATABASE);
-        Document statusDocument = mongoDatastore.getReplSetStatus();
         Map<String, DatastoreStatus> statusMap = new HashMap<>(4);
+        try {
+            MongoDataStore mongoDatastore = createMongoDBDatastore(ADMIN_DATABASE);
+            Document statusDocument = mongoDatastore.getReplSetStatus();
 
-        String repset = (String) statusDocument.get(SET);
-        if (StringUtils.isNotBlank(repset)) {
-            DatastoreStatus datastoreStatus = new DatastoreStatus();
-            datastoreStatus.setRepset(repset);
-            // Overall database response time is measured by raising a query to Gene collection
-            datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
-            datastoreStatus.setRole(REPLICA_SET);
-            statusMap.put(repset, datastoreStatus);
-        }
+            String repset = (String) statusDocument.get(SET);
+            if (StringUtils.isNotBlank(repset)) {
+                DatastoreStatus datastoreStatus = new DatastoreStatus();
+                datastoreStatus.setRepset(repset);
+                // Overall database response time is measured by raising a query to Gene collection
+                datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
+                datastoreStatus.setRole(REPLICA_SET);
+                statusMap.put(repset, datastoreStatus);
+            }
 
-        for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
-            DatastoreStatus datastoreStatus = new DatastoreStatus();
-            datastoreStatus.setRepset(repset);
-            datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
-            String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
-            // Per-machine response time is measured by doing ping to the machine. it's not possible to create a connection
-            // to one single machine in the rep set
-            datastoreStatus.setResponseTime(getPingResponseTime(memberName));
-            statusMap.put(memberName, datastoreStatus);
+            for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
+                DatastoreStatus datastoreStatus = new DatastoreStatus();
+                datastoreStatus.setRepset(repset);
+                datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
+                String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
+                // Per-machine response time is measured by doing ping to the machine. it's not possible to create a connection
+                // to one single machine in the rep set
+                datastoreStatus.setResponseTime(getPingResponseTime(memberName));
+                statusMap.put(memberName, datastoreStatus);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
         return statusMap;
     }
 
     private String getQueryResponseTime(String species, String assembly) {
-        GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
         try {
+            GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
             QueryResult<Gene> queryResult = geneDBAdaptor.first();
             // Query must return one gene. Otherwise there's a problem
             if (queryResult.getNumResults() == 1) {
@@ -254,7 +259,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             } else {
                 return null;
             }
-        } catch (MongoTimeoutException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

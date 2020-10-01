@@ -179,20 +179,14 @@ public class MetaWSServer extends GenericRestWSServer {
                                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                        required = true) String species,
                            @DefaultValue("")
-                           @QueryParam("skip")
-                           @ApiParam(name = "skip",
-                                   value = "Comma separated list of services names that will be skip from the check",
-                                   required = false) String skip,
-                           @DefaultValue("")
                                @QueryParam("token")
                                @ApiParam(name = "token",
-                                       value = "cAPI token for health check. When passed all of the "
+                                       value = "API token for health check. When passed all of the "
                                                + "dependencies and their status will be displayed. The dependencies will be checked if "
                                                + "this parameter is not used, but they won't be part of the response",
                                        required = false) String token) {
 
-        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, this.assembly,
-                skip, token);
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, this.assembly, token);
         return createJsonResponse(health);
     }
 }

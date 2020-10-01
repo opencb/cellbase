@@ -46,13 +46,13 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
                 .load(MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         Monitor monitor = new Monitor(dbAdaptorFactory);
-        HealthCheckResponse health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        HealthCheckResponse health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
 
         // Empty gene collection
         clearDB(GRCH37_DBNAME);
         monitor = new Monitor(dbAdaptorFactory);
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
 
 //        // "Local" monitoring - maintenance
@@ -69,22 +69,22 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         cellBaseConfiguration.getDatabases().getMongodb().setHost(FAKE);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         monitor = new Monitor(dbAdaptorFactory);
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
 
         // Remote monitoring all OK
         monitor = new Monitor(REST_API_HOST);
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
 
         // Remote monitoring - unknown http host
         monitor = new Monitor(UNKNOWN_HTTP_HOST);
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
 
         // Remote monitoring - known http host but status end point not available
         monitor = new Monitor(REST_API_DOES_NOT_IMPLEMENT_STATUS);
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null, null);
+        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
     }
 
