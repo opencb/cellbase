@@ -189,4 +189,28 @@ public class MetaWSServer extends GenericRestWSServer {
         HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, this.assembly, token);
         return createJsonResponse(health);
     }
+
+    @GET
+    @Path("/health")
+    @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
+            + "as database connections and the ability to access other API's.",
+            response = HealthCheckResponse.class)
+    public Response status(@DefaultValue("")
+                           @QueryParam("token")
+                           @ApiParam(name = "token",
+                                   value = "API token for health check. When passed all of the "
+                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
+                                           + "this parameter is not used, but they won't be part of the response",
+                                   required = false) String token) {
+
+        /**
+         * Hardcode the species and assembly for required heath check. This is fine and will not cause problems in the future.
+         */
+        String speciesHealthCheck = "hsapiens";
+        String assemblyHealthcheck = "grch38";
+
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
+                assemblyHealthcheck, token);
+        return createJsonResponse(health);
+    }
 }
