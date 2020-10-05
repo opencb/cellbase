@@ -82,7 +82,7 @@ public class GenericRestWSServer implements IWSServer {
      */
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
-    protected Monitor monitor;
+    protected org.opencb.cellbase.lib.monitor.Monitor monitor;
     private static final String ERROR = "error";
     private static final String OK = "ok";
     // this webservice has no species, do not validate
@@ -387,6 +387,17 @@ public class GenericRestWSServer implements IWSServer {
             e.printStackTrace();
             logger.error("Error parsing queryResponse object");
             return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
+    protected Response createJsonResponse(Object obj) {
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(obj),
+                    MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8")));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("Error parsing object");
+            return createErrorResponse("", "Error parsing object:\n" + Arrays.toString(e.getStackTrace()));
         }
     }
 

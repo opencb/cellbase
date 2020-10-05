@@ -38,7 +38,7 @@ import org.opencb.cellbase.server.rest.genomic.RegionWSServer;
 import org.opencb.cellbase.server.rest.genomic.VariantWSServer;
 import org.opencb.cellbase.server.rest.regulatory.RegulatoryWSServer;
 import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
-import org.opencb.commons.monitor.HealthStatus;
+import org.opencb.commons.monitor.HealthCheckResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -61,10 +61,6 @@ public class MetaWSServer extends GenericRestWSServer {
     private MetaManager metaManager;
 
     private static final String PONG = "pong";
-    private static final String STATUS = "status";
-//    private static final String HEALTH = "health";
-//    private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
-
 
     public MetaWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -209,7 +205,15 @@ public class MetaWSServer extends GenericRestWSServer {
     public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
                                        String species,
                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                        String assembly) {
+                                        String assembly,
+                           @DefaultValue("")
+                               @QueryParam("token")
+                               @ApiParam(name = "token",
+                                       value = "API token for health check. When passed all of the "
+                                               + "dependencies and their status will be displayed. The dependencies will be checked if "
+                                               + "this parameter is not used, but they won't be part of the response",
+                                       required = false) String token) {
+
         if (StringUtils.isEmpty(assembly)) {
             try {
                 assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -223,15 +227,34 @@ public class MetaWSServer extends GenericRestWSServer {
                     + assembly + "'");
         }
 
-        HealthStatus health = monitor.run(species, assembly);
-        CellBaseDataResult<HealthStatus> queryResult = new CellBaseDataResult();
-        queryResult.setId(STATUS);
-        queryResult.setTime(0);
-        queryResult.setNumResults(1);
-        queryResult.setResults(Collections.singletonList(health));
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species,
+                assembly, token);
+        return createJsonResponse(health);
 
-        return createOkResponse(queryResult);
+    }
 
+    @GET
+    @Path("/health")
+    @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
+            + "as database connections and the ability to access other APIs.",
+            response = HealthCheckResponse.class)
+    public Response status(@DefaultValue("")
+                           @QueryParam("token")
+                           @ApiParam(name = "token",
+                                   value = "API token for health check. When passed all of the "
+                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
+                                           + "this parameter is not used, but they won't be part of the response",
+                                   required = false) String token) {
+
+        /**
+         * Hardcode the species and assembly for required heath check. This is fine and will not cause problems in the future.
+         */
+        String speciesHealthCheck = "hsapiens";
+        String assemblyHealthcheck = "grch38";
+
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
+                assemblyHealthcheck, token);
+        return createJsonResponse(health);
     }
 
     @GET

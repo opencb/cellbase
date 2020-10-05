@@ -44,7 +44,7 @@ public class MetaManager extends AbstractManager {
         return configuration.getMaintainerContact();
     }
 
-    public Map<String, DatastoreStatus> getDataBaseStatus(String species, String assembly) {
+    public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
         return dbAdaptorFactory.getDatabaseStatus(species, assembly);
     }
 }
