@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.api;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
-import org.opencb.cellbase.core.monitor.HealthStatus;
+import org.opencb.cellbase.core.monitor.DatastoreStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +55,7 @@ public abstract class DBAdaptorFactory {
 
     public abstract void close();
 
-    public abstract Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
-    getDatabaseStatus(String species, String assembly);
+    public abstract Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly);
 
     public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
 
