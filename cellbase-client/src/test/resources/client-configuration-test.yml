@@ -1,8 +1,7 @@
 ---
 version: "v5"
 defaultSpecies: "hsapiens"
-logLevel: "info"
-logFile: ""
+
 rest:
   hosts:
 #  - "http://bioinfo.hpc.cam.ac.uk/cellbase"

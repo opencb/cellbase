@@ -58,7 +58,7 @@ public class GenomicRegionClientTest {
     public void testgetGene() throws Exception {
         CellBaseDataResponse<Gene> geneCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getGene(Arrays.asList("3:555-77777"), null);
         assertNotNull(geneCellBaseDataResponse.firstResult());
-        assertEquals("LINC01986", geneCellBaseDataResponse.firstResult().getName());
+        assertEquals("AC066595.1", geneCellBaseDataResponse.firstResult().getName());
     }
 
     @Test
