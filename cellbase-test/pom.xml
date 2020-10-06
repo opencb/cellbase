@@ -22,7 +22,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase-test</artifactId>
-    <version>4.7.2</version>
+    <version>4.7.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <dependencies>
