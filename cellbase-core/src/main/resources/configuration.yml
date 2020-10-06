@@ -149,19 +149,17 @@ species:
      - ensemblVersion: '99_38'
        name: GRCh38
     data:
-     - genome
-     - genome_info
-     - gene
-     - gene_disease_association
-     - variation
-     - variation_functional_score
-     - regulation
-     - protein
-     - conservation
      - clinical_variants
-     - clinical
-     - svs
+     - conservation
+     - gene
+     - genome
+     - missense_variation_functional_score
+     - ontology
+     - protein
+     - refseq
+     - regulation
      - repeats
+     - variation_functional_score
     shards:
       - collection: "variation"
         key:
