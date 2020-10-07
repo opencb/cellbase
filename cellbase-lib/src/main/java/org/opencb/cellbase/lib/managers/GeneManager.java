@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -93,17 +94,15 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
 //        return geneDBAdaptor.getRegulatoryElements(geneQuery);
 //    }
 //
-//    public List<CellBaseDataResult> getTfbs(Query geneQuery, String genes) {
-//        String[] geneArray = genes.split(",");
-//        List<CellBaseDataResult> geneQueryResults = new ArrayList<>(geneArray.length);
-//        for (String gene : geneArray) {
-//            geneQuery.setTranscriptsXrefs(gene);
-//            CellBaseDataResult geneQueryResult = geneDBAdaptor.getTfbs(geneQuery);
-//            geneQueryResult.setId(gene);
-//            geneQueryResults.add(geneQueryResult);
-//        }
-//        return geneQueryResults;
-//    }
+    public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) {
+        List<CellBaseDataResult<TranscriptTfbs>> geneQueryResults = new ArrayList<>();
+        for (String gene : query.getIds()) {
+            CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions());
+            geneQueryResult.setId(gene);
+            geneQueryResults.add(geneQueryResult);
+        }
+        return geneQueryResults;
+    }
 //
 //    public List<CellBaseDataResult> getByTranscript(Query geneQuery, String transcriptId) {
 //        List<Query> queries = createQueries(geneQuery, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());

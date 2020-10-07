@@ -16,16 +16,23 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.google.common.base.Splitter;
 import com.mongodb.MongoClient;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
-import org.opencb.cellbase.core.api.queries.*;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -288,5 +295,81 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 }
             }
         }
+    }
+
+    public CellBaseDataResult<TranscriptTfbs> getTfbs(String geneId, QueryOptions queryOptions) {
+
+        GeneQuery query = new GeneQuery();
+        query.setIds(Collections.singletonList(geneId));
+        String excludes = (String) queryOptions.get(QueryOptions.EXCLUDE);
+        String includes = (String) queryOptions.get(QueryOptions.INCLUDE);
+        if (StringUtils.isNotEmpty(excludes)) {
+            query.setExcludes(new LinkedList<>(Splitter.on(",").splitToList(excludes)));
+        }
+        if (StringUtils.isNotEmpty(includes)) {
+            query.setIncludes(new LinkedList<>(Splitter.on(",").splitToList(includes)));
+        }
+
+        // unwind results
+        List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
+        GenericDocumentComplexConverter<TranscriptTfbs> converter = new GenericDocumentComplexConverter<>(TranscriptTfbs.class);
+        MongoDBIterator<TranscriptTfbs> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+
+        List<TranscriptTfbs> tfbs = new ArrayList<>();
+        while (iterator.hasNext()) {
+            tfbs.add(iterator.next());
+        }
+
+        return new CellBaseDataResult(geneId, 0, new ArrayList<>(), tfbs.size(), tfbs, -1);
+    }
+
+    private List<Bson> unwindAndMatchTranscripts(GeneQuery query, QueryOptions options) {
+        Bson bson = parseQuery(query);
+        return unwindAndMatchTranscripts(bson, options);
+    }
+
+    private List<Bson> unwindAndMatchTranscripts(Bson bson, QueryOptions queryOptions) {
+        List<Bson> aggregateList = new ArrayList<>();
+        Bson match = Aggregates.match(bson);
+
+        // We parse user's exclude options, ONLY _id can be added if exists
+        Bson includeAndExclude;
+        Bson exclude = null;
+        if (queryOptions != null && queryOptions.containsKey("exclude")) {
+            List<String> stringList = queryOptions.getAsStringList("exclude");
+            if (stringList.contains("_id")) {
+                exclude = Aggregates.project(Projections.exclude("_id"));
+            }
+        }
+        if (exclude != null) {
+            includeAndExclude = Aggregates.project(Projections.fields(Projections.excludeId(), Projections.include("transcripts.tfbs")));
+        } else {
+            includeAndExclude = Aggregates.project(Projections.include("transcripts.tfbs"));
+        }
+
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("tfName", "$transcripts.tfbs.tfName");
+        document.put("id", "$transcripts.tfbs.id");
+        document.put("pfmId", "$transcripts.tfbs.pfmId");
+        document.put("chromosome", "$transcripts.tfbs.chromosome");
+        document.put("start", "$transcripts.tfbs.start");
+        document.put("end", "$transcripts.tfbs.end");
+        document.put("type", "$transcripts.tfbs.type");
+        document.put("transcriptionFactors", "$transcripts.tfbs.transcriptionFactors");
+        document.put("relativeStart", "$transcripts.tfbs.relativeStart");
+        document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
+        document.put("score", "$transcripts.tfbs.score");
+        Bson project = Aggregates.project(document);
+
+        aggregateList.add(match);
+        aggregateList.add(includeAndExclude);
+        aggregateList.add(unwind);
+        aggregateList.add(unwind2);
+        aggregateList.add(project);
+
+        return aggregateList;
     }
 }

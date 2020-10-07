@@ -640,7 +640,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setIds(Arrays.asList(genes.split(",")));
-            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+            List<CellBaseDataResult<TranscriptTfbs>> queryResults = geneManager.getTfbs(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
