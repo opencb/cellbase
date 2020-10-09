@@ -58,6 +58,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         for (Gene currentGene : geneList) {
             gene = currentGene;
             String source = getSource(gene.getId());
+            if (gene.getTranscripts() == null) {
+                continue;
+            }
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
                 transcript = currentTranscript;

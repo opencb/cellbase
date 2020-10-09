@@ -44,6 +44,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         for (Gene currentGene : geneList) {
             gene = currentGene;
             String source = getSource(gene.getId());
+            if (gene.getTranscripts() == null) {
+                continue;
+            }
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 isIntergenic = isIntergenic && (variant.getStart() < currentTranscript.getStart()
                         || variant.getStart() > currentTranscript.getEnd());

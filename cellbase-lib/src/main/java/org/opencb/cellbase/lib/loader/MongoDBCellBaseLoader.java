@@ -340,6 +340,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE};
                     break;
                 case "gene":
+                case "refseq":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
                 case "variation":  // TODO: why are we using different chunk sizes??

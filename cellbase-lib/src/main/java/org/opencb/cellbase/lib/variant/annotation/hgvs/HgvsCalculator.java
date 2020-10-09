@@ -83,6 +83,9 @@ public class HgvsCalculator {
     }
 
     public List<String> run(Variant variant, Gene gene, boolean normalize) {
+        if (gene.getTranscripts() == null) {
+            return new ArrayList<>();
+        }
         List<String> hgvsList = new ArrayList<>(gene.getTranscripts().size());
         for (Transcript transcript : gene.getTranscripts()) {
             hgvsList.addAll(this.run(variant, transcript, gene.getId(), normalize));

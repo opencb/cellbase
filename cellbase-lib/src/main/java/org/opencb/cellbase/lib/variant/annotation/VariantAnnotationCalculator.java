@@ -550,6 +550,7 @@ public class VariantAnnotationCalculator {
         GeneQuery geneQuery = new GeneQuery();
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
+
         if (StringUtils.isNotEmpty(consequenceTypeSource)) {
             // sources can be "ensembl" and/or "refseq". query is validated before execution, will fail if invalid value
             String[] sources = consequenceTypeSource.split(",");
@@ -620,7 +621,7 @@ public class VariantAnnotationCalculator {
         logger.debug("checkAminoAcidChange = {}", checkAminoAcidChange);
 
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
-                ? (String) queryOptions.get("consequenceTypeSource") : null);
+                ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
     }
 

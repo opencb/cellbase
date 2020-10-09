@@ -84,6 +84,9 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
             if (variant.getChromosome().equals(currentGene.getChromosome())) {
                 gene = currentGene;
                 String source = getSource(gene.getId());
+                if (gene.getTranscripts() == null) {
+                    continue;
+                }
                 for (Transcript currentTranscript : gene.getTranscripts()) {
                     isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
                     transcript = currentTranscript;
