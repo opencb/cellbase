@@ -27,6 +27,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
@@ -66,7 +67,7 @@ public class MetaWSServer extends GenericRestWSServer {
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
         super(apiVersion, uriInfo, hsr);
         metaManager = cellBaseManagerFactory.getMetaManager();
     }

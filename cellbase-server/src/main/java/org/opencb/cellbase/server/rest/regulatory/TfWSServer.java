@@ -28,7 +28,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.lib.managers.TfbsManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +61,7 @@ public class TfWSServer extends RegulatoryWSServer {
                       @DefaultValue("")
                       @QueryParam("assembly") String assembly,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
         super(apiVersion, species, assembly, uriInfo, hsr);
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
         tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);

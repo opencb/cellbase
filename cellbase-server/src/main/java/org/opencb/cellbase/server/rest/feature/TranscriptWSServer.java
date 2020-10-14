@@ -30,6 +30,7 @@ import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -63,7 +64,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                               @DefaultValue("")
                               @QueryParam("assembly") String assembly,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();

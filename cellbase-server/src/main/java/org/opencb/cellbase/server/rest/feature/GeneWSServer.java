@@ -31,6 +31,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -65,7 +66,8 @@ public class GeneWSServer extends GenericRestWSServer {
                         @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                         @DefaultValue("")
                         @QueryParam("assembly") String assembly,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException, CellbaseException {
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException,
+            CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
         if (CollectionUtils.isNotEmpty(assemblies)) {

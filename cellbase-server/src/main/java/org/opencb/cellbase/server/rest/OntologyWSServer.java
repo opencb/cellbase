@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +53,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                             @QueryParam("assembly") String assembly,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
         if (CollectionUtils.isNotEmpty(assemblies)) {

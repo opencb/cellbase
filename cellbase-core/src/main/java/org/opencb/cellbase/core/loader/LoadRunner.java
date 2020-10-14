@@ -84,7 +84,7 @@ public class LoadRunner {
             if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)) {
                 batchSize = 50;
             } else {
-                batchSize = 1000;
+                batchSize = 200;
             }
 
             // One CellBaseLoader is created for each thread in 'numThreads' variable

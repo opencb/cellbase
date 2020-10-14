@@ -104,8 +104,8 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
             String transcriptId = queryResult.getResults().get(0).getId();
             query.setTranscriptsId(Collections.singletonList(transcriptId));
 //            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
-            logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
-            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(query.toQueryOptions()));
+//            logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
+//            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(query.toQueryOptions()));
             CellBaseDataResult<Score> scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
             scoresCellBaseDataResult.setId(transcriptId);
             return scoresCellBaseDataResult;

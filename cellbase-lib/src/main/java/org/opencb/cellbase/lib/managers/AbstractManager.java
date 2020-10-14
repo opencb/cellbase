@@ -16,8 +16,6 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
@@ -32,17 +30,11 @@ public class AbstractManager {
     protected CellBaseConfiguration configuration;
     protected CellBaseManagerFactory managers;
     protected MongoDBAdaptorFactory dbAdaptorFactory;
-    protected static ObjectWriter jsonObjectWriter;
 
     protected String species;
     protected String assembly;
 
     protected Logger logger;
-
-//    protected int histogramIntervalSize = 200000;
-//    private static final int SKIP_DEFAULT = 0;
-//    private static final int LIMIT_DEFAULT = 10;
-    private static final int MAX_RECORDS = 5000;
 
     public AbstractManager(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -67,7 +59,6 @@ public class AbstractManager {
         dbAdaptorFactory = new MongoDBAdaptorFactory(this.configuration);
 
         logger = LoggerFactory.getLogger(this.getClass());
-        jsonObjectWriter = new ObjectMapper().writer();
     }
 
     @Deprecated

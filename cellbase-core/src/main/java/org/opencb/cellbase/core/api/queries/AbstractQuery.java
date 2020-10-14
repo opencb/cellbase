@@ -40,7 +40,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     protected ObjectMapper objectMapper;
     protected Logger logger;
 
-    public static final int DEFAULT_LIMIT = 50;
+//    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
     // list of fields in this class
@@ -357,9 +357,10 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     }
 
     public void setDefaults() {
-        if (limit == null) {
-            setLimit(DEFAULT_LIMIT);
-        }
+        // no default limit. java-commons-lib should handle this. REST queries are already have a default limit of 5,000
+//        if (limit == null) {
+//            setLimit(DEFAULT_LIMIT);
+//        }
         if (skip == null) {
             setSkip(DEFAULT_SKIP);
         }
@@ -377,7 +378,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     public QueryOptions toQueryOptions() {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.put(QueryOptions.SKIP, skip);
-        queryOptions.put(QueryOptions.LIMIT, limit);
+        if (limit != null) {
+            queryOptions.put(QueryOptions.LIMIT, limit);
+        }
         queryOptions.put(QueryOptions.COUNT, count);
         if (CollectionUtils.isNotEmpty(includes)) {
             queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes, ","));

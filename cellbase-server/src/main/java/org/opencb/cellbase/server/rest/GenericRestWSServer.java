@@ -28,11 +28,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.monitor.Monitor;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -63,7 +65,7 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Query query;
 //    protected QueryOptions queryOptions;
-
+    private static final int MAX_RECORDS = 5000;
     protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -89,13 +91,13 @@ public class GenericRestWSServer implements IWSServer {
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws VersionException, IOException, CellbaseException {
+            throws VersionException, LimitException, IOException, CellbaseException {
 
         this.version = version;
         this.uriInfo = uriInfo;
@@ -146,7 +148,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void initQuery() throws VersionException {
+    private void initQuery() throws VersionException, LimitException {
         startTime = System.currentTimeMillis();
         query = new Query();
         // TODO move to dbadaptor
@@ -159,8 +161,26 @@ public class GenericRestWSServer implements IWSServer {
             uriParams.remove("assembly");
         }
 
+        checkLimit();
+
         // check version. species is validated later
         checkVersion();
+    }
+
+    /**
+     * If limit is empty, then set to be 10. If limit is set, check that it is less than maximum allowed limit.
+     *
+     * @throws CellbaseException if limit is higher than max allowed values
+     */
+    private void checkLimit() throws LimitException {
+        if (uriParams.get("limit") == null) {
+            uriParams.put("limit", ParamConstants.DEFAULT_LIMIT);
+        } else {
+            int limit = Integer.parseInt(uriParams.get("limit"));
+            if (limit >= MAX_RECORDS) {
+                throw new LimitException("Limit cannot exceed " + MAX_RECORDS + " but is : '" + uriParams.get("limit") + "'");
+            }
+        }
     }
 
     private void checkVersion() throws VersionException {
