@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.rest.network;
 
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.server.exception.SpeciesException;
+import org.opencb.cellbase.server.exception.LimitException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -36,7 +36,7 @@ import java.io.IOException;
 public class PathwayWSServerMongo extends GenericRestWSServer {
 
     public PathwayWSServerMongo(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                                @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                                @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 

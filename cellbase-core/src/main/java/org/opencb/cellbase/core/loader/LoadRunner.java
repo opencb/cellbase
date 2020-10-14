@@ -161,7 +161,7 @@ public class LoadRunner {
                     blockingQueue.put(batch);
                     batch = new ArrayList<>(batchSize);
                 }
-                if (inputFileRecords % 1000 == 0) {
+                if (inputFileRecords % batchSize == 0) {
                     logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
                 }
             }
