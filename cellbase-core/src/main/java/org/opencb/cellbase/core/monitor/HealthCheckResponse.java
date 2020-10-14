@@ -14,7 +14,7 @@ public class HealthCheckResponse {
     private String serviceName;
     private String requestUrl;
     private String datetime;
-    private List<HealthCheckDependencies> dependencies;
+    private HealthCheckDependencies dependencies;
     private Status status;
     private List<String> components;
     private List<String> unavailableComponents;
@@ -50,11 +50,11 @@ public class HealthCheckResponse {
         return datetime;
     }
 
-    public List<HealthCheckDependencies> getDependencies() {
+    public HealthCheckDependencies getDependencies() {
         return dependencies;
     }
 
-    public HealthCheckResponse setDependencies(List<HealthCheckDependencies> dependencies) {
+    public HealthCheckResponse setDependencies(HealthCheckDependencies dependencies) {
         this.dependencies = dependencies;
         return this;
     }

@@ -62,7 +62,7 @@ public class Monitor {
             HealthCheckDependency mongoDependency = new HealthCheckDependency(
                     database.getMongodb().getHost(), mongoStatus, COMPONENT, "MongoDB", null);
             HealthCheckDependencies healthCheckDependencies = new HealthCheckDependencies(Collections.singletonList(mongoDependency), null);
-            healthCheckResponse.setDependencies(Collections.singletonList(healthCheckDependencies));
+            healthCheckResponse.setDependencies(healthCheckDependencies);
         }
 
         return healthCheckResponse;
