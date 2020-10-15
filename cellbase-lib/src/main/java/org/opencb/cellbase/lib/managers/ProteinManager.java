@@ -60,52 +60,16 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         return proteinDBAdaptor;
     }
 
-//    public CellBaseDataResult<Protein> search(Query query, QueryOptions queryOptions) {
-//        return proteinDBAdaptor.nativeGet(query, queryOptions);
-//    }
-
-//    public CellBaseDataResult<Entry> search(ProteinQuery query) throws QueryException, IllegalAccessException {
-//        query.setDefaults();
-//        query.validate();
-//        return proteinDBAdaptor.query(query);
-//    }
-
-//    public CellBaseDataResult<Protein> groupBy(Query query, QueryOptions queryOptions, String fields) {
-//        return proteinDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
-//    }
-
-//    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
-//        List<Query> queries = createQueries(query, id, ProteinDBAdaptor.QueryParams.XREFS.key());
-//        List<CellBaseDataResult> queryResults = proteinDBAdaptor.query(queries);
-//        for (int i = 0; i < queries.size(); i++) {
-//            queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
-//        }
-//        return queryResults;
-//    }
-
-//    public List<CellBaseDataResult<Entry>> info(List<ProteinQuery> queries) {
-//        List<CellBaseDataResult<Entry>> queryResults = proteinDBAdaptor.query(queries);
-//        return queryResults;
-//    }
-
     public CellBaseDataResult getSubstitutionScores(TranscriptQuery query, Integer position, String aa)
             throws JsonProcessingException {
         // Fetch Ensembl transcriptId to query substiturion scores
         logger.info("Searching transcripts for {}", query.getTranscriptsXrefs());
-//        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
-//        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-//        query.setIncludes(Collections.singletonList("transcripts.id"));
         CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.query(query);
         logger.info("{} transcripts found", queryResult.getNumResults());
         // Get substitution scores for fetched transcript
         if (queryResult.getNumResults() > 0) {
-//            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
-
             String transcriptId = queryResult.getResults().get(0).getId();
             query.setTranscriptsId(Collections.singletonList(transcriptId));
-//            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
-//            logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
-//            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(query.toQueryOptions()));
             CellBaseDataResult<Score> scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
             scoresCellBaseDataResult.setId(transcriptId);
             return scoresCellBaseDataResult;
@@ -113,42 +77,6 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
             return queryResult;
         }
     }
-
-//    public CellBaseDataResult getSubstitutionScores(Query query, QueryOptions queryOptions, String id)
-//            throws JsonProcessingException {
-//        // Fetch Ensembl transcriptId to query substiturion scores
-//        logger.info("Searching transcripts for protein {}", id);
-////        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
-////        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-//        TranscriptQuery transcriptQuery = new TranscriptQuery();
-//        transcriptQuery.setTranscriptsXrefs(new ArrayList<>(Arrays.asList(id)));
-//        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
-//        logger.info("{} transcripts found", queryResult.getNumResults());
-//        logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
-//
-//        // Get substitution scores for fetched transcript
-//        if (queryResult.getNumResults() > 0) {
-//            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
-//            logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
-//            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
-//            CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
-//            scoresCellBaseDataResult.setId(id);
-//            return scoresCellBaseDataResult;
-//        } else {
-//            return queryResult;
-//        }
-//    }
-
-//    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String proteins) {
-//        query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteins);
-//        queryOptions.put("include", "sequence.value");
-//        CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
-//        CellBaseDataResult<String> queryResult1 = new CellBaseDataResult<>(queryResult.getId(), queryResult.getTime(),
-//                queryResult.getEvents(), queryResult.getNumResults(), Collections.emptyList(), 1);
-//        queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
-//        queryResult1.setId(proteins);
-//        return queryResult1;
-//    }
 
     public CellBaseDataResult<String> getSequence(ProteinQuery query) {
         List<String> includes = new ArrayList<>();
@@ -161,7 +89,6 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         CellBaseDataResult<String> result = new CellBaseDataResult<>(proteinDataResult.getId(), proteinDataResult.getTime(),
                 proteinDataResult.getEvents(), proteinDataResult.getNumResults(), Collections.emptyList(), 1);
         result.setResults(Collections.singletonList(proteinDataResult.getResults().get(0).getSequence().getValue()));
-//        result.setId(StringUtils.join(query.getAccessions()));
         return result;
     }
 
@@ -177,21 +104,6 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
             proteinVariantAnnotation.getResults().get(0).getSubstitutionScores().add(
                     new Score(revelResults.first().getScore(), "revel", ""));
         }
-
-//        String aaReferenceAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaReference);
-//        String aaAlternateAbbreviation = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aaAlternate);
-//        if (revelResults.getNumResults() > 0) {
-//            List<MissenseVariantFunctionalScore> scores = revelResults.getResults();
-//            for (MissenseVariantFunctionalScore score : scores) {
-//                for (TranscriptMissenseVariantFunctionalScore transcriptScore : score.getScores()) {
-//                    if (transcriptScore.getAaReference().equalsIgnoreCase(aaReferenceAbbreviation)
-//                            && transcriptScore.getAaAlternate().equalsIgnoreCase(aaAlternateAbbreviation)) {
-//                        results.getResults().get(0).getSubstitutionScores().add(new Score(transcriptScore.getScore(), "revel", ""));
-//                        break;
-//                    }
-//                }
-//            }
-//        }
         return proteinVariantAnnotation;
     }
 }

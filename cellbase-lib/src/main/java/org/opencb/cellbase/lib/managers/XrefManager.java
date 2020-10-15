@@ -37,9 +37,4 @@ public class XrefManager extends AbstractManager implements FeatureApi {
     public CellBaseCoreDBAdaptor getDBAdaptor() {
         return xRefDBAdaptor;
     }
-
-//    public CellBaseDataResult getDBNames(Query query) {
-//        return xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
-//    }
-
 }

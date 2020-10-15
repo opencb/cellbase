@@ -57,21 +57,6 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         return clinicalDBAdaptor.nativeGet(query, queryOptions);
     }
 
-//    public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
-//        Set<String> sourceContent = query.getAsStringList(ClinicalDBAdaptor.QueryParams.SOURCE.key()) != null
-//                ? new HashSet<>(query.getAsStringList(ClinicalDBAdaptor.QueryParams.SOURCE.key())) : null;
-//        List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>();
-//        if (sourceContent == null || sourceContent.contains("clinvar")) {
-//            cellBaseDataResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
-//
-//        }
-//        if (sourceContent == null || sourceContent.contains("gwas")) {
-//            cellBaseDataResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
-//        }
-//
-//        return cellBaseDataResultList;
-//    }
-
     public CellBaseDataResult<String> getAlleleOriginLabels() {
         List<String> alleleOriginLabels = Arrays.stream(AlleleOrigin.values())
                 .map((value) -> value.name()).collect(Collectors.toList());

@@ -39,21 +39,4 @@ public class TfbsManager extends AbstractManager implements AggregationApi<TfbsQ
     public CellBaseCoreDBAdaptor getDBAdaptor() {
         return geneDBAdaptor;
     }
-
-//    public CellBaseDataResult getByGene(GeneQuery geneQuery) {
-//        List<String> includes = new ArrayList<>();
-//        includes.add("id");
-//        includes.add("transcripts.id");
-//        includes.add("transcripts.tfbs.tfName");
-//        includes.add("transcripts.tfbs.pwm");
-//        includes.add("transcripts.tfbs.chromosome");
-//        includes.add("transcripts.tfbs.start");
-//        includes.add("transcripts.tfbs.end");
-//        includes.add("transcripts.tfbs.strand");
-//        includes.add("transcripts.tfbs.relativeStart");
-//        includes.add("transcripts.tfbs.relativeEnd");
-//        includes.add("transcripts.tfbs.score");
-//        CellBaseDataResult queryResults = geneDBAdaptor.query(geneQuery);
-//        return queryResults;
-//    }
 }

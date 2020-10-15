@@ -39,27 +39,4 @@ public class RepeatsManager extends AbstractManager implements AggregationApi<Re
     public CellBaseCoreDBAdaptor<RepeatsQuery, Repeat> getDBAdaptor() {
         return repeatsDBAdaptor;
     }
-
-//    public CellBaseDataResult getByRegion(Region region, QueryOptions options) {
-//        Query query = new Query("region", region.toString());
-//        return repeatsDBAdaptor.get(query, options);
-//    }
-//
-//    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
-//        List<Query> queries = createQueries(query, region, RepeatsDBAdaptor.QueryParams.REGION.key());
-//        List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
-//        for (int i = 0; i < queries.size(); i++) {
-//            queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
-//        }
-//        return queryResults;
-//    }
-//
-//    public List<CellBaseDataResult<Repeat>> getByRegion(List<Region> regions, QueryOptions options) {
-//        List<CellBaseDataResult<Repeat>> results = new ArrayList<>(regions.size());
-//        for (Region region : regions) {
-//            Query query = new Query("region", region.toString());
-//            results.add(repeatsDBAdaptor.get(query, options));
-//        }
-//        return results;
-//    }
 }

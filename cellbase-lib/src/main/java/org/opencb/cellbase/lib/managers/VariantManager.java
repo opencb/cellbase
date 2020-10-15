@@ -72,17 +72,6 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor;
     }
 
-//    @Deprecated
-//    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
-//        logger.debug("Querying for variant info");
-//        List<Query> queries = createQueries(query, id, VariantDBAdaptor.QueryParams.ID.key());
-//        List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
-//        for (int i = 0; i < queries.size(); i++) {
-//            queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
-//        }
-//        return queryResults;
-//    }
-
     public CellBaseDataResult get(Query query, QueryOptions queryOptions) {
         return variantDBAdaptor.nativeGet(query, queryOptions);
     }

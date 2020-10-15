@@ -581,22 +581,6 @@ public class MongoDBAdaptor {
         return (id * chunkSize) + chunkSize - 1;
     }
 
-//
-//    public CellBaseDataResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
-//        QueryBuilder builder;
-//        if (options.getString("strand") == null || options.getString("strand").equals("")
-//                || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
-//            builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
-//            options.put("sort", new HashMap<String, String>().put("start", "asc"));
-//            options.put("limit", 1);
-//        } else {
-//            builder = QueryBuilder.start("chromosome").is(chromosome).and("end").lessThanEquals(position);
-//            options.put("sort", new HashMap<String, String>().put("end", "desc"));
-//            options.put("limit", 1);
-//        }
-//        return executeQuery("result", new Document(builder.get().toMap()), options, mongoDBCollection);
-//    }
-
     @Deprecated
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {
         if (options != null) { //&& !options.getBoolean(returnField, true)

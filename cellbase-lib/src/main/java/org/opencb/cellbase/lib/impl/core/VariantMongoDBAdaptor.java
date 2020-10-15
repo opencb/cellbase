@@ -75,25 +75,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
-//    @Override
-//    public CellBaseDataResult startsWith(String id, QueryOptions options) {
-//        Bson regex = Filters.regex("ids", Pattern.compile("^" + id));
-//        Bson include = Projections.include("ids", "chromosome", "start", "end");
-//        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
-//    }
-
-//    @Override
-//    public CellBaseDataResult<String> getConsequenceTypes(Query query) {
-//        // TODO we need to check if Query is empty!
-//        List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
-//                .sorted()
-//                .collect(Collectors.toList());
-//        CellBaseDataResult<String> cellBaseDataResult = new CellBaseDataResult("consequence_types");
-//        cellBaseDataResult.setNumResults(consequenceTypes.size());
-//        cellBaseDataResult.setResults(consequenceTypes);
-//        return cellBaseDataResult;
-//    }
-
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
@@ -137,11 +118,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         Bson document = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.distinct(field, document));
     }
-
-//    @Override
-//    public CellBaseDataResult stats(Query query) {
-//        return null;
-//    }
 
     public CellBaseDataResult<Variant> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
@@ -202,11 +178,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             action.accept(iterator.next());
         }
     }
-
-//    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
-//    }
 
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);

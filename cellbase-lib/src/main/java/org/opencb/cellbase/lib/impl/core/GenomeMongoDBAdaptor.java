@@ -416,25 +416,6 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return queryResults;
     }
 
-//    public CellBaseDataResult<Long> count(Query query) {
-//        Bson bson = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.count(bson));
-//    }
-//
-//    public CellBaseDataResult distinct(Query query, String field) {
-//        Bson bson = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
-//    }
-
-//    @Override
-//    public CellBaseDataResult stats(Query query) {
-//        return null;
-//    }
-
-//    public CellBaseDataResult search(Query query) {
-//        return null;
-//    }
-
     @Deprecated
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
