@@ -27,8 +27,6 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +36,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Path("/{apiVersion}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -62,7 +63,7 @@ public class RegionWSServer extends GenericRestWSServer {
                           @DefaultValue("")
                           @QueryParam("assembly") String assembly,
                           @Context UriInfo uriInfo,
-                          @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException, CellbaseException {
+                          @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();

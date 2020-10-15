@@ -26,8 +26,6 @@ import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.FileManager;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -50,7 +48,7 @@ public class FileWSServer extends GenericRestWSServer {
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, LimitException, IOException, CellbaseException {
+            throws QueryException, IOException, CellbaseException {
         super(apiVersion, uriInfo, hsr);
         fileManager = cellBaseManagerFactory.getFileManager();
     }

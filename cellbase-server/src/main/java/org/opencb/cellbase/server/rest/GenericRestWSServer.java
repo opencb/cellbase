@@ -29,13 +29,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.monitor.Monitor;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -91,13 +90,13 @@ public class GenericRestWSServer implements IWSServer {
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, LimitException, IOException, CellbaseException {
+            throws QueryException, IOException, CellbaseException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws VersionException, LimitException, IOException, CellbaseException {
+            throws QueryException, IOException, CellbaseException {
 
         this.version = version;
         this.uriInfo = uriInfo;
@@ -148,12 +147,9 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void initQuery() throws VersionException, LimitException {
+    private void initQuery() throws CellbaseException {
         startTime = System.currentTimeMillis();
         query = new Query();
-        // TODO move to dbadaptor
-//        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-//        params = new ObjectMap();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
 
         // assembly isn't needed in the query, only in the database connection which we already have.
@@ -172,29 +168,29 @@ public class GenericRestWSServer implements IWSServer {
      *
      * @throws CellbaseException if limit is higher than max allowed values
      */
-    private void checkLimit() throws LimitException {
+    private void checkLimit() throws CellbaseException {
         if (uriParams.get("limit") == null) {
             uriParams.put("limit", ParamConstants.DEFAULT_LIMIT);
         } else {
             int limit = Integer.parseInt(uriParams.get("limit"));
-            if (limit >= MAX_RECORDS) {
-                throw new LimitException("Limit cannot exceed " + MAX_RECORDS + " but is : '" + uriParams.get("limit") + "'");
+            if (limit > MAX_RECORDS) {
+                throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but is : '" + uriParams.get("limit") + "'");
             }
         }
     }
 
-    private void checkVersion() throws VersionException {
+    private void checkVersion() throws CellbaseException {
         if (version == null) {
-            throw new VersionException("Version not valid: '" + version + "'");
+            throw new CellbaseException("Version not valid: '" + version + "'");
         }
 
         if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-            throw new VersionException("Version not valid: '" + version + "'");
+            throw new CellbaseException("Version not valid: '" + version + "'");
         }
     }
 
-    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
+    private Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
         Map<String, String> convertedMap = new HashMap<String, String>();
         if (multivaluedMap == null) {
             return convertedMap;
@@ -214,74 +210,6 @@ public class GenericRestWSServer implements IWSServer {
         uriParams.put("facet", fields);
     }
 
-    /**
-     * Converts to canelcase, e.g. transcripts.biotype --> transcriptsBiotype. It's translated back to the full path right before the
-     * mongo query is run.
-     *
-     * @param dotPath e.g. transcripts.biotype
-     * @return the string camelcased
-     */
-    @Deprecated
-    private String convertDotToCamelCase(String dotPath) {
-        String[] paths = dotPath.split("\\.");
-        StringBuilder sb = new StringBuilder();
-        for (String path  : paths) {
-            if (sb.length() > 0) {
-                path = StringUtils.capitalize(path);
-            }
-            sb.append(path);
-        }
-        return sb.toString();
-    }
-
-//    @Deprecated
-//    public void parseQueryParams() {
-//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-//
-//        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
-//
-//        // Add all the others QueryParams from the URL
-//        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-//
-//            String key = entry.getKey();
-//            String value = entry.getValue().get(0);
-//
-//            if (!queryOptions.containsKey(key)) {
-//                if ("count".equalsIgnoreCase(key)) {
-//                    queryOptions.put("count", Boolean.parseBoolean(value));
-//                } else {
-//                    query.put(key, value);
-//                }
-//            }
-//        }
-//    }
-
-//    @Deprecated
-//    public void parseIncludesAndExcludes(String exclude, String include, String sort) {
-//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-//        if (exclude != null && !exclude.isEmpty()) {
-//            // We add the user's 'exclude' fields to the default values _id and _chunks
-//            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
-//                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
-//            }
-//        }
-//        if (include != null && !include.isEmpty()) {
-//            queryOptions.put(QueryOptions.INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
-//        } else {
-//            queryOptions.put(QueryOptions.INCLUDE, (multivaluedMap.get(QueryOptions.INCLUDE) != null)
-//                    ? Splitter.on(",").splitToList(multivaluedMap.get(QueryOptions.INCLUDE).get(0))
-//                    : null);
-//        }
-//        if (sort != null && !sort.isEmpty()) {
-//            queryOptions.put(QueryOptions.SORT, sort);
-//        }
-//    }
-
-//    @Deprecated
-//    public void parseLimitAndSkip(int limit, int skip) {
-//        return;
-//    }
-//
     protected void logQuery(String status) {
         StringBuilder params = new StringBuilder();
         uriParams.forEach((key, value) -> params.append(key).append(": ").append(value + ", "));

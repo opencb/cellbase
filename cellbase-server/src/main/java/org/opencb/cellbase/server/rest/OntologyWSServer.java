@@ -22,12 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.OntologyQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -36,7 +35,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @Path("/{apiVersion}/{species}/feature/ontology")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,7 +54,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                             @QueryParam("assembly") String assembly,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, LimitException, IOException, CellbaseException {
+            throws QueryException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
         if (CollectionUtils.isNotEmpty(assemblies)) {

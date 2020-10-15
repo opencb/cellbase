@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
@@ -50,11 +51,7 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, GeneQuery query) {
-        String source = null;
-        if (query.getSource() != null && !query.getSource().isEmpty()) {
-            source = query.getSource().get(0);
-        }
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source) {
         return geneDBAdaptor.info(ids, query, source);
     }
 

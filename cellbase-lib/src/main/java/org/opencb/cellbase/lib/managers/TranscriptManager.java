@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -46,11 +47,7 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return transcriptDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, TranscriptQuery query) {
-        String source = null;
-        if (query.getSource() != null && !query.getSource().isEmpty()) {
-            source = query.getSource().get(0);
-        }
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source) {
         return transcriptDBAdaptor.info(ids, query, source);
     }
 

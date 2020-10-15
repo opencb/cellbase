@@ -31,8 +31,6 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +64,7 @@ public class GeneWSServer extends GenericRestWSServer {
                         @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                         @DefaultValue("")
                         @QueryParam("assembly") String assembly,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException,
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException,
             CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
@@ -90,76 +88,6 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getModel() {
         return createModelResponse(Gene.class);
     }
-
-//    @GET
-//    @Path("/first")
-//    @Override
-//    @Deprecated
-//    @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Gene.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    public Response first() {
-////        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//        QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 1);
-//        CellBaseDataResult<Gene> search = geneManager.search(new Query(), queryOptions);
-//        return createOkResponse(search);
-//    }
-
-//    @GET
-//    @Path("/count")
-//    @Deprecated
-//    @ApiOperation(httpMethod = "GET", value = "Get the number of genes in the database", response = Integer.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "id", value = ParamConstants.GENE_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "name", value = ParamConstants.GENE_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query")
-//    })
-//    public Response count() {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            geneManager.search(new Query(), new QueryOptions(QueryOptions.COUNT, true));
-//            return createOkResponse(geneDBAdaptor.count(query));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
-//    @GET
-//    @Path("/stats")
-//    @Override
-//    @ApiOperation(httpMethod = "GET", value = "Not yet implemented ", response = Integer.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    public Response stats() {
-//        return super.stats();
-//    }
 
     @GET
     @Path("/groupBy")
@@ -408,52 +336,6 @@ public class GeneWSServer extends GenericRestWSServer {
         return null;
     }
 
-//    @GET
-//    @Path("/list")
-//    @Deprecated
-//    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = List.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "name", value = ParamConstants.GENE_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query")
-//    })
-//    public Response getAllIDs() {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            queryOptions.put("include", Collections.singletonList("id"));
-//            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
     @GET
     @Path("/{genes}/info")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
@@ -470,7 +352,8 @@ public class GeneWSServer extends GenericRestWSServer {
                                        @ApiParam(name = "genes", value = ParamConstants.GENE_IDS, required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery,
+                    geneQuery.getSource().get(0));
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -606,27 +489,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{genes}/regulation")
-//    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s) - Not yet implemented",
-//            response = RegulatoryFeature.class, responseContainer = "QueryResponse", hidden = true)
-//    public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
-//            required = true) String genes) {
-//        try {
-//            List<CellBaseDataResult> queryResults = new ArrayList<>();
-//                    String[] identifiers = genes.split(",");
-//            for (String identifier : identifiers) {
-//                GeneQuery geneQuery = new GeneQuery(uriParams);
-//                geneQuery.setIds(Arrays.asList(identifier));
-//                CellBaseDataResult cellBaseDataResult = geneManager.getRegulatoryElements(geneQuery);
-//                queryResults.add(cellBaseDataResult);
-//            }
-//            return createOkResponse(queryResults);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
     @GET
     @Path("/{genes}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)",
@@ -699,74 +561,6 @@ public class GeneWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-//    @GET
-//    @Path("/{genes}/ppi")
-//    @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved",
-//            hidden = true)
-//    public Response getPPIByEnsemblId(@PathParam("genes") String gene) {
-//        try {
-//            parseQueryParams();
-//            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-//                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-//            Query query = new Query(ProteinProteinInteractionDBAdaptor.QueryParams.XREFs.key(), gene);
-//            return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
-//    @GET
-//    @Path("/{genes}/clinical")
-//    @ApiOperation(httpMethod = "GET", notes = "WARNING: this web service is currently deprecated, is no longer "
-//            + " supported and will"
-//            + " soon be removed. No more than 1000 objects are allowed to be returned at a time. "
-//            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
-//            + "a look at "
-//            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
-//            value = "[DEPRECATED] Use {version}/{species}/clinical/variant/search instead.", response = Document.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "source",
-//                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
-//                            + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "so",
-//                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
-//                            + "matches will be returned.",
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "phenotype",
-//                    value = "String to indicate the phenotypes to query. A text search will be run.",
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "type",
-//                    value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
-//                            + "variants, e.g. \"single nucleotide variant\" ",
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "review",
-//                    value = "Comma separated list of review lables (only enabled for ClinVar variants), "
-//                            + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "significance",
-//                    value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
-//                            + "for ClinVar variants), e.g.: Benign",
-//                    required = false, dataType = "java.util.List", paramType = "query")
-//    })
-//    @Deprecated
-//    public Response getAllClinvarByGene(@PathParam("genes")
-//                                        @ApiParam(name = "genes", value = "String containing one gene symbol, e.g:"
-//                                                + " BRCA2", required = true) String genes) {
-//        try {
-//            parseQueryParams();
-////            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-//            ClinicalDBAdaptor clinicalDBAdaptor = geneManager.getClinicalDBAdaptor(this.species, this.assembly);
-//            query.put("gene", genes);
-//            CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-//            queryResult.setId(genes);
-//            return createOkResponse(queryResult);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
 
     @GET
     @Path("/help")

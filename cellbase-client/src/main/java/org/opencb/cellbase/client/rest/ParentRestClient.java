@@ -97,14 +97,16 @@ public class ParentRestClient<T> {
         jsonObjectMapper.addMixIn(DrugResponseClassification.class, DrugResponseClassificationMixIn.class);
     }
 
-
-    public CellBaseDataResponse<Long> count(Query query) throws IOException {
-        return execute("count", query, new QueryOptions(), Long.class);
-    }
-
-    public CellBaseDataResponse<T> first() throws IOException {
-        return execute("first", new Query(), new QueryOptions(), clazz);
-    }
+// end points have been removed
+//    public CellBaseDataResponse<Long> count(Query query) throws IOException {
+//        QueryOptions queryOptions = new QueryOptions();
+//        queryOptions.put("count", true);
+//        return execute("count", query, queryOptions, Long.class);
+//    }
+//
+//    public CellBaseDataResponse<T> first() throws IOException {
+//        return execute("first", new Query(), new QueryOptions(), clazz);
+//    }
 
     public CellBaseDataResponse<T> get(List<String> id, QueryOptions queryOptions) throws IOException {
         return execute(id, "info", queryOptions, clazz);

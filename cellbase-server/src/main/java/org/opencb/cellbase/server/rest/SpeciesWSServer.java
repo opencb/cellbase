@@ -20,11 +20,10 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -53,7 +52,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @DefaultValue("")
                            @QueryParam("assembly") String assembly,
                            @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException, CellbaseException {
+                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }

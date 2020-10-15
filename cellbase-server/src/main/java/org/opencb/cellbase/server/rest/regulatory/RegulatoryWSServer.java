@@ -19,13 +19,12 @@ package org.opencb.cellbase.server.rest.regulatory;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
-import org.opencb.cellbase.server.exception.LimitException;
-import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +50,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                               @DefaultValue("")
                               @QueryParam("assembly") String assembly,
                               @Context UriInfo uriInfo,
-                              @Context HttpServletRequest hsr) throws VersionException, LimitException, IOException, CellbaseException {
+                              @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
