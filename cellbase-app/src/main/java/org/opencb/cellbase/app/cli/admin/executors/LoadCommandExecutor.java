@@ -133,6 +133,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.VARIATION_DATA:
                             loadVariationData();
+                            createIndex("variation");
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             loadIfExists(input.resolve("cadd.json.gz"), "cadd");
@@ -147,6 +148,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.CONSERVATION_DATA:
                             loadConservation();
+                            createIndex("conservation");
                             break;
                         case EtlCommons.REGULATION_DATA:
                             loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
@@ -168,12 +170,15 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            break;
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
                             loadProteinFunctionalPrediction();
+                            createIndex("protein_functional_prediction");
                             break;
                         case EtlCommons.CLINICAL_VARIANTS_DATA:
                             loadClinical();
+                            createIndex("clinical_variants");
                             break;
                         case EtlCommons.REPEATS_DATA:
                             loadRepeats();
+                            createIndex("repeats");
                             break;
 //                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
 //                            loadStructuralVariants();
@@ -337,7 +342,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
             }
-            createIndex(EtlCommons.REPEATS_DATA);
         } else {
             logger.warn("Repeats file {} not found", path.toString());
             logger.warn("No repeats data will be loaded");
