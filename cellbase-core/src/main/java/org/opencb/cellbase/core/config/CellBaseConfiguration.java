@@ -38,6 +38,9 @@ public class CellBaseConfiguration {
     public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
     public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
 
+    private String logLevel;
+    private String logDir;
+    private String logOutput;
     private String version;
     private String apiVersion;
     private String wiki;
@@ -99,6 +102,33 @@ public class CellBaseConfiguration {
             configuration.getDatabases().getMongodb().setOptions(new HashMap<>());
         }
         return configuration.getDatabases().getMongodb();
+    }
+
+    public String getLogLevel() {
+        return logLevel;
+    }
+
+    public CellBaseConfiguration setLogLevel(String logLevel) {
+        this.logLevel = logLevel;
+        return this;
+    }
+
+    public String getLogDir() {
+        return logDir;
+    }
+
+    public CellBaseConfiguration setLogDir(String logDir) {
+        this.logDir = logDir;
+        return this;
+    }
+
+    public String getLogOutput() {
+        return logOutput;
+    }
+
+    public CellBaseConfiguration setLogOutput(String logOutput) {
+        this.logOutput = logOutput;
+        return this;
     }
 
     public String getVersion() {

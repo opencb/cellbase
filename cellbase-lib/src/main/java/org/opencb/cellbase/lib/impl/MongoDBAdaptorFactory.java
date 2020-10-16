@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.Species;
-import org.opencb.cellbase.core.monitor.HealthStatus;
+import org.opencb.cellbase.core.monitor.DatastoreStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
@@ -190,8 +190,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
-    getDatabaseStatus(String species, String assembly) {
+    public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         try {
             if (mongoDatastore.isReplSet()) {
@@ -208,29 +207,23 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
-    getSingleMachineDBStatus(MongoDataStore mongoDatastore, String species, String assembly) {
+    private Map<String, DatastoreStatus> getSingleMachineDBStatus(MongoDataStore mongoDatastore, String species, String assembly) {
         Document statusDocument = mongoDatastore.getServerStatus();
-        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
-                = new HashMap<>(1);
-        HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
-                = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+        Map<String, DatastoreStatus> statusMap = new HashMap<>(1);
+        DatastoreStatus datastoreStatus = new DatastoreStatus();
         datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
         statusMap.put((String) statusDocument.get(HOST), datastoreStatus);
         return statusMap;
     }
 
-    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
-    getReplSetStatus(String species, String assembly) {
+    private Map<String, DatastoreStatus> getReplSetStatus(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(ADMIN_DATABASE);
         Document statusDocument = mongoDatastore.getReplSetStatus();
-        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
-                = new HashMap<>(4);
+        Map<String, DatastoreStatus> statusMap = new HashMap<>(4);
 
         String repset = (String) statusDocument.get(SET);
         if (StringUtils.isNotBlank(repset)) {
-            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
-                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            DatastoreStatus datastoreStatus = new DatastoreStatus();
             datastoreStatus.setRepset(repset);
             // Overall database response time is measured by raising a query to Gene collection
             datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
@@ -239,8 +232,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
 
         for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
-            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
-                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            DatastoreStatus datastoreStatus = new DatastoreStatus();
             datastoreStatus.setRepset(repset);
             datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
             String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];

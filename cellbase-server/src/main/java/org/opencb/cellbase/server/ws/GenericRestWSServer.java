@@ -436,6 +436,17 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
+    protected Response createJsonResponse(Object queryResponse) {
+        try {
+            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse),
+                    MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8")));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            logger.error("Error parsing queryResponse object");
+            return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
+        }
+    }
+
     private Response buildResponse(ResponseBuilder responseBuilder) {
         return responseBuilder
                 .header("Access-Control-Allow-Origin", "*")

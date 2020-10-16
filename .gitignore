@@ -74,3 +74,6 @@ clients/cellbaseR.Rcheck
 cellbase-test/fitnesse/FitNesseRoot/files/testResults
 cellbase-test/fitnesse/FitNesseRoot/RecentChanges/*
 cellbase-test/fitnesse/FitNesseRoot/FitNesse/*
+
+# don't ignore this file
+!dd-java-agent.jar
