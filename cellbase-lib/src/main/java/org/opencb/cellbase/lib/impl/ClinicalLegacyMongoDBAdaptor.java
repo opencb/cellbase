@@ -19,6 +19,8 @@ package org.opencb.cellbase.lib.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ClinVar;
 import org.opencb.biodata.models.variant.avro.Cosmic;
 import org.opencb.biodata.models.variant.avro.Gwas;
@@ -349,6 +351,13 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
         return null;
     }
 
+    @Override
+    public List<QueryResult<Variant>> getByVariant(List<Variant> variants,
+                                                   List<Gene> geneList,
+                                                   QueryOptions queryOptions) {
+        return null;
+    }
+
 //    @Override
 //    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
 //        List<Document> queries = new ArrayList<>();
@@ -357,8 +366,8 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
 //        for (Variant genomicVariant : variantList) {
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
 //                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
-//            if (genomicVariant.getReference() != null) {
-//                builder = builder.and("reference").is(genomicVariant.getReference());
+//            if (genomicVariant.getReferenceStart() != null) {
+//                builder = builder.and("reference").is(genomicVariant.getReferenceStart());
 //            }
 //            queries.add(new Document(builder.get().toMap()));
 //            logger.debug(new Document(builder.get().toMap()).toJson());

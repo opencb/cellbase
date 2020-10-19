@@ -91,7 +91,7 @@ class CosmicParserTest extends Specification {
 //        serializedVariants[variantNumber].chromosome.equals(chr)
 //        serializedVariants[variantNumber].start.equals(start)
 //        serializedVariants[variantNumber].end.equals(end)
-//        serializedVariants[variantNumber].reference.equals(ref)
+//        serializedVariants[variantNumber].referenceStart.equals(ref)
 //        serializedVariants[variantNumber].alternate.equals(alt)
 //        serializedVariants[variantNumber].fathmmPrediction.equals(fathmm)
 //        serializedVariants[variantNumber].pubmedPMID.equals(pubmed)

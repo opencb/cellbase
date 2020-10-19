@@ -1,5 +1,6 @@
 package org.opencb.cellbase.client.grpc;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
@@ -22,6 +23,7 @@ public class TranscriptGrpcClientTest {
         cellbaseGrpcClient = new CellbaseGrpcClient("localhost", 9090);
     }
 
+    @Ignore
     @Test
     public void count() throws Exception {
         Long count = cellbaseGrpcClient.getTranscriptClient().count(new HashMap<>());
@@ -29,6 +31,7 @@ public class TranscriptGrpcClientTest {
         System.out.println(count.longValue());
     }
 
+    @Ignore
     @Test
     public void first() throws Exception {
         TranscriptModel.Transcript transcript = cellbaseGrpcClient.getTranscriptClient().first(new HashMap<>(), new HashMap<>());
@@ -36,6 +39,7 @@ public class TranscriptGrpcClientTest {
 //        assertEquals("The biotype returned is wrong", "processed_transcript", transcript.getBiotype());
     }
 
+    @Ignore
     @Test
     public void get() throws Exception {
         Map<String, String> query = new HashMap<>();
@@ -50,11 +54,13 @@ public class TranscriptGrpcClientTest {
         System.out.println(count);
     }
 
+    @Ignore
     @Test
     public void distinct() throws Exception {
 
     }
 
+    @Ignore
     @Test
     public void getSequence() throws Exception {
         Map<String, String> query = new HashMap<>();

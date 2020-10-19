@@ -291,7 +291,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 ////                    }
 //                    // Set consequenceTypeTemplate.aChange
 ////                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
-//                    consequenceType.getProteinVariantAnnotation().setReference(referenceA);
+//                    consequenceType.getProteinVariantAnnotation().setReferenceStart(referenceA);
 ////                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
 //                    // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase.
 //                    // Careful with upper/lower case letters
@@ -530,7 +530,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 ////                    }
 ////                    // Set consequenceTypeTemplate.aChange
 //////                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
-//                    consequenceType.getProteinVariantAnnotation().setReference(referenceA);
+//                    consequenceType.getProteinVariantAnnotation().setReferenceStart(referenceA);
 ////                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
 //                    // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase.
 //                    // Careful with upper/lower case letters

@@ -1,5 +1,6 @@
 package org.opencb.cellbase.client.grpc;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
@@ -23,12 +24,14 @@ public class GeneGrpcClientTest {
         cellBaseGrpcClient = new CellbaseGrpcClient("localhost", 9090);
     }
 
+    @Ignore
     @Test
     public void count() throws Exception {
         Long count = cellBaseGrpcClient.getGeneClient().count(new HashMap<>());
         assertEquals("Number of genes does not match", 57905, count.longValue());
     }
 
+    @Ignore
     @Test
     public void first() throws Exception {
         GeneModel.Gene gene = cellBaseGrpcClient.getGeneClient().first(new HashMap<>(), new HashMap<>());
@@ -36,6 +39,7 @@ public class GeneGrpcClientTest {
 //        assertEquals("The biotype returned is wrong", "pseudogene", gene.getBiotype());
     }
 
+    @Ignore
     @Test
     public void get() throws Exception {
         Map<String, String> query = new HashMap<>();
@@ -53,6 +57,7 @@ public class GeneGrpcClientTest {
         System.out.println(count);
     }
 
+    @Ignore
     @Test
     public void distinct() throws Exception {
         ServiceTypesModel.StringArrayResponse values = cellBaseGrpcClient.getGeneClient().distinct(new HashMap<>(), "biotype");
@@ -62,6 +67,7 @@ public class GeneGrpcClientTest {
         assertNotNull("All Chromosomes must be returned", values);
     }
 
+    @Ignore
     @Test
     public void getRegulatoryRegions() throws Exception {
         Iterator<RegulatoryRegionModel.RegulatoryRegion> regulatoryRegions = cellBaseGrpcClient.getGeneClient().getRegulatoryRegions("ENSG00000139618", new HashMap<>());
@@ -70,6 +76,7 @@ public class GeneGrpcClientTest {
         }
     }
 
+    @Ignore
     @Test
     public void getTranscripts() throws Exception {
         Iterator<TranscriptModel.Transcript> transcriptIterator = cellBaseGrpcClient.getGeneClient().getTranscripts("ENSG00000139618", new HashMap<>());
@@ -79,6 +86,7 @@ public class GeneGrpcClientTest {
         }
     }
 
+    @Ignore
     @Test
     public void getTranscriptTfbs() throws Exception {
         Iterator<TranscriptModel.TranscriptTfbs> transcriptTfbsIterator = cellBaseGrpcClient.getGeneClient().getTranscriptTfbs("ENSG00000139618", new HashMap<>());
