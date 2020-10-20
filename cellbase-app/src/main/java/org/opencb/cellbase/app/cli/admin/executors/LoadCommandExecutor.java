@@ -202,19 +202,19 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadStructuralVariants() {
-        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
-        if (Files.exists(path)) {
-            try {
-                logger.debug("Loading '{}' ...", path.toString());
-                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
-                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-                logger.error(e.toString());
-            }
-        }
-    }
+//    private void loadStructuralVariants() {
+//        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
+//        if (Files.exists(path)) {
+//            try {
+//                logger.debug("Loading '{}' ...", path.toString());
+//                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
+//                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
+//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+//                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+//                logger.error(e.toString());
+//            }
+//        }
+//    }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
             ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
@@ -292,7 +292,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
-//        loadIfExists(input.resolve("gerpVersion.json"), METADATA);
+        loadIfExists(input.resolve("gerpVersion.json"), METADATA);
         loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
         loadIfExists(input.resolve("phyloPVersion.json"), METADATA);
     }

@@ -72,14 +72,14 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             //        List<CellBaseDataResult<CellBaseDataResult<VariantAnnotation>>> response1 = response.getResponse();
             List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResultList = response.getResponses();
             for (int i = 0; i < cellBaseDataResultList.size(); i++) {
-                if (cellBaseDataResultList.get(i).getResults().size() > 0) {
+                if (cellBaseDataResultList.get(i).getResults() != null && cellBaseDataResultList.get(i).getResults().size() > 0) {
                     if (variantList.get(i).getAnnotation() == null) {
                         variantList.get(i).setAnnotation(cellBaseDataResultList.get(i).getResults().get(0));
                     } else {
                         mergeAnnotation(variantList.get(i).getAnnotation(), cellBaseDataResultList.get(i).getResults().get(0));
                     }
                 } else {
-                    logger.warn("Emtpy result for '{}'", cellBaseDataResultList.get(i).getId());
+                    logger.warn("Empty result for '{}'", cellBaseDataResultList.get(i).getId());
                 }
             }
         }

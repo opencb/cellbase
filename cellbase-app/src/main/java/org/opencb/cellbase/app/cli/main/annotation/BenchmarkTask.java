@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.tools.sequence.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.rocksdb.RocksDBException;
@@ -37,14 +37,14 @@ import java.util.Set;
 public class BenchmarkTask implements
         ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
-    private FastaIndexManager fastaIndexManager;
+    private FastaIndex fastaIndex;
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 //    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)|(<INV>)|(<DEL>)|(<INS>)|(<DUP:TANDEM>)";
     private VariantAnnotator variantAnnotator;
 
-    public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {
+    public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndex fastaIndex) {
         this.variantAnnotator = variantAnnotator;
-        this.fastaIndexManager = fastaIndexManager;
+        this.fastaIndex = fastaIndex;
     }
 
     public void pre() {
@@ -64,6 +64,7 @@ public class BenchmarkTask implements
             // Variants such as MT:453:TTT:ATT are skipped for the benchmark - will not have CellBase annotation
             // compatible with VEP annotation and therefore consequenceTypeList = null
             if (batch.get(i).getConsequenceTypes() != null && batch.get(i).getConsequenceTypes().size() > 0
+                    && cellBaseBatch.get(i).getAnnotation() != null
                     && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes() != null
                     && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes().size() > 0) {
                 Pair<VariantAnnotationDiff, VariantAnnotationDiff> comparisonResult = compare(batch.get(i),
@@ -79,7 +80,7 @@ public class BenchmarkTask implements
     private void fixReference(List<VariantAnnotation> variantAnnotationList) throws RocksDBException {
         for (VariantAnnotation variantAnnotation : variantAnnotationList) {
             if (!variantAnnotation.getReference().isEmpty() && !variantAnnotation.getReference().equals("-")) {
-                variantAnnotation.setReference(fastaIndexManager.query(variantAnnotation.getChromosome(),
+                variantAnnotation.setReference(fastaIndex.query(variantAnnotation.getChromosome(),
                         variantAnnotation.getStart(), variantAnnotation.getStart()
                                 + variantAnnotation.getReference().length() - 1));
             }

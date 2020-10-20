@@ -31,6 +31,7 @@ import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantFileMetadata;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.biodata.tools.variant.VariantJsonReader;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
@@ -153,8 +154,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private void runBenchmark() {
         try {
-
-            FastaIndexManager fastaIndexManager = getFastaIndexManger();
+            FastaIndex fastaIndex = new FastaIndex(referenceFasta);
+//            FastaIndexManager fastaIndexManager = getFastaIndexManger();
             DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
                 return entry.getFileName().toString().endsWith(".vep");
             });
@@ -162,7 +163,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             DataWriter<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-                    variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
+                    variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndex);
             for (Path entry : stream) {
                 logger.info("Processing file '{}'", entry.toString());
                 DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
@@ -191,12 +192,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-    getBenchmarkTaskList(FastaIndexManager fastaIndexManager) throws IOException, CellbaseException {
+    getBenchmarkTaskList(FastaIndex fastaIndex) throws IOException, CellbaseException {
         List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                 benchmarkTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             // Benchmark variants are read from a VEP file, must not normalize
-            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(), fastaIndexManager));
+            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(), fastaIndex));
         }
         return benchmarkTaskList;
     }
@@ -653,7 +654,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             if (variantAnnotationCommandOptions.url != null) {
                 url = variantAnnotationCommandOptions.url;
             } else {
-                throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
+                throw new ParameterException("Please check command line syntax. Provide a valid URL to access CellBase web services.");
             }
             // Left align in remote mode can only be enabled if a reference fasta is provided
             if (leftAlign) {
