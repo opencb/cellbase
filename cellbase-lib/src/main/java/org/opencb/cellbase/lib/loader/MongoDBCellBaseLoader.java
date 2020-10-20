@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.bulk.BulkWriteError;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
@@ -417,6 +418,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         Document document = Document.parse(jsonLine);
                         addChunkId(document);
+                        if ("variation".equals(collectionName)) {
+                            addVariantIndex(document);
+                        }
                         addClinicalPrivateFields(document);
 //                        addVariationPrivateFields(document);
                         documentBatch.add(document);
@@ -807,6 +811,15 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             }
             logger.debug("Setting chunkIds to {}", chunkIds.toString());
             document.put("_chunkIds", chunkIds);
+        }
+    }
+
+    // if index is too long, hash it instead. replace ID in query results.
+    private void addVariantIndex(Document document) {
+        String id = String.valueOf(document.get("id"));
+        if (id.length() > 1024) {
+            document.put("_originalId", id);
+            document.put("id", DigestUtils.sha256Hex(id));
         }
     }
 

@@ -28,7 +28,7 @@ import java.util.List;
 
 public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
 
-    int MAX_ROWS = 100000;
+    int MAX_ROWS = 50000;
 
     default CellBaseDataResult<T> query(Q query) {
         List<T> results = new ArrayList<>();
@@ -46,16 +46,19 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
         CellBaseDataResult<T> result = new CellBaseDataResult<>();
         result.setTime((int) time);
-        result.setResults(results);
         result.setNumMatches(iterator.getNumMatches());
         result.setNumResults(results.size());
 //        result.setResultType(T);
         if (results.size() > MAX_ROWS) {
-            Event event = new Event(Event.Type.WARNING, "", "Max number of elements reached");
+            Event event = new Event(Event.Type.ERROR, "", "Too many elements. " + results.size()
+                    + " records found but " + MAX_ROWS + " is maximum allowed. Add more filters or use an iterator");
             if (result.getEvents() == null) {
                 result.setEvents(new ArrayList<>());
             }
             result.getEvents().add(event);
+        } else {
+            // only return results if valid number of results
+            result.setResults(results);
         }
         return result;
     }

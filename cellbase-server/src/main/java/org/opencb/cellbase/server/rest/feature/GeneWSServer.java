@@ -360,19 +360,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{genes}/next")
-//    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s) - Not yet implemented", hidden = true)
-//    public Response getNextByEnsemblId(@PathParam("genes") String genes) {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(geneDBAdaptor.next(query, queryOptions));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
     @GET
     @Path("/{genes}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs", response = Transcript.class,
