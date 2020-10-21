@@ -1,9 +1,14 @@
 package org.opencb.cellbase.lib.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.mortbay.util.ajax.JSON;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
@@ -14,7 +19,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -25,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -474,6 +480,48 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //                    + "collection for variant 1:1:T:A. Please, check.", runTimeException.getMessage());
 //        }
 
+    }
+
+    @Test
+    public void proteinChangeMatchTest() throws Exception {
+
+        // Load test data
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+
+        List<QueryResult<Variant>> queryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(new Variant("2:170361068:G:C")),
+                loadGeneList(),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
+
+
+        assertEquals(1, queryResultList.size());
+        QueryResult<Variant> queryResult = queryResultList.get(0);
+        assertEquals(1, queryResult.getNumResults());
+        assertTrue(containsAccession(queryResult, "COSM4624460"));
+
+    }
+
+    private List<Gene> loadGeneList() throws URISyntaxException, IOException {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        Path path = Paths.get(getClass()
+                .getResource("/clinicalMongoDBAdaptor/gene_list.json.gz").toURI());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))));
+
+        List<Gene> geneList = new ArrayList<>();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            Gene gene = jsonObjectMapper.convertValue(JSON.parse(line), Gene.class);
+            geneList.add(gene);
+        }
+
+        return geneList;
     }
 
     @Test

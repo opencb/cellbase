@@ -5,10 +5,14 @@ import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -26,13 +30,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
-    private static ClinicalPhasedQueryManager phasedQueryManager
-            = new ClinicalPhasedQueryManager();
+    // TODO: watch out this prefix only works for ENSMBL hgvs strings!!
+    private static final String PROTEIN_HGVS_PREFIX = "ENSP";
+    private static ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
+    private GenomeDBAdaptor genomeDBAdaptor;
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                  GenomeDBAdaptor genomeDBAdaptor) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
-
+        this.genomeDBAdaptor = genomeDBAdaptor;
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
@@ -196,6 +203,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
         createTraitQuery(query.getString(QueryParams.TRAIT.key()), andBsonList);
+        createOrQuery(query, QueryParams.HGVS.key(), "annotation.hgvs", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -210,9 +218,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             keywordString = keywordString.toLowerCase();
             createOrQuery(Arrays.asList(keywordString.split(SEPARATOR)), PRIVATE_TRAIT_FIELD, andBsonList);
         }
-//        for (String keyword : keywords) {
-//            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
-//        }
     }
 
     private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
@@ -360,19 +365,77 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return executeAggregation2("", pipeline, queryOptions);
     }
 
-    public List<QueryResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-        List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
-        for (Variant variant: variants) {
-            results.add(getByVariant(variant, queryOptions));
+    private QueryResult<Variant> getClinicalVariant(Variant variant,
+                                                    GenomeDBAdaptor genomeDBAdaptor,
+                                                    List<Gene> geneList,
+                                                    QueryOptions options) {
+        Query query;
+        if (VariantType.CNV.equals(variant.getType())) {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        } else {
+            query = new Query();
+            if (options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key()) != null
+                && (Boolean) options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key())
+                && genomeDBAdaptor != null
+                && geneList != null
+                && !geneList.isEmpty()) {
+                HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
+                List<String> proteinHgvsList = getProteinHgvs(hgvsCalculator.run(variant, geneList));
+                // Only add the protein HGVS query if it's a protein coding variant
+                if (!proteinHgvsList.isEmpty()) {
+                    query.append(ClinicalDBAdaptor.QueryParams.HGVS.key(), proteinHgvsList);
+                }
+            }
+
+            // If checkAminoAcidChange IS enabled but it's not a protein coding variant we still MUST raise the
+            // genomic query. However, the protein hgvs query must be enough to solve the variant match if it is a
+            // protein coding variant and we therefore would not need the specific genomic query
+            if (query.isEmpty()) {
+                query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                        .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
+                        .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                        .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+            }
+
         }
 
+        QueryResult<Variant> queryResult = get(query, options);
+        queryResult.setId(variant.toString());
+
+        return queryResult;
+    }
+
+    private List<String> getProteinHgvs(List<String> hgvsList) {
+        List<String> proteinHgvsList = new ArrayList<>(hgvsList.size());
+        for (String hgvs : hgvsList) {
+            if (hgvs.startsWith(PROTEIN_HGVS_PREFIX)) {
+                proteinHgvsList.add(hgvs);
+            }
+        }
+
+        return proteinHgvsList;
+    }
+
+    public List<QueryResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        return this.getByVariant(variants, null, queryOptions);
+    }
+
+    public List<QueryResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
+                                                   QueryOptions queryOptions) {
+        List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            results.add(getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions));
+        }
         if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
             results = phasedQueryManager.run(variants, results);
 
         }
         return results;
     }
-
-
-
 }

@@ -31,13 +31,7 @@ import java.util.function.Consumer;
  */
 public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
-
-//    int insert(List objectList);
-
     QueryResult<Long> update(List objectList, String field, String[] innerFields);
-
-//    QueryResult<Long> update(Query query, ObjectMap parameters);
-
 
     default QueryResult<Long> count() {
         return count(new Query());
@@ -45,20 +39,17 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     QueryResult<Long> count(Query query);
 
-
     default QueryResult<String> distinct(String field) {
         return distinct(new Query(), field);
     }
 
     QueryResult<String> distinct(Query query, String field);
 
-
     default QueryResult stats() {
         return stats(new Query());
     }
 
     QueryResult stats(Query query);
-
 
     /*
      Main methods to query.
@@ -85,8 +76,6 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
         return queryResults;
     }
 
-
-
     @Override
     default Iterator<T> iterator() {
         return iterator(new Query(), new QueryOptions());
@@ -100,15 +89,11 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     Iterator nativeIterator(Query query, QueryOptions options);
 
-
-
     QueryResult rank(Query query, String field, int numResults, boolean asc);
 
     QueryResult groupBy(Query query, String field, QueryOptions options);
 
     QueryResult groupBy(Query query, List<String> fields, QueryOptions options);
-
-
 
     @Override
     default void forEach(Consumer action) {

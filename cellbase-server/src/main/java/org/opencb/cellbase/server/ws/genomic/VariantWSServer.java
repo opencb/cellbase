@@ -92,68 +92,6 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{variants}/snp_phenotype")
-//    public Response getSnpPhenotypesByPositionByGet(@PathParam("variants") String variants) {
-//        return getSnpPhenotypesByPosition(variants, outputFormat);
-//    }
-//
-//    @Consumes("application/x-www-form-urlencoded")
-//    @Path("/snp_phenotype")
-//    public Response getSnpPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
-//        return getSnpPhenotypesByPosition(variants, outputFormat);
-//    }
-//
-//    public Response getSnpPhenotypesByPosition(String variants, String outputFormat) {
-//        try {
-//            parseQueryParams();
-//            VariationDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//            List<Variant> variantList = Variant.parseVariants(variants);
-//            List<Position> positionList = new ArrayList<>(variantList.size());
-//            for (Variant gv : variantList) {
-//                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
-//            }
-//            return createOkResponse("Mongo TODO");
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
-
-//    @GET
-//    @Path("/{variants}/mutation_phenotype")
-//    public Response getMutationPhenotypesByPositionByGet(@PathParam("variants") String variants) {
-//        return getMutationPhenotypesByPosition(variants, outputFormat);
-//    }
-//
-//    @POST
-//    @Consumes("application/x-www-form-urlencoded")
-////    @Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_FORM_URLENCODED})//MediaType.MULTIPART_FORM_DATA,
-//    @Path("/mutation_phenotype")
-//    public Response getMutationPhenotypesByPositionByPost(@FormParam("of") String outputFormat, @FormParam("variants") String variants) {
-//        return getMutationPhenotypesByPosition(variants, outputFormat);
-//    }
-//
-//    public Response getMutationPhenotypesByPosition(String variants, String outputFormat) {
-//        try {
-//            parseQueryParams();
-//            MutationDBAdaptor mutationDBAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-//            List<Variant> variantList = Variant.parseVariants(variants);
-//            List<Position> positionList = new ArrayList<Position>(variantList.size());
-//            for (Variant gv : variantList) {
-//                positionList.add(new Position(gv.getChromosome(), gv.getStart()));
-//            }
-//            long t0 = System.currentTimeMillis();
-//            List<QueryResult> queryResults = mutationDBAdaptor.getAllByPositionList(positionList, queryOptions);
-//            logger.debug("getMutationPhenotypesByPosition: " + (System.currentTimeMillis() - t0) + "ms");
-////            return generateResponse(variants, "MUTATION", mutationPhenotypeAnnotList);
-//            return createOkResponse(queryResults);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
-
     @GET
     public Response defaultMethod() {
         return help();
@@ -215,7 +153,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         value = "Integer to optionally provide the size of the extra"
                                                                 + " padding to be used when annotating imprecise (or not)"
                                                                 + " CNVs",
-                                                        defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                                @QueryParam("checkAminoAcidChange")
+                                                @ApiParam(name = "checkAminoAcidChange",
+                                                value = "true/false to specify whether variant match in the clinical variant collection "
+                                                        + "should also be performed at the aminoacid change level",
+                                                allowableValues = "false,true",
+                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -224,7 +168,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding);
+                cnvExtraPadding,
+                checkAminoAcidChange);
     }
 
     @GET
@@ -283,7 +228,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        value = "Integer to optionally provide the size of the extra"
                                                                + " padding to be used when annotating imprecise (or not)"
                                                                + " CNVs",
-                                                       defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                       defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                               @QueryParam("checkAminoAcidChange")
+                                               @ApiParam(name = "checkAminoAcidChange",
+                                                           value = "<DESCRIPTION GOES HERE>",
+                                                           allowableValues = "false,true",
+                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -291,7 +241,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding);
+                cnvExtraPadding,
+                checkAminoAcidChange);
     }
 
     private Response getAnnotationByVariant(String variants,
@@ -301,7 +252,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
                                             Integer svExtraPadding,
-                                            Integer cnvExtraPadding) {
+                                            Integer cnvExtraPadding,
+                                            Boolean checkAminoAcidChange) {
         try {
             parseQueryParams();
             List<Variant> variantList = parseVariants(variants);
@@ -333,6 +285,9 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (cnvExtraPadding != null) {
                 queryOptions.put("cnvExtraPadding", cnvExtraPadding);
+            }
+            if (checkAminoAcidChange != null) {
+                queryOptions.put("checkAminoAcidChange", checkAminoAcidChange);
             }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
@@ -415,43 +370,4 @@ public class VariantWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-//    @Deprecated
-//    @GET
-//    @Path("/{variants}/full_annotation")
-//    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
-//    public Response getFullAnnotationByVariantsGET(@PathParam("variants") String variants) {
-//        return getAnnotationByVariantsGET(variants);
-//    }
-
-
-
-//    @POST
-//    @Consumes("text/plain")
-//    @Path("/full_annotation")
-//    @Deprecated
-//    public Response getFullAnnotationByVariantsPOST(String variants) {
-//        return getAnnotationByVariantsPOST(variants);
-//    }
-
-
-//    @GET
-//    @Path("/help")
-//    public Response help() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("Input:\n");
-//        sb.append("Variant format: chr:position:new allele (i.e.: 1:150044250:G)\n\n\n");
-//        sb.append("Resources:\n");
-//        sb.append("- consequence_type: Suppose that we have obtained some variants from a resequencing analysis and we want to obtain "
-//                + "the consequence type of a variant over the transcripts\n");
-//        sb.append(" Output columns: chromosome, start, end, feature ID, feature name, consequence type, biotype, feature chromosome, "
-//                + "feature start, feature end, feature strand, snp ID, ancestral allele, alternative allele, gene Ensembl ID, Ensembl "
-//                + "transcript ID, gene name, SO consequence type ID, SO consequence type name, consequence type description, "
-//                + "consequence type category, aminoacid change, codon change.\n\n\n");
-//        sb.append("Documentation:\n");
-//        sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
-//
-//        return createOkResponse(sb.toString());
-//    }
-
 }
