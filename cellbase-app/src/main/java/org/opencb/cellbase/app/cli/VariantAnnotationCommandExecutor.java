@@ -571,6 +571,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         parsePhaseConfiguration();
         decompose = !variantAnnotationCommandOptions.skipDecompose;
         leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
+        // Update serverQueryOptions
+        serverQueryOptions.put("checkAminoAcidChange", variantAnnotationCommandOptions.checkAminoAcidChange);
 
         // output file
         if (variantAnnotationCommandOptions.output != null) {

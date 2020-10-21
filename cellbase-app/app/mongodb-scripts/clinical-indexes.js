@@ -23,6 +23,7 @@ db.getCollection('clinical_variants').createIndex({'annotation.consequenceTypes.
 db.getCollection('clinical_variants').createIndex({'_featureXrefs': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.id': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.id': 1})
+db.getCollection('clinical_variants').createIndex({'annotation.hgvs': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.consistencyStatus': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.variantClassification.clinicalSignificance': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.inheritanceMode': 1}, {sparse: true})
