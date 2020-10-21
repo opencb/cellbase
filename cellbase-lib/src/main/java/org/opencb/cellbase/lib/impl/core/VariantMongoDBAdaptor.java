@@ -40,10 +40,10 @@ import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
+import org.opencb.cellbase.lib.converters.VariantConverter;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -697,14 +697,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return results;
     }
 
-
-
     @Override
     public CellBaseIterator<Variant> iterator(VariantQuery query) {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        GenericDocumentComplexConverter<Variant> converter = new GenericDocumentComplexConverter<>(Variant.class);
+        VariantConverter converter = new VariantConverter();
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
