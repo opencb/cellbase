@@ -552,10 +552,10 @@ public class VariantAnnotationCalculator {
                     geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.ENSEMBL.key()));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
                 }
-//                if (source.equalsIgnoreCase(ParamConstants.QueryParams.REFSEQ.key())) {
-//                    geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.REFSEQ.key()));
-//                    geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
-//                }
+                if (source.equalsIgnoreCase(ParamConstants.QueryParams.REFSEQ.key())) {
+                    geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.REFSEQ.key()));
+                    geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
+                }
             }
         } else {
             // if no source specified, default to ensembl
