@@ -51,7 +51,6 @@ public class MongoDBAdaptorFactory {
     protected CellBaseConfiguration cellBaseConfiguration;
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
-    private static final String SERVER_ADDRESS = "serverAddress";
     private static final String MEMBERS = "members";
     private static final String SET = "set";
     private static final String STATE_STR = "stateStr";
@@ -64,7 +63,6 @@ public class MongoDBAdaptorFactory {
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
     private static MongoDataStoreManager mongoDataStoreManager;
-    private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         this.cellBaseConfiguration = cellBaseConfiguration;

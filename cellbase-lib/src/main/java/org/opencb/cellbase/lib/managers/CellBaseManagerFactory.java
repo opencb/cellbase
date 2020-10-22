@@ -44,8 +44,7 @@ public class CellBaseManagerFactory {
     private Map<String, OntologyManager> ontologyManagers;
     private FileManager fileManager;
     private Logger logger;
-    // this webservice has no species, do not validate
-    private static final String DONT_CHECK_SPECIES = "do not validate species";
+
 
     public CellBaseManagerFactory(CellBaseConfiguration configuration) {
         this.configuration = configuration;
