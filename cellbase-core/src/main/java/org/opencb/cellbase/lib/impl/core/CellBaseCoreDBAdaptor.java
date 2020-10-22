@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.api.core;
+package org.opencb.cellbase.lib.impl.core;
 
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;

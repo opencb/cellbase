@@ -28,7 +28,7 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.GroupByFields;
 import org.opencb.cellbase.client.rest.models.GroupCount;
 import org.opencb.cellbase.core.CellBaseDataResponse;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -87,10 +87,10 @@ public class GeneClientTest {
         CellBaseDataResponse<String> biotypes = cellBaseClient.getGeneClient().getBiotypes(null);
         assertNotNull(biotypes.firstResult());
 
-        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:65100-65200"));
+        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(ParamConstants.QueryParams.REGION.key(), "1:65100-65200"));
         assertNull(biotypes.firstResult());
 
-        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(GeneDBAdaptor.QueryParams.REGION.key(), "1:20000-70000"));
+        biotypes = cellBaseClient.getGeneClient().getBiotypes(new Query(ParamConstants.QueryParams.REGION.key(), "1:20000-70000"));
         assertNotNull(biotypes.firstResult());
     }
 
@@ -115,7 +115,7 @@ public class GeneClientTest {
     @Test
     public void search() throws Exception {
         Map<String, Object> params = new HashMap<>();
-        CellBaseDataResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA"),
+        CellBaseDataResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(ParamConstants.QueryParams.BIOTYPE.key(), "miRNA"),
                 new QueryOptions("limit", 1));
         assertNotNull(gene.firstResult());
     }

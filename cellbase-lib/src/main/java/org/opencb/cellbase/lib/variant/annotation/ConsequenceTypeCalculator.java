@@ -24,8 +24,7 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -332,7 +331,7 @@ public abstract class ConsequenceTypeCalculator {
             if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
                 int genomicCoordinate = transcript.getStart()
                         - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
@@ -363,7 +362,7 @@ public abstract class ConsequenceTypeCalculator {
 //                        modifiedCodonArray[modifiedCodonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(
 //                                variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
 //                                new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions())
@@ -408,9 +407,9 @@ public abstract class ConsequenceTypeCalculator {
     // determine the consequence type source (the geneset) based on the gene ID
     protected String getSource(String geneId) {
         if (!geneId.startsWith("ENS")) {
-            return VariantDBAdaptor.QueryParams.REFSEQ.key();
+            return ParamConstants.QueryParams.REFSEQ.key();
         }
-        return VariantDBAdaptor.QueryParams.ENSEMBL.key();
+        return ParamConstants.QueryParams.ENSEMBL.key();
     }
 
 }

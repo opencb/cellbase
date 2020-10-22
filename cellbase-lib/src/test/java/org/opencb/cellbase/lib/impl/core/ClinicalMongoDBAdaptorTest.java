@@ -28,7 +28,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
-import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
@@ -100,7 +100,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         CellBaseDataResult<Variant> variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("X",
@@ -147,7 +147,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
          variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -184,7 +184,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("X",
@@ -231,7 +231,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
 
         assertEquals(2, variantCellBaseDataResultList.size());
@@ -278,7 +278,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
 
         assertEquals(2, variantCellBaseDataResultList.size());
@@ -326,7 +326,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -362,7 +362,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Collections.singletonList(variant),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -386,7 +386,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(variant, variant1),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -422,7 +422,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Collections.singletonList(variant),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -435,7 +435,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         // should be returned
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Collections.singletonList(new Variant("14", 55369176, "G", "A")),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("14",
@@ -453,7 +453,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Arrays.asList(new Variant("1", 115256528, "T", "C"),
                         new Variant("1", 115256529, "T", "A")),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -480,7 +480,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         // the two is being queried (input list) no results should be returned
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
                 Collections.singletonList(new Variant("1", 115256528, "T", "C")),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -495,7 +495,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        try {
 //            variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
 //                    Collections.singletonList(new Variant("1", 1, "T", "A")),
-//                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+//                    new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 //            assert false;
 //        } catch (RuntimeException runTimeException) {
 //            assertEquals("Unexpected: more than one result found in the clinical variant "
@@ -518,7 +518,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         List<CellBaseDataResult<Variant>> queryResultList = clinicalDBAdaptor.getByVariant(
                 Collections.singletonList(new Variant("2:170361068:G:C")),
                 loadGeneList(),
-                new QueryOptions(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
 
         assertEquals(1, queryResultList.size());
         CellBaseDataResult<Variant> queryResult = queryResultList.get(0);
@@ -558,21 +558,21 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions1 = new QueryOptions();
 
         Query query1 = new Query();
-        query1.put(ClinicalDBAdaptor.QueryParams.TRAIT.key(), "alzheimer");
+        query1.put(ParamConstants.QueryParams.TRAIT.key(), "alzheimer");
         queryOptions1.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
         CellBaseDataResult<Variant> CellBaseDataResult1 = clinicalDBAdaptor.get(query1, queryOptions1);
         assertEquals(1, CellBaseDataResult1.getNumResults());
         assertTrue(containsAccession(CellBaseDataResult1, "RCV000172777"));
 
         Query query2 = new Query();
-        query2.put(ClinicalDBAdaptor.QueryParams.TRAIT.key(), "myelofibrosis");
+        query2.put(ParamConstants.QueryParams.TRAIT.key(), "myelofibrosis");
         QueryOptions queryOptions2 = new QueryOptions();
         queryOptions2.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
         CellBaseDataResult CellBaseDataResult2 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
         assertEquals(1, CellBaseDataResult2.getNumResults());
 
         Query query4 = new Query();
-        query4.put(ClinicalDBAdaptor.QueryParams.REGION.key(),
+        query4.put(ParamConstants.QueryParams.REGION.key(),
                 new Region("2", 170360030, 170362030));
         QueryOptions queryOptions4 = new QueryOptions();
         queryOptions4.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
@@ -583,14 +583,14 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertTrue(containsAccession(CellBaseDataResult4, "RCV000171500"));
 
         Query query5 = new Query();
-        query5.put(ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key(), "likely_pathogenic");
+        query5.put(ParamConstants.QueryParams.CLINICALSIGNIFICANCE.key(), "likely_pathogenic");
         QueryOptions queryOptions5 = new QueryOptions();
         queryOptions4.add(QueryOptions.COUNT, "true");
         CellBaseDataResult CellBaseDataResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions5);
         assertEquals(2, CellBaseDataResult5.getNumResults());
 
         Query query6 = new Query();
-        query6.put(ClinicalDBAdaptor.QueryParams.FEATURE.key(), "APOE");
+        query6.put(ParamConstants.QueryParams.FEATURE.key(), "APOE");
         QueryOptions queryOptions6 = new QueryOptions();
         queryOptions6.put(QueryOptions.SORT, "chromosome,start");
         queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.consequenceTypes.geneName,annotation.traitAssociation.genomicFeatures.xrefs.symbol,annotation.consequenceTypes,annotation.traitAssociation.id");
@@ -602,11 +602,11 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         }
 
         queryOptions6.remove(QueryOptions.SORT);
-        query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar");
+        query6.put(ParamConstants.QueryParams.SOURCE.key(), "clinvar");
         CellBaseDataResult CellBaseDataResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
         assertEquals(1, CellBaseDataResult7.getNumResults());
 
-        query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
+        query6.put(ParamConstants.QueryParams.SOURCE.key(), "cosmic");
         CellBaseDataResult<Variant> CellBaseDataResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
         assertEquals(1, CellBaseDataResult8.getNumResults());
         List<String> geneSymbols = CellBaseDataResult8.getResults().get(0).getAnnotation().getTraitAssociation().stream()
@@ -618,8 +618,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertThat(geneSymbols, CoreMatchers.hasItem("APOE"));
 
         Query query7 = new Query();
-        query7.put(ClinicalDBAdaptor.QueryParams.ACCESSION.key(),"COSM306824");
-        query7.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
+        query7.put(ParamConstants.QueryParams.ACCESSION.key(),"COSM306824");
+        query7.put(ParamConstants.QueryParams.SOURCE.key(), "cosmic");
         QueryOptions options = new QueryOptions();
         CellBaseDataResult<Variant> CellBaseDataResult9 = clinicalDBAdaptor.get(query7, options);
         assertNotNull("Should return the CellBaseDataResult of id=COSM306824", CellBaseDataResult9.getResults());

@@ -29,8 +29,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
@@ -84,8 +83,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString(VariantDBAdaptor.QueryParams.REGION.key()) != null) {
-            Region region = Region.parseRegion(query.getString(VariantDBAdaptor.QueryParams.REGION.key()));
+        if (query.getString(ParamConstants.QueryParams.REGION.key()) != null) {
+            Region region = Region.parseRegion(query.getString(ParamConstants.QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(query);
             return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
@@ -193,31 +192,31 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createOrQuery(query, VariantDBAdaptor.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        createOrQuery(query, VariantDBAdaptor.QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-        createOrQuery(query, VariantDBAdaptor.QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
-        if (query.containsKey(VariantDBAdaptor.QueryParams.REFERENCE.key())) {
-            createOrQuery(query.getAsStringList(VariantDBAdaptor.QueryParams.REFERENCE.key()), "reference", andBsonList);
+        createOrQuery(query, ParamConstants.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
+        createOrQuery(query, ParamConstants.QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
+        createOrQuery(query, ParamConstants.QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
+        if (query.containsKey(ParamConstants.QueryParams.REFERENCE.key())) {
+            createOrQuery(query.getAsStringList(ParamConstants.QueryParams.REFERENCE.key()), "reference", andBsonList);
         }
-        if (query.containsKey(VariantDBAdaptor.QueryParams.ALTERNATE.key())) {
-            createOrQuery(query.getAsStringList(VariantDBAdaptor.QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        if (query.containsKey(ParamConstants.QueryParams.ALTERNATE.key())) {
+            createOrQuery(query.getAsStringList(ParamConstants.QueryParams.ALTERNATE.key()), "alternate", andBsonList);
         }
-        createRegionQuery(query, VariantDBAdaptor.QueryParams.REGION.key(),
+        createRegionQuery(query, ParamConstants.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, ParamConstants.QueryParams.ID.key(), "id", andBsonList);
 
-        createImprecisePositionQuery(query, VariantDBAdaptor.QueryParams.CI_START_LEFT.key(),
-                VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(),
+        createImprecisePositionQuery(query, ParamConstants.QueryParams.CI_START_LEFT.key(),
+                ParamConstants.QueryParams.CI_START_RIGHT.key(),
                 "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
-        createImprecisePositionQuery(query, VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(),
+        createImprecisePositionQuery(query, ParamConstants.QueryParams.CI_END_LEFT.key(), ParamConstants.QueryParams.CI_END_RIGHT.key(),
                 "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
 
-        createTypeQuery(query, VariantDBAdaptor.QueryParams.TYPE.key(), VariantDBAdaptor.QueryParams.SV_TYPE.key(), "type",
+        createTypeQuery(query, ParamConstants.QueryParams.TYPE.key(), ParamConstants.QueryParams.SV_TYPE.key(), "type",
                 "sv.type", andBsonList);
 
-        createOrQuery(query, VariantDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
+        createOrQuery(query, ParamConstants.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
+        createGeneOrQuery(query, ParamConstants.QueryParams.GENE.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -638,8 +637,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             results.add(getByVariant(variant, queryOptions));
         }
 
-        if (queryOptions.get(VariantDBAdaptor.QueryParams.PHASE.key()) != null && queryOptions.getBoolean(
-                VariantDBAdaptor.QueryParams.PHASE.key())) {
+        if (queryOptions.get(ParamConstants.QueryParams.PHASE.key()) != null && queryOptions.getBoolean(
+                ParamConstants.QueryParams.PHASE.key())) {
             results = populationFrequencyPhasedQueryManager.run(variants, results);
 
         }
@@ -656,35 +655,35 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                 && variant.getSv().getCiStartRight() != null
                 && variant.getSv().getCiEndLeft() != null
                 && variant.getSv().getCiEndRight() != null) {
-            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome());
+            query = new Query(ParamConstants.QueryParams.CHROMOSOME.key(), variant.getChromosome());
             // Imprecise queries can just be enabled for structural variants providing CIPOS positions. Imprecise queries
             // can be disabled by using the imprecise=false query option
-            if (options.get(VariantDBAdaptor.QueryParams.IMPRECISE.key()) == null || (Boolean) options.get(
-                    VariantDBAdaptor.QueryParams.IMPRECISE.key())) {
+            if (options.get(ParamConstants.QueryParams.IMPRECISE.key()) == null || (Boolean) options.get(
+                    ParamConstants.QueryParams.IMPRECISE.key())) {
                 int ciStartLeft = variant.getSv().getCiStartLeft();
                 int ciStartRight = variant.getSv().getCiStartRight();
                 int ciEndLeft = variant.getSv().getCiEndLeft();
                 int ciEndRight = variant.getSv().getCiEndRight();
-                query.append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), ciStartLeft)
-                        .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), ciStartRight)
-                        .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), ciEndLeft)
-                        .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), ciEndRight);
+                query.append(ParamConstants.QueryParams.CI_START_LEFT.key(), ciStartLeft)
+                        .append(ParamConstants.QueryParams.CI_START_RIGHT.key(), ciStartRight)
+                        .append(ParamConstants.QueryParams.CI_END_LEFT.key(), ciEndLeft)
+                        .append(ParamConstants.QueryParams.CI_END_RIGHT.key(), ciEndRight);
                 // Exact query for start/end
             } else {
-                query.append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart());
-                query.append(VariantDBAdaptor.QueryParams.END.key(), variant.getStart());
+                query.append(ParamConstants.QueryParams.START.key(), variant.getStart());
+                query.append(ParamConstants.QueryParams.END.key(), variant.getStart());
             }
             // CNVs must always be matched against COPY_NUMBER_GAIN/COPY_NUMBER_LOSS when searching - if provided
             if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getType() != null) {
-                query.append(VariantDBAdaptor.QueryParams.SV_TYPE.key(), variant.getSv().getType().toString());
+                query.append(ParamConstants.QueryParams.SV_TYPE.key(), variant.getSv().getType().toString());
             }
-            query.append(VariantDBAdaptor.QueryParams.TYPE.key(), variant.getType().toString());
+            query.append(ParamConstants.QueryParams.TYPE.key(), variant.getType().toString());
             // simple short variant query; This will be the query run in more than 99% of the cases
         } else {
-            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
-                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+            query = new Query(ParamConstants.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(ParamConstants.QueryParams.START.key(), variant.getStart())
+                    .append(ParamConstants.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(ParamConstants.QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
         return get(query, options);
     }

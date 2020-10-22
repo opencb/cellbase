@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.XRefMongoDBAdaptor;
 

@@ -16,7 +16,96 @@
 
 package org.opencb.cellbase.core;
 
+import org.opencb.commons.datastore.core.QueryParam;
+
+import static org.opencb.commons.datastore.core.QueryParam.Type.*;
+
 public class ParamConstants {
+
+    public enum FeatureType {
+        TF_binding_site("TF_binding_site"),
+        TF_binding_site_motif("TF_binding_site_motif"),
+        enhancer("enhancer"),
+        histone_acetylation_site("histone_acetylation_site"),
+        histone_binding_site("histone_binding_site"),
+        histone_methylation_site("histone_methylation_site"),
+        mirna_target("mirna_target"),
+        open_chromatin_region("open_chromatin_region"),
+        promoter("promoter"),
+        promoter_flanking_region("promoter_flanking_region");
+
+        private final String key;
+
+        FeatureType(String key) {
+            this.key = key;
+        }
+    }
+
+    public enum QueryParams implements QueryParam {
+        ID("id", TEXT_ARRAY, ""),
+        NAME("name", TEXT_ARRAY, ""),
+        REGION("region", TEXT_ARRAY, ""),
+        BIOTYPE("biotype", TEXT_ARRAY, ""),
+        CHROMOSOME("chromosome", STRING, ""),
+        START("start", INTEGER, ""),
+        END("end", INTEGER, ""),
+        SOURCE("source", TEXT_ARRAY, ""),
+
+        // variants
+        REFSEQ("refseq", STRING, ""),
+        ENSEMBL("ensembl", STRING, ""),
+        GENE("gene", TEXT_ARRAY, ""),
+        CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
+        TRANSCRIPT_CONSEQUENCE_TYPE("transcriptVariations.consequenceTypes", TEXT_ARRAY, ""),
+        XREFS("xrefs", TEXT_ARRAY, ""),
+        IMPRECISE("imprecise", BOOLEAN, ""),
+        SV_TYPE("svType", STRING, ""),
+
+        CI_START_LEFT("ciStartLeft", INTEGER, ""),
+        CI_START_RIGHT("ciStartRight", INTEGER, ""),
+        CI_END_LEFT("ciEndLeft", INTEGER, ""),
+        CI_END_RIGHT("ciEndRight", INTEGER, ""),
+        REFERENCE("reference", STRING, ""),
+        ALTERNATE("alternate", STRING, ""),
+        TRAIT("trait", TEXT_ARRAY, ""),
+        FEATURE("feature", TEXT_ARRAY, ""),
+        SO("so", TEXT_ARRAY, ""),
+        TYPE("type", TEXT_ARRAY, ""),
+        CONSISTENCY_STATUS("consistencyStatus", TEXT_ARRAY, ""),
+        CLINICALSIGNIFICANCE("clinicalSignificance", TEXT_ARRAY, ""),
+        MODE_INHERITANCE("modeInheritance", TEXT_ARRAY, ""),
+        ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
+        ACCESSION("accession", TEXT_ARRAY, ""),
+        PHASE("phased", TEXT_ARRAY, ""),
+        CHECK_AMINO_ACID_CHANGE("checkAminoAcidChange", BOOLEAN, ""),
+        BATCH_GENE_LIST("batchGeneList", TEXT_ARRAY, ""),
+        HGVS("hgvs", TEXT_ARRAY, "");
+
+        QueryParams(String key, Type type, String description) {
+            this.key = key;
+            this.type = type;
+            this.description = description;
+        }
+
+        private final String key;
+        private Type type;
+        private String description;
+
+        @Override
+        public String key() {
+            return key;
+        }
+
+        @Override
+        public String description() {
+            return description;
+        }
+
+        @Override
+        public Type type() {
+            return type;
+        }
+    }
 
     public static final String DOT_NOTATION_NOTE = "Parameters can be camel case (e.g. transcriptsBiotype) "
             + "or dot notation (e.g. transcripts.biotype).";

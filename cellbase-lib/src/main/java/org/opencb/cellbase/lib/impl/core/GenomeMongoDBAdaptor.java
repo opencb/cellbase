@@ -30,8 +30,7 @@ import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
@@ -427,7 +426,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createRegionQuery(query, GenomeDBAdaptor.QueryParams.REGION.key(),
+        createRegionQuery(query, ParamConstants.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE, andBsonList);
 
         if (andBsonList.size() > 0) {

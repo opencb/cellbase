@@ -22,11 +22,11 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -101,7 +101,7 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
 
     @Deprecated
     public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand) {
-        query.put(GenomeDBAdaptor.QueryParams.REGION.key(), regions);
+        query.put(ParamConstants.QueryParams.REGION.key(), regions);
         query.put("strand", strand);
         CellBaseDataResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
         queryResult.setId(regions);

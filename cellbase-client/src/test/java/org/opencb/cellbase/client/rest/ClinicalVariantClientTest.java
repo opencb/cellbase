@@ -22,7 +22,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
-import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -61,12 +61,12 @@ public class ClinicalVariantClientTest {
         assertNotNull(cellBaseClient);
         CellBaseDataResponse<Variant> queryResponse = cellBaseClient
                 .getClinicalClient()
-                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar"), queryOptions);
+                .search(new Query(ParamConstants.QueryParams.SOURCE.key(), "clinvar"), queryOptions);
         assertTrue(queryResponse.getResponses().get(0).getNumMatches() > 100000);
 
         queryResponse = cellBaseClient
                 .getClinicalClient()
-                .search(new Query(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic"), queryOptions);
+                .search(new Query(ParamConstants.QueryParams.SOURCE.key(), "cosmic"), queryOptions);
         assertNotNull(queryResponse.getResponses());
         assertTrue(queryResponse.getResponses().get(0).getNumMatches() > 2000000);
     }

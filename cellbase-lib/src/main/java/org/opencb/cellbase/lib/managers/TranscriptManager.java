@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;

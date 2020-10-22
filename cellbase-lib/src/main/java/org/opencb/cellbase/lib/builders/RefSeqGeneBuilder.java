@@ -21,7 +21,7 @@ import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -42,7 +42,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
-    private static final String SOURCE = VariantDBAdaptor.QueryParams.REFSEQ.key();
+    private static final String SOURCE = ParamConstants.QueryParams.REFSEQ.key();
     private Gene gene = null;
     private Transcript transcript = null;
     private Set<Xref> exonDbxrefs = new HashSet<>();

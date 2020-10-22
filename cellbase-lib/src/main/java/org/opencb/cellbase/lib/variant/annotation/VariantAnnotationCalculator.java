@@ -24,9 +24,7 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
-import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -79,7 +77,7 @@ public class VariantAnnotationCalculator {
     private static HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
-    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name();
+    private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
     public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
             throws CellbaseException {
@@ -387,8 +385,8 @@ public class VariantAnnotationCalculator {
         // "clinical" is deprecated, replaced with traitAssociation
         if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
             QueryOptions queryOptions = new QueryOptions();
-            queryOptions.add(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased);
-            queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
+            queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
@@ -550,19 +548,19 @@ public class VariantAnnotationCalculator {
             // sources can be "ensembl" and/or "refseq". query is validated before execution, will fail if invalid value
             String[] sources = consequenceTypeSource.split(",");
             for (String source : sources) {
-                if (source.equalsIgnoreCase(VariantDBAdaptor.QueryParams.ENSEMBL.key())) {
-                    geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.ENSEMBL.key()));
+                if (source.equalsIgnoreCase(ParamConstants.QueryParams.ENSEMBL.key())) {
+                    geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.ENSEMBL.key()));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
                 }
-                if (source.equalsIgnoreCase(VariantDBAdaptor.QueryParams.REFSEQ.key())) {
-                    geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.REFSEQ.key()));
+                if (source.equalsIgnoreCase(ParamConstants.QueryParams.REFSEQ.key())) {
+                    geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.REFSEQ.key()));
                     geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
 
                 }
             }
         } else {
             // if no source specified, default to ensembl
-            geneQuery.setSource(Collections.singletonList(VariantDBAdaptor.QueryParams.ENSEMBL.key()));
+            geneQuery.setSource(Collections.singletonList(ParamConstants.QueryParams.ENSEMBL.key()));
             geneList.addAll(new CellBaseDataResult<>(geneManager.search(geneQuery)).getResults());
         }
         return geneList;
@@ -1196,9 +1194,9 @@ public class VariantAnnotationCalculator {
             for (int i = 0; (i < cellBaseDataResult.getResults().size() && !tfbsFound); i++) {
                 String regulatoryRegionType = cellBaseDataResult.getResults().get(i).getFeatureType();
                 tfbsFound = regulatoryRegionType != null
-                        && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site.name())
+                        && (regulatoryRegionType.equals(ParamConstants.FeatureType.TF_binding_site.name())
                         || cellBaseDataResult.getResults().get(i).getFeatureType()
-                            .equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif.name()));
+                            .equals(ParamConstants.FeatureType.TF_binding_site_motif.name()));
             }
             overlapsRegulatoryRegion[1] = tfbsFound;
         }

@@ -27,8 +27,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
@@ -98,7 +97,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
             GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
             MongoDBIterator<Transcript> iterator = null;
-            if (StringUtils.isNotEmpty(source) && VariantDBAdaptor.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
+            if (StringUtils.isNotEmpty(source) && ParamConstants.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
                 iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
             } else {
                 iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);

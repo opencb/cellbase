@@ -25,7 +25,7 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
@@ -102,7 +102,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 "GRCh37");
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList
                 = variationDBAdaptor.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
-                new QueryOptions(VariantDBAdaptor.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
 
         assertEquals(2, variantCellBaseDataResultList.size());
         CellBaseDataResult<Variant> variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList,
@@ -236,7 +236,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);
         CellBaseDataResult<Variant> result = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
         assertEquals(21, result.getNumResults());
         assertThat(result.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
@@ -245,12 +245,12 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "rs200994757", "rs200942224", "rs201498625", "rs201498625"));
 
         CellBaseDataResult<Variant> resultENSEMBLGene = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions);
         assertEquals(result.getResults(), resultENSEMBLGene.getResults());
 
         // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
         CellBaseDataResult<Variant> resultENSEMBLTranscript = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
         assertEquals(20, resultENSEMBLTranscript.getNumResults());
         assertThat(resultENSEMBLTranscript.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
@@ -259,7 +259,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "rs201498625", "rs201498625", "rs201498625"));
 
         CellBaseDataResult<Variant> geneCellBaseDataResult = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CERK"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CERK"), queryOptions);
         assertThat(geneCellBaseDataResult.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs192195512", "rs193091997", "rs200609865"));
 
@@ -268,7 +268,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testNativeGet() {
         VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
-        CellBaseDataResult variantCellBaseDataResult = variationDBAdaptor.nativeGet(new Query(VariantDBAdaptor.QueryParams.ID.key(), "rs666"),
+        CellBaseDataResult variantCellBaseDataResult = variationDBAdaptor.nativeGet(new Query(ParamConstants.QueryParams.ID.key(), "rs666"),
                 new QueryOptions());
         assertEquals(variantCellBaseDataResult.getNumResults(), 1);
         assertEquals(((Document) variantCellBaseDataResult.getResults().get(0)).get("chromosome"), "17");

@@ -24,8 +24,8 @@ import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -239,13 +239,13 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 
     @Deprecated
     public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String regions) {
-        query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
+        query.put(ParamConstants.QueryParams.REGION.key(), regions);
         logger.debug("query = " + query.toJson());
         logger.debug("queryOptions = " + queryOptions.toJson());
-        List<Query> queries = createQueries(query, regions, VariantDBAdaptor.QueryParams.REGION.key());
+        List<Query> queries = createQueries(query, regions, ParamConstants.QueryParams.REGION.key());
         List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
+            queryResults.get(i).setId((String) queries.get(i).get(ParamConstants.QueryParams.REGION.key()));
         }
         return queryResults;
     }

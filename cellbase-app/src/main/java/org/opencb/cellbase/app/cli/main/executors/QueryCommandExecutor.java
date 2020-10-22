@@ -23,7 +23,7 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
-import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
@@ -155,7 +155,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    query.append(ParamConstants.QueryParams.ID.key(), queryCommandOptions.id);
                     //fix me
                     CellBaseIterator<Gene> iterator = geneManager.iterator(new GeneQuery());
                     while (iterator.hasNext()) {
@@ -166,7 +166,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     break;
                 case "variation":
                     VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
-                    query.append(VariantDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
+                    query.append(ParamConstants.QueryParams.GENE.key(), queryCommandOptions.id);
                     variantDBAdaptor.forEach(query, entry -> {
                         try {
                             output.println(objectMapper.writeValueAsString(entry));
@@ -189,7 +189,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    query.append(VariantDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    query.append(ParamConstants.QueryParams.ID.key(), queryCommandOptions.id);
                     Iterator iterator = variantDBAdaptor.nativeIterator(query, queryOptions);
                     while (iterator.hasNext()) {
                         Object next = iterator.next();
@@ -220,7 +220,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+                    query.append(ParamConstants.QueryParams.NAME.key(), queryCommandOptions.id);
 //                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
 //                    while (iterator.hasNext()) {
 //                        Object next = iterator.next();
@@ -264,7 +264,7 @@ public class QueryCommandExecutor extends CommandExecutor {
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
-                    query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
+                    query.append(ParamConstants.QueryParams.ID.key(), queryCommandOptions.id);
 //                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
 //                    while (iterator.hasNext()) {
 //                        Object next = iterator.next();

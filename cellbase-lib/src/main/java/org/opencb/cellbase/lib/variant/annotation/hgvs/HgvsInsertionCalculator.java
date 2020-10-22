@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -502,7 +502,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
-        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+        Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
 

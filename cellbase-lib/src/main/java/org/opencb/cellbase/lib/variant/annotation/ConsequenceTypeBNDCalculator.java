@@ -21,7 +21,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
                     consequenceType.setGeneName(gene.getName());
                     consequenceType.setGeneId(gene.getId());
                     consequenceType.setTranscriptId(transcript.getId());
-                    if (VariantDBAdaptor.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
+                    if (ParamConstants.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
                         consequenceType.setEnsemblGeneId(gene.getId());
                         consequenceType.setEnsemblTranscriptId(transcript.getId());
                     }

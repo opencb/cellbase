@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellbaseException;

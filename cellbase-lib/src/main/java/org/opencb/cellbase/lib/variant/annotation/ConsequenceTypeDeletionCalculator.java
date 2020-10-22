@@ -22,8 +22,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -68,7 +67,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 consequenceType.setGeneName(gene.getName());
                 consequenceType.setGeneId(gene.getId());
                 consequenceType.setTranscriptId(transcript.getId());
-                if (VariantDBAdaptor.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
+                if (ParamConstants.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
                     consequenceType.setEnsemblGeneId(gene.getId());
                     consequenceType.setEnsemblTranscriptId(transcript.getId());
                 }
@@ -218,7 +217,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 if (i >= transcriptSequence.length()) {
                     int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
                     // in base 0 (see above)
-                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                    Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT
@@ -328,7 +327,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 // Means we've reached the beginning of the transcript, i.e. transcript.start
                 if (i < 0) {
                     int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
-                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                    Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     substitutingNt = genomeManager
@@ -436,7 +435,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 //                            get(((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
 //                                    genomicCoordinate, genomicCoordinate + 1,
 //                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0));
-                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                    Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.
@@ -539,7 +538,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 //                    modifiedCodonArray[codonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor
 //                            .getSequenceByRegion(variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
 //                                    new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                    Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = genomeManager

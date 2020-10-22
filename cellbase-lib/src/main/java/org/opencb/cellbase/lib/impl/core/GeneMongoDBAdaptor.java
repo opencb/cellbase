@@ -27,8 +27,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.TranscriptTfbs;
-import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
@@ -76,7 +75,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            if (StringUtils.isNotEmpty(source) && VariantDBAdaptor.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
+            if (StringUtils.isNotEmpty(source) && ParamConstants.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
                 results.add(new CellBaseDataResult<Gene>(refseqCollection.find(bson, projection, Gene.class, new QueryOptions())));
             } else {
                 results.add(new CellBaseDataResult<Gene>(mongoDBCollection.find(bson, projection, Gene.class, new QueryOptions())));
@@ -92,7 +91,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Gene> converter = new GenericDocumentComplexConverter<>(Gene.class);
         MongoDBIterator<Gene> iterator = null;
-        if (query.getSource() != null && !query.getSource().isEmpty() && VariantDBAdaptor.QueryParams.REFSEQ.key()
+        if (query.getSource() != null && !query.getSource().isEmpty() && ParamConstants.QueryParams.REFSEQ.key()
                 .equalsIgnoreCase(query.getSource().get(0))) {
             iterator = refseqCollection.iterator(null, bson, projection, converter, queryOptions);
         } else {
