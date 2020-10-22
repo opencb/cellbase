@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.api.iterator;
+package org.opencb.cellbase.lib.iterator;
 
 import java.io.Closeable;
 import java.util.Iterator;

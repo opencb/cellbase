@@ -22,7 +22,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;

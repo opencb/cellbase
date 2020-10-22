@@ -28,7 +28,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
