@@ -348,12 +348,14 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("genes")
-                                       @ApiParam(name = "genes", value = ParamConstants.GENE_IDS, required = true) String genes) {
+    public Response getInfo(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS, required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery,
-                    geneQuery.getSource().get(0));
+            String source = "ensembl";
+            if (geneQuery.getSource() != null && !geneQuery.getSource().isEmpty()) {
+                source = geneQuery.getSource().get(0);
+            }
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery, source);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
