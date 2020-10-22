@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib;
+package org.opencb.cellbase.lib.iterator;
 
 import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;

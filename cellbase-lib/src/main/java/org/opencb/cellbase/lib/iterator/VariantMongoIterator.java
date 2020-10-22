@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib;
+package org.opencb.cellbase.lib.iterator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
