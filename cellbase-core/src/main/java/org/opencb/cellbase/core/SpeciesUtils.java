@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib;
+package org.opencb.cellbase.core;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.common.Species;

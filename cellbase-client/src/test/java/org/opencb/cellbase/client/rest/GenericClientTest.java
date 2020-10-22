@@ -58,7 +58,7 @@ public class GenericClientTest {
     public void get() throws Exception {
         CellBaseDataResponse<Gene> queryResponse1 = cellBaseClient.getGenericClient().get("feature", "gene", "BRCA2", "info",
                 new QueryOptions(QueryOptions.INCLUDE, "name"), Gene.class);
-        assertEquals(1, queryResponse1.allResults().size());
+        assertEquals(1, queryResponse1.allResultsSize());
         assertEquals("BRCA2", queryResponse1.firstResult().getName());
 
         CellBaseDataResponse<ObjectMap> queryResponse2 = cellBaseClient.getGenericClient().get("meta", "about", new QueryOptions(),

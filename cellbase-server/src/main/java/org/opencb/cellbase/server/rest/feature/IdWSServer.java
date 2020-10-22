@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.XrefManager;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib;
 
 import org.junit.jupiter.api.Test;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;

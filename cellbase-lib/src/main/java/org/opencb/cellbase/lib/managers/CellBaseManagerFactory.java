@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

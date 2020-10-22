@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 

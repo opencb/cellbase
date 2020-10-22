@@ -24,7 +24,7 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.lib.download.*;
 
 import java.io.IOException;

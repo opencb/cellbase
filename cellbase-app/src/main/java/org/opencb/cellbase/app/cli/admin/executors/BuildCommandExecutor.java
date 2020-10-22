@@ -27,7 +27,7 @@ import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 
