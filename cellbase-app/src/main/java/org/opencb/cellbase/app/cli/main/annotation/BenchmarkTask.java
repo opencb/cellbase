@@ -147,8 +147,12 @@ public class BenchmarkTask implements
 //                    // Better skip regulatory_region_variant annotations
 //                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
 //                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
-                    set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
-                            sequenceOntologyTerm));
+                    String transcriptId = consequenceType.getTranscriptId();
+                    // ensembl genes look like ENST00000591346.1. refseq genes do not
+                    if (transcriptId != null && transcriptId.contains("\\.")) {
+                        transcriptId = transcriptId.split("\\.")[0];
+                    }
+                    set.add(new SequenceOntologyTermComparisonObject(transcriptId, sequenceOntologyTerm));
 //                    }
                 }
             }
