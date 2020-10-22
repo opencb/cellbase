@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -130,8 +131,8 @@ public class GeneClientTest {
     public void getSnp() throws Exception {
         QueryOptions queryOptions = new QueryOptions("exclude", "annotation");
         queryOptions.add(QueryOptions.LIMIT, 3);
-        CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("TUG1", "VPREB1"),
-                queryOptions);
+        CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("BRCA2",
+                "hsapiens"), queryOptions);
         assertNotNull(variantCellBaseDataResponse.firstResult());
         assertNotNull(variantCellBaseDataResponse.getResponses().get(1).getResults());
     }
