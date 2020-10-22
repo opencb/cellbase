@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
@@ -82,21 +81,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private MongoDBCollection mongoDBCollection;
 
     private MongoDBAdaptorFactory dbAdaptorFactory;
-    @Deprecated
-    private CellBaseDBAdaptor dbAdaptor;
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
-
-    @Deprecated
-    private String clinicalVariantSource;
-
-    @Deprecated
-    private static final String CLINVARVARIANTSOURCE = "clinvar";
-    @Deprecated
-    private static final String COSMICVARIANTSOURCE = "cosmic";
-    @Deprecated
-    private static final String GWASVARIANTSOURCE = "gwas";
     private String collectionName;
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
@@ -225,11 +212,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
-            case "cosmic":
-                clinicalVariantSource = "cosmic";
-//                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
-                dbAdaptor = null;
-                break;
             case "clinical_variants":
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
@@ -296,18 +278,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "conservation":
                 collection = "conservation";
-                break;
-            case "cosmic":
-                clinicalVariantSource = "cosmic";
-                collection = "clinical";
-                break;
-            case "clinvar":
-                clinicalVariantSource = "clinvar";
-                collection = "clinical";
-                break;
-            case "gwas":
-                clinicalVariantSource = "gwas";
-                collection = "clinical";
                 break;
             case "clinical":
                 collection = "clinical";

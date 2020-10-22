@@ -23,7 +23,6 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
@@ -51,7 +50,6 @@ public class HgvsCalculator {
     protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeManager genomeManager;
-    protected GenomeDBAdaptor genomeDBAdaptor;
     protected BuildingComponents buildingComponents;
 
     public HgvsCalculator(GenomeManager genomeManager) {

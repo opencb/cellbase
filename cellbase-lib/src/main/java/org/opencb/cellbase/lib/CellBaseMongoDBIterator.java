@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib;
 
-import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 
 public class CellBaseMongoDBIterator<E> extends CellBaseIterator {

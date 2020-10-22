@@ -25,7 +25,6 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.*;
@@ -63,7 +62,6 @@ public class VariantAnnotationCalculator {
     private ClinicalManager clinicalManager;
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
-    private ConservationDBAdaptor conservationManager;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
 
@@ -82,8 +80,6 @@ public class VariantAnnotationCalculator {
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name();
-    private static final String REGION = "region";
-    private static final String MERGE = "merge";
 
     public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
             throws CellbaseException {
@@ -92,7 +88,6 @@ public class VariantAnnotationCalculator {
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
         this.regulationManager = cellbaseManagerFactory.getRegulatoryManager(species, assembly);
         this.proteinManager = cellbaseManagerFactory.getProteinManager(species, assembly);
-//        this.conservationManager = cellbaseManagerFactory.getConservationManager(species, assembly);
         this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
