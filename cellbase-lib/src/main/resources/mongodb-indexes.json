@@ -2,6 +2,7 @@
 {"collection": "clinical_variants", "fields": {"type": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.id": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.hgvs": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.consequenceTypes.sequenceOntologyTerms.name": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.id": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.source.name": 1}, "options": {"background": true}}
@@ -11,6 +12,7 @@
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, "options": {"sparse": true}}
 {"collection": "clinical_variants", "fields": {"_traits": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"_featureXrefs": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.hgvs": 1}, "options": {"background": true}}
 
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
