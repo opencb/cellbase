@@ -68,7 +68,7 @@ public class TranscriptClientTest {
 
     @Test
     public void get() throws Exception {
-        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000456328"), null);
+        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000671466.1"), null);
         assertNotNull(transcript.firstResult(), "This transcript should exist");
 
 //        Map<String, Object> params = new HashMap<>();

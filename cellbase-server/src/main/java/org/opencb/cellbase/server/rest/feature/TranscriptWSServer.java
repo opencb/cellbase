@@ -98,8 +98,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
+            String source = "ensembl";
+            if (query.getSource() != null && !query.getSource().isEmpty()) {
+                source = query.getSource().get(0);
+            }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")), query,
-                    query.getSource().get(0));
+                    source);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

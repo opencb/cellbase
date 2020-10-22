@@ -80,15 +80,15 @@ public class GenomicRegionClientTest {
     public void testgetVariant() throws Exception {
         QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end,id");
         CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGenomicRegionClient()
-                .getVariant(Arrays.asList("22:35490160-35490161", "22:10510033-10510034"), queryOptions);
+                .getVariant(Arrays.asList("13:32316519", "13:32316514-32316517"), queryOptions);
 
         assertNotNull(variantCellBaseDataResponse.firstResult());
         assertEquals(variantCellBaseDataResponse.getResponses().get(0).getNumResults(),
                 variantCellBaseDataResponse.getResponses().get(0).getResults().size());
-        assertTrue(variantCellBaseDataResponse.getResponses().get(0).getResults().size() == 3);
+        assertEquals(1, variantCellBaseDataResponse.getResponses().get(0).getResults().size());
         assertEquals(variantCellBaseDataResponse.getResponses().get(1).getNumResults(),
                 variantCellBaseDataResponse.getResponses().get(1).getResults().size());
-        assertTrue(variantCellBaseDataResponse.getResponses().get(1).getResults().size() == 1);
+        assertEquals(5, variantCellBaseDataResponse.getResponses().get(1).getResults().size());
     }
 
     @Test
