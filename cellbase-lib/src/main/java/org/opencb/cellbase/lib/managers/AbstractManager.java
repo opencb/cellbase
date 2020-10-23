@@ -55,6 +55,7 @@ public class AbstractManager {
 
     private void init() {
         dbAdaptorFactory = new MongoDBAdaptorFactory(this.configuration);
+//        dbAdaptorFactory = MongoDBAdaptorFactory.getInstance();
 
         logger = LoggerFactory.getLogger(this.getClass());
     }

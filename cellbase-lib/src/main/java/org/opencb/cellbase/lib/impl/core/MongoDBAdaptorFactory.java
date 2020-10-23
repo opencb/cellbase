@@ -64,10 +64,30 @@ public class MongoDBAdaptorFactory {
      */
     private static MongoDataStoreManager mongoDataStoreManager;
 
+//    private MongoDBAdaptorFactory mongoDBAdaptorFactory;
+
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         this.cellBaseConfiguration = cellBaseConfiguration;
         init();
     }
+
+//    public static MongoDBAdaptorFactory getInstance(CellBaseConfiguration cellBaseConfiguration) {
+//        if (mongoDataStoreManager == null) {
+//            String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
+//            List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
+//            for (String host : hosts) {
+//                String[] hostPort = host.split(":");
+//                if (hostPort.length == 1) {
+//                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
+//                } else {
+//                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
+//                }
+//            }
+//            mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
+//            logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
+//        }
+//        return mongoDBAdaptorFactory;
+//    }
 
     private void init() {
         if (mongoDataStoreManager == null) {
