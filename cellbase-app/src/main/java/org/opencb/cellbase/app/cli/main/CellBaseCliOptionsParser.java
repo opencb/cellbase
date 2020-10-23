@@ -30,87 +30,21 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
 
     private final CommonCommandOptions commonCommandOptions;
 
-    private QueryCommandOptions queryCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
     public CellBaseCliOptionsParser() {
         jCommander.setProgramName("cellbase.sh");
         commonCommandOptions = new CommonCommandOptions();
 
-        queryCommandOptions = new QueryCommandOptions();
+        //queryCommandOptions = new QueryCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
 
-        jCommander.addCommand("query", queryCommandOptions);
+        //jCommander.addCommand("query", queryCommandOptions);
         jCommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
         jCommander.parse(args);
-    }
-
-//    public String getCommand() {
-//        return (jCommander.getParsedCommand() != null) ? jCommander.getParsedCommand(): "";
-//    }
-
-    @Parameters(commandNames = {"query"}, commandDescription = "Query and fetch data from CellBase database using this command line")
-    public class QueryCommandOptions {
-
-        @ParametersDelegate
-        public CommonCommandOptions commonOptions = commonCommandOptions;
-
-
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
-        public String species = "Homo sapiens";
-
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = null;
-
-        @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
-        public String output;
-
-        @Parameter(names = {"-t", "--type"}, description = "", required = true, arity = 1)
-        public String category;
-
-        @Parameter(names = {"--id"}, description = "", required = false, arity = 1)
-        public String id;
-
-        @Parameter(names = {"-r", "--resource"}, description = "", required = false, arity = 1)
-        public String resource;
-
-        @Parameter(names = {"--region"}, description = "", required = false, arity = 1)
-        public String region;
-
-        @Parameter(names = {"--group-by"}, description = "", required = false, arity = 1)
-        public String groupBy;
-
-        @Parameter(names = {"--distinct"}, description = "", required = false, arity = 1)
-        public String distinct;
-
-//        @Parameter(names = {"--histogram"}, description = "", required = false, arity = 0)
-//        public boolean histogram;
-
-//        @Parameter(names = {"--interval"}, description = "", required = false, arity = 1)
-//        public int interval = 100000;
-
-        @DynamicParameter(names = {"-O", "--options"}, description = "Filter options in the form of -Oa=b, eg. -Obiotype=protein_coding,pseudogene -Oregion=3:44444-55555", required = false)
-        public Map<String, String> options = new HashMap<>();
-
-        // QueryOptions parameters
-        @Parameter(names = {"-i", "--include"}, description = "Comma separated list of fields to be included, eg. chromsome,start,end", required = false)
-        public String include;
-
-        @Parameter(names = {"-e", "--exclude"}, description = "Comma separated list of fields to be excluded, eg. chromsome,start,end", required = false)
-        public String exclude;
-
-        @Parameter(names = {"--skip"}, description = "Skip the number of records specified", required = false)
-        public int skip;
-
-        @Parameter(names = {"--limit"}, description = "Return the number of records specified", required = false)
-        public int limit;
-
-        @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
-        public boolean count;
-
     }
 
     @Parameters(commandNames = {"variant-annotation"}, commandDescription = "Annotate variants from VCF files using CellBase and other custom files")
@@ -289,13 +223,8 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         return getCommonCommandOptions().help;
     }
 
-
     public CommonCommandOptions getCommonCommandOptions() {
         return commonCommandOptions;
-    }
-
-    public QueryCommandOptions getQueryCommandOptions() {
-        return queryCommandOptions;
     }
 
     public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }

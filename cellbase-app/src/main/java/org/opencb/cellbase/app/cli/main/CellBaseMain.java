@@ -18,7 +18,6 @@ package org.opencb.cellbase.app.cli.main;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
-import org.opencb.cellbase.app.cli.main.executors.QueryCommandExecutor;
 import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 
@@ -62,9 +61,6 @@ public class CellBaseMain {
                 System.exit(0);
             } else {
                 switch (parsedCommand) {
-                    case "query":
-                        commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
-                        break;
                     case "variant-annotation":
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
                         break;
