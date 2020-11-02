@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,8 +84,8 @@ public abstract class CommandExecutor {
 //            stderr.setThreshold(Level.toLevel(logLevel));
 //        }
 //
-//        logger = LoggerFactory.getLogger(this.getClass().toString());
-//        this.logLevel = logLevel;
+        logger = LoggerFactory.getLogger(this.getClass().toString());
+        this.logLevel = logLevel;
 
         Level level = Level.toLevel(logLevel, Level.INFO);
         Configurator.setRootLevel(level);
