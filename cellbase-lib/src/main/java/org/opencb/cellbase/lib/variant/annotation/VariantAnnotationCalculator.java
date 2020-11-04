@@ -1099,9 +1099,8 @@ public class VariantAnnotationCalculator {
         if (consequenceType.getProteinVariantAnnotation() != null) {
             String transcriptId = consequenceType.getTranscriptId();
             // transcript may contain version, e.g. ENST00000382011.9. sift/polyphen do NOT contain version, so remove version
-            if (transcriptId != null && transcriptId.contains("\\.")) {
-                transcriptId = transcriptId.split("\\.")[0];
-            }
+            transcriptId = transcriptId.split("\\.")[0];
+
             CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(variant,
                     transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),

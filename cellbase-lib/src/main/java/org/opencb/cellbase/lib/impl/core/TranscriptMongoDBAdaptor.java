@@ -235,7 +235,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             andBsonList.add(Filters.and(chromosome, start, end));
         } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
             String transcriptId = ids.get(0);
-            if (transcriptId.contains("\\.")) {
+            if (transcriptId.contains(".")) {
                 // transcript contains version, e.g. ENST00000671466.1
                 andBsonList.add(Filters.eq("transcripts.id", transcriptId));
             } else {

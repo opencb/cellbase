@@ -180,7 +180,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void createTranscriptIdQuery(Object value, List<Bson> andBsonList) {
         if (value != null) {
             String transcriptId = String.valueOf(value);
-            if (transcriptId.contains("\\.")) {
+            if (transcriptId.contains(".")) {
                 // transcript contains version, e.g. ENST00000671466.1
                 andBsonList.add(Filters.eq("transcripts.id", transcriptId));
             } else {

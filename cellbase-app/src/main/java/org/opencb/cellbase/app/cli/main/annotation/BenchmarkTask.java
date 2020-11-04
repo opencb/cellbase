@@ -149,9 +149,8 @@ public class BenchmarkTask implements
 //                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
                     String transcriptId = consequenceType.getTranscriptId();
                     // ensembl genes look like ENST00000591346.1. refseq genes do not
-                    if (transcriptId != null && transcriptId.contains("\\.")) {
-                        transcriptId = transcriptId.split("\\.")[0];
-                    }
+                    transcriptId = transcriptId.split("\\.")[0];
+
                     set.add(new SequenceOntologyTermComparisonObject(transcriptId, sequenceOntologyTerm));
 //                    }
                 }
