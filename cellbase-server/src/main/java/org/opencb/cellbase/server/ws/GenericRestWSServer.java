@@ -168,7 +168,7 @@ public class GenericRestWSServer implements IWSServer {
         WATCH.start();
 
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
-        logger.info("Static block, creating MongoDBAdapatorFactory");
+        logger.info("Static block, creating MongoDBAdaptorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
                 logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/configuration.json");

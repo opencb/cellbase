@@ -20,12 +20,13 @@
             </Policies>
             <DefaultRolloverStrategy max="20"/>
 
-            <JSONLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true"/>
+            <JSONLayout compact="true" eventEol="true" propertiesAsList="true" objectMessageAsJsonObject="true"
+                        includeStacktrace="true" includeTimeMillis="true"/>
             <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="DEBUG">
+        <Root level="INFO">
             <AppenderRef ref="RollingFileJson" />
         </Root>
         <Logger name="org.mongodb.driver.cluster" level="WARN"/>
