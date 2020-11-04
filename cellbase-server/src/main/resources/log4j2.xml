@@ -6,6 +6,11 @@
         <Property name="logFileArchive">${cellbase.log.file}.%i.log.gz</Property>
     </Properties>
     <Appenders>
+        <Console name="Console" target="SYSTEM_ERR">
+            <JSONLayout compact="true" eventEol="true" propertiesAsList="true" objectMessageAsJsonObject="true"
+                        includeStacktrace="true" includeTimeMillis="true"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
         <RollingFile name="RollingFileJson"
                      append="true"
                      immediateFlush="true"
@@ -28,6 +33,7 @@
     <Loggers>
         <Root level="INFO">
             <AppenderRef ref="RollingFileJson" />
+            <AppenderRef ref="Console" />
         </Root>
         <Logger name="org.mongodb.driver.cluster" level="WARN"/>
         <Logger name="org.mongodb.driver.connection" level="WARN"/>
