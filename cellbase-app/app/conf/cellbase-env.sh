@@ -17,7 +17,7 @@ CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-"INFO"}
 CELLBASE_LOG_CONFIG="log4j2.file.xml"
 
 #Set log4j properties file
-export JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configurationFile=file:${BASEDIR}/${CELLBASE_LOG_CONFIG}"
+export JAVA_OPTS="${JAVA_OPTS} -Dlog4j.configurationFile=${BASEDIR}/${CELLBASE_LOG_CONFIG}"
 export JAVA_OPTS="${JAVA_OPTS} -Dcellbase.log.level=${CELLBASE_LOG_LEVEL}"
 export JAVA_OPTS="${JAVA_OPTS} ${MONITOR_AGENT}"
 export JAVA_OPTS="${JAVA_OPTS} -Dfile.encoding=UTF-8"

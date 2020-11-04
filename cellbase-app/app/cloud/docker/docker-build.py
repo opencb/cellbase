@@ -12,7 +12,7 @@ from pathlib import Path
 ## Configure command-line options
 parser = argparse.ArgumentParser()
 parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
-parser.add_argument('--images', help="comma separated list of images to be made, e.g. tomcat,base,rest,python,builder", default="base,rest,python")
+parser.add_argument('--images', help="comma separated list of images to be made, e.g. tomcat,base,rest,python,demo", default="base,tomcat,demo")
 parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
 parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
 parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")

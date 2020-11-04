@@ -2,17 +2,15 @@
 <Configuration>
     <Properties>
         <Property name="name">cellbase</Property>
-        <Property name="baseDir">${sys:app.home:-${log4j:configParentLocation}/../}</Property>
-        <Property name="logDir">${sys:cellbase.log.dir:-${baseDir}/logs}</Property>
-        <Property name="logFile">${name}.${hostName}.log</Property>
-        <Property name="logFileArchive">${name}.${hostName}.%i.log.gz</Property>
+        <Property name="logFile">${cellbase.log.file}</Property>
+        <Property name="logFileArchive">${cellbase.log.file}.%i.log.gz</Property>
     </Properties>
     <Appenders>
         <RollingFile name="RollingFileJson"
                      append="true"
                      immediateFlush="true"
-                     fileName="${logDir}/${logFile}"
-                     filePattern="${logDir}/${logFileArchive}"
+                     fileName="${logFile}"
+                     filePattern="${logFileArchive}"
                      createOnDemand="true"
                      ignoreExceptions="false">
             <Policies>

@@ -46,7 +46,7 @@ RUN chown -R 1001:1001 /opt/tomcat/
 RUN cp /opt/cellbase/*.war /opt/tomcat/webapps/cellbase.war
 
 # copy to /conf directory, just like v5
-RUN mv /opt/cellbase/configuration.json /opt/cellbase/conf && ln -s /opt/cellbase/conf/configuration.json /opt/cellbase/configuration.json
+#RUN cp /opt/cellbase/configuration.json /opt/cellbase/conf && ln -s /opt/cellbase/conf/configuration.json /opt/cellbase/configuration.json
 
 ENV CELLBASE_HOME /opt/cellbase/
 
