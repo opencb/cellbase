@@ -536,7 +536,8 @@ public class HgvsCalculator {
         // cdsPosition might need adjusting for transcripts with unclear start
         // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
         // ENST00000618610 (ENSP00000484524)
-        if (transcript.unconfirmedStart() || transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID)) {
+        if (transcript.unconfirmedStart() || (transcript.getProteinSequence() != null
+                && transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID))) {
             int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
             // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
             // - 0 if fits perfectly with the reading frame, i.e.
