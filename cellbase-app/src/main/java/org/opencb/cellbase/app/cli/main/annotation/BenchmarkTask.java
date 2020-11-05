@@ -147,7 +147,7 @@ public class BenchmarkTask implements
 //                    // Better skip regulatory_region_variant annotations
 //                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
 //                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
-                    String transcriptId = consequenceType.getTranscriptId();
+                    String transcriptId = consequenceType.getEnsemblTranscriptId();
                     // ensembl genes look like ENST00000591346.1. refseq genes do not
                     if (transcriptId != null && transcriptId.contains(".")) {
                         transcriptId = transcriptId.split("\\.")[0];

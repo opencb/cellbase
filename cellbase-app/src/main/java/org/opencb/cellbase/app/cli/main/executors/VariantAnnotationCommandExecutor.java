@@ -165,7 +165,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                     variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndex);
             for (Path entry : stream) {
-                logger.info("Processing file '{}'", entry.toString());
+                logger.info("Processing VEP file '{}'", entry.toString());
                 DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
                 ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
                         = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
