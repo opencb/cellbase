@@ -155,7 +155,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void runBenchmark() {
         try {
             FastaIndex fastaIndex = new FastaIndex(referenceFasta);
-//            FastaIndexManager fastaIndexManager = getFastaIndexManger();
             DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
                 return entry.getFileName().toString().endsWith(".vep");
             });
@@ -165,7 +164,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                     variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndex);
             for (Path entry : stream) {
-                logger.info("Processing VEP file '{}'", entry.toString());
+                logger.info("Processing file '{}'", entry.toString());
                 DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
                 ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
                         = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
@@ -174,21 +173,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private FastaIndexManager getFastaIndexManger() {
-        // Preparing the fasta file for fast accessing
-        FastaIndexManager fastaIndexManager = null;
-        try {
-            fastaIndexManager = new FastaIndexManager(referenceFasta, true);
-            if (!fastaIndexManager.isConnected()) {
-                fastaIndexManager.index();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return fastaIndexManager;
     }
 
     private List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
