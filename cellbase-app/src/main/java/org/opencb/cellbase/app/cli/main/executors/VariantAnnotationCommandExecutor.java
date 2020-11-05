@@ -32,7 +32,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantFileMetadata;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.tools.sequence.FastaIndex;
-import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.biodata.tools.variant.VariantJsonReader;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
