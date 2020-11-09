@@ -99,7 +99,8 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         // We expect buildingComponents.getStart() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() <= transcript.getProteinSequence().length()) {
+        if (proteinVariant.getStart() > 0 && transcript.getProteinSequence() != null
+                && proteinVariant.getStart() <= transcript.getProteinSequence().length()) {
             proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)));
             String predictedAa = getPredictedAa(variant, transcript);
             if (StringUtils.isNotBlank(predictedAa)) {
@@ -114,10 +115,14 @@ public class HgvsSNVCalculator extends HgvsCalculator {
                         variant.toString(), transcript.getId(), transcript.getProteinID());
             }
         } else {
+            int sequenceLength = 0;
+            if (transcript.getProteinSequence() != null) {
+                sequenceLength = transcript.getProteinSequence().length();
+            }
             logger.warn("Protein start/end out of protein seq boundaries: {}, {}, prot length: {}. This should, in principle,"
                             + " not happen and protein HGVS will not be returned. Could be expected for "
                             + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
-                    buildingComponents.getProteinId(), proteinVariant.getStart(), transcript.getProteinSequence().length());
+                    buildingComponents.getProteinId(), proteinVariant.getStart(), sequenceLength);
         }
 
         return null;

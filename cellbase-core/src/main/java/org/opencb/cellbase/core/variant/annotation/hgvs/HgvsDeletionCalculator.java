@@ -64,7 +64,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(normalizedVariant, transcript);
-            if (proteinVariant != null) {
+            if (proteinVariant != null && transcript.getProteinSequence() != null) {
                 String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()
                         .charAt(proteinVariant.getEnd() - 1));
                 String referenceEndShortSymbol = String.valueOf(transcript
@@ -186,7 +186,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
             // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
             // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-            if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() <= transcript.getProteinSequence().length()) {
+            if (proteinVariant.getStart() > 0 && transcript.getProteinSequence() != null
+                    && proteinVariant.getEnd() <= transcript.getProteinSequence().length()) {
                 proteinVariant.setAlternate(EMPTY_STRING);
                 // start and end fall within the same codon - affect the same aminoacid
                 if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
