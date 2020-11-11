@@ -367,7 +367,7 @@ public class VariantAnnotationCalculator {
         }
 
         FutureConservationAnnotator futureConservationAnnotator = null;
-        Future<List<CellBaseDataResult>> conservationFuture = null;
+        Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
             futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty());
             conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
@@ -1438,7 +1438,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    class FutureConservationAnnotator implements Callable<List<CellBaseDataResult>> {
+    class FutureConservationAnnotator implements Callable<List<CellBaseDataResult<Score>>> {
         private List<Variant> variantList;
 
         private QueryOptions queryOptions;
@@ -1449,10 +1449,10 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<CellBaseDataResult> call() throws Exception {
+        public List<CellBaseDataResult<Score>> call() throws Exception {
             long startTime = System.currentTimeMillis();
 
-            List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>(variantList.size());
+            List<CellBaseDataResult<Score>> cellBaseDataResultList = new ArrayList<>(variantList.size());
 
             logger.debug("Query conservation");
             // Want to return only one CellBaseDataResult object per Variant
@@ -1466,18 +1466,13 @@ public class VariantAnnotationCalculator {
                                 ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
                                 : region).collect(Collectors.toList());
 
-//                List<CellBaseDataResult> tmpCellBaseDataResultList = genomeManager
-//                        .getAllScoresByRegionList(regionList, queryOptions);
-
-                GenomeQuery query = new GenomeQuery();
-                query.setRegions(regionList);
-                List<CellBaseDataResult<GenomicScoreRegion<Float>>> tmpCellBaseDataResultList = genomeManager.getConservation(
-                        queryOptions, regionList);
+                List<CellBaseDataResult<Score>> tmpCellBaseDataResultList = genomeManager.getAllScoresByRegionList(regionList,
+                        queryOptions);
 
                 // There may be more than one CellBaseDataResult per variant for breakends
                 // Reuse one of the CellBaseDataResult objects returned by the adaptor
-                CellBaseDataResult newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
-                if (tmpCellBaseDataResultList.size() > 1) {
+                CellBaseDataResult<Score> newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
+                if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
                     // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
                     // to the two breakpoints
                     newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
@@ -1492,18 +1487,17 @@ public class VariantAnnotationCalculator {
             return cellBaseDataResultList;
         }
 
-        public void processResults(Future<List<CellBaseDataResult>> conservationFuture,
+        public void processResults(Future<List<CellBaseDataResult<Score>>> conservationFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
             while (!conservationFuture.isDone()) {
                 Thread.sleep(1);
             }
 
-            List<CellBaseDataResult> conservationCellBaseDataResults = conservationFuture.get();
+            List<CellBaseDataResult<Score>> conservationCellBaseDataResults = conservationFuture.get();
             if (conservationCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    variantAnnotationList.get(i)
-                            .setConservation((List<Score>) conservationCellBaseDataResults.get(i).getResults());
+                    variantAnnotationList.get(i).setConservation(conservationCellBaseDataResults.get(i).getResults());
                 }
             }
         }

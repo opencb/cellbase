@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -122,7 +123,7 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return queryResultList;
     }
 
-    public List<CellBaseDataResult> getAllScoresByRegionList(List regionList, QueryOptions options) {
+    public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options) {
         return genomeDBAdaptor.getAllScoresByRegionList(regionList, options);
     }
 
