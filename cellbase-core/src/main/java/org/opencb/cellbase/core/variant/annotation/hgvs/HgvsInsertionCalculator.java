@@ -70,7 +70,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            Variant proteinVariant = createProteinVariant(normalizedVariant, transcript);
+            HGVSProteinVariant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null && transcript.getProteinSequence() != null) {
                 String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()
                         .charAt(proteinVariant.getEnd() - 1));
@@ -90,6 +90,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                     String mutationType = getMutationType(proteinVariant, transcript.getProteinSequence());
                     buildingComponents.setStart(proteinVariant.getStart());
                     buildingComponents.setEnd(proteinVariant.getEnd());
+                    buildingComponents.setTerminator(proteinVariant.getTerminator());
                     buildingComponents.setReferenceStart(VariantAnnotationUtils
                             .buildUpperLowerCaseString(VariantAnnotationUtils
                                     .TO_LONG_AA.get(referenceStartShortSymbol)));
@@ -167,7 +168,12 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
             stringBuilder.append(buildingComponents.getReferenceEnd())
                     .append(buildingComponents.getStart())
-                    .append(FRAMESHIFT_SUFFIX);
+                    .append(VariantAnnotationUtils
+                            .buildUpperLowerCaseString(VariantAnnotationUtils
+                                    .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
+                    .append(FRAMESHIFT_SUFFIX)
+                    .append(TERMINATION_SUFFIX)
+                    .append(buildingComponents.getTerminator());
         } else if (STOP_GAIN.equals(buildingComponents.getMutationType())) {
             stringBuilder.append(buildingComponents.getReferenceEnd())
                     .append(buildingComponents.getStart())
@@ -227,10 +233,11 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     }
 
-    private Variant createProteinVariant(Variant variant, Transcript transcript) {
+    private HGVSProteinVariant createProteinVariant(Variant variant, Transcript transcript) {
 
         int start = getAminoAcidPosition(getCdsStart(transcript, variant.getStart()), transcript);
         int end = start - 1;
+        int positionTerminationSite = 0;
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
@@ -254,6 +261,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             sequenceComparisonState = SequenceComparisonState.FAILED;
                         } else if (predictedAA == STOP_CODON_INDICATOR) {
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
+                            // TODO this might need to be +1
+                            positionTerminationSite = getAminoAcidPosition(alternatePosition, transcript);
                         // Reached end of reference protein sequence - comparison finished successfully
                         } else if (referencePosition == reference.length()) {
                             alternatePosition++;
@@ -274,7 +283,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             // which the protein sequence varies and therefore, there is no point in continuing with the
                             // -potentially large- process of prediction
                             if (isFrameshift(variant)) {
-                                sequenceComparisonState = SequenceComparisonState.FINISHED;
+                                // DO NOTHING, keep going until we get a stop_codon
+                                // sequenceComparisonState = SequenceComparisonState.FINISHED;
                             } else {
                                 sequenceComparisonState = SequenceComparisonState.SPANNING_INSERTION;
                             }
@@ -311,7 +321,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             }
 
             if (sequenceComparisonState.equals(SequenceComparisonState.FINISHED)) {
-                Variant proteinVariant = new Variant();
+                HGVSProteinVariant proteinVariant = new HGVSProteinVariant();
                 proteinVariant.setReference(EMPTY_STRING);
                 // base 0, open right end
                 // If prediction terminated because of a STOP codon, that'll be the last char of the predicted sequence
@@ -324,7 +334,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                 }
                 proteinVariant.setStart(start);
                 proteinVariant.setEnd(end);
-
+                proteinVariant.setTerminator(positionTerminationSite);
                 return proteinVariant;
             } else {
                 logger.warn("Could not predict protein sequence. This should, in principle, not happen and protein HGVS "
@@ -691,6 +701,25 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             }
 
             return subsequence.toString();
+        }
+    }
+
+    /**
+     * Holder object for protein variant information
+     */
+    private class HGVSProteinVariant extends Variant {
+        /**
+         *  Position new termination site. Location of the stop codon amino acid.
+         */
+        private int terminator;
+
+        public int getTerminator() {
+            return terminator;
+        }
+
+        public HGVSProteinVariant setTerminator(int terminator) {
+            this.terminator = terminator;
+            return this;
         }
     }
 }

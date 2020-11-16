@@ -21,6 +21,7 @@ public class BuildingComponents {
     private String mutationType;
     private int start;
     private int end;
+    private int terminator; // stop codon amino acid position
     private String referenceStart; // reference allele/amino acid at variant start
     private String referenceEnd; // reference allele/amino acid at variant end
     private String alternate; // alternate allele
@@ -145,7 +146,16 @@ public class BuildingComponents {
         this.cdnaEnd = cdnaEnd;
     }
 
-//    /**
+    public int getTerminator() {
+        return terminator;
+    }
+
+    public BuildingComponents setTerminator(int terminator) {
+        this.terminator = terminator;
+        return this;
+    }
+
+    //    /**
 //     * Generate a HGVS string.
 //     * @return String containing an HGVS formatted variant representation
 //     */
