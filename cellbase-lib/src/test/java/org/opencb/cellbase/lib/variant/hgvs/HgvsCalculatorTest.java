@@ -57,14 +57,14 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testMissingProtein() throws Exception {
-        List<String> hgvsList = getVariantHgvs(new Variant("2",
-                51027601,
-                "-",
-                "CCTCGCCCT"));
+        List<String> hgvsList = getVariantHgvs(new Variant("3",
+                155143536,
+                "G",
+                "A"));
         // six protein hgvs expected
         //assertNumberProteinHGVS(12, hgvsList);
         // do not know which of these correspond to variant validator ones but looks consistent
-        assertThat(hgvsList, CoreMatchers.hasItems("p.Glu64_Glu66dup"));
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000420389:p.Val428Met"));
     }
 
     @Test
