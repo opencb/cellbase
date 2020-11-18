@@ -105,10 +105,11 @@ public class HgvsSNVCalculator extends HgvsCalculator {
             String predictedAa = getPredictedAa(variant, transcript);
             if (StringUtils.isNotBlank(predictedAa)) {
                 // Start codon is not translated and there shall be no protein hgvs
-                if (!METIONINE.equals(predictedAa)) {
-                    proteinVariant.setAlternate(predictedAa);
-                    return proteinVariant;
-                }
+                // if in UTR, okay if protein sequence. unlikely to get a stop_codon_gain in UTR
+                //if (!METIONINE.equals(predictedAa)) {
+                proteinVariant.setAlternate(predictedAa);
+                return proteinVariant;
+                //}
             } else {
                 logger.warn("Could not predict new Aa. This should, in principle, not happen and protein HGVS "
                                 + "will not be returned. Please, check variant {}, transcript {}, protein {}",

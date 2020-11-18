@@ -43,6 +43,31 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testLongForm() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("17",
+                18173905,
+                "-",
+                "A"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        // do not know which of these correspond to variant validator ones but looks consistent
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000205890:p.Leu3493AlafsTer25", "ENSP00000408800:p.Leu757AlafsTer79"));
+    }
+
+
+    @Test
+    public void testMissingProtein() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("2",
+                51027601,
+                "-",
+                "CCTCGCCCT"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        // do not know which of these correspond to variant validator ones but looks consistent
+        assertThat(hgvsList, CoreMatchers.hasItems("p.Glu64_Glu66dup"));
+    }
+
+    @Test
     public void testProteinHgvsInsertion() throws Exception {
         // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
         // original sequence            ......CTGGCT

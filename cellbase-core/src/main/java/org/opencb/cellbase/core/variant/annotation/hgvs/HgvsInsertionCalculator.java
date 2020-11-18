@@ -7,6 +7,7 @@ import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -245,9 +246,14 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // base 0
             int referencePosition = start - 1;
             int alternatePosition = referencePosition;
+            int currentPosition = referencePosition;
+            // after we have the alternate position, we keep predicting the rest of the protein until we get the stop codon indicator
+
             String reference = transcript.getProteinSequence();
             ProteinSequencePredictor proteinSequencePredictor = new ProteinSequencePredictor(variant, transcript);
             SequenceComparisonState sequenceComparisonState = SequenceComparisonState.RIGHT_ALIGNING;
+
+            boolean insertionProcessed = false;
 
             char predictedAA = 0;
             while (!sequenceComparisonState.equals(SequenceComparisonState.FINISHED)
@@ -255,17 +261,22 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                 switch (sequenceComparisonState) {
                     case RIGHT_ALIGNING:
                         // Right align
-                        predictedAA = proteinSequencePredictor.aaAt(alternatePosition);
+                        predictedAA = proteinSequencePredictor.aaAt(currentPosition);
                         // No prediction could be made
                         if (predictedAA == 0) {
                             sequenceComparisonState = SequenceComparisonState.FAILED;
                         } else if (predictedAA == STOP_CODON_INDICATOR) {
+                            //currentPosition++;
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
-                            // TODO this might need to be +1
-                            positionTerminationSite = getAminoAcidPosition(alternatePosition, transcript);
+                            String alternate = proteinSequencePredictor.subsequence(start - 1, alternatePosition + 1);
+                            positionTerminationSite = currentPosition - start + alternate.length();
+                        } else if (insertionProcessed) {
+                            // insertion has been processed. keep going until we hit the stop codon
+                            currentPosition++;
                         // Reached end of reference protein sequence - comparison finished successfully
                         } else if (referencePosition == reference.length()) {
                             alternatePosition++;
+                            currentPosition++;
                             // transform to base 1
                             start = referencePosition + 1;
                             end = start - 1;
@@ -273,9 +284,11 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                         } else if (reference.charAt(referencePosition) == predictedAA) {
                             referencePosition++;
                             alternatePosition++;
+                            currentPosition++;
                         // Actual insertion starts
                         } else {
                             alternatePosition++;
+                            currentPosition++;
                             // transform to base 1
                             start = referencePosition + 1;
                             end = start - 1;
@@ -283,8 +296,9 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             // which the protein sequence varies and therefore, there is no point in continuing with the
                             // -potentially large- process of prediction
                             if (isFrameshift(variant)) {
-                                // DO NOTHING, keep going until we get a stop_codon
-                                // sequenceComparisonState = SequenceComparisonState.FINISHED;
+                                // continue predicting until we have reached the stop codon
+                                insertionProcessed = true;
+                                //sequenceComparisonState = SequenceComparisonState.FINISHED;
                             } else {
                                 sequenceComparisonState = SequenceComparisonState.SPANNING_INSERTION;
                             }
@@ -705,7 +719,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
     /**
-     * Holder object for protein variant information
+     * Holder object for protein variant information.
      */
     private class HGVSProteinVariant extends Variant {
         /**
