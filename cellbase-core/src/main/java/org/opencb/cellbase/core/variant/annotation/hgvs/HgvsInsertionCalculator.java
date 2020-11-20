@@ -1,15 +1,19 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by fjlopez on 15/06/17.
@@ -38,6 +42,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private static final String EXTENSION_TAG = "ext";
     private static final String UNKOWN_STOP_CODON_POSITION = "*?";
     private static final String TERMINATION_SUFFIX = "Ter";
+    private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
 
     public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -49,16 +54,50 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         Variant normalizedVariant = normalize(variant, normalize);
         String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
 
+        List<String> results = new ArrayList<>();
         if (transcriptHgvs != null) {
+            results.add(transcriptHgvs);
             String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
-            if (proteinHgvs == null) {
-                return Collections.singletonList(transcriptHgvs);
-            } else {
-                return Arrays.asList(transcriptHgvs, proteinHgvs);
+            if (proteinHgvs != null) {
+                results.add(proteinHgvs);
+                String uniprotHgvs = getUniprotHgvs(transcript, proteinHgvs);
+                if (StringUtils.isNotEmpty(uniprotHgvs)) {
+                    results.add(uniprotHgvs);
+                }
             }
-        } else {
-            return Collections.emptyList();
         }
+        return results;
+    }
+
+    /**
+     * Method to create HGVS string with UniProt accession instead of Ensembl
+     *
+     * @param transcript Transcript for this variant
+     * @param proteinHgvs HGVS string already calculated for Ensembl protein id
+     * @return the same HGVS string but with UniProt accession instead of Ensembl
+     */
+    private String getUniprotHgvs(Transcript transcript, String proteinHgvs) {
+        String uniprotAccession = getUniprotAccession(transcript);
+        if (uniprotAccession != null) {
+            String[] array = proteinHgvs.split(":p.");
+            if (array.length != 2) {
+                return null;
+            }
+            return uniprotAccession + ":p." + array[1];
+        }
+        return null;
+    }
+
+    private String getUniprotAccession(Transcript transcript) {
+        List<Xref> xrefs = transcript.getXrefs();
+        if (xrefs != null && !xrefs.isEmpty()) {
+            for (Xref xref : xrefs) {
+                if (UNIPROT_LABEL.equals(xref.getDbName())) {
+                    return xref.getId();
+                }
+            }
+        }
+        return null;
     }
 
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
