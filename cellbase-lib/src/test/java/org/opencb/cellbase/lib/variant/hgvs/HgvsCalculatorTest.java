@@ -49,8 +49,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "-",
                 "A"));
         // six protein hgvs expected
-        //assertNumberProteinHGVS(12, hgvsList);
-        // do not know which of these correspond to variant validator ones but looks consistent
+        assertNumberProteinHGVS(3, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000205890:p.Leu3493AlafsTer25", "ENSP00000408800:p.Leu757AlafsTer79"));
     }
 
@@ -62,9 +61,19 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "G",
                 "A"));
         // six protein hgvs expected
-        //assertNumberProteinHGVS(12, hgvsList);
-        // do not know which of these correspond to variant validator ones but looks consistent
+        assertNumberProteinHGVS(6, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000420389:p.Val428Met"));
+    }
+
+    @Test
+    public void testDiffPos() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("X",
+                109669061,
+                "-",
+                "T"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000423539:p.Tyr19IlefsTer2"));
     }
 
     @Test

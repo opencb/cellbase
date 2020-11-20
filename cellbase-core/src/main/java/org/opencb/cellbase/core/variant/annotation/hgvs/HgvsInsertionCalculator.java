@@ -7,7 +7,6 @@ import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -266,7 +265,6 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                         if (predictedAA == 0) {
                             sequenceComparisonState = SequenceComparisonState.FAILED;
                         } else if (predictedAA == STOP_CODON_INDICATOR) {
-                            //currentPosition++;
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
                             String alternate = proteinSequencePredictor.subsequence(start - 1, alternatePosition + 1);
                             positionTerminationSite = currentPosition - start + alternate.length();
@@ -281,7 +279,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             start = referencePosition + 1;
                             end = start - 1;
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
-                        } else if (reference.charAt(referencePosition) == predictedAA) {
+                        } else if (reference.charAt(currentPosition) == predictedAA) {
                             referencePosition++;
                             alternatePosition++;
                             currentPosition++;
@@ -289,9 +287,11 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                         } else {
                             alternatePosition++;
                             currentPosition++;
+
                             // transform to base 1
                             start = referencePosition + 1;
                             end = start - 1;
+
                             // For frameshift variants we just need the actual position within the protein sequence in
                             // which the protein sequence varies and therefore, there is no point in continuing with the
                             // -potentially large- process of prediction
