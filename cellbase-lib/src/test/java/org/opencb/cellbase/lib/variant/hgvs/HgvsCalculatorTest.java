@@ -77,6 +77,17 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testStopLoss() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("12",
+                132687314,
+                "A",
+                "T"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000442578:p.Met1?"));
+    }
+
+    @Test
     public void testProteinHgvsInsertion() throws Exception {
         // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
         // original sequence            ......CTGGCT

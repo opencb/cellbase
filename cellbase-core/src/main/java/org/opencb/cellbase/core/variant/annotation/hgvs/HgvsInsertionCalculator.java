@@ -10,10 +10,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Created by fjlopez on 15/06/17.
@@ -70,7 +67,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
     /**
-     * Method to create HGVS string with UniProt accession instead of Ensembl
+     * Method to create HGVS string with UniProt accession instead of Ensembl.
      *
      * @param transcript Transcript for this variant
      * @param proteinHgvs HGVS string already calculated for Ensembl protein id
@@ -109,7 +106,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            HGVSProteinVariant proteinVariant = createProteinVariant(normalizedVariant, transcript);
+            HgvsProteinVariant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null && transcript.getProteinSequence() != null) {
                 String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()
                         .charAt(proteinVariant.getEnd() - 1));
@@ -272,7 +269,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     }
 
-    private HGVSProteinVariant createProteinVariant(Variant variant, Transcript transcript) {
+    private HgvsProteinVariant createProteinVariant(Variant variant, Transcript transcript) {
 
         int start = getAminoAcidPosition(getCdsStart(transcript, variant.getStart()), transcript);
         int end = start - 1;
@@ -374,7 +371,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             }
 
             if (sequenceComparisonState.equals(SequenceComparisonState.FINISHED)) {
-                HGVSProteinVariant proteinVariant = new HGVSProteinVariant();
+                HgvsProteinVariant proteinVariant = new HgvsProteinVariant();
                 proteinVariant.setReference(EMPTY_STRING);
                 // base 0, open right end
                 // If prediction terminated because of a STOP codon, that'll be the last char of the predicted sequence
@@ -760,7 +757,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     /**
      * Holder object for protein variant information.
      */
-    private class HGVSProteinVariant extends Variant {
+    private class HgvsProteinVariant extends Variant {
         /**
          *  Position new termination site. Location of the stop codon amino acid.
          */
@@ -770,7 +767,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             return terminator;
         }
 
-        public HGVSProteinVariant setTerminator(int terminator) {
+        public HgvsProteinVariant setTerminator(int terminator) {
             this.terminator = terminator;
             return this;
         }
