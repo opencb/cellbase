@@ -43,7 +43,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLongForm() throws Exception {
+    public void testLongFormInsertion() throws Exception {
         List<String> hgvsList = getVariantHgvs(new Variant("17",
                 18173905,
                 "-",
@@ -51,6 +51,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // six protein hgvs expected
         assertNumberProteinHGVS(3, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000205890:p.Leu3493AlafsTer25", "ENSP00000408800:p.Leu757AlafsTer79"));
+
+    }
+
+    @Test
+    public void testLongFormDeletion() throws Exception {
+        List<String> hgvsList =  getVariantHgvs(new Variant("2",
+                47822224,
+                "T",
+                "-"));
+        // six protein hgvs expected
+        assertNumberProteinHGVS(3, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000385398 p.Ile482PhefsTer6"));
     }
 
 
@@ -85,7 +97,17 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // six protein hgvs expected
         //assertNumberProteinHGVS(12, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000442578:p.Met1?"));
+
+        hgvsList = getVariantHgvs(new Variant("14",
+                23415260,
+                "A",
+                "T"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000347507:p.Met1765Lys"));
     }
+
+
 
     @Test
     public void testProteinHgvsInsertion() throws Exception {
