@@ -524,13 +524,13 @@ public class HgvsCalculator {
         return false;
     }
 
-    protected static int getFirstCdsPhase(Transcript transcript) {
-        if (transcript.getStrand().equals(POSITIVE)) {
-            return transcript.getExons().get(0).getPhase();
-        } else {
-            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
-        }
-    }
+//    protected static int getFirstCdsPhase(Transcript transcript) {
+//        if (transcript.getStrand().equals(POSITIVE)) {
+//            return transcript.getExons().get(0).getPhase();
+//        } else {
+//            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
+//        }
+//    }
 
     protected static int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
         // cdsPosition might need adjusting for transcripts with unclear start
@@ -550,7 +550,8 @@ public class HgvsCalculator {
             // Sequence ---------ACTTACGGTC
             // Codons              ---|||---|||
             if (firstCodingExonPhase != -1) {
-                cdsPosition += (3 - firstCodingExonPhase) % 3;
+                //cdsPosition += (3 - firstCodingExonPhase) % 3;
+                cdsPosition -= firstCodingExonPhase;
             }
         }
 
@@ -560,7 +561,8 @@ public class HgvsCalculator {
     protected static int getCdnaCodingStart(Transcript transcript) {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
         if (transcript.unconfirmedStart()) {
-            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
+            //cdnaCodingStart -= ((3 - getFirstCodingExonPhase(transcript)) % 3);
+            cdnaCodingStart += getFirstCodingExonPhase(transcript);
         }
         return cdnaCodingStart;
     }
@@ -593,8 +595,9 @@ public class HgvsCalculator {
             // Sequence ---------ACTTACGGTC
             // Codons              ---|||---|||
             if (firstCodingExonPhase != -1) {
-                cdsPosition += (3 - firstCodingExonPhase) % 3;
-                return (cdsPosition - 1) % 3;
+//                cdsPosition += (3 - firstCodingExonPhase) % 3;
+//                return (cdsPosition - 1) % 3;
+                cdsPosition -= firstCodingExonPhase;
             }
         }
 

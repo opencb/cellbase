@@ -78,7 +78,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testDiffPos() throws Exception {
+    public void testDiffPosPhaseII() throws Exception {
         List<String> hgvsList = getVariantHgvs(new Variant("X",
                 109669061,
                 "-",
@@ -86,6 +86,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // six protein hgvs expected
         //assertNumberProteinHGVS(12, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000423539:p.Tyr19IlefsTer2"));
+    }
+
+    @Test
+    public void testDiffPosPhase0() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("16",
+                2106127,
+                "-",
+                "T"));
+        // six protein hgvs expected
+        //assertNumberProteinHGVS(12, hgvsList);
+        // NOT Gln785AlafsTer65
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000457132:p.Asp786GlyfsTer38"));
     }
 
     @Test
@@ -98,13 +110,13 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         //assertNumberProteinHGVS(12, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000442578:p.Met1?"));
 
-        hgvsList = getVariantHgvs(new Variant("14",
-                23415260,
-                "A",
-                "T"));
-        // six protein hgvs expected
-        //assertNumberProteinHGVS(12, hgvsList);
-        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000347507:p.Met1765Lys"));
+//        hgvsList = getVariantHgvs(new Variant("14",
+//                23415260,
+//                "A",
+//                "T"));
+//        // six protein hgvs expected
+//        //assertNumberProteinHGVS(12, hgvsList);
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000347507:p.Met1765Lys"));
     }
 
 
