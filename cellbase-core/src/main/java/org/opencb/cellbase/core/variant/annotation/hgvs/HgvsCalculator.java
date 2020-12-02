@@ -30,7 +30,7 @@ public class HgvsCalculator {
     protected static final String PROTEIN_CHAR = ":p.";
     protected static final char UNDERSCORE = '_';
     protected static final String POSITIVE = "+";
-    private static final String UNKNOWN_AMINOACID = "X";
+    protected static final String UNKNOWN_AMINOACID = "X";
     protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
