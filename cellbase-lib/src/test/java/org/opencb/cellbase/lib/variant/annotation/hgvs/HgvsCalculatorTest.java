@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.variant.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;

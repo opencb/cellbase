@@ -622,6 +622,30 @@ public class HgvsCalculator {
         return stringBuilder.toString();
     }
 
+    /**
+     * Required due to the peculiarities of insertion coordinates.
+     * Translation to transcript cds position slightly varies for positive and negative strands because of the way
+     * the insertion coordinates are interpreted in the genomic context; imagine following GENOMIC variant:
+     * 7:-:GTATCCA
+     * and following GENOMIC sequence
+     * COORDINATES                             123456789 10 11 12 13 14 15 16 17 18 19 20
+     * GENOMIC SEQUENCE                        AAGACTGTA T  C  C  A  G  G  T  G  G  G  C
+     * ORF(bars indicate last nt of the codon)   |  |  |       |        |        |
+     * VARIANT                                       ^
+     * VARIANT                                       GTATCCA
+     *
+     * In a positive transcript shifted codon is GTA (genomic positions [7,9])
+     * In a negative transcript shifted codon is AGT (reverse complementary of ACT, genomic positions [4,6]) and
+     * therefore the cds start coordinate of the insertion must be +1
+     * @param transcript  affected transcript data
+     * @param genomicStart start genomic coordinate of the variant
+     * @return corresponding cds start coordinate appropriately adjusted according to the transcript strand
+     */
+    protected static int getCdsStart(Transcript transcript, int genomicStart) {
+        return POSITIVE.equals(transcript.getStrand())
+                ? genomicToCdnaCoord(transcript, genomicStart).getReferencePosition()
+                : genomicToCdnaCoord(transcript, genomicStart).getReferencePosition() + 1;
+    }
 
 
 }

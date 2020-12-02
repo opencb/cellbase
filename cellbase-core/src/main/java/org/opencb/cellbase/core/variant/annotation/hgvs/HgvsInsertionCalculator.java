@@ -28,8 +28,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     private static final String INS = "ins";
     private static final String DUP = "dup";
-    private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
-    private static final char UNKNOWN_AA = 'X';
+//    private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
+//    private static final char UNKNOWN_AA = 'X';
     private static final String STOP_STRING = "STOP";
     private static final String FRAMESHIFT_SUFFIX = "fs";
     private static final String EMPTY_STRING = "";
@@ -285,7 +285,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // after we have the alternate position, we keep predicting the rest of the protein until we get the stop codon indicator
 
             String reference = transcript.getProteinSequence();
-            ProteinSequencePredictor proteinSequencePredictor = new ProteinSequencePredictor(variant, transcript);
+            AlternateProteinSequencePredictor proteinSequencePredictor = new AlternateProteinSequencePredictor(variant, transcript);
             SequenceComparisonState sequenceComparisonState = SequenceComparisonState.RIGHT_ALIGNING;
 
             boolean insertionProcessed = false;
@@ -302,7 +302,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             sequenceComparisonState = SequenceComparisonState.FAILED;
                         } else if (predictedAA == STOP_CODON_INDICATOR) {
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
-                            String alternate = proteinSequencePredictor.subsequence(start - 1, alternatePosition + 1);
+                            String alternate = proteinSequencePredictor.getSequence(start - 1, alternatePosition + 1);
                             positionTerminationSite = currentPosition - start + alternate.length();
                         } else if (insertionProcessed) {
                             // insertion has been processed. keep going until we hit the stop codon
@@ -378,9 +378,9 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                 // and we want to include it so that the code downstream realises that it's a stop gain. Otherwise
                 // the last aa in the predicted sequence will overlap with the original sequence an we must exclude it
                 if (predictedAA == STOP_CODON_INDICATOR) {
-                    proteinVariant.setAlternate(proteinSequencePredictor.subsequence(start - 1, alternatePosition + 1));
+                    proteinVariant.setAlternate(proteinSequencePredictor.getSequence(start - 1, alternatePosition + 1));
                 } else {
-                    proteinVariant.setAlternate(proteinSequencePredictor.subsequence(start - 1, alternatePosition));
+                    proteinVariant.setAlternate(proteinSequencePredictor.getSequence(start - 1, alternatePosition));
                 }
                 proteinVariant.setStart(start);
                 proteinVariant.setEnd(end);
@@ -415,7 +415,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     private boolean confirmedEqualSequences(String reference,
                                             int referenceStartingPosition,
-                                            ProteinSequencePredictor proteinSequencePredictor,
+                                            AlternateProteinSequencePredictor proteinSequencePredictor,
                                             int alternateStartingPosition) {
 
         int referencePosition = referenceStartingPosition;
@@ -442,30 +442,6 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
 
-    /**
-     * Required due to the peculiarities of insertion coordinates.
-     * Translation to transcript cds position slightly varies for positive and negative strands because of the way
-     * the insertion coordinates are interpreted in the genomic context; imagine following GENOMIC variant:
-     * 7:-:GTATCCA
-     * and following GENOMIC sequence
-     * COORDINATES                             123456789 10 11 12 13 14 15 16 17 18 19 20
-     * GENOMIC SEQUENCE                        AAGACTGTA T  C  C  A  G  G  T  G  G  G  C
-     * ORF(bars indicate last nt of the codon)   |  |  |       |        |        |
-     * VARIANT                                       ^
-     * VARIANT                                       GTATCCA
-     *
-     * In a positive transcript shifted codon is GTA (genomic positions [7,9])
-     * In a negative transcript shifted codon is AGT (reverse complementary of ACT, genomic positions [4,6]) and
-     * therefore the cds start coordinate of the insertion must be +1
-     * @param transcript  affected transcript data
-     * @param genomicStart start genomic coordinate of the variant
-     * @return corresponding cds start coordinate appropriately adjusted according to the transcript strand
-     */
-    protected static int getCdsStart(Transcript transcript, int genomicStart) {
-        return POSITIVE.equals(transcript.getStrand())
-                ? genomicToCdnaCoord(transcript, genomicStart).getReferencePosition()
-                : genomicToCdnaCoord(transcript, genomicStart).getReferencePosition() + 1;
-    }
 
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
@@ -604,155 +580,155 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         return INS;
     }
 
-    class ProteinSequencePredictor {
-        private final Variant genomicInsertion;
-        private final Transcript transcript;
-        private final StringBuilder sequence = new StringBuilder();
-        // Always points to the position of the next AA to predict
-        private int aaCounter;
-        // To indicate the protein position where prediction starts
-        private final int shift;
-
-        private final int modifiedCodonStart;
-        private int transcriptSequencePosition;
-        private int modifiedCodonPosition;
-        private int alternatePosition;
-        private final String transcriptSequence;
-        private final String alternate;
-        private char[] modifiedCodonArray = null;
-
-        ProteinSequencePredictor(Variant genomicInsertion, Transcript transcript) {
-            this.genomicInsertion = genomicInsertion;
-            this.transcript = transcript;
-            int cdsPosition = getCdsStart(transcript, genomicInsertion.getStart());
-            // -1 to move to base 0
-            this.aaCounter = getAminoAcidPosition(cdsPosition, transcript) - 1;
-            this.shift = aaCounter;
-
-            int variantPhaseShift = getPhaseShift(cdsPosition, transcript);
-            int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsPosition - 1;
-            // First modified position within the codon corresponds to the phase shift
-            modifiedCodonPosition = variantPhaseShift;
-
-            modifiedCodonStart =  cdnaVariantStart - variantPhaseShift;
-            transcriptSequence = transcript.getcDnaSequence();
-            transcriptSequencePosition = cdnaVariantStart - 1;  // 0-based and therefore - 1
-
-            // alternate provided in genomic representation
-            alternate = POSITIVE.equals(transcript.getStrand())
-                    ? genomicInsertion.getAlternate()
-                    : reverseComplementary(genomicInsertion.getAlternate());
-
-            // Out of boundaries might happen for insertions affecting start of unconfirmed-start transcripts.
-            // Prediction will only take place if start codon is well known, i.e. the whole predicted codon is within
-            // transcriptSequence boundaries
-            if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
-                // -1 and +2 because of base 0 String indexing
-                modifiedCodonArray = transcriptSequence.substring(modifiedCodonStart - 1,
-                        modifiedCodonStart + 2).toCharArray();
-            }
-
-            alternatePosition = 0;
-        }
-
-        /**
-         *
-         * @param position 0-based and always assumed to be greater or equal than the position where the insertion
-         *                 starts as projected from the genomic coordinates in genomicInsertion
-         * @return a char with predicted aminoacid at "position" (0-based). Returns "*" to indicate a stop gain in
-         * that position. Will return 0 if prediction could not be made.
-         */
-        public char aaAt(int position) {
-            if (position < shift) {
-                throw new RuntimeException("Position (" + position + ") must be greater than the the "
-                        + "position where the insertion starts (" + shift + ") as projected from the "
-                        + "genomic coordinates (" + genomicInsertion.toString() + "). Transcript: "
-                        + transcript.getId());
-            }
-
-            // If position had been predicted already, simply return it
-            if (position < aaCounter) {
-                return sequence.charAt(position - shift);
-            }
-
-            // Predict all aa until the requested one
-            for (; aaCounter <= position; aaCounter++) {
-                sequence.append(next());
-            }
-
-            return sequence.charAt(sequence.length() - 1);
-
-        }
-
-        private char next() {
-            if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
-                while (alternatePosition < alternate.length()) {
-                    modifiedCodonArray[modifiedCodonPosition] = alternate.toCharArray()[alternatePosition];
-                    if (modifiedCodonPosition == 2) {
-                        modifiedCodonPosition = (modifiedCodonPosition + 1) % 3;
-                        alternatePosition++;
-                        // 0 might be returned, meaning that no AA could be predicted; this can only happen if a
-                        // non-translatable codon is found, e.g. unexpected nt characters -non A,C,G,T- found in the
-                        // codon
-                        return getAA();
-                    }
-                    modifiedCodonPosition = (modifiedCodonPosition + 1) % 3;
-                    alternatePosition++;
-                }
-
-                // Last predicted codon from the alternate needs to be completed with transcript nts;
-                // indexing over transcriptSequence is 0 based
-                for (; modifiedCodonPosition < 3 && transcriptSequencePosition < transcriptSequence.length();
-                     modifiedCodonPosition++) {
-                    modifiedCodonArray[modifiedCodonPosition]
-                            = transcriptSequence.charAt(transcriptSequencePosition);
-                    transcriptSequencePosition++;
-                }
-
-                // Codon completed with transcript sequence nts
-                if (modifiedCodonPosition == 3) {
-                    // Reset modified codon position as it will always be 3 after the loop
-                    modifiedCodonPosition = 0;
-                    return getAA();
-                // Else end of transcript sequence reached before completing the codon, prediction cannot be made, return 0
-                }
-            }
-
-            return 0;
-
-        }
-
-        private char getAA() {
-            String aa = VariantAnnotationUtils.getAminoacid(MT.equals(genomicInsertion.getChromosome()),
-                    String.valueOf(modifiedCodonArray));
-            if (aa != null) {
-                // If STOP codon is gained prediction is interrupted and returned sequence is only predicted until
-                // aa position before the STOP codon
-                if (STOP_STRING.equals(aa)) {
-                    return STOP_CODON_INDICATOR;
-                } else {
-                    return VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa).charAt(0);
-                }
-            } else {
-                logger.warn("Unknown AA translation. Protein HGVS will not be returned as protein sequence cannot be "
-                                + "predicted. Variant {}, Codon {}, transcriptSequence {} ",
-                        genomicInsertion.toString(),
-                        String.valueOf(modifiedCodonArray),
-                        transcriptSequence);
-                // Prediction could not be done
-                return 0;
-            }
-        }
-
-        public String subsequence(int start, int end) {
-            StringBuilder subsequence = new StringBuilder();
-            for (int i = start; i < end; i++) {
-                subsequence.append(aaAt(i));
-            }
-
-            return subsequence.toString();
-        }
-    }
+//    class ProteinSequencePredictor {
+//        private final Variant genomicInsertion;
+//        private final Transcript transcript;
+//        private final StringBuilder sequence = new StringBuilder();
+//        // Always points to the position of the next AA to predict
+//        private int aaCounter;
+//        // To indicate the protein position where prediction starts
+//        private final int shift;
+//
+//        private final int modifiedCodonStart;
+//        private int transcriptSequencePosition;
+//        private int modifiedCodonPosition;
+//        private int alternatePosition;
+//        private final String transcriptSequence;
+//        private final String alternate;
+//        private char[] modifiedCodonArray = null;
+//
+//        ProteinSequencePredictor(Variant genomicInsertion, Transcript transcript) {
+//            this.genomicInsertion = genomicInsertion;
+//            this.transcript = transcript;
+//            int cdsPosition = getCdsStart(transcript, genomicInsertion.getStart());
+//            // -1 to move to base 0
+//            this.aaCounter = getAminoAcidPosition(cdsPosition, transcript) - 1;
+//            this.shift = aaCounter;
+//
+//            int variantPhaseShift = getPhaseShift(cdsPosition, transcript);
+//            int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsPosition - 1;
+//            // First modified position within the codon corresponds to the phase shift
+//            modifiedCodonPosition = variantPhaseShift;
+//
+//            modifiedCodonStart =  cdnaVariantStart - variantPhaseShift;
+//            transcriptSequence = transcript.getcDnaSequence();
+//            transcriptSequencePosition = cdnaVariantStart - 1;  // 0-based and therefore - 1
+//
+//            // alternate provided in genomic representation
+//            alternate = POSITIVE.equals(transcript.getStrand())
+//                    ? genomicInsertion.getAlternate()
+//                    : reverseComplementary(genomicInsertion.getAlternate());
+//
+//            // Out of boundaries might happen for insertions affecting start of unconfirmed-start transcripts.
+//            // Prediction will only take place if start codon is well known, i.e. the whole predicted codon is within
+//            // transcriptSequence boundaries
+//            if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
+//                // -1 and +2 because of base 0 String indexing
+//                modifiedCodonArray = transcriptSequence.substring(modifiedCodonStart - 1,
+//                        modifiedCodonStart + 2).toCharArray();
+//            }
+//
+//            alternatePosition = 0;
+//        }
+//
+//        /**
+//         *
+//         * @param position 0-based and always assumed to be greater or equal than the position where the insertion
+//         *                 starts as projected from the genomic coordinates in genomicInsertion
+//         * @return a char with predicted aminoacid at "position" (0-based). Returns "*" to indicate a stop gain in
+//         * that position. Will return 0 if prediction could not be made.
+//         */
+//        public char aaAt(int position) {
+//            if (position < shift) {
+//                throw new RuntimeException("Position (" + position + ") must be greater than the the "
+//                        + "position where the insertion starts (" + shift + ") as projected from the "
+//                        + "genomic coordinates (" + genomicInsertion.toString() + "). Transcript: "
+//                        + transcript.getId());
+//            }
+//
+//            // If position had been predicted already, simply return it
+//            if (position < aaCounter) {
+//                return sequence.charAt(position - shift);
+//            }
+//
+//            // Predict all aa until the requested one
+//            for (; aaCounter <= position; aaCounter++) {
+//                sequence.append(next());
+//            }
+//
+//            return sequence.charAt(sequence.length() - 1);
+//
+//        }
+//
+//        private char next() {
+//            if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
+//                while (alternatePosition < alternate.length()) {
+//                    modifiedCodonArray[modifiedCodonPosition] = alternate.toCharArray()[alternatePosition];
+//                    if (modifiedCodonPosition == 2) {
+//                        modifiedCodonPosition = (modifiedCodonPosition + 1) % 3;
+//                        alternatePosition++;
+//                        // 0 might be returned, meaning that no AA could be predicted; this can only happen if a
+//                        // non-translatable codon is found, e.g. unexpected nt characters -non A,C,G,T- found in the
+//                        // codon
+//                        return getAA();
+//                    }
+//                    modifiedCodonPosition = (modifiedCodonPosition + 1) % 3;
+//                    alternatePosition++;
+//                }
+//
+//                // Last predicted codon from the alternate needs to be completed with transcript nts;
+//                // indexing over transcriptSequence is 0 based
+//                for (; modifiedCodonPosition < 3 && transcriptSequencePosition < transcriptSequence.length();
+//                     modifiedCodonPosition++) {
+//                    modifiedCodonArray[modifiedCodonPosition]
+//                            = transcriptSequence.charAt(transcriptSequencePosition);
+//                    transcriptSequencePosition++;
+//                }
+//
+//                // Codon completed with transcript sequence nts
+//                if (modifiedCodonPosition == 3) {
+//                    // Reset modified codon position as it will always be 3 after the loop
+//                    modifiedCodonPosition = 0;
+//                    return getAA();
+//                // Else end of transcript sequence reached before completing the codon, prediction cannot be made, return 0
+//                }
+//            }
+//
+//            return 0;
+//
+//        }
+//
+//        private char getAA() {
+//            String aa = VariantAnnotationUtils.getAminoacid(MT.equals(genomicInsertion.getChromosome()),
+//                    String.valueOf(modifiedCodonArray));
+//            if (aa != null) {
+//                // If STOP codon is gained prediction is interrupted and returned sequence is only predicted until
+//                // aa position before the STOP codon
+//                if (STOP_STRING.equals(aa)) {
+//                    return STOP_CODON_INDICATOR;
+//                } else {
+//                    return VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa).charAt(0);
+//                }
+//            } else {
+//                logger.warn("Unknown AA translation. Protein HGVS will not be returned as protein sequence cannot be "
+//                                + "predicted. Variant {}, Codon {}, transcriptSequence {} ",
+//                        genomicInsertion.toString(),
+//                        String.valueOf(modifiedCodonArray),
+//                        transcriptSequence);
+//                // Prediction could not be done
+//                return 0;
+//            }
+//        }
+//
+//        public String subsequence(int start, int end) {
+//            StringBuilder subsequence = new StringBuilder();
+//            for (int i = start; i < end; i++) {
+//                subsequence.append(aaAt(i));
+//            }
+//
+//            return subsequence.toString();
+//        }
+//    }
 
     /**
      * Holder object for protein variant information.
