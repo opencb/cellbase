@@ -34,7 +34,7 @@
         <junit.platform.version>1.5.2</junit.platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.5</jacoco.version>
-        <jetty.version>9.4.17.v20190418</jetty.version>
+        <jetty.version>9.4.35.v20201120</jetty.version>
         <bigwig.version>1.0</bigwig.version>
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
