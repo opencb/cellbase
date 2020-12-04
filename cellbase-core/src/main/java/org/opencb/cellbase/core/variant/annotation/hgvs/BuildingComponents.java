@@ -10,6 +10,17 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 public class BuildingComponents {
 
     enum Kind { CODING, NON_CODING, INFRAME, FRAMESHIFT }
+    enum MutationType {
+        FRAMESHIFT,
+        SUBSTITUTION,
+        INSERTION,
+        DELINS,
+        DELETION,
+        DUPLICATION,
+        EXTENSION,
+        STOP_GAIN
+    }
+
 
     // HGVS string parts
     private String prefix;
@@ -18,7 +29,7 @@ public class BuildingComponents {
     private String transcriptId;
     private String proteinId;
     private Kind kind;
-    private String mutationType;
+    private MutationType mutationType;
     private int start;
     private int end;
     private int terminator; // stop codon amino acid position
@@ -82,12 +93,13 @@ public class BuildingComponents {
         this.kind = kind;
     }
 
-    public String getMutationType() {
+    public MutationType getMutationType() {
         return mutationType;
     }
 
-    public void setMutationType(String mutationType) {
+    public BuildingComponents setMutationType(MutationType mutationType) {
         this.mutationType = mutationType;
+        return this;
     }
 
     public int getStart() {

@@ -106,6 +106,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
+            ;
             HgvsProteinVariant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null && transcript.getProteinSequence() != null) {
                 String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()
@@ -139,7 +140,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                             .TO_LONG_AA.get(referenceEndShortSymbol)));
 
                     buildingComponents.setAlternate(proteinVariant.getAlternate());
-                    buildingComponents.setMutationType(mutationType);
+                    //buildingComponents.setMutationType(mutationType);
                     buildingComponents.setKind(isFrameshift(normalizedVariant)
                             ? BuildingComponents.Kind.FRAMESHIFT
                             : BuildingComponents.Kind.INFRAME);
@@ -157,6 +158,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
      * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
      * @return String containing an HGVS formatted variant representation
      */
+    @Deprecated
     protected String formatProteinString(BuildingComponents buildingComponents) {
         StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getProteinId()))
                 .append(PROTEIN_CHAR);
@@ -229,6 +231,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     }
 
+    @Deprecated
     private String formatAaSequence(String alternate) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < alternate.length(); i++) {
@@ -239,6 +242,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         return stringBuilder.toString();
     }
 
+    @Deprecated
     private String getMutationType(Variant proteinVariant, String proteinSequence) {
 
         // Insertion at stop codon - extension
@@ -269,6 +273,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     }
 
+    @Deprecated
     private HgvsProteinVariant createProteinVariant(Variant variant, Transcript transcript) {
 
         int start = getAminoAcidPosition(getCdsStart(transcript, variant.getStart()), transcript);
@@ -285,7 +290,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // after we have the alternate position, we keep predicting the rest of the protein until we get the stop codon indicator
 
             String reference = transcript.getProteinSequence();
-            AlternateProteinSequencePredictor proteinSequencePredictor = new AlternateProteinSequencePredictor(variant, transcript);
+            HgvsProteinCalculator proteinSequencePredictor = new HgvsProteinCalculator(variant, transcript);
             SequenceComparisonState sequenceComparisonState = SequenceComparisonState.RIGHT_ALIGNING;
 
             boolean insertionProcessed = false;
@@ -409,13 +414,15 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         return null;
     }
 
+    @Deprecated
     private boolean isFrameshift(Variant variant) {
         return !(variant.getAlternate().length() % 3 == 0);
     }
 
+    @Deprecated
     private boolean confirmedEqualSequences(String reference,
                                             int referenceStartingPosition,
-                                            AlternateProteinSequencePredictor proteinSequencePredictor,
+                                            HgvsProteinCalculator proteinSequencePredictor,
                                             int alternateStartingPosition) {
 
         int referencePosition = referenceStartingPosition;
@@ -485,7 +492,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // Check alternate & reference alleles could be properly calculated - e.g. allele strings with unexpected
         // characters would be rejected
         if (buildingComponents.getAlternate() != null && buildingComponents.getReferenceStart() != null) {
-            buildingComponents.setMutationType(mutationType);
+            //buildingComponents.setMutationType(mutationType);
             buildingComponents.setTranscriptId(transcript.getId());
             buildingComponents.setGeneId(geneId);
 

@@ -192,7 +192,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
      */
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
 
-        String mutationType = ">";
+//        String mutationType = ">";
 
         // Populate coordinates.
         // Use cDNA coordinates.
@@ -217,7 +217,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         }
 
         // Populate alleles.
-        buildingComponents.setMutationType(mutationType);
+        buildingComponents.setMutationType(BuildingComponents.MutationType.SUBSTITUTION);
         buildingComponents.setReferenceStart(reference);
         buildingComponents.setAlternate(alternate);
 

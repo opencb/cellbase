@@ -59,7 +59,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
             Variant normalizedVariant = new Variant();
             transcriptHgvsNormalize(variant, transcript, normalizedVariant);
-            buildingComponents.setMutationType(DEL);
+            buildingComponents.setMutationType(BuildingComponents.MutationType.DELETION);
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
@@ -344,7 +344,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         setRangeCoordsAndAlleles(normalizedVariant.getStart(), normalizedVariant.getEnd(),
                 normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, buildingComponents);
 
-        buildingComponents.setMutationType(mutationType);
+        buildingComponents.setMutationType(BuildingComponents.MutationType.DELETION);
         buildingComponents.setTranscriptId(transcript.getId());
         buildingComponents.setGeneId(geneId);
 
