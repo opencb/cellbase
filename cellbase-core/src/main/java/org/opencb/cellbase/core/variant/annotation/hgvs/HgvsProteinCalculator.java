@@ -68,15 +68,17 @@ public class HgvsProteinCalculator {
         // 1-based
         int cdnaPosition = transcript.getCdnaCodingStart();
 
+        // initial codon position
         // 0-based for working with strings
-        int initialCodonPositon = cdnaPosition + phaseOffset - 1;
+        int codonPosition = cdnaPosition + phaseOffset - 1;
 
         // int aaPosition = ((codonPosition - 1) / 3) + 1;
         // current position in the protein string
         int currentAAPosition = 0;
 
         // loop through DNA, translating each codon
-        for (int codonPosition = initialCodonPositon; codonPosition < alternateDnaSequence.length(); codonPosition = codonPosition + 3) {
+        while (transcript.getProteinSequence().length() > currentAAPosition) {
+
             String codonArray = alternateDnaSequence.substring(codonPosition, codonPosition + 3);
             // three letter AA
             String predictedAA = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codonArray);
@@ -103,6 +105,9 @@ public class HgvsProteinCalculator {
 
             // move to the next letter
             currentAAPosition++;
+            // move to next codon
+            codonPosition = codonPosition + 3;
+
         }
 
         processBuildingComponents();
@@ -277,10 +282,11 @@ public class HgvsProteinCalculator {
 
         int cdnaStart = HgvsCalculator.getCdnaCodingStart(transcript);
 
+        // genomic to cDNA
         int cdsStart = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // -1 = base 0 to manipulate strings
-        int cdnaVariantPosition = cdnaStart + cdsStart - 2;
+        int cdnaVariantPosition = cdsStart + cdnaStart - 2;
 
         switch (variant.getType()) {
             case SNV:
