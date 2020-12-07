@@ -21,7 +21,7 @@ public class HgvsProteinCalculator {
     private final Variant variant;
     private final Transcript transcript;
     // protein sequence updated with variation
-    private StringBuilder alternateProteinSequence = new StringBuilder();
+    private StringBuilder alternateProteinSequence;
 
     private static final String MT = "MT";
     private static final String STOP_STRING = "STOP";
@@ -43,7 +43,8 @@ public class HgvsProteinCalculator {
     public HgvsProteinCalculator(Variant variant, Transcript transcript) {
         this.variant = variant;
         this.transcript = transcript;
-        init();
+
+        this.init();
     }
 
     private void init() {
@@ -53,60 +54,61 @@ public class HgvsProteinCalculator {
             return;
         }
 
+        alternateProteinSequence = new StringBuilder();
         buildingComponents = new BuildingComponents();
 
         // do translation
-        String alternateDnaSequence = getAlternateDnaSequence();
+        String alternateDnaSequence = getAlternateCdnaSequence();
 
         int phaseOffset = 0;
-
+        // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
+        int currentAaIndex = 0;
         if (transcript.unconfirmedStart() || (transcript.getProteinSequence() != null
                 && transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID))) {
             phaseOffset = HgvsCalculator.getFirstCodingExonPhase(transcript);
+
+            alternateProteinSequence.append("X");
+            currentAaIndex++;
         }
 
         // 1-based
         int cdnaPosition = transcript.getCdnaCodingStart();
 
         // initial codon position
-        // 0-based for working with strings
-        int codonPosition = cdnaPosition + phaseOffset - 1;
-
-        // int aaPosition = ((codonPosition - 1) / 3) + 1;
-        // current position in the protein string
-        int currentAAPosition = 0;
+        // Index variables are always 0-based for working with strings
+        int codonIndex = cdnaPosition + phaseOffset - 1;
 
         // loop through DNA, translating each codon
-        while (transcript.getProteinSequence().length() > currentAAPosition) {
+        while (transcript.getProteinSequence().length() > currentAaIndex) {
 
-            String codonArray = alternateDnaSequence.substring(codonPosition, codonPosition + 3);
-            // three letter AA
-            String predictedAA = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codonArray);
-            // single AA
-            String abbreviatedAA = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(predictedAA);
+            String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
+            // three letter AA, eg PHE
+            String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codonArray);
+            // single AA, eg. L
+            String codedAlternateAa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa);
 
             // build the new sequence
-            alternateProteinSequence.append(abbreviatedAA);
+            alternateProteinSequence.append(codedAlternateAa);
 
-            String expectedAA = String.valueOf(transcript.getProteinSequence().charAt(currentAAPosition));
+            String codedReferenceAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
 
-            if (STOP_STRING.equals(predictedAA)) {
-                buildingComponents.setTerminator(currentAAPosition);
+            if (STOP_STRING.equals(alternateAa)) {
+                buildingComponents.setTerminator(currentAaIndex - buildingComponents.getStart() + 1);
                 break;
             // we found first different amino acid
-            } else if (buildingComponents.getAlternate() == null && !abbreviatedAA.equals(expectedAA)) {
-                buildingComponents.setAlternate(predictedAA);
+            } else if (buildingComponents.getAlternate() == null && !codedAlternateAa.equals(codedReferenceAa)) {
+                buildingComponents.setAlternate(alternateAa);
                 // put back to 1 - base
-                int start = currentAAPosition + 1;
+                int start = currentAaIndex + 1;
                 buildingComponents.setStart(start);
                 // FIXME valid only for insertions?
                 buildingComponents.setEnd(start - 1);
             }
 
             // move to the next letter
-            currentAAPosition++;
+            currentAaIndex++;
             // move to next codon
-            codonPosition = codonPosition + 3;
+            codonIndex = codonIndex + 3;
 
         }
 
@@ -274,7 +276,7 @@ public class HgvsProteinCalculator {
      *
      * @return the DNA sequence updated with the alternate sequence
      */
-    protected String getAlternateDnaSequence() {
+    protected String getAlternateCdnaSequence() {
         StringBuilder alternateDnaSequence = new StringBuilder(transcript.getcDnaSequence());
 
         String reference = variant.getReference();
