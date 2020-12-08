@@ -141,6 +141,34 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
+    public void testNonsenseReportedAsFrameShift() throws Exception {
+        // Issue #5
+        //        1:236717940:-:T 1       236717940       -       T       indel   ENSP00000443495 p.Lys71Ter      p.Lys71fs       nonsense_as_fs_same_pos
+        Gene gene = getGene("ENSG00000077522");
+        Transcript transcript = getTranscript(gene, "ENST00000542672");
+        Variant variant = new Variant("1",
+                236717940,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate());
+    }
+
+    @Test
+    public void testFrameShiftReportedAsDup() throws Exception {
+        // Issue #6
+        //4:102582930:-:T 4       102582930       -       T       indel   ENSP00000424790 p.Ser301PhefsTer7       p.Phe300dup     fs_as_dup
+        Gene gene = getGene("ENSG00000109320");
+        Transcript transcript = getTranscript(gene, "ENST00000505458");
+        Variant variant = new Variant("4",
+                102582930,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
+    }
+
+    @Test
     public void testDeletion() throws Exception {
         // Issue #4
         // 6:121447732:TTC:-  indel   ENSP00000282561 p.Ser297del     p.Ser297_Cys298del      del_cb_aa_1_out
