@@ -86,6 +86,7 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testDiffPosPhase0() throws Exception {
+        // 15110   16:2106127:-:T  16      2106127 -       T       indel   ENSP00000457132 p.Asp786GlyfsTer38      p.Gln785fs      fs_shorthand_diff_pos
         Gene gene = getGene("ENSG00000008710");
         Transcript transcript = getTranscript(gene, "ENST00000487932");
         Variant variant = new Variant("16",

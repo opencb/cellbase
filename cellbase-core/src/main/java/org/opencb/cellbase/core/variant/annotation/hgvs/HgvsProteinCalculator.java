@@ -64,6 +64,8 @@ public class HgvsProteinCalculator {
         String alternateDnaSequence = getAlternateCdnaSequence();
 //        System.out.println(alternateDnaSequence);
 
+        boolean tnp = transcript.unconfirmedStart();
+
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
         int currentAaIndex = 0;
@@ -71,8 +73,11 @@ public class HgvsProteinCalculator {
                 && transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID))) {
             phaseOffset = HgvsCalculator.getFirstCodingExonPhase(transcript);
 
-            alternateProteinSequence.append("X");
-            currentAaIndex++;
+            // if reference protein sequence start with X, prepend X to our new alternate sequence also
+            if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
+                alternateProteinSequence.append("X");
+                currentAaIndex++;
+            }
         }
 
         // 1-based
@@ -125,7 +130,8 @@ public class HgvsProteinCalculator {
                 break;
             // we found first different amino acid
             } else {
-                if (buildingComponents.getAlternate() == null && codedReferenceAa != null && !codedAlternateAa.equals(codedReferenceAa)) {
+                // if terminator position is 0, we haven't found the first different AA yet
+                if (terPosition == 0 && !codedAlternateAa.equals(codedReferenceAa)) {
                     buildingComponents.setAlternate(alternateAa);
                     // put back to 1 - base
                     int start = currentAaIndex + 1;
