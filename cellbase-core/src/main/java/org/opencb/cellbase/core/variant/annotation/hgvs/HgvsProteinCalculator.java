@@ -58,7 +58,11 @@ public class HgvsProteinCalculator {
         buildingComponents = new BuildingComponents();
 
         // do translation
+//        System.out.println(transcript.getcDnaSequence());
+//        System.out.println(transcript.getProteinSequence());
+
         String alternateDnaSequence = getAlternateCdnaSequence();
+//        System.out.println(alternateDnaSequence);
 
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
@@ -79,7 +83,8 @@ public class HgvsProteinCalculator {
         int codonIndex = cdnaPosition + phaseOffset - 1;
 
         // loop through DNA, translating each codon
-        while (transcript.getProteinSequence().length() > currentAaIndex) {
+//        while (transcript.getProteinSequence().length() > currentAaIndex) {
+        while (alternateDnaSequence.length() > codonIndex) {
 
             String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // three letter AA, eg PHE
@@ -90,19 +95,24 @@ public class HgvsProteinCalculator {
             // build the new sequence
             alternateProteinSequence.append(codedAlternateAa);
 
-            String codedReferenceAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
+            String codedReferenceAa =  null;
+            if (transcript.getProteinSequence().length() > currentAaIndex) {
+                codedReferenceAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
+            }
 
             if (STOP_STRING.equals(alternateAa)) {
-                buildingComponents.setTerminator(currentAaIndex - buildingComponents.getStart() + 1);
+                buildingComponents.setTerminator(currentAaIndex - buildingComponents.getStart() + 2);
                 break;
             // we found first different amino acid
-            } else if (buildingComponents.getAlternate() == null && !codedAlternateAa.equals(codedReferenceAa)) {
-                buildingComponents.setAlternate(alternateAa);
-                // put back to 1 - base
-                int start = currentAaIndex + 1;
-                buildingComponents.setStart(start);
-                // FIXME valid only for insertions?
-                buildingComponents.setEnd(start - 1);
+            } else {
+                if (buildingComponents.getAlternate() == null && codedReferenceAa != null && !codedAlternateAa.equals(codedReferenceAa)) {
+                    buildingComponents.setAlternate(alternateAa);
+                    // put back to 1 - base
+                    int start = currentAaIndex + 1;
+                    buildingComponents.setStart(start);
+                    // FIXME valid only for insertions?
+                    buildingComponents.setEnd(start - 1);
+                }
             }
 
             // move to the next letter
