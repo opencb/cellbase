@@ -334,7 +334,6 @@ public class HgvsProteinCalculator {
                 alternateDnaSequence.setCharAt(cdnaVariantPosition, alternate.charAt(0));
                 break;
             case INDEL:
-
                 // insertion
                 if (StringUtils.isBlank(variant.getReference())) {
                     alternateDnaSequence.insert(cdnaVariantPosition, alternate);
