@@ -64,8 +64,6 @@ public class HgvsProteinCalculator {
         String alternateDnaSequence = getAlternateCdnaSequence();
 //        System.out.println(alternateDnaSequence);
 
-        boolean tnp = transcript.unconfirmedStart();
-
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
         int currentAaIndex = 0;
