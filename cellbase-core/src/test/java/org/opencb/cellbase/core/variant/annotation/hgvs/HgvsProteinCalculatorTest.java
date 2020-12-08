@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,7 +104,23 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
-    public void testDeletion() throws Exception {
+    public void testSynonymousFS() throws Exception {
+        // Issue #3
+        //2701    6:112061056:G:- 6       112061056       G       -       indel   ENSP00000357653 p.Ser57GlnfsTer27       p.Val56fs       fs_shorthand_diff_pos
+        // change at del position 56 is synonymous GTG (val) > GTT (Val)
+        // Therefore first affected aa is Ser(57)
+        Gene gene = getGene("ENSG00000112761");
+        Transcript transcript = getTranscript(gene, "ENST00000368664");
+        Variant variant = new Variant("16",
+                2106127,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculate());
+    }
+
+    @Test
+    public void testDeletionFS() throws Exception {
         // 2:47822224:T:-  2       47822224        T       -       indel   ENSP00000385398 p.Ile482PhefsTer6       p.Ile482fs
         Gene gene = getGene("ENSG00000138081");
         Transcript transcript = getTranscript(gene, "ENST00000402508");
@@ -124,7 +141,47 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
+    public void testDeletion() throws Exception {
+        // Issue #4
+        // 6:121447732:TTC:-  indel   ENSP00000282561 p.Ser297del     p.Ser297_Cys298del      del_cb_aa_1_out
+        Gene gene = getGene("ENSG00000152661");
+        Transcript transcript = getTranscript(gene, "ENST00000282561");
+        Variant variant = new Variant("2",
+                47822224,
+                "T",
+                "-");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculate());
+
+        // off by one
+        // 1861    11:75566844:CAAGCG:-    11      75566844        CAAGCG  -       indel   ENSP00000435452 p.Lys166_Arg167del      p.Lys166_Ser168del      del_cb_aa_1_out
+        gene = getGene("ENSG00000149257");
+        transcript = getTranscript(gene, "ENST00000525611");
+        variant = new Variant("11",
+                75566844,
+                "CAAGCG",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000435452 p.Lys166_Arg167del", predictor.calculate());
+
+        // shift
+        // 20291   14:104714676:GAGGAC:-   14      104714676       GAGGAC  -       indel   ENSP00000376410 p.Asp1175_Glu1176del    p.Glu1176_Asp1178del    del_cb_aa_more_than_1_out
+        gene = getGene("ENSG00000203485");
+        transcript = getTranscript(gene, "ENST00000392634");
+        variant = new Variant("14",
+                104714676,
+                "GAGGAC",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate());
+    }
+
+    @Test
     public void testSNV() throws Exception {
+        // missing protein example
 //        59      3:155143536:G:A 3       155143536       G       A       snv     ENSP00000417079 p.Val428Met             cb_empty
 //        60      3:155143536:G:A 3       155143536       G       A       snv     ENSP00000418525 p.Val428Met             cb_empty
 //        61      3:155143536:G:A 3       155143536       G       A       snv     ENSP00000420389 p.Val428Met             cb_empty
@@ -138,15 +195,7 @@ public class HgvsProteinCalculatorTest {
                 155143536,
                 "G",
                 "A");
-
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-
-        String expected =
-                "ACATTCCTACTGAGTATGACGAATGGTTGTTGATGGTTATCACTGGAGATTGAAAACTGGGATTCCTTTTTCACCAGGAATTGGTGCCTACCATGGCTGGGGATACACAGTGATGGATTTGTGACTTGCTCCTCTGAAAGCTGGCCCAAGGGTGTACAGCATATGAATGTGGGGGAGTTTACACTACACACGCTCTTGGCTATTTTAGGTGATGGGCAAGTCAGAAAGTCAGATGGATATAACTGATATCAACACTCCAAAGCCAAAGAAGAAACAGCGATGGACTCCACTGGAGATCAGCCTCTCGGTCCTTGTCCTGCTCCTCACCATCATAGCTGTGACAATGATCGCACTCTATGCAACCTACGATGATGGTATTTGCAAGTCATCAGACTGCATAAAATCAGCTGCTCGACTGATCCAAAACATGGATGCCACCACTGAGCCTTGTACAGACTTTTTCAAATATGCTTGCGGAGGCTGGTTGAAACGTAATGTCATTCCCGAGACCAGCTCCCGTTACGGCAACTTTGACATTTTAAGAGATGAACTAGAAGTCGTTTTGAAAGATGTCCTTCAAGAACCCAAAACTGAAGATATAGTAGCAGTGCAGAAAGCAAAAGCATTGTACAGGTCTTGTATAAATGAATCTGCTATTGATAGCAGAGGTGGAGAACCTCTACTCAAACTGTTACCAGACATATATGGGTGGCCAGTAGCAACAGAAAACTGGGAGCAAAAATATGGTGCTTCTTGGACAGCTGAAAAAGCTATTGCACAACTGAATTCTAAATATGGGAAAAAAGTCCTTATTAATTTGTTTGTTGGCACTGATGATAAGAATTCTGTGAATCATGTAATTCATATTGACCAACCTCGACTTGGCCTCCCTTCTAGAGATTACTATGAATGCACTGGAATCTATAAAGAGGCTTGTACAGCATATGTGGATTTTATGATTTCTGTGGCCAGATTGATTCGTCAGGAAGAAAGATTGCCCATCGATGAAAACCAGCTTGCTTTGGAAATGAATAAAGTTATGGAATTGGAAAAAGAAATTGCCAATGCTACGGCTAAACCTGAAGATCGAAATGATCCAATGCTTCTGTATAACAAGATGACATTGGCCCAGATCCAAAATAACTTTTCACTAGAGATCAATGGGAAGCCATTCAGCTGGTTGAATTTCACAAATGAAATCATGTCAACTGTGAATATTAGTATTACAAATGAGGAAGATGTGGTTGTTTATGCTCCAGAATATTTAACCAAACTTAAGCCCATTCTTACCAAATATTCTGCCAGAGATCTTCAAAATTTAATGTCCTGGAGATTCATAATGGATCTTGTAAGCAGCCTCAGCCGAACCTACAAGGAGTCCAGAAATGCTTTCCGCAAGGCCCTTTATGGTACAACCTCAGAAACAGCAACTTGGAGACGTTGTGCAAACTATGTCAATGGGAATATGGAAAATGCTGTGGGGAGGCTTTATATGGAAGCAGCATTTGCTGGAGAGAGTAAACATGTGGTCGAGGATTTGATTGCACAGATCCGAGAAGTTTTTATTCAGACTTTAGATGACCTCACTTGGATGGATGCCGAGACAAAAAAGAGAGCTGAAGAAAAGGCCTTAGCAATTAAAGAAAGGATCGGCTATCCTGATGACATTGTTTCAAATGATAACAAACTGAATAATGAGTACCTCGAGTTGAACTACAAAGAAGATGAATACTTCGAGAACATAATTCAAAATTTGAAATTCAGCCAAAGTAAACAACTGAAGAAGCTCCGAGAAAAGGTGGACAAAGATGAGTGGATAAGTGGAGCAGCTGTAGTCAATGCATTTTACTCTTCAGGAAGAAATCAGATAGTCTTCCCAGCCGGCATTCTGCAGCCCCCCTTCTTTAGTGCCCAGCAGTCCAACTCATTGAACTATGGGGGCATCGGCATGGTCATAGGACACGAAATCACCCATGGCTTCGATGACAATGGCAGAAACTTTAACAAAGATGGAGACCTCGTTGACTGGTGGACTCAACAGTCTGCAAGTAACTTTAAGGAGCAATCCCAGTGCATGGTGTATCAGTATGGAAACTTTTCCTGGGACCTGGCAGGTGGACAGCACCTTAATGGAATTAATACACTGGGAGAAAACATTGCTGATAATGGAGGTCTTGGTCAAGCATACAGAGCCTATCAGAATTATATTAAAAAGAATGGCGAAGAAAAATTACTTCCTGGACTTGACCTAAATCACAAACAACTATTTTTCTTGAACTTTGCACAGGTGTGGTGTGGAACCTATAGGCCAGAGTATGCGGTTAACTCCATTAAAACAGATGTGCACAGTCCAGGCAATTTCAGGATTATTGGGACTTTGCAGAACTCTGCAGAGTTTTCAGAAGCCTTTCACTGCCGCAAGAATTCATACATGAATCCAGAAAAGAAGTGCCGGGTTTGGTGATCTTCAAAAGAAGCATTGCAGCCCTTGGCTAGACTTGCCAACACCACAGAAATGGGGAATTCTCTAATCGAAAGAAAATGGGCCCTAGGGGTCACTGTACTGACTTGAGGGTGATTAACAGAGAGGGCACCATCACAATACAGATAACATTAGGTTGTCCTAGAAAGGGTGTGGAGGGAGGAAGGGGGTCTAAGGTCTATCAAGTCAATCATTTCTCACTGTGTACATAATGCTTAATTTCTAAAGATAATATTACTGTTTATTTCTGTTTCTCATATGGTCTACCAGTTTGCTGATGTCCCTAGAAAACAATGCAAAACCTTTGAGGTAGACCAGGATTTCTAATCAAAAGGGAAAAGAAGATGTTGAAGAATACAGTTAGGCACCAGA";
-
-        String actual = predictor.getAlternateCdnaSequence();
-        Assert.assertEquals(expected, actual);
-
         Assert.assertEquals("ENSP00000417079:p.Val428Met", predictor.calculate());
     }
 
@@ -232,6 +281,29 @@ public class HgvsProteinCalculatorTest {
     }
 
 
+    @Test
+    public void testStopLoss() throws Exception {
+
+        Gene gene = getGene("ENSG00000177084");
+        Transcript transcript = getTranscript(gene, "ENST00000537064");
+        Variant variant = new Variant("12",
+                132687314,
+                "A",
+                "T");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000442578:p.Met1?", predictor.calculate());
+//        hgvsList = getVariantHgvs(new Variant("14",
+//                23415260,
+//                "A",
+//                "T"));
+//        // six protein hgvs expected
+//        //assertNumberProteinHGVS(12, hgvsList);
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000347507:p.Met1765Lys"));
+    }
+
+
+
 // 32102   4:154744350:-:CTTCATGGAAGAACCC  4       154744350       -       CTTCATGGAAGAACCC        indel   ENSP00000426761 p.Val9PhefsTer23        p.Val9fs        fs_shorthand_same_pos
 //32103   4:154744350:-:CTTCATGGAAGAACCC  4       154744350       -       CTTCATGGAAGAACCC        indel   ENSP00000337224 p.Val9PhefsTer23        p.Val9fs        fs_shorthand_same_pos
 // 32104   4:154744350:-:CTTCATGGAAGAACCC  4       154744350       -       CTTCATGGAAGAACCC        indel   ENSP00000422324 p.Val9PhefsTer23        p.Val9fs        fs_shorthand_same_pos
@@ -287,7 +359,7 @@ public class HgvsProteinCalculatorTest {
     }
 
 
-    
+
 
     private Transcript getTranscript(Gene gene, String id) {
         for (Transcript transcript : gene.getTranscripts()) {
