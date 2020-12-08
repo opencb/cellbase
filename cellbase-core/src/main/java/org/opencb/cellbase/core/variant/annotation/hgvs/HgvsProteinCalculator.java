@@ -94,7 +94,9 @@ public class HgvsProteinCalculator {
         // loop through DNA, translating each codon
 //        while (transcript.getProteinSequence().length() > currentAaIndex) {
         int terPosition = 0 ;
-        while (alternateDnaSequence.length() > codonIndex) {
+        while (alternateDnaSequence.length() >= codonIndex) {
+
+            int length = alternateDnaSequence.length();
 
             String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // three letter AA, eg PHE
@@ -323,27 +325,26 @@ public class HgvsProteinCalculator {
         String reference = variant.getReference();
         String alternate = variant.getAlternate();
 
-        int cdnaStart = HgvsCalculator.getCdnaCodingStart(transcript);
+        // adjusted for phase
+        int cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
 
         // genomic to cDNA
-        int cdsStart = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        int cdsStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
-        // -1 = base 0 to manipulate strings
-//        int cdnaVariantPosition = cdsStart + cdnaStart - 2;
-        int cdnaVariantPosition = cdsStart + cdnaStart - 1;
+        // -1 to manipulate strings
+        int cdnaVariantIndex = cdsStartPosition  + cdnaStartPosition - 1;
 
         switch (variant.getType()) {
             case SNV:
-                // String array is 0-based, subtract 1
-                alternateDnaSequence.setCharAt(cdnaVariantPosition, alternate.charAt(0));
+                alternateDnaSequence.setCharAt(cdnaVariantIndex, alternate.charAt(0));
                 break;
             case INDEL:
                 // insertion
                 if (StringUtils.isBlank(variant.getReference())) {
-                    alternateDnaSequence.insert(cdnaVariantPosition, alternate);
+                    alternateDnaSequence.insert(cdnaVariantIndex, alternate);
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    alternateDnaSequence.replace(cdnaVariantPosition, cdnaVariantPosition + reference.length(), "");
+                    alternateDnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + reference.length(), "");
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV.");
                     return null;
