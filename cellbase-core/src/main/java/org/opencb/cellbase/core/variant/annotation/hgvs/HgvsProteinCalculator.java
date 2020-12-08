@@ -90,6 +90,7 @@ public class HgvsProteinCalculator {
 
         // loop through DNA, translating each codon
 //        while (transcript.getProteinSequence().length() > currentAaIndex) {
+        int terPosition = 0 ;
         while (alternateDnaSequence.length() > codonIndex) {
 
             String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
@@ -111,9 +112,16 @@ public class HgvsProteinCalculator {
 //            System.out.println(VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3)));
 //            System.out.println(alternateAa);
 //            System.out.println();
-
+            if (terPosition > 0) {
+                terPosition++;
+            }
             if (STOP_STRING.equals(alternateAa)) {
-                buildingComponents.setTerminator(currentAaIndex - buildingComponents.getStart() + 2);
+//                buildingComponents.setTerminator(currentAaIndex + 1 - buildingComponents.getStart() + 1);
+                if (terPosition > 0) {
+                    buildingComponents.setTerminator(terPosition);
+                } else {
+                    buildingComponents.setTerminator(currentAaIndex + 1);
+                }
                 break;
             // we found first different amino acid
             } else {
@@ -124,6 +132,7 @@ public class HgvsProteinCalculator {
                     buildingComponents.setStart(start);
                     // FIXME valid only for insertions?
                     buildingComponents.setEnd(start - 1);
+                    terPosition = 1;
                 }
             }
 
