@@ -106,7 +106,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            ;
+
             HgvsProteinVariant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null && transcript.getProteinSequence() != null) {
                 String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()

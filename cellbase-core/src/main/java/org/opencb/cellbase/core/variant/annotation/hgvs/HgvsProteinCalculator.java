@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Predicts AA sequence given a transcript and a variant
+ * Predicts AA sequence given a transcript and a variant.
  */
 public class HgvsProteinCalculator {
 
@@ -93,7 +93,7 @@ public class HgvsProteinCalculator {
 
         // loop through DNA, translating each codon
 //        while (transcript.getProteinSequence().length() > currentAaIndex) {
-        int terPosition = 0 ;
+        int terPosition = 0;
         while (alternateDnaSequence.length() >= codonIndex) {
 
             int length = alternateDnaSequence.length();
@@ -114,7 +114,8 @@ public class HgvsProteinCalculator {
 
 //            System.out.println(codonIndex);
 //            System.out.println(currentAaIndex);
-//            System.out.println(VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3)));
+//            System.out.println(VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
+//            transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3)));
 //            System.out.println(alternateAa);
 //            System.out.println();
             if (terPosition > 0) {
