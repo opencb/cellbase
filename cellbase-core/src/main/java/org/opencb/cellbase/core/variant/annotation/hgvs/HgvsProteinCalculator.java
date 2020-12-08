@@ -332,7 +332,7 @@ public class HgvsProteinCalculator {
         int cdsStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // -1 to manipulate strings
-        int cdnaVariantIndex = cdsStartPosition  + cdnaStartPosition - 1;
+        int cdnaVariantIndex = cdsStartPosition + cdnaStartPosition - 1;
 
         switch (variant.getType()) {
             case SNV:
