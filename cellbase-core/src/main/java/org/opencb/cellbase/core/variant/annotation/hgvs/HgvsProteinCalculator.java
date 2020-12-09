@@ -94,7 +94,7 @@ public class HgvsProteinCalculator {
         // loop through DNA, translating each codon
 //        while (transcript.getProteinSequence().length() > currentAaIndex) {
         int terPosition = 0;
-        while (alternateDnaSequence.length() >= codonIndex) {
+        while (alternateDnaSequence.length() > codonIndex + 3) {
 
             String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // three letter AA, eg PHE
@@ -124,7 +124,7 @@ public class HgvsProteinCalculator {
                 if (terPosition > 0) {
                     buildingComponents.setTerminator(terPosition);
                 } else {
-                    buildingComponents.setTerminator(currentAaIndex + 1);
+                    buildingComponents.setTerminator(-1);
                 }
                 break;
             // we found first different amino acid
@@ -292,8 +292,12 @@ public class HgvsProteinCalculator {
                     .append(buildingComponents.getStart())
                     .append(VariantAnnotationUtils.buildUpperLowerCaseString(buildingComponents.getAlternate()))
                     .append(FRAMESHIFT_SUFFIX)
-                    .append(TERMINATION_SUFFIX)
-                    .append(buildingComponents.getTerminator());
+                    .append(TERMINATION_SUFFIX);
+            if (buildingComponents.getTerminator() > 0) {
+                stringBuilder.append(FRAMESHIFT_SUFFIX);
+            } else {
+                stringBuilder.append("?");
+            }
         } else if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())) {
             stringBuilder.append(buildingComponents.getReferenceEnd())
                     .append(buildingComponents.getStart())
@@ -331,7 +335,7 @@ public class HgvsProteinCalculator {
         int cdsStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // -1 to manipulate strings
-        int cdnaVariantIndex = cdsStartPosition + cdnaStartPosition - 1;
+        int cdnaVariantIndex = (cdsStartPosition - 1) + (cdnaStartPosition - 1);
 
         switch (variant.getType()) {
             case SNV:
