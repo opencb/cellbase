@@ -96,8 +96,6 @@ public class HgvsProteinCalculator {
         int terPosition = 0;
         while (alternateDnaSequence.length() >= codonIndex) {
 
-            int length = alternateDnaSequence.length();
-
             String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // three letter AA, eg PHE
             String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codonArray);

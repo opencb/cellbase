@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by fjlopez on 14/02/17.
@@ -41,10 +44,18 @@ public class HgvsProteinCalculatorTest {
         geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene.test.json.gz").getFile()));
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////// INSERTIONS /////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
     @Test
-    public void testInsert() throws Exception {
+    public void testInsertionPositiveStrandPhase0() throws Exception {
         // 17:18173905:-:A  indel   ENSP00000408800 p.Leu757AlafsTer79      p.Leu757fs      fs_shorthand_same_pos
         // phase 0
+        // positive strand
+        // confirmed start
         Gene gene = getGene("ENSG00000091536");
         Transcript transcript = getTranscript(gene, "ENST00000418233");
         Variant variant = new Variant("17",
@@ -53,20 +64,92 @@ public class HgvsProteinCalculatorTest {
                 "A");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-
-        // insertiont at  GCAGCT
-        String expected =
-                "TCATCCTAGGAGGTGCCTGTGGCCGGGCGCAGTAGCTCATGCCTGTAATCCCAGCACTTTGGGAGGCCGAGGCGGGCGGACCACCTGAGGTCAGGAATTTGAGACTAGCCGGCCCAACATGGCGAAACCCCATCTCTACTAAACATACAAAAAATTAGCCAGGCGTCGTGGCGGGCGCCTGTAATCCCAGCTACTCAGGAGGCTGAGGCAGGAGAATCGCTTGAACCCAGGAGGCGGAGCTTGCAGTGGGCCGAGATTGCGCCACTGCACTCTAGCCTGGGGGACAACAGCGAAACTCCGTCTCAAAAATATATATATATATTAATTAAATAAAAAAACGAGGTGCCTTCTCCTGACTCCCTGATCCCCGCGCTCTCCAGCTCTGCCCTCGCGATCGCTGGAGCCCCCTGAGGAACTCACGCAGACGCGGCTGCACCGCCTCATCAATCCCAACTTCTACGGCTATCAGGACGCCCCCTGGAAGATCTTCCTGCGCAAAGAGGTGTTTTACCCCAAGGACAGCTACAGCCATCCTGTGCAGCTTGACCTCCTGTTCCGGCAGATCCTGCACGACACGCTCTCCGAGGCCTGCCTTCGCATCTCTGAGGATGAGAGGCTCAGGATGAAGGCCTTGTTTGCCCAGAACCAGCTGGACACACAGAAGCCTCTGGTAACGGAAAGCGTGAAGCGGGCCGTGGTCAGCACTGCACGAGACACCTGGGAGGTCTACTTCTCCCGCATCTTCCCCGCCACGGGCAGCGTGGGCACTGGTGTGCAGCTCCTAGCTGTGTCCCACGTGGGCATCAAACTCCTGAGGATGGTCAAGGGTGGCCAGGAGGCCGGCGGGCAGCTGCGGGTCCTGCGTGCATACAGCTTTGCAGATATCCTGTTTGTGACCATGCCCTCCCAGAACATGCTGGAGTTCAACCTGGCCAGTGAGAAGGTCATCCTCTTCTCAGCCCGAGCGCACCAGGTCAAGACCCTGGTAGATGACTTCATCTTGGAGCTGAAGAAGGACTCTGACTACGTGGTCGCTGTGAGGAACTTCCTGCCTGAGGACCCTGCGCTGCTGGCTTTCCACAAGGGTGACATCATACACCTGCAGCCCCTAGAGCCACCTCGAGTGGGCTACAGTGCTGGCTGCGTGGTTCGCAGGAAGGTGGTGTACCTGGAGGAGCTGCGACGTAGAGGCCCCGACTTTGGCTGGAGGTTCGGGACCATCCACGGGCGCGTGGGCCGCTTCCCTTCGGAGCTGGTGCAGCCCGCTGCTGCCCCCGACTTCCTGCAGCTGCCAACGGAGCCAGGCCGCGGCCGAGCAGCCGCCGTGGCCGCTGCTGTGGCCTCTGCAGCCGCTGCACAGGAGGTGGGCCGCAGGAGAGAGGGTCCCCCAGTCAGGGCCCGCTCTGCTGACCATGGGGAGGACGCCCTGGCGCTCCCACCCTACACAATGCTCGAGTTTGCCCAGAAGTATTTCCGAGACCCTCAGAGGAGACCCCAGGATGGCCTCAGGCTGAAATCCAAGGAGCCTCGGGAGTCCAGAACCTTGGAGGACATGCTTTGCTTCACCAAGACTCCCCTCCAGGAATCCCTCATCGAACTCAGCGACAGCAGCCTCAGCAAGATGGCCACCGACATGTTCCTAGCTGTAATGAGGTTCATGGGGGATGCCCCACTGAAGGGCCAGAGTGACCTGGACGTGCTTTGTAACCTCCTGAAGCTGTGCGGGGACCATGAGGTCATGCGGGATGAATGTTACTGCCAAGTTGTGAAGCAGATCACAGACAATACCAGCTCCAAGCAGGACAGCTGCCAGCGAGGCTGGAGGCTGCTGTATATCGTGACCGCCTACCACAGCTGCTCTGAGGTCCTCCACCCACACCTCACTCGCTTCCTCCAAGACGTGAGCCGGACCCCAGGCCTGCCCTTTCAGGGGATCGCCAAGGCCTGCGAGCAGAACCTGCAGAAAACCTTGCGCTTCGGAGGTCGTCTGGAGCTCCCCAGCAGCATAGAGCTTCGGGCCATGTTGGCAGGCCGCAGTTCCAAGAGGCAACTCTTTCTTCTTCCTGGAGGCCTTGAACGCCATCTCAAAATCAAAACATGCACTGTGGCCCTGGACGTGGTGGAAGAGATATGTGCTGAGATGGCTCTGACACGCCCTGAGGCCTTCAATGAATATGTTATCTTCGTTGTCACCAACCGTGGCCAGCATGTGTGCCCACTCAGTCGCCGTGCTTACATCCTGGATGTGGCCTCAGAGATGGAGCAGGTGGACGGCGGCTACATGCTCTGGTTCCGGCGTGTGCTCTGGGATCAGCCACTCAAGTTCGAGAATGAGCTATATGTGACCATGCACTACAACCAGGTCCTGCCTGACTACCTGAAGGGACTCTTCAGCAGTGTGCCGGCCAGCCGGCCCAGCGAGCAGCTGCTGCAGCAGGTGTCCAAGCTGGCTTCACTGCAGCATCGCGCCAAGGACCACTTCTACCTGCCGAGCGTGCGGGAAGTCCAGGAGTACATCCCAGCCCAGCTCTACCGTACAACGGCAGGCTCGACCTGGCTCAACCTGGTCAGCCAGCACCGGCAGCAGACACAGGCGCTCAGCCCCCACCAGGCCCGTGCCCAGTTTCTGGGCCTCCTCAGCGCCTTACCTATGTTCGGCTCCTCCTTCTTCTTCATCCAGAGCTGCAGCAACATTGCTGTGCCAGCCCCTTGCATCCTTGCCATCAACCACAATGGCCTCAACTTTCTCAGCACAGAGACTCATGAATTGATGGTGAAGTTCCCCCTGAAGGAGATCCAGTCGACGCGGACCCAGCGGCCCACGGCCAACTCCAGCTACCCCTATGTGGAGATTGCGCTGGGGGACGTGGCGGCCCAGCGCACCTTGCAAGCTGCAGCTGGAGCAGGTAAGAGCTGGGGAAGTGTTGGATGGGCGTGGACTGTCACTGTCACCTGCAGGGACTGGAACTGTGTCGTGTGGTGGCCGTGCACGTGGAGAACCTGCTCAGTGCCCATGAGAAGCGGCTCACATTGCCCCCCAGCGAGATCACCCTGCTCTGACCCAGCCCCCAGCCCTCCAGTACCTTCTGCCAGAAGACTCACTGTGTGGCCTCAGAGAAATCACTGAACCTCTCAGGATCAATGACCCCTGTAAGGGGCCAGAGCCTTGGAGGACACTAAGAGGAGGCAGGAGGAGCAACTCAAATCCCCAAGAACACAAGAAGACCCATCCTGAACTGGGATGGAATGGCAGCATGCAAACTTGGATCAGATAGCAGGAGGAACTTTCAAAAGTCTGGCCCACTGTGCAGTGGAGCAGAAGGCAGGACCATGAGGCCTCCTGCCATGTACCCATTGCAGACCCTGCCCCTAACTCCTGCCTATGACACAGAAGCCCCACACCAGTTGCCCA";
-
-        String actual = predictor.getAlternateCdnaSequence();
-        Assert.assertEquals(expected, actual);
-
         Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", predictor.calculate());
     }
 
     @Test
-    public void testDiffPosPhaseII() throws Exception {
+    public void testInsertionPositiveStrandPhase0Nonsense() throws Exception {
+        // Issue #5 - NonsenseReportedAsFrameShift
+        // positive strand
+        // phase 0, confirmed start
+        //        1:236717940:-:T 1       236717940       -       T       indel   ENSP00000443495 p.Lys71Ter      p.Lys71fs       nonsense_as_fs_same_pos
+        Gene gene = getGene("ENSG00000077522");
+        Transcript transcript = getTranscript(gene, "ENST00000542672");
+        Variant variant = new Variant("1",
+                236717940,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate());
+    }
+
+    @Test
+    public void testInsertionPositiveStrandPhase0FS() throws Exception {
+        // Issue #6 - FrameShiftReportedAsDup
+        // positive strand
+        // phase 0, confirmed start (no flags)
+        //4:102582930:-:T 4       102582930       -       T       indel   ENSP00000424790 p.Ser301PhefsTer7       p.Phe300dup     fs_as_dup
+        Gene gene = getGene("ENSG00000109320");
+        Transcript transcript = getTranscript(gene, "ENST00000505458");
+        Variant variant = new Variant("4",
+                102582930,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
+    }
+
+
+    @Test
+    public void testInsertionPositiveStrandPhase2() throws Exception {
+        // fs_shorthand_diff_pos
+        // positive strand
+        // phase 2
+        // unconfirmed start
+        //16:2092152:-:GTGT    16    2092152    -    GTGT    indel    ENSP00000461391    p.Cys8HisfsTer?    p.Thr7GlnfsTer176
+        Gene gene = getGene("ENSG00000008710");
+        Transcript transcript = getTranscript(gene, "ENST00000561668");
+        Variant variant = new Variant("16",
+                2092152,
+                "-",
+                "GTGT");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculate());
+    }
+
+    // phase 1
+    // positive strand
+
+    // phase 1
+    // negative strand
+
+    // -------------------- negative strand --------------------------------------
+
+    @Test
+    public void testInsertionNegativeStrandPhase0() throws Exception {
+        // negative strand, phase 0
+        // unconfirmed start
+        // 15110   16:2106127:-:T  16      2106127 -       T       indel   ENSP00000457132 p.Asp786GlyfsTer38      p.Gln785fs      fs_shorthand_diff_pos
+
+        // cdna start Position = 1, cds = 2355, cdnaVariantIndex = 2355
+        // GTGGTGGTGCAG[t]GACCAGCTGGGAGCCGCTGTG
+
+        Gene gene = getGene("ENSG00000008710");
+        Transcript transcript = getTranscript(gene, "ENST00000487932");
+        Variant variant = new Variant("16",
+                2106127,
+                "-",
+                "T");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculate());
+    }
+
+    @Test
+    public void testInsertionNegativeStrandPhase2UnconfirmedStart() throws Exception {
+        //         14086   X:109669061:-:T X       109669061       -       T       indel   ENSP00000423539 p.Tyr19IlefsTer2        p.Gly18fs
         // phase II
+        // negative strand
+        // unconfirmed start, protein sequence starts with X
         Gene gene = getGene("ENSG00000068366");
         Transcript transcript = getTranscript(gene, "ENST00000514500");
         Variant variant = new Variant("X",
@@ -85,24 +168,31 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
-    public void testDiffPosPhase0() throws Exception {
-        // 15110   16:2106127:-:T  16      2106127 -       T       indel   ENSP00000457132 p.Asp786GlyfsTer38      p.Gln785fs      fs_shorthand_diff_pos
+    public void testInsertionNegativeStrandPhase2ConfirmedStart() throws Exception {
+        // phase II
+        // negative strand
+        // confirmed start (no annotation flags)
+        //        14085   X:109669061:-:T X       109669061       -       T       indel   ENSP00000262835 p.Tyr374IlefsTer2       p.Tyr374fs      fs_shorthand_same_pos
 
-        // cdna start Position = 1, cds = 2355, cdnaVariantIndex = 2355
-        // GTGGTGGTGCAG[t]GACCAGCTGGGAGCCGCTGTG
-
-        Gene gene = getGene("ENSG00000008710");
-        Transcript transcript = getTranscript(gene, "ENST00000487932");
-        Variant variant = new Variant("16",
-                2106127,
+        String proteinSequence =
+                "MAKRIKAKPTSDKPGSPYRSVTHFDSLAVIDIPGADTLDKLFDHAVSKFGKKDSLGTREILSEENEMQPNGKVFKKLILGNYKWMNYLEVNRRVNNFGSGLTALGLKPKNTIAIFCETRAEWMIAAQTCFKYNFPLVTLYATLGKEAVVHGLNESEASYLITSVELLESKLKTALLDISCVKHIIYVDNKAINKAEYPEGFEIHSMQSVEELGSNPENLGIPPSRPTPSDMAIVMYTSGSTGRPKGVMMHHSNLIAGMTGQCERIPGLGPKDTYIGYLPLAHVLELTAEISCFTYGCRIGYSSPLTLSDQSSKIKKGSKGDCTVLKPTLMAAVPEIMDRIYKNVMSKVQEMNYIQKTLFKIGYDYKLEQIKKGYDAPLCNLLLFKKVKALLGGNVRMMLSGGAPLSPQTHRFMNVCFCCPIGQGYGLTESCGAGTVTEVTDYTTGRVGAPLICCEIKLKDWQEGGYTINDKPNPRGEIVIGGQNISMGYFKNEEKTAEDYSVDENGQRWFCTGDIGEFHPDGCLQIIDRKKDLVKLQAGEYVSLGKVEAALKNCPLIDNICAFAKSDQSYVISFVVPNQKRLTLLAQQKGVEGTWVDICNNPAMEAEILKEIREAANAMKLERFEIPIKVRLSPEPWTPETGLVTDAFKLKRKELRNHYLKDIERMYGGK";
+        Gene gene = getGene("ENSG00000068366");
+        Transcript transcript = getTranscript(gene, "ENST00000348502");
+        Variant variant = new Variant("X",
+                109669061,
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculate());
+        Assert.assertEquals("ENSP00000262835 p.Tyr374IlefsTer2", predictor.calculate());
     }
 
+
+    /////////////////////////////////////
+    ///////////// DELETIONS /////////////
+    /////////////////////////////////////
+
     @Test
-    public void testSynonymousFS() throws Exception {
+    public void testDeletionSynonymousFS() throws Exception {
         // Issue #3
         //2701    6:112061056:G:- 6       112061056       G       -       indel   ENSP00000357653 p.Ser57GlnfsTer27       p.Val56fs       fs_shorthand_diff_pos
         // change at del position 56 is synonymous GTG (val) > GTT (Val)
@@ -136,34 +226,6 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals(expected, actual);
 
         Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate());
-    }
-
-    @Test
-    public void testNonsenseReportedAsFrameShift() throws Exception {
-        // Issue #5
-        //        1:236717940:-:T 1       236717940       -       T       indel   ENSP00000443495 p.Lys71Ter      p.Lys71fs       nonsense_as_fs_same_pos
-        Gene gene = getGene("ENSG00000077522");
-        Transcript transcript = getTranscript(gene, "ENST00000542672");
-        Variant variant = new Variant("1",
-                236717940,
-                "-",
-                "T");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate());
-    }
-
-    @Test
-    public void testFrameShiftReportedAsDup() throws Exception {
-        // Issue #6
-        //4:102582930:-:T 4       102582930       -       T       indel   ENSP00000424790 p.Ser301PhefsTer7       p.Phe300dup     fs_as_dup
-        Gene gene = getGene("ENSG00000109320");
-        Transcript transcript = getTranscript(gene, "ENST00000505458");
-        Variant variant = new Variant("4",
-                102582930,
-                "-",
-                "T");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
     }
 
     @Test
@@ -205,6 +267,11 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate());
     }
 
+
+    /////////////////////////////////////
+    ///////////// SNV /////////////
+    /////////////////////////////////////
+
     @Test
     public void testSNV() throws Exception {
         // Issue #2 missing protein example
@@ -219,32 +286,6 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000417079:p.Val428Met", predictor.calculate());
     }
 
-    @Test
-    public void testReverseStrandfs() throws Exception {
-
-//         14086   X:109669061:-:T X       109669061       -       T       indel   ENSP00000423539 p.Tyr19IlefsTer2        p.Gly18fs
-//        fs_shorthand_diff_pos
-
-        Gene gene = getGene("ENSG00000068366");
-        Transcript transcript = getTranscript(gene, "ENST00000514500");
-        Variant variant = new Variant("X",
-                109669061,
-                "-",
-                "T");
-
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000423539:p.Tyr19IlefsTer2", predictor.calculate());
-
-        //        14085   X:109669061:-:T X       109669061       -       T       indel   ENSP00000262835 p.Tyr374IlefsTer2       p.Tyr374fs      fs_shorthand_same_pos
-        gene = getGene("ENSG00000068366");
-        transcript = getTranscript(gene, "ENST00000348502");
-        variant = new Variant("X",
-                109669061,
-                "-",
-                "T");
-        predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000262835 p.Tyr374IlefsTer2", predictor.calculate());
-    }
 
     @Test
     public void testPosStrand() throws Exception {
