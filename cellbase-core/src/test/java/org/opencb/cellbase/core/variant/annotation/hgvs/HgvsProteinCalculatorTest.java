@@ -99,9 +99,50 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
     }
 
+    @Test
+    public void testInsertionPositiveStrandPhase0LargeAlternate() throws Exception {
+        // fs_shorthand_same_pos
+        // positive strand
+        // phase 0
+        // confirmed start (no flags)
+        // 32102   4:154744350:-:CTTCATGGAAGAACCC  4       154744350       -       CTTCATGGAAGAACCC        indel   ENSP00000426761 p.Val9PhefsTer23        p.Val9fs        fs_shorthand_same_pos
+        Gene gene = getGene("ENSG00000121207");
+        Transcript transcript = getTranscript(gene, "ENST00000507827");
+        Variant variant = new Variant("4",
+                154744350,
+                "-",
+                "CTTCATGGAAGAACCC");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculate());
+    }
 
     @Test
     public void testInsertionPositiveStrandPhase2() throws Exception {
+        // fs_shorthand_diff_pos
+        // positive strand
+        // phase 2
+        //19:11111569:-:GGGT      19      11111569        -       GGGT    indel   ENSP00000453513 p.Tyr202TrpfsTer7       p.Gly201TrpfsTer41      fs_shorthand_diff_pos
+        Gene gene = getGene("ENSG00000130164");
+        Transcript transcript = getTranscript(gene, "ENST00000560467");
+        Variant variant = new Variant("19",
+                11111569,
+                "-",
+                "GGGT");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000453513:p.Tyr202TrpfsTer7", predictor.calculate());
+
+        // 394     19:11111569:-:GGGT      19      11111569        -       GGGT    indel   ENSP00000252444 p.Tyr460TrpfsTer7       p.Gly459TrpfsTer41      fs_shorthand_diff_pos
+        transcript = getTranscript(gene, "ENST00000252444");
+        variant = new Variant("19",
+                11111569,
+                "-",
+                "GGGT");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000252444:p.Tyr460TrpfsTer7", predictor.calculate());
+    }
+
+    @Test
+    public void testInsertionPositiveStrandPhase2UnconfirmedStart() throws Exception {
         // fs_shorthand_diff_pos
         // positive strand
         // phase 2
@@ -267,6 +308,19 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate());
     }
 
+    @Test
+    public void testDeletion1() throws Exception {
+        Gene gene = getGene("ENSG00000221859");
+        Transcript transcript = getTranscript(gene, "ENST00000380095");
+        Variant variant = new Variant("21",
+                46057614,
+                "TGC",
+                "-");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculate());
+    }
+
 
     /////////////////////////////////////
     ///////////// SNV /////////////
@@ -287,19 +341,7 @@ public class HgvsProteinCalculatorTest {
     }
 
 
-    @Test
-    public void testPosStrand() throws Exception {
-        // phase 0
-        // 32102   4:154744350:-:CTTCATGGAAGAACCC  4       154744350       -       CTTCATGGAAGAACCC        indel   ENSP00000426761 p.Val9PhefsTer23        p.Val9fs        fs_shorthand_same_pos
-        Gene gene = getGene("ENSG00000121207");
-        Transcript transcript = getTranscript(gene, "ENST00000507827");
-        Variant variant = new Variant("4",
-                154744350,
-                "-",
-                "CTTCATGGAAGAACCC");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculate());
-    }
+
 
 
     @Test
@@ -317,18 +359,6 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000442578:p.Met1?", predictor.calculate());
     }
 
-    @Test
-    public void testDeletion1() throws Exception {
-        Gene gene = getGene("ENSG00000221859");
-        Transcript transcript = getTranscript(gene, "ENST00000380095");
-        Variant variant = new Variant("21",
-                46057614,
-                "TGC",
-                "-");
-
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculate());
-    }
 
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
