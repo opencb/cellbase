@@ -294,7 +294,8 @@ public class HgvsProteinCalculator {
                     .append(FRAMESHIFT_SUFFIX)
                     .append(TERMINATION_SUFFIX);
             if (buildingComponents.getTerminator() > 0) {
-                stringBuilder.append(FRAMESHIFT_SUFFIX);
+//                stringBuilder.append(FRAMESHIFT_SUFFIX);
+                stringBuilder.append(buildingComponents.getTerminator());
             } else {
                 stringBuilder.append("?");
             }
