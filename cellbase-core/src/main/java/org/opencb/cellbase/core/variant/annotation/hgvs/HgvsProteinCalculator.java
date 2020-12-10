@@ -57,13 +57,6 @@ public class HgvsProteinCalculator {
         alternateProteinSequence = new StringBuilder();
         buildingComponents = new BuildingComponents();
 
-        // do translation
-//        System.out.println(transcript.getcDnaSequence());
-//        System.out.println(transcript.getProteinSequence());
-
-        String alternateDnaSequence = getAlternateCdnaSequence();
-//        System.out.println(alternateDnaSequence);
-
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
         int currentAaIndex = 0;
@@ -77,6 +70,16 @@ public class HgvsProteinCalculator {
                 currentAaIndex++;
             }
         }
+
+        // do translation
+//        System.out.println(transcript.getcDnaSequence());
+        System.out.println("Reference:\n" + this.cdnaCodonFormat(transcript.getcDnaSequence(), phaseOffset));
+        System.out.println();
+//        System.out.println(transcript.getProteinSequence());
+
+        String alternateDnaSequence = getAlternateCdnaSequence();
+        System.out.println("Alternate:\n" + cdnaCodonFormat(alternateDnaSequence, phaseOffset));
+
 
         // 1-based
         int cdnaPosition = transcript.getCdnaCodingStart();
@@ -96,41 +99,50 @@ public class HgvsProteinCalculator {
         int terPosition = 0;
         while (alternateDnaSequence.length() > codonIndex + 3) {
 
-            String codonArray = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
+            String referecenCodon = transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3);
+            String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referecenCodon);
+
+            String alternateCodon = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // three letter AA, eg PHE
-            String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codonArray);
+            String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
             // single AA, eg. L
-            String codedAlternateAa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa);
+            String alternateCodedAa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa);
 
             // build the new sequence
-            alternateProteinSequence.append(codedAlternateAa);
+            alternateProteinSequence.append(alternateCodedAa);
 
-            String codedReferenceAa =  null;
+            String referenceCodedAa =  null;
             if (transcript.getProteinSequence().length() > currentAaIndex) {
-                codedReferenceAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
+                referenceCodedAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
             }
 
-//            System.out.println(codonIndex);
-//            System.out.println(currentAaIndex);
-//            System.out.println(VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
-//            transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3)));
-//            System.out.println(alternateAa);
+//            System.out.println(codonIndex + ", " + currentAaIndex);
+//            System.out.println(referenceAa + " / " + alternateAa);
 //            System.out.println();
+
             if (terPosition > 0) {
                 terPosition++;
             }
+
             if (STOP_STRING.equals(alternateAa)) {
 //                buildingComponents.setTerminator(currentAaIndex + 1 - buildingComponents.getStart() + 1);
                 if (terPosition > 0) {
                     buildingComponents.setTerminator(terPosition);
                 } else {
+                    // if terPosition is 0 means the
+                    buildingComponents.setStart(currentAaIndex + 1);
+                    buildingComponents.setEnd(currentAaIndex + 1);
+//                    buildingComponents.setReferenceStart(referenceAa);
+//                    buildingComponents.setReferenceEnd(referenceAa);
+                    buildingComponents.setAlternate(STOP_STRING);
+
                     buildingComponents.setTerminator(-1);
                 }
                 break;
             // we found first different amino acid
             } else {
                 // if terminator position is 0, we haven't found the first different AA yet
-                if (terPosition == 0 && !codedAlternateAa.equals(codedReferenceAa)) {
+                if (terPosition == 0 && !alternateCodedAa.equals(referenceCodedAa)) {
                     buildingComponents.setAlternate(alternateAa);
                     // put back to 1 - base
                     int start = currentAaIndex + 1;
@@ -158,6 +170,31 @@ public class HgvsProteinCalculator {
 
     }
 
+    private String cdnaCodonFormat(String sequence, int transcriptPhase) {
+        StringBuilder positionSequence = new StringBuilder();
+        StringBuilder formattedSequence = new StringBuilder();
+        StringBuilder proteinSequence = new StringBuilder();
+
+        String separator = "  ";
+        int position = 1;
+        if (transcriptPhase > 0) {
+            positionSequence.append(StringUtils.rightPad(String.valueOf(position++), 2)).append(separator);
+            formattedSequence.append(sequence.substring(0, transcriptPhase)).append(separator);
+            proteinSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+        }
+
+        String codon, aa;
+        for (int i = transcriptPhase; i < sequence.length(); i += 3) {
+            positionSequence.append(StringUtils.rightPad(String.valueOf(position++), 3)).append(separator);
+            codon = sequence.substring(i, Math.min(i + 3, sequence.length()));
+            formattedSequence.append(codon).append(separator);
+            aa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codon);
+            proteinSequence.append(aa).append(aa != null && aa.equals("STOP") ? " " : separator);
+        }
+
+        return positionSequence.toString() + "\n" + formattedSequence.toString() + "\n" + proteinSequence.toString();
+    }
+
     private void processBuildingComponents() {
 
         buildingComponents.setProteinId(transcript.getProteinID());
@@ -173,6 +210,9 @@ public class HgvsProteinCalculator {
                 = start == (transcript.getProteinSequence().length() + 1)
                 ? null
                 : String.valueOf(transcript.getProteinSequence().charAt(start - 1));
+
+//        String referenceStartShortSymbol = buildingComponents.getReferenceStart();
+//        String referenceEndShortSymbol = buildingComponents.getReferenceEnd();
 
         // Do not generate protein HGVS if insertion affects an unconfirmed start, i.e. overlaps with an "X"
         // symbol in the protein sequence
@@ -215,6 +255,10 @@ public class HgvsProteinCalculator {
         // If stop gained then skip any normalisation; If there's a stop gain the stop indicator will always be the last
         // element of the predicted sequence, as prediction stops as soon as a STOP codon is found
         if (STOP_CODON_INDICATOR == alternate.charAt(alternate.length() - 1)) {
+            return BuildingComponents.MutationType.STOP_GAIN;
+        }
+
+        if (STOP_STRING.equals(alternate)) {
             return BuildingComponents.MutationType.STOP_GAIN;
         }
 
@@ -272,46 +316,60 @@ public class HgvsProteinCalculator {
 //            .append(buildingComponents.getAlternate())
 
 
-        } else if (BuildingComponents.MutationType.EXTENSION.equals(buildingComponents.getMutationType())) {
-            try {
-                stringBuilder.append(TERMINATION_SUFFIX)
-                        .append(buildingComponents.getStart())
-                        .append(VariantAnnotationUtils
-                                .buildUpperLowerCaseString(VariantAnnotationUtils
-                                        .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
-                        .append(EXTENSION_TAG)
-                        .append(UNKOWN_STOP_CODON_POSITION);
-            } catch (NullPointerException e) {
-                int a = 1;
-                throw e;
-            }
-
-        } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
-            // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
-            stringBuilder.append(buildingComponents.getReferenceEnd())
-                    .append(buildingComponents.getStart())
-                    .append(VariantAnnotationUtils.buildUpperLowerCaseString(buildingComponents.getAlternate()))
-                    .append(FRAMESHIFT_SUFFIX)
-                    .append(TERMINATION_SUFFIX);
-            if (buildingComponents.getTerminator() > 0) {
-//                stringBuilder.append(FRAMESHIFT_SUFFIX);
-                stringBuilder.append(buildingComponents.getTerminator());
-            } else {
-                stringBuilder.append("?");
-            }
-        } else if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())) {
-            stringBuilder.append(buildingComponents.getReferenceEnd())
-                    .append(buildingComponents.getStart())
-                    .append(TERMINATION_SUFFIX);
         } else {
-            // assuming end = start - 1
-            stringBuilder.append(buildingComponents.getReferenceStart())
-                    .append(buildingComponents.getEnd())
-                    .append(HgvsCalculator.UNDERSCORE)
-                    .append(buildingComponents.getReferenceEnd())
-                    .append(buildingComponents.getStart())
-                    .append(INS_SUFFIX)
-                    .append(formatAaSequence(buildingComponents.getAlternate()));
+            if (BuildingComponents.MutationType.EXTENSION.equals(buildingComponents.getMutationType())) {
+                try {
+                    stringBuilder.append(TERMINATION_SUFFIX)
+                            .append(buildingComponents.getStart())
+                            .append(VariantAnnotationUtils
+                                    .buildUpperLowerCaseString(VariantAnnotationUtils
+                                            .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
+                            .append(EXTENSION_TAG)
+                            .append(UNKOWN_STOP_CODON_POSITION);
+                } catch (NullPointerException e) {
+                    int a = 1;
+                    throw e;
+                }
+
+            } else {
+                if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
+                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType()) && buildingComponents.getTerminator() < 0) {
+                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                                .append(buildingComponents.getStart())
+                                .append(TERMINATION_SUFFIX);
+                    } else {
+                        // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
+                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                                .append(buildingComponents.getStart())
+                                .append(VariantAnnotationUtils.buildUpperLowerCaseString(buildingComponents.getAlternate()))
+                                .append(FRAMESHIFT_SUFFIX)
+                                .append(TERMINATION_SUFFIX);
+
+                        if (buildingComponents.getTerminator() > 0) {
+//                stringBuilder.append(FRAMESHIFT_SUFFIX);
+                            stringBuilder.append(buildingComponents.getTerminator());
+                        } else {
+                            stringBuilder.append("?");
+                        }
+                    }
+
+                } else {
+                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())) {
+                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                                .append(buildingComponents.getStart())
+                                .append(TERMINATION_SUFFIX);
+                    } else {
+                        // assuming end = start - 1
+                        stringBuilder.append(buildingComponents.getReferenceStart())
+                                .append(buildingComponents.getEnd())
+                                .append(HgvsCalculator.UNDERSCORE)
+                                .append(buildingComponents.getReferenceEnd())
+                                .append(buildingComponents.getStart())
+                                .append(INS_SUFFIX)
+                                .append(formatAaSequence(buildingComponents.getAlternate()));
+                    }
+                }
+            }
         }
 
         return stringBuilder.toString();
