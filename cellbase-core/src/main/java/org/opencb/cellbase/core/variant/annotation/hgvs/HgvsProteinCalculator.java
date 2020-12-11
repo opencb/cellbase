@@ -79,10 +79,12 @@ public class HgvsProteinCalculator {
         int codonIndex = transcript.getCdnaCodingStart() + phaseOffset - 1;
         int terPosition = 0;
 
+        System.out.println(transcript.getcDnaSequence());
+        System.out.println(alternateDnaSequence);
         // Loop through cDNA translating each codon
         while (alternateDnaSequence.length() > codonIndex + 3) {
-            String referecenCodon = transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3);
-            String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referecenCodon);
+//            String referecenCodon = transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3);
+//            String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referecenCodon);
 
             String alternateCodon = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
             // Three letter AA, eg. PHE and single letter AA, eg. L
@@ -172,7 +174,7 @@ public class HgvsProteinCalculator {
         }
 
         String codon, aa;
-        boolean insideCodingSequence = false;
+        boolean insideCodingSequence = cdnaStartPosition == 1;
         int aaPosition = 1;
         for (int i = transcriptPhase; i < sequence.length(); i += 3) {
             cdnaPositions.append(StringUtils.rightPad(String.valueOf(i + 1), 4)).append("   ");
@@ -413,6 +415,10 @@ public class HgvsProteinCalculator {
         String reference = variant.getReference();
         String alternate = variant.getAlternate();
 
+        if (this.transcript.getStrand().equals("-")) {
+            alternate = reverseComplementary(alternate);
+        }
+
         // adjusted for phase
         int cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
 
@@ -493,5 +499,19 @@ public class HgvsProteinCalculator {
 
         }
         return false;
+    }
+
+    private String reverseComplementary(String string) {
+        StringBuilder stringBuilder = new StringBuilder(string).reverse();
+        for (int i = 0; i < stringBuilder.length(); i++) {
+            char nextNt = stringBuilder.charAt(i);
+            // Protection against weird characters, e.g. alternate:"TBS" found in ClinVar
+            if (VariantAnnotationUtils.COMPLEMENTARY_NT.containsKey(nextNt)) {
+                stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(nextNt));
+            } else {
+                return null;
+            }
+        }
+        return stringBuilder.toString();
     }
 }
