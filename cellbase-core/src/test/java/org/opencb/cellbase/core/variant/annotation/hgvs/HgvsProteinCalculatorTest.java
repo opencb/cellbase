@@ -150,7 +150,7 @@ public class HgvsProteinCalculatorTest {
         Variant variant = new Variant("16",
                 2092152,
                 "-",
-                "GTGT");
+                "GTGT");    // ACAC
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculate());
     }
@@ -221,7 +221,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000262835 p.Tyr374IlefsTer2", predictor.calculate());
+        Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate());
     }
 
     //@Test

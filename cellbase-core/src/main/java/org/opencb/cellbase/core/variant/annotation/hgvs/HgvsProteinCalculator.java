@@ -73,6 +73,8 @@ public class HgvsProteinCalculator {
         String alternateDnaSequence = getAlternateCdnaSequence();
 
         int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());
+//        int variantCdnaPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        System.out.println("variantCdnaPosition = " + HgvsCalculator.getCdsStart(transcript, variant.getStart()));
         System.out.println("variantCdnaPosition = " + variantCdnaPosition);
 
         // Initial codon position. Index variables are always 0-based for working with strings
@@ -415,19 +417,25 @@ public class HgvsProteinCalculator {
         String reference = variant.getReference();
         String alternate = variant.getAlternate();
 
+        int cdnaStartPosition;
         if (this.transcript.getStrand().equals("-")) {
             alternate = reverseComplementary(alternate);
+            cdnaStartPosition = transcript.getCdnaCodingStart() - 1;
+        } else {
+//            cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
+            cdnaStartPosition = transcript.getCdnaCodingStart() - 1;
         }
 
         // adjusted for phase
-        int cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
+//        int cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
+//        int cdnaStartPosition = transcript.getCdnaCodingStart();
 
         // genomic to cDNA
-        int variantCdnaPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        int variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // -1 to manipulate strings
-        int cdnaVariantIndex = variantCdnaPosition + cdnaStartPosition - 1;
-
+        int cdnaVariantIndex = cdnaStartPosition + variantCdsPosition - 1;
+        System.out.println("cdnaVariantIndex = " + cdnaVariantIndex);
         switch (variant.getType()) {
             case SNV:
                 alternateDnaSequence.setCharAt(cdnaVariantIndex, alternate.charAt(0));
