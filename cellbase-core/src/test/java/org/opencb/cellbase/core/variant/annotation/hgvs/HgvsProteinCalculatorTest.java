@@ -139,9 +139,9 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
-    public void testInsertionPositiveStrandPhase2UnconfirmedStart() throws Exception {
+    public void testInsReverseStrandPhase2() throws Exception {
         // fs_shorthand_diff_pos
-        // positive strand
+        // reverse strand
         // phase 2
         // unconfirmed start
         //16:2092152:-:GTGT    16    2092152    -    GTGT    indel    ENSP00000461391    p.Cys8HisfsTer?    p.Thr7GlnfsTer176

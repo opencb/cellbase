@@ -141,7 +141,8 @@ public class HgvsProteinCalculator {
         }
 
         // Debug
-        System.out.println("Reference:\n" + this.cdnaCodonFormat(transcript.getcDnaSequence(), transcript.getCdnaCodingStart(), phaseOffset));
+        System.out.println("Reference:\n" + this.cdnaCodonFormat(
+                transcript.getcDnaSequence(), transcript.getCdnaCodingStart(), phaseOffset));
         System.out.println();
         System.out.println("Alternate:\n" + this.cdnaCodonFormat(alternateDnaSequence, transcript.getCdnaCodingStart(), phaseOffset));
         System.out.println(alternateProteinSequence);
@@ -319,6 +320,8 @@ public class HgvsProteinCalculator {
             case INSERTION:
 
                 break;
+            default:
+                break;
         }
 
         if (BuildingComponents.MutationType.DUPLICATION.equals(buildingComponents.getMutationType())) {
@@ -363,7 +366,8 @@ public class HgvsProteinCalculator {
 
             } else {
                 if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
-                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType()) && buildingComponents.getTerminator() < 0) {
+                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())
+                            && buildingComponents.getTerminator() < 0) {
                         stringBuilder.append(buildingComponents.getReferenceEnd())
                                 .append(buildingComponents.getStart())
                                 .append(TERMINATION_SUFFIX);
