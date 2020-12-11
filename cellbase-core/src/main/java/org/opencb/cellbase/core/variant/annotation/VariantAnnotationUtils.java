@@ -134,8 +134,8 @@ public class VariantAnnotationUtils {
 
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
-    public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
-    public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(22); // 22 AA
+    public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(40); // 22 AA
+    public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(40); // 22 AA
     private static final String ATG = "ATG";
     private static final String ATA = "ATA";
     private static final String TAA = "TAA";

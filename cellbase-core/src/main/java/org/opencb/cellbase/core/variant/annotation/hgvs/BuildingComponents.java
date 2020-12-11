@@ -11,13 +11,14 @@ public class BuildingComponents {
 
     enum Kind { CODING, NON_CODING, INFRAME, FRAMESHIFT }
     enum MutationType {
-        FRAMESHIFT,
         SUBSTITUTION,
-        INSERTION,
-        DELINS,
         DELETION,
+        INSERTION,
         DUPLICATION,
+        DELETION_INSERTION,
+        FRAMESHIFT,
         EXTENSION,
+
         STOP_GAIN
     }
 
