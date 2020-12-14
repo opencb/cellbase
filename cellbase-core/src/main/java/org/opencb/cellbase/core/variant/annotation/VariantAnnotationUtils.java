@@ -144,6 +144,9 @@ public class VariantAnnotationUtils {
     private static final String AGG = "AGG";
     private static final String TGA = "TGA";
 
+    public static final String MT = "MT";
+    public static final String UNKNOWN_AMINOACID = "X";
+
     static {
 
         MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance", ModeOfInheritance.monoallelic);

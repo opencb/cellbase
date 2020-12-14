@@ -127,6 +127,7 @@ public class HgvsCalculator {
         return normalizedVariant;
     }
 
+    @Deprecated
     protected static boolean isCoding(Transcript transcript) {
         // 0 in the cdnaCodingEnd means that the transcript doesn't
         // have a coding end <==> is non coding. Just annotating
@@ -350,8 +351,7 @@ public class HgvsCalculator {
                 // Within coding start and end
                 } else {
                     // no offset
-                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart()
-                            + genomicPosition - nearestExon.getGenomicCodingStart());
+                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + (genomicPosition - nearestExon.getGenomicCodingStart()));
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
             // Non-exonic variant: intronic, intergenic
@@ -532,6 +532,7 @@ public class HgvsCalculator {
 //        }
 //    }
 
+    @Deprecated
     protected static int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
         // cdsPosition might need adjusting for transcripts with unclear start
         // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
@@ -558,6 +559,7 @@ public class HgvsCalculator {
         return ((cdsPosition - 1) / 3) + 1;
     }
 
+    @Deprecated
     protected static int getCdnaCodingStart(Transcript transcript) {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
         if (transcript.unconfirmedStart()) {
@@ -567,6 +569,7 @@ public class HgvsCalculator {
         return cdnaCodingStart;
     }
 
+    @Deprecated
     protected static int getFirstCodingExonPhase(Transcript transcript) {
         // Assuming exons are ordered
         for (Exon exon : transcript.getExons()) {
@@ -578,6 +581,7 @@ public class HgvsCalculator {
         return -1;
     }
 
+    @Deprecated
     protected static int getPhaseShift(int cdsPosition, Transcript transcript) {
         // phase might need adjusting for transcripts with unclear start
         // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;

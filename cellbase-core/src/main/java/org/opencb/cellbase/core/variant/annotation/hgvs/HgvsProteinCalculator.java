@@ -20,6 +20,7 @@ public class HgvsProteinCalculator {
 
     private final Variant variant;
     private final Transcript transcript;
+    private TranscriptUtils transcriptUtils;
     // protein sequence updated with variation
     private StringBuilder alternateProteinSequence;
 
@@ -43,13 +44,14 @@ public class HgvsProteinCalculator {
     public HgvsProteinCalculator(Variant variant, Transcript transcript) {
         this.variant = variant;
         this.transcript = transcript;
+        this.transcriptUtils =  new TranscriptUtils(transcript);
 
         this.init();
     }
 
     private void init() {
         // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
-        if (!HgvsCalculator.isCoding(transcript) || transcript.getProteinSequence() == null) {
+        if (!transcriptUtils.isCoding() || transcript.getProteinSequence() == null) {
             return;
         }
 
@@ -59,9 +61,8 @@ public class HgvsProteinCalculator {
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
         int currentAaIndex = 0;
-        if (transcript.unconfirmedStart() || (transcript.getProteinSequence() != null
-                && transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID))) {
-            phaseOffset = HgvsCalculator.getFirstCodingExonPhase(transcript);
+        if (transcriptUtils.hasUnconfirmedStart()) {
+            phaseOffset = transcriptUtils.getFirstCodonPhase();
 
             // if reference protein sequence start with X, prepend X to our new alternate sequence also
             if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
@@ -141,81 +142,102 @@ public class HgvsProteinCalculator {
         }
 
         // Debug
-        System.out.println("Reference:\n" + this.cdnaCodonFormat(
-                transcript.getcDnaSequence(), transcript.getCdnaCodingStart(), phaseOffset));
+        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
         System.out.println();
-        System.out.println("Alternate:\n" + this.cdnaCodonFormat(alternateDnaSequence, transcript.getCdnaCodingStart(), phaseOffset));
+        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
         System.out.println(alternateProteinSequence);
 
         processBuildingComponents();
     }
 
-    private String cdnaCodonFormat(String sequence, int cdnaStartPosition, int transcriptPhase) {
-        StringBuilder cdnaPositions = new StringBuilder();
-        StringBuilder codonPositions = new StringBuilder();
-        StringBuilder formattedCdnaSequence = new StringBuilder();
-        StringBuilder aaPositions = new StringBuilder();
-        StringBuilder proteinSequence = new StringBuilder();
-        StringBuilder proteinCodedSequence = new StringBuilder();
 
-        String separator = "    ";
+    public String calculate() {
+        BuildingComponents buildingComponents = new BuildingComponents();
 
-        // Unconfirmed start transcripts ALWAYS start at position 1
-        if (cdnaStartPosition != 1) {
-            transcriptPhase = (cdnaStartPosition - 1) % 3;
+        int phaseOffset = transcriptUtils.getFirstCodonPhase();
+        // if reference protein sequence start with X, prepend X to our new alternate sequence also
+        if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
+            alternateProteinSequence.append("X");
         }
 
-        int position = 1;
-        if (transcriptPhase > 0) {
-            cdnaPositions.append(StringUtils.rightPad(String.valueOf(position), transcriptPhase)).append(separator);
-            codonPositions.append(StringUtils.rightPad(String.valueOf(position++), transcriptPhase)).append(separator);
-            formattedCdnaSequence.append(sequence.substring(0, transcriptPhase)).append(separator);
+        // if reference protein sequence start with X, prepend X to our new alternate sequence also
+        String alternateCdnaSequence = getAlternateCdnaSequence();
 
-            aaPositions.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
-            proteinSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
-            proteinCodedSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+        int cdnaCodingStart = transcript.getCdnaCodingStart();
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        // -1 to fix inclusive positions
+        //  cdnaCodingStart = 7
+        //  cdsVariantStartPosition = 3
+        //  ATC TGC ATG CTA GCT AGC
+        //          ^ ^
+        //          7 9
+        //
+        //  pos1 = 7
+        //  pos2 = 3
+        //
+        //  pos1 + pos2 = 10 - 1
+        int cdnaVariantStartPosition = cdnaCodingStart + cdsVariantStartPosition - 1;
+        int cdnaVariantIndex = cdnaVariantStartPosition - 1;
+
+        // Prepare reference and alternate variant alleles
+
+
+        switch (this.variant.getType()) {
+            case SNV:
+                this.calculateSnvHgvs();
+                break;
+            case INDEL:
+                break;
+            case INSERTION:
+                break;
+            case DELETION:
+                break;
         }
 
-        String codon, aa;
-        boolean insideCodingSequence = cdnaStartPosition == 1;
-        int aaPosition = 1;
-        for (int i = transcriptPhase; i < sequence.length(); i += 3) {
-            cdnaPositions.append(StringUtils.rightPad(String.valueOf(i + 1), 4)).append("   ");
-            codonPositions.append(StringUtils.rightPad(String.valueOf(position++), 4)).append("   ");
-            codon = sequence.substring(i, Math.min(i + 3, sequence.length()));
-            formattedCdnaSequence.append(codon).append(separator);
-
-            // We are now inside the protein coding region
-            if (!insideCodingSequence && i == cdnaStartPosition - 1) {
-                insideCodingSequence = true;
-            }
-
-            if (insideCodingSequence) {
-                aa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), codon);
-                if (aa != null && aa.equals("STOP")) {
-                    // STOP has 4 letters so me need to remove 1 white space
-                    proteinSequence.append(aa).append("   ");
-                    insideCodingSequence = false;
-                } else {
-                    proteinSequence.append(aa).append(separator);
-                }
-                aaPositions.append(StringUtils.rightPad(String.valueOf(aaPosition++), 3)).append(separator);
-                proteinCodedSequence.append(StringUtils.rightPad(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa), 3)).append(separator);
-            } else {
-                aaPositions.append(" - ").append(separator);
-                proteinSequence.append(" - ").append(separator);
-                proteinCodedSequence.append(" - ").append(separator);
-            }
-        }
-
-        return cdnaPositions.toString() + "\n"
-                + codonPositions.toString() + "\n"
-                + formattedCdnaSequence.toString() + "\n"
-                + StringUtils.repeat('-', cdnaPositions.length()) + "\n"
-                + aaPositions.toString() + "\n"
-                + proteinSequence.toString() + "\n"
-                + proteinCodedSequence.toString();
+        return calculateHgvsString();
     }
+
+    private BuildingComponents calculateSnvHgvs() {
+        BuildingComponents buildingComponents = new BuildingComponents();
+
+        String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
+
+        // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+        String referenceCodon = transcriptUtils.getCodon(codonPosition);
+        String referenceAminoacid = VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
+
+        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+        char[] chars = referenceCodon.toCharArray();
+        chars[positionAtCodon - 1] = alternate.charAt(0);
+        String alternateAminoacid = VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
+
+        // Step 2 -
+        if (referenceAminoacid.equals(alternateAminoacid)) {
+            // SILENT mutation, this includes one STOP codon to another STOP codon
+
+        } else {    // Different aminocacid, several scenarios
+            if (referenceCodon.equalsIgnoreCase("STOP")) {
+                // STOP lost     --> extension
+
+                return buildingComponents;
+            }
+
+            if (alternateAminoacid.equalsIgnoreCase("STOP")) {
+                // NONSENSE
+
+                return buildingComponents;
+            }
+
+            // MISSENSE --> Substitution
+
+        }
+        return buildingComponents;
+    }
+
 
     private void processBuildingComponents() {
 
@@ -303,7 +325,7 @@ public class HgvsProteinCalculator {
      *
      * @return protein HGVS string
      */
-    public String calculate() {
+    public String calculateHgvsString() {
 
         // wasn't able to process sequence, won't be able to build hgvs string
         if (buildingComponents == null) {
@@ -410,7 +432,6 @@ public class HgvsProteinCalculator {
 
     }
 
-
     /**
      *
      * @return the DNA sequence updated with the alternate sequence
@@ -421,24 +442,16 @@ public class HgvsProteinCalculator {
         String reference = variant.getReference();
         String alternate = variant.getAlternate();
 
-        int cdnaStartPosition;
         if (this.transcript.getStrand().equals("-")) {
             alternate = reverseComplementary(alternate);
-            cdnaStartPosition = transcript.getCdnaCodingStart() - 1;
-        } else {
-//            cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
-            cdnaStartPosition = transcript.getCdnaCodingStart() - 1;
         }
-
-        // adjusted for phase
-//        int cdnaStartPosition = HgvsCalculator.getCdnaCodingStart(transcript);
-//        int cdnaStartPosition = transcript.getCdnaCodingStart();
 
         // genomic to cDNA
         int variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        // -1 to fix inclusive positions
+        int cdnaVariantPosition = transcript.getCdnaCodingStart() + variantCdsPosition - 1;
+        int cdnaVariantIndex = cdnaVariantPosition - 1;
 
-        // -1 to manipulate strings
-        int cdnaVariantIndex = cdnaStartPosition + variantCdsPosition - 1;
         System.out.println("cdnaVariantIndex = " + cdnaVariantIndex);
         switch (variant.getType()) {
             case SNV:
@@ -512,6 +525,7 @@ public class HgvsProteinCalculator {
         }
         return false;
     }
+
 
     private String reverseComplementary(String string) {
         StringBuilder stringBuilder = new StringBuilder(string).reverse();
