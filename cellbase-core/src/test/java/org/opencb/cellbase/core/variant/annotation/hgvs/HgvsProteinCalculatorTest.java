@@ -395,7 +395,7 @@ public class HgvsProteinCalculatorTest {
         hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Met1?", hgvsProtein.getHgvs());
 
-        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000442578", "P08473"));
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000442578"));
     }
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.

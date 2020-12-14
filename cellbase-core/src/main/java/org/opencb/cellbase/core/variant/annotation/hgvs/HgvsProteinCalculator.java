@@ -94,9 +94,8 @@ public class HgvsProteinCalculator {
 
         // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart()) - 1;
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
-        String referenceCodon = transcript.getcDnaSequence().substring(variantCdnaPosition - 1, variantCdnaPosition - 1 + 3);
+        String referenceCodon = transcriptUtils.getCodon(codonPosition);
         // three letter abbreviation
         String referenceAminoacid = VariantAnnotationUtils
                 .buildUpperLowerCaseString(VariantAnnotationUtils

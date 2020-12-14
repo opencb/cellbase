@@ -100,6 +100,8 @@ public class TranscriptUtils {
         if (codonPosition > 0) {
             int cdsCodonStart = ((codonPosition - 1) * 3) + 1;
             int cdnaCodonStart = cdsToCdna(cdsCodonStart);
+            // adjust for manipulating strings, set to be zero base
+            cdnaCodonStart = cdnaCodonStart - 1;
             return transcript.getcDnaSequence().substring(cdnaCodonStart, cdnaCodonStart + 3);
         }
         return "";
