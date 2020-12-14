@@ -161,10 +161,10 @@ public class HgvsProteinCalculator {
         }
 
         // if reference protein sequence start with X, prepend X to our new alternate sequence also
-        String alternateCdnaSequence = getAlternateCdnaSequence();
+//        String alternateCdnaSequence = getAlternateCdnaSequence();
 
-        int cdnaCodingStart = transcript.getCdnaCodingStart();
-        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+//        int cdnaCodingStart = transcript.getCdnaCodingStart();
+//        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
         // -1 to fix inclusive positions
         //  cdnaCodingStart = 7
         //  cdsVariantStartPosition = 3
@@ -176,8 +176,8 @@ public class HgvsProteinCalculator {
         //  pos2 = 3
         //
         //  pos1 + pos2 = 10 - 1
-        int cdnaVariantStartPosition = cdnaCodingStart + cdsVariantStartPosition - 1;
-        int cdnaVariantIndex = cdnaVariantStartPosition - 1;
+//        int cdnaVariantStartPosition = cdnaCodingStart + cdsVariantStartPosition - 1;
+//        int cdnaVariantIndex = cdnaVariantStartPosition - 1;
 
         // Prepare reference and alternate variant alleles
 
@@ -187,6 +187,7 @@ public class HgvsProteinCalculator {
                 this.calculateSnvHgvs();
                 break;
             case INDEL:
+                this.calculateInsertionHgvs();
                 break;
             case INSERTION:
                 break;
@@ -218,26 +219,36 @@ public class HgvsProteinCalculator {
         // Step 2 -
         if (referenceAminoacid.equals(alternateAminoacid)) {
             // SILENT mutation, this includes one STOP codon to another STOP codon
-
+//            return "p." + referenceAminoacid + codonPosition + "=";
         } else {    // Different aminocacid, several scenarios
             if (referenceCodon.equalsIgnoreCase("STOP")) {
                 // STOP lost     --> extension
-
+                //  call to frameshift
                 return buildingComponents;
             }
 
             if (alternateAminoacid.equalsIgnoreCase("STOP")) {
                 // NONSENSE
-
+    //            return "p." + referenceAminoacid + codonPosition + "Ter";
                 return buildingComponents;
             }
 
             // MISSENSE --> Substitution
+            //            return "p." + referenceAminoacid + codonPosition + alternateAminoacid;
 
         }
         return buildingComponents;
     }
 
+    private BuildingComponents calculateInsertionHgvs() {
+
+        return null;
+    }
+
+    private BuildingComponents calculateFrameshiftHgvs(String alternateCdnaSequence) {
+
+        return null;
+    }
 
     private void processBuildingComponents() {
 

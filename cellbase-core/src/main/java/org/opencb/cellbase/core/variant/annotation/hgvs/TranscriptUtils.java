@@ -63,6 +63,15 @@ public class TranscriptUtils {
         return cdnaPosition;
     }
 
+    public int genomicsToCdna(int position) {
+        int cds = genomicsToCds(position);
+        return cdsToCdna(cds);
+    }
+
+    public int genomicsToCds(int position) {
+        return 0;
+    }
+
     public int getFirstCodonPosition() {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
         // Unconfirmed start transcript always have a CdnaCodingStart=1, we need to increment the phase to get the first codon position
