@@ -45,11 +45,87 @@ public class HgvsProteinCalculator {
         this.variant = variant;
         this.transcript = transcript;
         this.transcriptUtils =  new TranscriptUtils(transcript);
-
-        this.init();
     }
 
-    private void init() {
+    public String calculate() {
+        switch (this.variant.getType()) {
+            case SNV:
+                return calculateSnvHgvs();
+            case INDEL:
+                // insertion
+                if (StringUtils.isBlank(variant.getReference())) {
+                    return calculateIndelHgvs();
+                // deletion
+                } else if (StringUtils.isBlank(variant.getAlternate())) {
+                    return calculateIndelHgvs();
+                } else {
+                    logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
+                            + "identifiers.");
+                    return null;
+                }
+            case INSERTION:
+                break;
+            case DELETION:
+                break;
+            default:
+                // TODO throw an error?
+                logger.error("Don't know how to handle variant of type {}", variant.getType());
+                return null;
+        }
+        return null;
+    }
+
+    private String calculateSnvHgvs() {
+        String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
+
+        // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+        String referenceCodon = transcriptUtils.getCodon(codonPosition);
+        String referenceAminoacid = VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
+
+        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+        char[] chars = referenceCodon.toCharArray();
+        chars[positionAtCodon - 1] = alternate.charAt(0);
+        String alternateAminoacid = VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
+
+        // Step 2 -
+        if (referenceAminoacid.equals(alternateAminoacid)) {
+            // SILENT mutation, this includes one STOP codon to another STOP codon
+            return "p." + referenceAminoacid + codonPosition + "=";
+        } else {    // Different aminocacid, several scenarios
+            if (referenceCodon.equalsIgnoreCase("STOP")) {
+                // STOP lost     --> extension
+                //  call to frameshift
+                // FIXME
+                return "";
+            }
+
+            if (alternateAminoacid.equalsIgnoreCase("STOP")) {
+                // NONSENSE
+    //            return "p." + referenceAminoacid + codonPosition + "Ter";
+                // FIXME
+                return "";
+            }
+
+            // MISSENSE --> Substitution
+            //            return "p." + referenceAminoacid + codonPosition + alternateAminoacid;
+
+        }
+        // FIXME
+        return "";
+    }
+
+    private String calculateIndelHgvs() {
+        getAlternateProteinSequence();
+
+        return calculateHgvsString();
+    }
+
+
+    private void getAlternateProteinSequence() {
         // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
         if (!transcriptUtils.isCoding() || transcript.getProteinSequence() == null) {
             return;
@@ -121,7 +197,7 @@ public class HgvsProteinCalculator {
                     buildingComponents.setMutationType(BuildingComponents.MutationType.SUBSTITUTION);
                 }
                 break;
-            // we found first different amino acid
+                // we found first different amino acid
             } else {
                 // if terminator position is 0, we haven't found the first different AA yet
                 if (terPosition == 0 && !alternateCodedAa.equals(referenceCodedAa)) {
@@ -150,105 +226,6 @@ public class HgvsProteinCalculator {
         processBuildingComponents();
     }
 
-
-    public String calculate() {
-        BuildingComponents buildingComponents = new BuildingComponents();
-
-        int phaseOffset = transcriptUtils.getFirstCodonPhase();
-        // if reference protein sequence start with X, prepend X to our new alternate sequence also
-        if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
-            alternateProteinSequence.append("X");
-        }
-
-        // if reference protein sequence start with X, prepend X to our new alternate sequence also
-//        String alternateCdnaSequence = getAlternateCdnaSequence();
-
-//        int cdnaCodingStart = transcript.getCdnaCodingStart();
-//        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        // -1 to fix inclusive positions
-        //  cdnaCodingStart = 7
-        //  cdsVariantStartPosition = 3
-        //  ATC TGC ATG CTA GCT AGC
-        //          ^ ^
-        //          7 9
-        //
-        //  pos1 = 7
-        //  pos2 = 3
-        //
-        //  pos1 + pos2 = 10 - 1
-//        int cdnaVariantStartPosition = cdnaCodingStart + cdsVariantStartPosition - 1;
-//        int cdnaVariantIndex = cdnaVariantStartPosition - 1;
-
-        // Prepare reference and alternate variant alleles
-
-
-        switch (this.variant.getType()) {
-            case SNV:
-                this.calculateSnvHgvs();
-                break;
-            case INDEL:
-                this.calculateInsertionHgvs();
-                break;
-            case INSERTION:
-                break;
-            case DELETION:
-                break;
-        }
-
-        return calculateHgvsString();
-    }
-
-    private BuildingComponents calculateSnvHgvs() {
-        BuildingComponents buildingComponents = new BuildingComponents();
-
-        String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
-
-        // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
-        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
-        String referenceCodon = transcriptUtils.getCodon(codonPosition);
-        String referenceAminoacid = VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
-
-        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
-        char[] chars = referenceCodon.toCharArray();
-        chars[positionAtCodon - 1] = alternate.charAt(0);
-        String alternateAminoacid = VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
-
-        // Step 2 -
-        if (referenceAminoacid.equals(alternateAminoacid)) {
-            // SILENT mutation, this includes one STOP codon to another STOP codon
-//            return "p." + referenceAminoacid + codonPosition + "=";
-        } else {    // Different aminocacid, several scenarios
-            if (referenceCodon.equalsIgnoreCase("STOP")) {
-                // STOP lost     --> extension
-                //  call to frameshift
-                return buildingComponents;
-            }
-
-            if (alternateAminoacid.equalsIgnoreCase("STOP")) {
-                // NONSENSE
-    //            return "p." + referenceAminoacid + codonPosition + "Ter";
-                return buildingComponents;
-            }
-
-            // MISSENSE --> Substitution
-            //            return "p." + referenceAminoacid + codonPosition + alternateAminoacid;
-
-        }
-        return buildingComponents;
-    }
-
-    private BuildingComponents calculateInsertionHgvs() {
-
-        return null;
-    }
-
-    private BuildingComponents calculateFrameshiftHgvs(String alternateCdnaSequence) {
-
-        return null;
-    }
 
     private void processBuildingComponents() {
 
@@ -345,17 +322,6 @@ public class HgvsProteinCalculator {
 
         StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getProteinId()))
                 .append(HgvsCalculator.PROTEIN_CHAR);
-
-        switch (buildingComponents.getMutationType()) {
-            case SUBSTITUTION:
-
-                break;
-            case INSERTION:
-
-                break;
-            default:
-                break;
-        }
 
         if (BuildingComponents.MutationType.DUPLICATION.equals(buildingComponents.getMutationType())) {
             if (buildingComponents.getAlternate().length() == 1) {

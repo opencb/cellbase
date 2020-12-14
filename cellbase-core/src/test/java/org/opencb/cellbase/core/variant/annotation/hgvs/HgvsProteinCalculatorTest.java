@@ -61,7 +61,7 @@ public class HgvsProteinCalculatorTest {
                 "A");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", predictor.calculate());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
     }
 
     @Test
@@ -110,7 +110,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "CTTCATGGAAGAACCC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculate());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GGGT");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000453513:p.Tyr202TrpfsTer7", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000453513:p.Tyr202TrpfsTer7", predictor.calculate());
 
         //19:11111569:-:GGGT      19      11111569        -       GGGT    indel   ENSP00000252444 p.Tyr460TrpfsTer7       p.Gly459TrpfsTer41      fs_shorthand_diff_pos
         transcript = getTranscript(gene, "ENST00000252444");
@@ -135,7 +135,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GGGT");
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000252444:p.Tyr460TrpfsTer7", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000252444:p.Tyr460TrpfsTer7", predictor.calculate());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GTGT");    // ACAC
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculate());
     }
 
     // phase 1
@@ -179,7 +179,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculate());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class HgvsProteinCalculatorTest {
                 "AAACTCTGTTCAAGATAGGGTATGATTACAAATTGGAACAGATCAAAAAGGGATATGATGCACCTCTTTGCAATCTGTTACTGTTTAAAAAGGTCAAGGCCCTGCTGGGAGGGAATGTCCGCATGATGCTGTCTGGAGGGGCCCCGCTATCTCCTCAGACACACCGATTCATGAATGTCTGCTTCTGCTGCCCAATTGGCCAGGGTTATGGACTGACAGAATCATGTGGTGCTGGGACAGTTACTGAAGTAACTGACTATACTACTGGCAGAGTTGGAGCACCTCTTATTTGCTGTGAAATTAAGCTAAAAGACTGGCAAGAAGGCGGTTATACAATTAATGACAAGCCAAACCCCAGAGGTGAAATCGTAATTGGTGGACAGAACATCTCCATGGGATATTTTAAAAATGAAGAGAAAACAGCAGAAGATTATTCTGTGGATGAAAATGGACAAAGGAACTTGGGTTGATATCTGCAATAATCCTGCTATGGAAGCTGAAATACTGAAAGAAATTCGAGAAGCTGCAAATGCCATGAAATTGGAGCGATTTGAAATTCCAATCAAGGTTCGATTAAGCCCAGAGCCATGGACCCCTGAAACTGGTTTGGTAACTGATGCTTTCAAACTGAAAAGGAAGGAGCTGAGGAACCATTACCTCAAAGACATTGAACGAATGTATGGGGGCAAATAAAAT";
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000423539:p.Tyr19IlefsTer2", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000423539:p.Tyr19IlefsTer2", predictor.calculate());
     }
 
     @Test
@@ -221,7 +221,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate());
     }
 
     //@Test
@@ -236,7 +236,7 @@ public class HgvsProteinCalculatorTest {
                 "CTC");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000404373:p.Pro167dup", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000404373:p.Pro167dup", predictor.calculate());
     }
 
     /////////////////////////////////////
@@ -256,7 +256,7 @@ public class HgvsProteinCalculatorTest {
                 "G",
                 "-");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculate());
     }
 
     //@Test
@@ -277,7 +277,7 @@ public class HgvsProteinCalculatorTest {
         String actual = predictor.getAlternateCdnaSequence();
         Assert.assertEquals(expected, actual);
 
-        Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate());
     }
 
     //@Test
@@ -292,7 +292,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculate());
 
         // off by one
         // 1861    11:75566844:CAAGCG:-    11      75566844        CAAGCG  -       indel   ENSP00000435452 p.Lys166_Arg167del      p.Lys166_Ser168del      del_cb_aa_1_out
@@ -304,7 +304,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000435452 p.Lys166_Arg167del", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000435452 p.Lys166_Arg167del", predictor.calculate());
 
         // shift
         // 20291   14:104714676:GAGGAC:-   14      104714676       GAGGAC  -       indel   ENSP00000376410 p.Asp1175_Glu1176del    p.Glu1176_Asp1178del    del_cb_aa_more_than_1_out
@@ -316,7 +316,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate());
     }
 
     //@Test
@@ -329,7 +329,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculate());
     }
 
 
@@ -348,7 +348,7 @@ public class HgvsProteinCalculatorTest {
                 "G",
                 "A");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000417079:p.Val428Met", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000417079:p.Val428Met", predictor.calculate());
     }
 
 //    @Test
@@ -363,7 +363,7 @@ public class HgvsProteinCalculatorTest {
                 "T");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000442578:p.Met1?", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000442578:p.Met1?", predictor.calculate());
     }
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
@@ -415,7 +415,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000374507:p.Trp845_Val848delinsLeu", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000374507:p.Trp845_Val848delinsLeu", predictor.calculate());
     }
 
 
