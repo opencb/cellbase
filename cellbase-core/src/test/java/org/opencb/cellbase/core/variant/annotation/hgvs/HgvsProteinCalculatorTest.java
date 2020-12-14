@@ -359,19 +359,43 @@ public class HgvsProteinCalculatorTest {
 
     }
 
-//    @Test
+    @Test
     public void testStopLoss() throws Exception {
         // Issue #7 - stop loss reported as missense
-//2731    12:132687314:A:T        12      132687314       A       T       snv     ENSP00000442578 p.Met1? p.Met1Lys       start_loss_as_missense
-        Gene gene = getGene("ENSG00000177084");
-        Transcript transcript = getTranscript(gene, "ENST00000537064");
-        Variant variant = new Variant("12",
+
+        // phase 0
+        // positive strand
+        //	3:183650359:G:A	3	183650359	G	A	snv	ENSP00000419120	p.Met1?	p.Met1Ile	start_loss_as_missense
+        Gene gene = getGene("ENSG00000114796");
+        Transcript transcript = getTranscript(gene, "ENST00000473045");
+        Variant variant = new Variant("3",
+                183650359,
+                "G",
+                "A");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Met1?", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000419120"));
+
+
+
+        // negative strand
+        // phase 0
+//2731    12:132687314:A:T        12      132687314       A       T       snv     ENSP00000442578 p.Met1? p.Met1Lys       q
+        gene = getGene("ENSG00000177084");
+        transcript = getTranscript(gene, "ENST00000537064");
+        variant = new Variant("12",
                 132687314,
                 "A",
                 "T");
 
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000442578:p.Met1?", predictor.calculate());
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Met1?", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000442578", "P08473"));
     }
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.

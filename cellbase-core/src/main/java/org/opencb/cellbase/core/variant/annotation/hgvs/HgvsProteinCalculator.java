@@ -38,6 +38,7 @@ public class HgvsProteinCalculator {
     private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
     protected BuildingComponents buildingComponents = null;
 
+
     /**
      * Constructor.
      *
@@ -123,8 +124,14 @@ public class HgvsProteinCalculator {
                 // NONSENSE
                 hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
             } else {
-                // MISSENSE --> Substitution
-                hgvsString = "p." + referenceAminoacid + codonPosition + alternateAminoacid;
+                if ("Met".equals(referenceAminoacid) && codonPosition == 1) {
+                    // stop lost
+                    hgvsString = "p.Met1?";
+                } else {
+                    // MISSENSE --> Substitution
+                    hgvsString = "p." + referenceAminoacid + codonPosition + alternateAminoacid;
+                }
+
             }
         }
         alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
@@ -132,8 +139,6 @@ public class HgvsProteinCalculator {
         List<String> proteinIds = Arrays.asList(transcript.getProteinID(), getUniprotAccession());
 
         // Debug
-
-
         System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
         System.out.println("codonPosition = " + codonPosition);
         System.out.println("referenceCodon = " + referenceCodon);
