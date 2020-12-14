@@ -3,11 +3,13 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -33,6 +35,7 @@ public class HgvsProteinCalculator {
     private static final String INS_SUFFIX = "ins";
     private static final String DUP_SUFFIX = "dup";
     private static final char STOP_CODON_INDICATOR = '*';
+    private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
     protected BuildingComponents buildingComponents = null;
 
     /**
@@ -47,7 +50,17 @@ public class HgvsProteinCalculator {
         this.transcriptUtils =  new TranscriptUtils(transcript);
     }
 
-    public String calculate() {
+    /**
+     * For the given variant and transcript, return the correctly formatted HGVSp string.
+     *
+     * @return HGVSp string for variant and transcript
+     */
+    public HgvsProtein calculate() {
+        // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
+        if (!transcriptUtils.isCoding() || transcript.getProteinSequence() == null) {
+            return null;
+        }
+
         switch (this.variant.getType()) {
             case SNV:
                 return calculateSnvHgvs();
@@ -57,7 +70,7 @@ public class HgvsProteinCalculator {
                     return calculateIndelHgvs();
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    return calculateIndelHgvs();
+                    break;
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
                             + "identifiers.");
@@ -75,50 +88,68 @@ public class HgvsProteinCalculator {
         return null;
     }
 
-    private String calculateSnvHgvs() {
+    private HgvsProtein calculateSnvHgvs() {
         String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
 
         // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart()) - 1;
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
-        String referenceCodon = transcriptUtils.getCodon(codonPosition);
+        String referenceCodon = transcript.getcDnaSequence().substring(variantCdnaPosition - 1, variantCdnaPosition - 1 + 3);
+        // three letter abbreviation
         String referenceAminoacid = VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
+                .buildUpperLowerCaseString(VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
 
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         char[] chars = referenceCodon.toCharArray();
         chars[positionAtCodon - 1] = alternate.charAt(0);
-        String alternateAminoacid = VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
+        // three letter abbreviation
+        String alternateAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(
+                VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars)));
+
+        String hgvsString;
 
         // Step 2 -
         if (referenceAminoacid.equals(alternateAminoacid)) {
             // SILENT mutation, this includes one STOP codon to another STOP codon
-            return "p." + referenceAminoacid + codonPosition + "=";
+            hgvsString = "p." + referenceAminoacid + codonPosition + "=";
         } else {    // Different aminocacid, several scenarios
             if (referenceCodon.equalsIgnoreCase("STOP")) {
                 // STOP lost     --> extension
                 //  call to frameshift
-                // FIXME
-                return "";
-            }
-
-            if (alternateAminoacid.equalsIgnoreCase("STOP")) {
+                hgvsString = "";
+            } else if (alternateAminoacid.equalsIgnoreCase("STOP")) {
                 // NONSENSE
-    //            return "p." + referenceAminoacid + codonPosition + "Ter";
-                // FIXME
-                return "";
+                hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
+            } else {
+                // MISSENSE --> Substitution
+                hgvsString = "p." + referenceAminoacid + codonPosition + alternateAminoacid;
             }
-
-            // MISSENSE --> Substitution
-            //            return "p." + referenceAminoacid + codonPosition + alternateAminoacid;
-
         }
-        // FIXME
-        return "";
+        alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+        alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
+        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), getUniprotAccession());
+
+        // Debug
+
+
+        System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+        System.out.println("codonPosition = " + codonPosition);
+        System.out.println("referenceCodon = " + referenceCodon);
+        System.out.println("referenceAminoacid = " + referenceAminoacid);
+        System.out.println("positionAtCodon = " + positionAtCodon);
+        System.out.println("alternateAminoacid = " + alternateAminoacid);
+
+        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println();
+//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
+        System.out.println(alternateProteinSequence);
+
+        return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
     }
 
-    private String calculateIndelHgvs() {
+    private HgvsProtein calculateIndelHgvs() {
         getAlternateProteinSequence();
 
         return calculateHgvsString();
@@ -126,11 +157,6 @@ public class HgvsProteinCalculator {
 
 
     private void getAlternateProteinSequence() {
-        // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
-        if (!transcriptUtils.isCoding() || transcript.getProteinSequence() == null) {
-            return;
-        }
-
         alternateProteinSequence = new StringBuilder();
         buildingComponents = new BuildingComponents();
 
@@ -223,11 +249,11 @@ public class HgvsProteinCalculator {
         System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
         System.out.println(alternateProteinSequence);
 
-        processBuildingComponents();
+        populateBuildingComponents();
     }
 
 
-    private void processBuildingComponents() {
+    private void populateBuildingComponents() {
 
         buildingComponents.setProteinId(transcript.getProteinID());
 
@@ -313,26 +339,26 @@ public class HgvsProteinCalculator {
      *
      * @return protein HGVS string
      */
-    public String calculateHgvsString() {
+    private HgvsProtein calculateHgvsString() {
 
         // wasn't able to process sequence, won't be able to build hgvs string
         if (buildingComponents == null) {
             return null;
         }
 
-        StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getProteinId()))
+        StringBuilder hgvsString = (new StringBuilder(buildingComponents.getProteinId()))
                 .append(HgvsCalculator.PROTEIN_CHAR);
 
         if (BuildingComponents.MutationType.DUPLICATION.equals(buildingComponents.getMutationType())) {
             if (buildingComponents.getAlternate().length() == 1) {
                 // assuming end = start - 1
-                stringBuilder.append(VariantAnnotationUtils
+                hgvsString.append(VariantAnnotationUtils
                         .buildUpperLowerCaseString(VariantAnnotationUtils
                                 .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
                         .append(buildingComponents.getEnd());
             } else {
                 // assuming end = start - 1
-                stringBuilder.append(VariantAnnotationUtils
+                hgvsString.append(VariantAnnotationUtils
                         .buildUpperLowerCaseString(VariantAnnotationUtils
                                 .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
                         .append(buildingComponents.getStart() - buildingComponents.getAlternate().length())
@@ -344,14 +370,14 @@ public class HgvsProteinCalculator {
                                                 .charAt(buildingComponents.getAlternate().length() - 1)))))
                         .append(buildingComponents.getEnd());
             }
-            stringBuilder.append(DUP_SUFFIX);
+            hgvsString.append(DUP_SUFFIX);
 //            .append(buildingComponents.getAlternate())
 
 
         } else {
             if (BuildingComponents.MutationType.EXTENSION.equals(buildingComponents.getMutationType())) {
                 try {
-                    stringBuilder.append(TERMINATION_SUFFIX)
+                    hgvsString.append(TERMINATION_SUFFIX)
                             .append(buildingComponents.getStart())
                             .append(VariantAnnotationUtils
                                     .buildUpperLowerCaseString(VariantAnnotationUtils
@@ -367,12 +393,12 @@ public class HgvsProteinCalculator {
                 if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
                     if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())
                             && buildingComponents.getTerminator() < 0) {
-                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                        hgvsString.append(buildingComponents.getReferenceEnd())
                                 .append(buildingComponents.getStart())
                                 .append(TERMINATION_SUFFIX);
                     } else {
                         // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
-                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                        hgvsString.append(buildingComponents.getReferenceEnd())
                                 .append(buildingComponents.getStart())
                                 .append(VariantAnnotationUtils.buildUpperLowerCaseString(buildingComponents.getAlternate()))
                                 .append(FRAMESHIFT_SUFFIX)
@@ -380,20 +406,20 @@ public class HgvsProteinCalculator {
 
                         if (buildingComponents.getTerminator() > 0) {
 //                stringBuilder.append(FRAMESHIFT_SUFFIX);
-                            stringBuilder.append(buildingComponents.getTerminator());
+                            hgvsString.append(buildingComponents.getTerminator());
                         } else {
-                            stringBuilder.append("?");
+                            hgvsString.append("?");
                         }
                     }
 
                 } else {
                     if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())) {
-                        stringBuilder.append(buildingComponents.getReferenceEnd())
+                        hgvsString.append(buildingComponents.getReferenceEnd())
                                 .append(buildingComponents.getStart())
                                 .append(TERMINATION_SUFFIX);
                     } else {
                         // assuming end = start - 1
-                        stringBuilder.append(buildingComponents.getReferenceStart())
+                        hgvsString.append(buildingComponents.getReferenceStart())
                                 .append(buildingComponents.getEnd())
                                 .append(HgvsCalculator.UNDERSCORE)
                                 .append(buildingComponents.getReferenceEnd())
@@ -405,8 +431,9 @@ public class HgvsProteinCalculator {
             }
         }
 
-        return stringBuilder.toString();
-
+        String alternateProteinSequence = getAlternateCdnaSequence();
+        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), getUniprotAccession());
+        return new HgvsProtein(proteinIds, hgvsString.toString(), alternateProteinSequence);
     }
 
     /**
@@ -516,5 +543,17 @@ public class HgvsProteinCalculator {
             }
         }
         return stringBuilder.toString();
+    }
+
+    private String getUniprotAccession() {
+        List<Xref> xrefs = transcript.getXrefs();
+        if (xrefs != null && !xrefs.isEmpty()) {
+            for (Xref xref : xrefs) {
+                if (UNIPROT_LABEL.equals(xref.getDbName())) {
+                    return xref.getId();
+                }
+            }
+        }
+        return null;
     }
 }

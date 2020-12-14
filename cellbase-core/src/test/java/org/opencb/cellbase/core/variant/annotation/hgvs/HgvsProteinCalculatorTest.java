@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +62,8 @@ public class HgvsProteinCalculatorTest {
                 "A");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", predictor.calculate());
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", hgvsProtein.getHgvs());
     }
 
     @Test
@@ -77,7 +79,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate());
+        Assert.assertEquals("ENSP00000443495:p.Lys71Ter", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -93,7 +95,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate());
+        Assert.assertEquals("ENSP00000424790:p.Ser301PhefsTer7", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -110,7 +112,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "CTTCATGGAAGAACCC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculate());
+        Assert.assertEquals("ENSP00000426761:p.Val9PhefsTer23", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -126,7 +128,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GGGT");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000453513:p.Tyr202TrpfsTer7", predictor.calculate());
+        Assert.assertEquals("ENSP00000453513:p.Tyr202TrpfsTer7", predictor.calculate().getHgvs());
 
         //19:11111569:-:GGGT      19      11111569        -       GGGT    indel   ENSP00000252444 p.Tyr460TrpfsTer7       p.Gly459TrpfsTer41      fs_shorthand_diff_pos
         transcript = getTranscript(gene, "ENST00000252444");
@@ -135,7 +137,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GGGT");
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000252444:p.Tyr460TrpfsTer7", predictor.calculate());
+        Assert.assertEquals("ENSP00000252444:p.Tyr460TrpfsTer7", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -152,7 +154,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "GTGT");    // ACAC
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculate());
+        Assert.assertEquals("ENSP00000461391:p.Cys8HisfsTer?", predictor.calculate().getHgvs());
     }
 
     // phase 1
@@ -179,7 +181,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculate());
+        Assert.assertEquals("ENSP00000457132:p.Asp786GlyfsTer38", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -202,7 +204,7 @@ public class HgvsProteinCalculatorTest {
                 "AAACTCTGTTCAAGATAGGGTATGATTACAAATTGGAACAGATCAAAAAGGGATATGATGCACCTCTTTGCAATCTGTTACTGTTTAAAAAGGTCAAGGCCCTGCTGGGAGGGAATGTCCGCATGATGCTGTCTGGAGGGGCCCCGCTATCTCCTCAGACACACCGATTCATGAATGTCTGCTTCTGCTGCCCAATTGGCCAGGGTTATGGACTGACAGAATCATGTGGTGCTGGGACAGTTACTGAAGTAACTGACTATACTACTGGCAGAGTTGGAGCACCTCTTATTTGCTGTGAAATTAAGCTAAAAGACTGGCAAGAAGGCGGTTATACAATTAATGACAAGCCAAACCCCAGAGGTGAAATCGTAATTGGTGGACAGAACATCTCCATGGGATATTTTAAAAATGAAGAGAAAACAGCAGAAGATTATTCTGTGGATGAAAATGGACAAAGGAACTTGGGTTGATATCTGCAATAATCCTGCTATGGAAGCTGAAATACTGAAAGAAATTCGAGAAGCTGCAAATGCCATGAAATTGGAGCGATTTGAAATTCCAATCAAGGTTCGATTAAGCCCAGAGCCATGGACCCCTGAAACTGGTTTGGTAACTGATGCTTTCAAACTGAAAAGGAAGGAGCTGAGGAACCATTACCTCAAAGACATTGAACGAATGTATGGGGGCAAATAAAAT";
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000423539:p.Tyr19IlefsTer2", predictor.calculate());
+        Assert.assertEquals("ENSP00000423539:p.Tyr19IlefsTer2", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -221,7 +223,7 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate());
+        Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate().getHgvs());
     }
 
     //@Test
@@ -236,7 +238,7 @@ public class HgvsProteinCalculatorTest {
                 "CTC");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000404373:p.Pro167dup", predictor.calculate());
+        Assert.assertEquals("ENSP00000404373:p.Pro167dup", predictor.calculate().getHgvs());
     }
 
     /////////////////////////////////////
@@ -256,7 +258,7 @@ public class HgvsProteinCalculatorTest {
                 "G",
                 "-");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculate());
+        Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculate().getHgvs());
     }
 
     //@Test
@@ -277,7 +279,7 @@ public class HgvsProteinCalculatorTest {
         String actual = predictor.getAlternateCdnaSequence();
         Assert.assertEquals(expected, actual);
 
-        Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate());
+        Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate().getHgvs());
     }
 
     //@Test
@@ -292,7 +294,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculate());
+        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculate().getHgvs());
 
         // off by one
         // 1861    11:75566844:CAAGCG:-    11      75566844        CAAGCG  -       indel   ENSP00000435452 p.Lys166_Arg167del      p.Lys166_Ser168del      del_cb_aa_1_out
@@ -304,7 +306,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000435452 p.Lys166_Arg167del", predictor.calculate());
+        Assert.assertEquals("ENSP00000435452 p.Lys166_Arg167del", predictor.calculate().getHgvs());
 
         // shift
         // 20291   14:104714676:GAGGAC:-   14      104714676       GAGGAC  -       indel   ENSP00000376410 p.Asp1175_Glu1176del    p.Glu1176_Asp1178del    del_cb_aa_more_than_1_out
@@ -316,7 +318,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate());
+        Assert.assertEquals("ENSP00000376410 p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
     }
 
     //@Test
@@ -329,7 +331,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculate());
+        Assert.assertEquals("ENSP00000369438:p.Cys95del", predictor.calculate().getHgvs());
     }
 
 
@@ -337,10 +339,12 @@ public class HgvsProteinCalculatorTest {
     ///////////// SNV /////////////
     /////////////////////////////////////
 
-    //@Test
+    @Test
     public void testSNV() throws Exception {
         // Issue #2 missing protein example
-//        59      3:155143536:G:A 3       155143536       G       A       snv     ENSP00000417079 p.Val428Met             cb_empty
+        // phase 0
+        // positive strand
+      //  61      3:155143536:G:A 3       155143536       G       A       snv     ENSP00000420389 p.Val428Met             cb_empty
         Gene gene = getGene("ENSG00000196549");
         Transcript transcript = getTranscript(gene, "ENST00000492661");
         Variant variant = new Variant("3",
@@ -348,7 +352,11 @@ public class HgvsProteinCalculatorTest {
                 "G",
                 "A");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000417079:p.Val428Met", predictor.calculate());
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Val428Met", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000420389", "P08473"));
+
     }
 
 //    @Test
@@ -399,7 +407,7 @@ public class HgvsProteinCalculatorTest {
 
         String expected =
                 "GACACACTCCTCTACAACACCAGAGACTCCCAAACACAAGGCCTTATATTGACTCATTTCAGCTCACATCCTGGCGACTCTCAAGAGAGAAACCTCAGAGTGACTAAAATCTCCATAATGAGAAGACATGTACATTCAGTATCTATTTTGGCATTTTCCCCAATACATCTCTGCTCATCTGACTCTTATCTTGGCATCTGCTTCCTGGTGGATCTGAACTGACCCATAAGCCACGCTTACTAGTGATTTTCCAGAAGATGAATCCGGCCTCGGCGCCCCCTCCGCTCCCGCCGCCTGGGCAGCAAGTGATCCACGTCACGCAGGACCTAGACACAGACCTCGAAGCCCTCTTCAACTCTGTCATGAATCCGAAGCCTAGCTCGTGGCGGAAGAAGATCCTGCCGGAGTCTTTCTTTAAGGAGCCTGATTCGGGCTCGCACTCGCGCCAGTCCAGCACCGACTCGTCGGGCGGCCACCCGGGGCCTCGACTGGCTGGGGGTGCCCAGCATGTCCGCTCGCACTCGTCGCCCGCGTCCCTGCAGCTGGGCACCGGCGCGGGTGCTGCGGGTAGCCCCGCGCAGCAGCACGCGCACCTCCGCCAGCAGTCCTACGACGTGACCGACGAGCTGCCACTGCCCCCGGGCTGGGAGATGACCTTCACGGCCACTGGCCAGAGGTACTTCCTCAATCACATAGAAAAAATCACCACATGGCAAGACCCTAGGAAGGCGATGAATCAGCCTCTGAATCATATGAACCTCCACCCTGCCGTCAGTTCCACACCAGTGCCTCAGAGGTCCATGGCAGTATCCCAGCCAAATCTCGTGATGAATCACCAACACCAGCAGCAGATGGCCCCCAGTACCCTGAGCCAGCAGAACCACCCCACTCAGAACCCACCCGCAGGGCTCATGAGTATGCCCAATGCGCTGACCACTCAGCAGCAGCAGCAGCAGAAACTGCGGCTTCAGAGAATCCAGATGGAGAGAGAAAGGATTCGAATGCGCCAAGAGGAGCTCATGAGGCAGGAAGCTGCCCTCTGTCGACAGCTCCCCATGGAAGCTGAGACTCTTGCCCCAGTTCAGGCTGCTGTCAACCCACCCACGATGACCCCAGACATGAGATCCATCACTAATAATAGCTCAGATCCTTTCCTCAATGGAGGGCCATATCATTCGAGGGAGCAGAGCACTGACAGTGGCCTGGGGTTAGGGTGCTACAGTGTCCCCACAACTCCGGAGGACTTCCTCAGCAATGTGGATGAGATGGATACAGGAGAAAACGCAGGACAAACACCCATGAACATCAATCCCCAACAGACCCGTTTCCCTGATTTCCTTGACTGTCTTCCAGGAACAAACGTTGACTTAGGAACTTTGGAATCTGAAGACCTGATCCCCCTCTTCAATGATGTAGAGTCTGCTCTGAACAAAAGTGAGCCCTTTCTAACCTGGCTTTAAGTAATCACTACCATTGTAACTTGGATGTAGCCATGACCTTACATTTCCTGGGCCTCTTGGAAAAAGTGATGGAGCAGAGCAAGTCTGCAGGTGCACCACTTCCCGCCTCCATGACTCGTGCTCCCTCCTTTTTATGTTGCCAGTTTAATCATTGCCTGGTTTTGATTGAGAGTAACTTAAGTTAAACATAAATAAATATTCTATTTTCATTTTCTGCAAGCCTGCGTTCTTGTGACAGATTATACAGAATTGTGTCTGCAGGATTGATTATGCAGAATACTTTTCTCTTTCTTCTCTGCTGCCCCATGGCTAAGCTTTATGGGTGTTAATTGAAATTTATACACCAATTGATTTTAAACCATAAAAAGCTGACCACAGGCAGTTACTTCTGAGGGCATCTTGGTCCAGGAAATGTGCACAAAATTCGACCTGATTTACAGTTTCAAAAACTGTATTGATGACAGTAGTACCAAATGCTTTAAAAACTATTTAACTTGAGCTTTAAAAATCATTGTATGGATAGTAAAATTCTACTGTATGGAATACAATGTAATTTTGAATCCATGCTGGCTCTGATGGCTCTTATTAGTCTGTATTTATAAAGGCACACAGTCCTATTGTAGCTTATCTTTCGTTATTTTACTGCAGAGCATCTAGACAACTTAGTCCCTCCAGCGGGAAAGTAGCAGCAGCAGCATTAGTCACAGGTCTTACACTACAGATCTTGTGAAAGAGACCAGTTTGGTACTAATTATGAGCATTTTATTCAAACAAAAGTTTTTGAAATATTACAACTGGGGATTTAAAAAATTGCAGCTTAGAATCTGATGGTTTTTTTTTTTCTTGATGTTGTTTGTTTGTTTTTGAGATCGAGTTTTGCTCTTGTTGTCCAGGCTGGAATGCAATGGCACAATCTCGGCTCACTGCAACCTCTGCCTTCTGGGTTCAAGCGATTCTCCTGCCTTAGCCTCCCGAGTAGCTGGGATTACAGGCACCTGCCACCACGTCCGGCTAATTTTTTGTATTTTGAGTAGAGACGGGGTTTCACCATAATGGTCAGGCTGTTCTCAAACTCCTGATCTCAGGTGATCCACCCATCTCGGCCTCCCAAAGTGCTGGGATTACTGGCGTGAGCCACCGCACCCGGCCTTGATGTTTATTTTATAAAGCACTGTAATTTTGTAGCTGATGACAAAAGGCAGCCAAATGTTTTTGATAAATCAGTGGCAACTGTATTTTTGTCTTTTGAAATAACTCTGAAAACATCAGGACAACATAGATTTCAACCTGATAGCACACCACACACAGTGAGCTGTTGCTTTTTAAATTCTGAAGCCTTGTCAGGTTTGCTTCCTAGATTTCAAGTGTTTAAAATAATTCTATCTATGAAACTGAAGGATGAAGCAGATCTCTGACTGACATGTAAAAAAAAATGCCCTTTGAGGGTGTATGGTGGAGATAAATGTTTCTGAATTCAGTAAAATTGATTCCTAAGTATATTATCCTAATCCTGTTTGCTACAGTTGGTATAAAAAGGCATGAAATATGTATTCAATACCTCTTATGTAACCAAAACCATTTTTAATTAGCTTTTAAGGACTGAGAGAGCATCATGTTCAACTGGCATGCAGTCTGCCTGCATTGCCAATGAAGTCCTCAACTGTTTAATATTTTGAACTAATATTATTTATAATCTATGAATTTAATCTTTTTTGAAAGACTTTAATAATTTGAGTCTCTGAGAGGATACTTTCAATTTCCATGGGGGACTTATTTGTTGGGGATCTTAAATAAGATTCCTTTTGATCTACCGGAATATACATGTACAGAGTACATTGGATCATGTTGGAAAGAAGGCAAGTGAAAAGGTCAGAGATGAAGTAGCAAAGTTATGGAATATCGTGGAAAGGATACTAGTTGTGAAATGGAAAGAGACAAGTTATAGTACCCCAAAAGCAAAACAAGCAGGAGATGCAAGAGATGCCCCAAAAGGACAAAGCAACAATTTTCTGTTGCCACCTTTATACCGGAAGACTCTGTTGTAGAAGAAAAGAAGGCTTTGGTGCACCTTATGTGGGAGGAGGAGGGGCAGGGCATGCTGATGCTGAGCGTACAGGCAGACAAGAGCGTAGCCTGCTGTTGCCTCCATCACTATGAAATGACTTATTTTACCTGAAGGACCCATGGTTTATGTTCCTCTAATTCCTTTCACTCTCCCTAAGCCCTCTGAGAGAGATGAAGATAGATGATTTTATTGCTACTAAATTGAAGGGAGCACTATTTCTTTTTGTCTTTTGTTAGCAAAAAATTGCAAAAAGAATTGTACATTCTTGCTAAAAATAAATAAATAAATAAAAAATTAAAAAAACAAGGGACCTAACAAAACTCAGCAGTGTTACTGTATTTTTAAAAAATATTTTTATAGACTCATTTTCAGGTTATTAAATGTAAGAGAAACAGATACCCCTCTTTTTTAAAGTAGGTAAATCATTGATGATTTATATTACCAATTTTTAGAAGTAATTTTCTAGTAAGCTTGTGGCATCAGAAAATACTAGAAGATTTTTTTAGTTAAATTAGTTAGAACATTTATGAATGAATATAATAAATATTTTTTCAGAATAAAATATGGACCCTTTGTGTTTACTAATAGATAAAGCCAGATATAATTTTTTGTTTTTAAGGCCACAAAATATGGCCTTTGTTAAAGAACACTAAAGTTAGAAATCTAAAGTTAGAGCAACTTTTTAATGGCTATTTCCTATTATTGTAAGTGTTAAAACCCCTGCAGAATTCTTGATAAGGTGCTATTTATACTATATTTCTTATTATAAGATAACTGTCTTTAGTCTTCTTAGTACTAGTCTTTTTAGTACTAAATCAATCAGTAAACATCATCATTTCACCCCAAAATTTTGTCACAGAAAAGGCGTATCAAATGAAAAATAATTTCAGAGATCTTTCTTTCAAGATATTTTTTCCTGATAAAATACATTGTCTTGAAGTAAATACATTGTCAAAACCTAATTGCAATTCTGTTAAATCTAAGTAATTTTTAGACAGTGTTTCACCGTATTATTTAGGATGTGAAATGCCATTTCTTTCACTGATTACACCATATACAGGAAACAGGTAAAACAGTGAAAACTTTATTGTGCTGGTTGATGCCAACTTGGTTGAAAAGCTCTCTGCAGAAGAAGTGATCTAGACTGACAGAAGTGTTGCTAATTACAAGTTGTGTTCTCATGACGTAATTAGAAAGTAACTTCTCAAAGTACAACTTTTATGAAAAAAATAAGCTGTTAAAAAAAGGAAATCGTAGGTTAATTTAATTGGGAAAATGGGCAATTGACAGAGACCATTTTCCTAACACATATATGTGCTAGTACTTTAACTTTTTAAAATTTTACTTCTACGTTTTGTAATATAAAAATTTCTATTTTAAGTTTAGAATGTTATACGTACCGAAAGTATGCAGCCAAATCGATCAGATCAAACCATTTTACCTGGAGTTTGGTACTGGTTTTTACTTCTCTGAATCTGTATAAGAAAAATAAAGACAATTGAACTTCCA";
-        Assert.assertEquals("ENSP00000419465:p.Leu400fs", predictor.calculateHgvsString());
+        Assert.assertEquals("ENSP00000419465:p.Leu400fs", predictor.calculate());
     }
 
 
