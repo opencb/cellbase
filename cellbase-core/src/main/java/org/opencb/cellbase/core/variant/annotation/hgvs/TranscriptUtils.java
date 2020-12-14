@@ -57,9 +57,9 @@ public class TranscriptUtils {
     public int cdsToCdna(int cdsPosition) {
         int cdnaPosition = 0;
         // TODO We need to make sure CdsLength includes the STOP codon
-        //if (cdsPosition <= transcript.getCdsLength()) {
+        if (cdsPosition <= transcript.getCdsLength()) {
             cdnaPosition = cdsPosition + transcript.getCdnaCodingStart() - 1;
-        //}
+        }
         return cdnaPosition;
     }
 
@@ -98,9 +98,9 @@ public class TranscriptUtils {
 
     public String getCodon(int codonPosition) {
         if (codonPosition > 0) {
-            int cdsCodonStart = ((codonPosition - 1) / 3) + 1;
-            //int cdnaCodonStart = cdsToCdna(cdsCodonStart);
-            return transcript.getcDnaSequence().substring(cdsCodonStart, cdsCodonStart + 3);
+            int cdsCodonStart = ((codonPosition - 1) * 3) + 1;
+            int cdnaCodonStart = cdsToCdna(cdsCodonStart);
+            return transcript.getcDnaSequence().substring(cdnaCodonStart, cdnaCodonStart + 3);
         }
         return "";
     }
