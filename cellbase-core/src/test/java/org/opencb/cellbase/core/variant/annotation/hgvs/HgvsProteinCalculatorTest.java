@@ -226,7 +226,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDuplicationAsNonsense() throws Exception {
         // Issue #9 Dups reported as nonsense
         // 12271   X:71137733:-:CTC        X       71137733        -       CTC     indel   ENSP00000404373 p.Pro167dup     p.Tyr168Ter     vep_dup_cb_ter
@@ -275,7 +275,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate().getHgvs());
     }
 
-    @Test
+    //@Test
     public void testDeletion() throws Exception {
         // Issue #4
         // 6:121447732:TTC:-  indel   ENSP00000282561 p.Ser297del     p.Ser297_Cys298del      del_cb_aa_1_out
@@ -314,7 +314,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
     }
 
-    @Test
+    //@Test
     public void testDeletion1() throws Exception {
         Gene gene = getGene("ENSG00000221859");
         Transcript transcript = getTranscript(gene, "ENST00000380095");
@@ -371,8 +371,8 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Met1?", hgvsProtein.getHgvs());
 
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000419120"));
-
-
+        // uniprot trembl name, not swissprot
+        //assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("C9JXR5"));
 
         // negative strand
         // phase 0
