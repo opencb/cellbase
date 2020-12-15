@@ -215,12 +215,13 @@ public class HgvsProteinCalculator {
                     // p.Ala3_Ser5dup (several amino acids)
                     //  a duplication of amino acids Ala3 to Ser5 in the sequence MetGlyAlaArgSerSerHis to MetGlyAlaArgSerAlaArgSerSerHis
 
+                    // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion
                     String aaAfterDuplication = transcript.getProteinSequence()
-                            .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                            .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
                     while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDuplication)) {
                         aminoacidPosition += codedAminoacids.size();
                         aaAfterDuplication = transcript.getProteinSequence()
-                                .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                                .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
                     }
 
                     if (aminoacids.size() == 1) {
