@@ -199,9 +199,10 @@ public class HgvsProteinCalculator {
                 // Get position and flanking amino acids
                 int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
                 int aminoacidPosition = codonPosition;
-                String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 1, codonPosition);
+                String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 2, codonPosition - 1);
                 String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-                String rightCodedAa = transcript.getProteinSequence().substring(codonPosition, codonPosition + 1);
+                int codonIndex = codonPosition - 1;
+                String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
                 String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
                 // Create HGVS string
@@ -236,8 +237,6 @@ public class HgvsProteinCalculator {
                     // compared to the reference sequence, one or more amino acids are inserted, which is not a frame shift and
                     // where the insertion is not a copy of a sequence immediately N-terminal (5')
                     if (aminoacids.size() <= 5) {
-
-
                         // p.Lys2_Gly3insGlnSerLys
                         //  the insertion of amino acids GlnSerLys between amino acids Lys2 and Gly3
                         //  changing MetLysGlyHisGlnGlnCys to MetLysGlnSerLysGlyHisGlnGlnCys
@@ -263,6 +262,13 @@ public class HgvsProteinCalculator {
                         }
                     }
                 }
+
+                // Debug
+                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+                System.out.println("codonPosition = " + codonPosition);
+                System.out.println("positionAtCodon = " + positionAtCodon);
+                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+                System.out.println();
 
                 StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
                 alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codedAminoacids, ""));
