@@ -64,6 +64,23 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
+    public void testDup() throws Exception {
+//2:51027601:-:CCTCGCCCT  2       51027601        -       CCTCGCCCT       indel   ENSP00000490017 p.Glu75_Glu77dup        p.Gly78Ter      vep_dup_cb_ter
+        Gene gene = getGene("ENSG00000179915");
+        Transcript transcript = getTranscript(gene, "ENST00000636066");
+        Variant variant = new Variant("2",
+                51027601,
+                "-",
+                "CCTCGCCCT");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("ENSP00000490017:p.Glu75_Glu77dup", hgvsProtein.getHgvs());
+    }
+
+
+
+    @Test
     public void testInsertionPositiveStrandPhase0() throws Exception {
         // 17:18173905:-:A  indel   ENSP00000408800 p.Leu757AlafsTer79      p.Leu757fs      fs_shorthand_same_pos
         // phase 0
