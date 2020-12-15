@@ -370,7 +370,7 @@ public class HgvsProteinCalculator {
                     }
 
                     // Get flanking amino acids
-                    String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 1, codonPosition);
+                    String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 2, codonPosition - 1);
                     String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
 
                     // Only 1 amino acid deleted
@@ -380,13 +380,14 @@ public class HgvsProteinCalculator {
                         hgvsString = "p." + leftAa + aminoacidPosition + "del";
                     } else {
                         // More than 1 amino acid deleted, calculate the right flank
+                        int aminoAcidIndex = aminoacidPosition - 1;
                         String rightCodedAa = transcript.getProteinSequence()
-                                .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                                .substring(aminoAcidIndex + aminoacids.size() - 1, aminoAcidIndex + aminoacids.size());
                         String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
                         // NP_003997.1:p.Lys23_Val25del
                         //  a deletion of amino acids Lys23 to Val25 in reference sequence NP_003997.1
-                        hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "del";
+                        hgvsString = "p." + leftAa + aminoAcidIndex + "_" + rightAa + (aminoAcidIndex + aminoacids.size() - 1) + "del";
                     }
                 }
             }

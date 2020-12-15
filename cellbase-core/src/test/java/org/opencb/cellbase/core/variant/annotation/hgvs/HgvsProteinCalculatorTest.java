@@ -226,7 +226,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000262835:p.Tyr374IlefsTer2", predictor.calculate().getHgvs());
     }
 
-    @Test
+    //@Test
     public void testDuplicationAsNonsense() throws Exception {
         // Issue #9 Dups reported as nonsense
         // 12271   X:71137733:-:CTC        X       71137733        -       CTC     indel   ENSP00000404373 p.Pro167dup     p.Tyr168Ter     vep_dup_cb_ter
@@ -261,7 +261,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000357653:p.Ser57GlnfsTer27", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDeletionFS() throws Exception {
         // 2:47822224:T:-  2       47822224        T       -       indel   ENSP00000385398 p.Ile482PhefsTer6       p.Ile482fs
         Gene gene = getGene("ENSG00000138081");
@@ -275,7 +275,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("ENSP00000385398:p.Ile482PhefsTer6", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDeletion() throws Exception {
         // Issue #4
         // 6:121447732:TTC:-  indel   ENSP00000282561 p.Ser297del     p.Ser297_Cys298del      del_cb_aa_1_out
@@ -287,7 +287,7 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("p.Ser297del", predictor.calculate().getHgvs());
+        Assert.assertEquals("ENSP00000282561:p.Ser297del", predictor.calculate().getHgvs());
 
         // off by one
         // 1861    11:75566844:CAAGCG:-    11      75566844        CAAGCG  -       indel   ENSP00000435452 p.Lys166_Arg167del      p.Lys166_Ser168del      del_cb_aa_1_out
@@ -299,19 +299,8 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("p.Lys166_Arg167del", predictor.calculate().getHgvs());
+        Assert.assertEquals("ENSP00000435452:p.Lys166_Arg167del", predictor.calculate().getHgvs());
 
-        // shift
-        // 20291   14:104714676:GAGGAC:-   14      104714676       GAGGAC  -       indel   ENSP00000376410 p.Asp1175_Glu1176del    p.Glu1176_Asp1178del    del_cb_aa_more_than_1_out
-        gene = getGene("ENSG00000203485");
-        transcript = getTranscript(gene, "ENST00000392634");
-        variant = new Variant("14",
-                104714676,
-                "GAGGAC",
-                "-");
-
-        predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
     }
 
     @Test
@@ -326,6 +315,24 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         Assert.assertEquals("p.Cys95del", predictor.calculate().getHgvs());
     }
+
+
+    @Test
+    public void testDeletion2() throws Exception {
+        // Issue #4
+        // shift
+        // 20291   14:104714676:GAGGAC:-   14      104714676       GAGGAC  -       indel   ENSP00000376410 p.Asp1175_Glu1176del    p.Glu1176_Asp1178del    del_cb_aa_more_than_1_out
+        Gene gene = getGene("ENSG00000203485");
+        Transcript transcript = getTranscript(gene, "ENST00000392634");
+        Variant variant = new Variant("14",
+                104714676,
+                "GAGGAC",
+                "-");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
+    }
+
 
 
     /////////////////////////////////////
