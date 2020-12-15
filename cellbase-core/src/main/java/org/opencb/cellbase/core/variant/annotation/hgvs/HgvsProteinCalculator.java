@@ -274,13 +274,13 @@ public class HgvsProteinCalculator {
      * @return
      */
     private HgvsProtein calculateDeletionHgvs() {
-        // Insertion must fall inside the coding region
+        // Deletion must fall inside the coding region
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
         if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
             return null;
         }
 
-        // Check if this is an in frame insertion
+        // Check if this is an in frame deletion
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         if (positionAtCodon == 1 && variant.getAlternate().length() % 3 == 0) {
             String hgvsString;
@@ -327,9 +327,9 @@ public class HgvsProteinCalculator {
                 //  a deletion of amino acid Trp4 in the sequence MetLeuTrpTrpGlu to MetLeuTrp_Glu
                 //  NOTE: for deletions in single amino acid stretches or tandem repeats, the most C-terminal residue is arbitrarily
                 //  assigned to have been deleted
-                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + aminoacids.size())
-                        .equals(StringUtils.join(aminoacids, ""))) {
-                    aminoacidPosition += aminoacids.size();
+                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + codedAminoacids.size())
+                        .equals(StringUtils.join(codedAminoacids, ""))) {
+                    aminoacidPosition += codedAminoacids.size();
                 }
 
                 // Get flanking amino acids
