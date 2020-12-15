@@ -19,7 +19,11 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 public class TranscriptUtils {
 
@@ -169,6 +173,18 @@ public class TranscriptUtils {
         }
         // We add 1 to get the position not index
         return ((cdsPosition - 1) % 3) + 1;
+    }
+
+    public String getXrefId(String sourceDatabase) {
+        List<Xref> xrefs = transcript.getXrefs();
+         if (xrefs != null && !xrefs.isEmpty()) {
+            for (Xref xref : xrefs) {
+                if (sourceDatabase.equals(xref.getDbName())) {
+                    return xref.getId();
+                }
+            }
+        }
+        return null;
     }
 
     public String getFormattedCdnaSequence() {

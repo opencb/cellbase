@@ -3,7 +3,6 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.slf4j.Logger;
@@ -135,7 +134,7 @@ public class HgvsProteinCalculator {
         }
         alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
         alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
-        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), getUniprotAccession());
+        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
 
         // Debug
         System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
@@ -436,7 +435,7 @@ public class HgvsProteinCalculator {
         }
 
         String alternateProteinSequence = getAlternateCdnaSequence();
-        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), getUniprotAccession());
+        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
         return new HgvsProtein(proteinIds, hgvsString.toString(), alternateProteinSequence);
     }
 
@@ -549,15 +548,4 @@ public class HgvsProteinCalculator {
         return stringBuilder.toString();
     }
 
-    private String getUniprotAccession() {
-        List<Xref> xrefs = transcript.getXrefs();
-        if (xrefs != null && !xrefs.isEmpty()) {
-            for (Xref xref : xrefs) {
-                if (UNIPROT_LABEL.equals(xref.getDbName())) {
-                    return xref.getId();
-                }
-            }
-        }
-        return null;
-    }
 }
