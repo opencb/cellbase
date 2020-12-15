@@ -22,7 +22,6 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 public class TranscriptUtils {
@@ -112,9 +111,9 @@ public class TranscriptUtils {
     }
 
     /**
-     * Returns the codon position 1-based for a CDS position
-     * @param cdsPosition
-     * @return
+     * Returns the codon position 1-based for a CDS position.
+     * @param cdsPosition CDS position
+     * @return Codon position
      */
     public int getCodonPosition(int cdsPosition) {
         // cdsPosition might need adjusting for transcripts with unclear start
@@ -144,8 +143,8 @@ public class TranscriptUtils {
     }
 
     /**
-     * Returns the position 1-based in the codon
-     * @param cdsPosition
+     * Returns the position 1-based in the codon.
+     * @param cdsPosition CDS position
      * @return Valid values are 1, 2 or 3. When incomplete codon then 0 is returned.
      */
     public int getPositionAtCodon(int cdsPosition) {
