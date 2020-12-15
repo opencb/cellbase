@@ -50,20 +50,17 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testInsertion() throws Exception {
-        // 17:18173905:-:A  indel   ENSP00000408800 p.Leu757AlafsTer79      p.Leu757fs      fs_shorthand_same_pos
-        // phase 0
-        // positive strand
-        // confirmed start
-        Gene gene = getGene("ENSG00000091536");
-        Transcript transcript = getTranscript(gene, "ENST00000418233");
-        Variant variant = new Variant("17",
-                18173905,
+//9:83970290:-:TGA        9       83970290        -       TGA     indel   ENSP00000365439 p.Lys411_Gln412insSer   p.Lys411_Gln412insSer
+        Gene gene = getGene("ENSG00000165119");
+        Transcript transcript = getTranscript(gene, "ENST00000376263");
+        Variant variant = new Variant("9",
+                83970290,
                 "-",
-                "A");
+                "TGA");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("ENSP00000408800:p.Leu757AlafsTer79", hgvsProtein.getHgvs());
+        Assert.assertEquals("p.Lys411_Gln412insSer", hgvsProtein.getHgvs());
     }
 
     @Test

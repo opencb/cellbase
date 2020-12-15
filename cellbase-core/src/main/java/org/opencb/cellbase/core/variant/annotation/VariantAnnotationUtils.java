@@ -515,6 +515,16 @@ public class VariantAnnotationUtils {
         SO_NAMES_CORRECTIONS.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");
     }
 
+    public static String buildUpperLowerCaseStrings(String aa) {
+        StringBuilder stringBuilder = new StringBuilder(aa);
+
+        for (int i = 1; i < stringBuilder.length(); i++) {
+            stringBuilder.setCharAt(i, String.valueOf(stringBuilder.charAt(i)).toLowerCase().charAt(0));
+        }
+
+        return stringBuilder.toString();
+    }
+
     public static String buildUpperLowerCaseString(String aa) {
         StringBuilder stringBuilder = new StringBuilder(aa);
 

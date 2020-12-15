@@ -192,7 +192,7 @@ public class HgvsProteinCalculator {
                 for (int i = 0; i < alternate.length(); i += 3) {
                     alternateCodon = alternate.substring(i, i + 3);
                     String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
-                    aminoacids.add(alternateAa);
+                    aminoacids.add(VariantAnnotationUtils.buildUpperLowerCaseString(alternateAa));
                     codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
                 }
 
@@ -236,6 +236,8 @@ public class HgvsProteinCalculator {
                     // compared to the reference sequence, one or more amino acids are inserted, which is not a frame shift and
                     // where the insertion is not a copy of a sequence immediately N-terminal (5')
                     if (aminoacids.size() <= 5) {
+
+
                         // p.Lys2_Gly3insGlnSerLys
                         //  the insertion of amino acids GlnSerLys between amino acids Lys2 and Gly3
                         //  changing MetLysGlyHisGlnGlnCys to MetLysGlnSerLysGlyHisGlnGlnCys
