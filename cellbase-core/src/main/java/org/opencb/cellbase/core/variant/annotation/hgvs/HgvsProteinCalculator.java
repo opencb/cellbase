@@ -71,7 +71,7 @@ public class HgvsProteinCalculator {
                     return calculateIndelHgvs();
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    break;
+                    return calculateDeletionHgvs();
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
                             + "identifiers.");
@@ -80,13 +80,12 @@ public class HgvsProteinCalculator {
             case INSERTION:
                 return this.calculateInsertionHgvs();
             case DELETION:
-                break;
+                return calculateDeletionHgvs();
             default:
                 // TODO throw an error?
                 logger.error("Don't know how to handle variant of type {}", variant.getType());
                 return null;
         }
-        return null;
     }
 
     private HgvsProtein calculateSnvHgvs() {
@@ -123,7 +122,7 @@ public class HgvsProteinCalculator {
                 hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
             } else {
                 if ("Met".equals(referenceAminoacid) && codonPosition == 1) {
-                    // stop lost
+                    // start lost
                     hgvsString = "p.Met1?";
                 } else {
                     // MISSENSE --> Substitution

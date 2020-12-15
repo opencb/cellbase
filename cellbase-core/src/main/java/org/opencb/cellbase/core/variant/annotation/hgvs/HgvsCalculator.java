@@ -82,7 +82,17 @@ public class HgvsCalculator {
             // Can be null if there's no hgvs implementation for the variant type
             if (hgvsCalculator != null) {
                 // Normalization set to false - if needed, it would have been done already two lines above
-                return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
+                //return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
+                HgvsProteinCalculator hgvsProteinCalculator = new HgvsProteinCalculator(variant, transcript);
+                HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
+                if (hgvsProtein != null) {
+                    List<String> hgvsStrings = new ArrayList<>();
+                    for (String id : hgvsProtein.getIds()) {
+                        String hgvsString = id + ":" + hgvsProtein.getHgvs();
+                        hgvsStrings.add(hgvsString);
+                    }
+                    return hgvsStrings;
+                }
             }
         }
         return Collections.emptyList();
