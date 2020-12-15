@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Predicts AA sequence given a transcript and a variant.
@@ -195,6 +196,7 @@ public class HgvsProteinCalculator {
 
                 // Get position and flanking amino acids
                 int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+                int aminoacidPosition = codonPosition;
                 String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 1, codonPosition);
                 String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
                 String rightCodedAa = transcript.getProteinSequence().substring(codonPosition, codonPosition + 1);
@@ -202,7 +204,7 @@ public class HgvsProteinCalculator {
 
                 // Create HGVS string
                 // IMPORTANT: Check if this is a HGVS Duplication instead of a HGVS Insertion
-                String previousSequence = transcript.getProteinSequence().substring(codonPosition - aminoacids.size() - 1, codonPosition);
+                String previousSequence = transcript.getProteinSequence().substring(codonPosition - aminoacids.size() - 1, codonPosition - 1);
                 if (previousSequence.equals(StringUtils.join(codedAminoacids, ""))) {
                     // HGVS Duplication: a sequence change between the translation initiation (start) and termination (stop) codon where,
                     // compared to a reference sequence, a copy of one or more amino acids are inserted directly C-terminal
@@ -212,6 +214,15 @@ public class HgvsProteinCalculator {
                     //  a duplication of amino acid Ala3 in the sequence MetGlyAlaArgSerSerHis to MetGlyAlaAlaArgSerSerHis
                     // p.Ala3_Ser5dup (several amino acids)
                     //  a duplication of amino acids Ala3 to Ser5 in the sequence MetGlyAlaArgSerSerHis to MetGlyAlaArgSerAlaArgSerSerHis
+
+                    String aaAfterDuplication = transcript.getProteinSequence()
+                            .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                    while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDuplication)) {
+                        aminoacidPosition += codedAminoacids.size();
+                        aaAfterDuplication = transcript.getProteinSequence()
+                                .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                    }
+
                     if (aminoacids.size() == 1) {
                         hgvsString = "p." + leftAa + codonPosition + "dup";
                     } else {
@@ -229,14 +240,15 @@ public class HgvsProteinCalculator {
                                 + rightAa + codonPosition + "ins" + StringUtils.join(aminoacids, "");
                     } else {
                         // Check if last amino acid inserted is a STOP codon:
-                        if (aminoacids.get(aminoacids.size() - 1).equalsIgnoreCase("STOP")) {
+                        int stopPosition = aminoacids.indexOf("STOP") + 1;
+                        if (stopPosition > 0) {
                             // NP_060250.2:p.Gln746_Lys747ins*63
                             //  the in-frame insertion of a 62 amino acid sequence ending at a stop codon at position *63 between
                             //  amino acids Gln746 and Lys747.
                             //  NOTE: it must be possible to deduce the inserted amino acid sequence from the description given
                             //  at DNA or RNA level
                             hgvsString = "p." + leftAa + (codonPosition - 1) + "_"
-                                    + rightAa + codonPosition + "ins" + "*" + aminoacids.size();
+                                    + rightAa + codonPosition + "ins" + "*" + stopPosition;
                         } else {
                             // p.Arg78_Gly79ins23
                             //  the in-frame insertion of a 23 amino acid sequence between amino acids Arg78 and Gly79
@@ -281,13 +293,16 @@ public class HgvsProteinCalculator {
 
         // Check if this is an in frame deletion
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
-        if (positionAtCodon == 1 && variant.getAlternate().length() % 3 == 0) {
+        if (positionAtCodon == 1 && variant.getReference().length() % 3 == 0) {
             String hgvsString;
 
             // Prepare variables
             int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
             int aminoacidPosition = codonPosition;
-            int deletionLength = variant.getAlternate().length() / 3;
+//            if (transcript.getProteinSequence().startsWith("X")) {
+//                aminoacidPosition++; // ??
+//            }
+            int deletionLength = variant.getReference().length() / 3;
 
 
             // Check for a very special case when the first Met1 is deleted but is flanked by another Met:
@@ -307,11 +322,11 @@ public class HgvsProteinCalculator {
                 hgvsString = "p." + leftAa + aminoacidPosition + "_ " + rightAa + (aminoacidPosition + deletionLength - 1) + "del";
             } else {
                 // Get HGVS for the normal Deletion
-                List<String> aminoacids =  new ArrayList<>(variant.getAlternate().length() / 3);
-                List<String> codedAminoacids =  new ArrayList<>(variant.getAlternate().length() / 3);
+                List<String> aminoacids =  new ArrayList<>(variant.getReference().length() / 3);
+                List<String> codedAminoacids =  new ArrayList<>(variant.getReference().length() / 3);
                 String alternateCodon;
-                for (int i = 0; i < variant.getAlternate().length(); i += 3) {
-                    alternateCodon = variant.getAlternate().substring(i, i + 3);
+                for (int i = 0; i < variant.getReference().length(); i += 3) {
+                    alternateCodon = variant.getReference().substring(i, i + 3);
                     String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
                     aminoacids.add(alternateAa);
                     codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
@@ -326,9 +341,16 @@ public class HgvsProteinCalculator {
                 //  a deletion of amino acid Trp4 in the sequence MetLeuTrpTrpGlu to MetLeuTrp_Glu
                 //  NOTE: for deletions in single amino acid stretches or tandem repeats, the most C-terminal residue is arbitrarily
                 //  assigned to have been deleted
-                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + codedAminoacids.size())
-                        .equals(StringUtils.join(codedAminoacids, ""))) {
+//                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + codedAminoacids.size())
+//                        .equals(StringUtils.join(codedAminoacids, ""))) {
+//                    aminoacidPosition += codedAminoacids.size();
+//                }
+                String aaAfterDeletion = transcript.getProteinSequence()
+                        .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
+                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDeletion)) {
                     aminoacidPosition += codedAminoacids.size();
+                    aaAfterDeletion = transcript.getProteinSequence()
+                            .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
                 }
 
                 // Get flanking amino acids

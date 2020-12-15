@@ -314,7 +314,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDeletion1() throws Exception {
         Gene gene = getGene("ENSG00000221859");
         Transcript transcript = getTranscript(gene, "ENST00000380095");
