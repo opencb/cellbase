@@ -378,6 +378,23 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
+    public void testSilentSNV() throws Exception {
+        // 288     11:77179045:G:A 11      77179045        G       A       snv     ENSP00000386635 p.Arg750=       p.Arg750=
+        Gene gene = getGene("ENSG00000137474");
+        Transcript transcript = getTranscript(gene, "ENST00000409619");
+        Variant variant = new Variant("11",
+                77179045,
+                "G",
+                "A");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Arg750=", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000386635"));
+
+    }
+
+    @Test
     public void testStopLoss() throws Exception {
         // Issue #7 - stop loss reported as missense
 
