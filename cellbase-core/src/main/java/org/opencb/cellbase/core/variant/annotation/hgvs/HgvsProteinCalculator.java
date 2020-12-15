@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Predicts AA sequence given a transcript and a variant.
@@ -63,13 +62,15 @@ public class HgvsProteinCalculator {
             return null;
         }
 
+        buildingComponents = new BuildingComponents();
+
         switch (this.variant.getType()) {
             case SNV:
-                return this.calculateSnvHgvs();
+                return calculateSnvHgvs();
             case INDEL:
                 // insertion
                 if (StringUtils.isBlank(variant.getReference())) {
-                    return calculateIndelHgvs();
+                    return calculateInsertionHgvs();
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
                     return calculateDeletionHgvs();
@@ -79,7 +80,7 @@ public class HgvsProteinCalculator {
                     return null;
                 }
             case INSERTION:
-                return this.calculateInsertionHgvs();
+                return calculateInsertionHgvs();
             case DELETION:
                 return calculateDeletionHgvs();
             default:
@@ -117,7 +118,8 @@ public class HgvsProteinCalculator {
             if (referenceCodon.equalsIgnoreCase("STOP")) {
                 // STOP lost     --> extension
                 //  call to frameshift
-                hgvsString = "";
+                buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+                return calculateFrameshiftHgvs();
             } else if (alternateAminoacid.equalsIgnoreCase("STOP")) {
                 // NONSENSE
                 hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
@@ -270,7 +272,8 @@ public class HgvsProteinCalculator {
             }
         } else {
             // call to frameshift
-            return null;
+            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+            return calculateFrameshiftHgvs();
         }
     }
 
@@ -328,7 +331,7 @@ public class HgvsProteinCalculator {
                     String rightCodedAa = transcript.getProteinSequence()
                             .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
                     String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
-                    hgvsString = "p." + leftAa + aminoacidPosition + "_ " + rightAa + (aminoacidPosition + deletionLength - 1) + "del";
+                    hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + deletionLength - 1) + "del";
                 } else {
                     // HGVS Deletion: a sequence change between the translation initiation (start) and termination (stop) codon where,
                     // compared to a reference sequence, one or more amino acids are not present (deleted)
@@ -383,7 +386,7 @@ public class HgvsProteinCalculator {
 
                         // NP_003997.1:p.Lys23_Val25del
                         //  a deletion of amino acids Lys23 to Val25 in reference sequence NP_003997.1
-                        hgvsString = "p." + leftAa + aminoacidPosition + "_ " + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "del";
+                        hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "del";
                     }
                 }
             }
@@ -394,21 +397,19 @@ public class HgvsProteinCalculator {
             List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
             return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
         } else {
-            // call to frameshift
-            return null;
+            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+            return calculateFrameshiftHgvs();
         }
     }
 
-    private HgvsProtein calculateIndelHgvs() {
+    private HgvsProtein calculateFrameshiftHgvs() {
         getAlternateProteinSequence();
-
         return calculateHgvsString();
     }
 
 
     private void getAlternateProteinSequence() {
         alternateProteinSequence = new StringBuilder();
-        buildingComponents = new BuildingComponents();
 
         int phaseOffset = 0;
         // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
@@ -541,10 +542,12 @@ public class HgvsProteinCalculator {
 
             BuildingComponents.MutationType mutationType = getMutationType();
             buildingComponents.setMutationType(mutationType);
-            buildingComponents.setKind(isFrameshift()
-                    ? BuildingComponents.Kind.FRAMESHIFT
-                    : BuildingComponents.Kind.INFRAME);
-
+            // frameshift for del/ins is already populated
+            if (buildingComponents.getKind() == null) {
+                buildingComponents.setKind(isFrameshift()
+                        ? BuildingComponents.Kind.FRAMESHIFT
+                        : BuildingComponents.Kind.INFRAME);
+            }
         }
     }
 
