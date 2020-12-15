@@ -262,6 +262,106 @@ public class HgvsProteinCalculator {
         }
     }
 
+    /**
+     * This method can produce 2 different HGVS mutations:
+     *
+     * HGVS Deletion: a sequence change between the translation initiation (start) and termination (stop) codon where,
+     * compared to a reference sequence, one or more amino acids are not present (deleted)
+     *
+     * HGVS Frame shift: a sequence change between the translation initiation (start) and termination (stop) codon where,
+     * compared to a reference sequence, translation shifts to another reading frame.
+     *
+     * @return
+     */
+    private HgvsProtein calculateDeletionHgvs() {
+        // Insertion must fall inside the coding region
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
+            return null;
+        }
+
+        // Check if this is an in frame insertion
+        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+        if (positionAtCodon == 1 && variant.getAlternate().length() % 3 == 0) {
+            String hgvsString;
+
+            // Prepare variables
+            int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+            int aminoacidPosition = codonPosition;
+            int deletionLength = variant.getAlternate().length() / 3;
+
+
+            // Check for a very special case when the first Met1 is deleted but is flanked by another Met:
+            String nextRightAa = transcript.getProteinSequence()
+                    .substring(aminoacidPosition + deletionLength + 1, aminoacidPosition + deletionLength + 2);
+            if (aminoacidPosition == 1 && nextRightAa.equals("M")) {
+                // p.Gly2_Met46del
+                //  a deletion of amino acids Gly2 to Met46 as a consequence of a variant silencing translation initiation ate Met1 but
+                //  activating a new downstream translation initiation site (at Met46)
+                //  NOTE: the 3’ rule has been applied.
+                aminoacidPosition = 2;
+                String leftCodedAa = transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1);
+                String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
+                String rightCodedAa = transcript.getProteinSequence()
+                        .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
+                String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+                hgvsString = "p." + leftAa + aminoacidPosition + "_ " + rightAa + (aminoacidPosition + deletionLength - 1) + "del";
+            } else {
+                // Get HGVS for the normal Deletion
+                List<String> aminoacids =  new ArrayList<>(variant.getAlternate().length() / 3);
+                List<String> codedAminoacids =  new ArrayList<>(variant.getAlternate().length() / 3);
+                String alternateCodon;
+                for (int i = 0; i < variant.getAlternate().length(); i += 3) {
+                    alternateCodon = variant.getAlternate().substring(i, i + 3);
+                    String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
+                    aminoacids.add(alternateAa);
+                    codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
+                }
+
+                // Move to the C-terminal (right) as much as possible in both single and multiple amino acid deletion:
+                // LRG_199p1:p.Trp4del  (1 amino acid)
+                //  a deletion of amino acid Trp4 in the sequence MetLeuTrpTrpGlu to MetLeuTrp_Glu
+                //  NOTE: for deletions in single amino acid stretches or tandem repeats, the most C-terminal residue is arbitrarily
+                //  assigned to have been deleted
+                // LRG_199p1:p.Trp4del  (more than 1 amino acid)
+                //  a deletion of amino acid Trp4 in the sequence MetLeuTrpTrpGlu to MetLeuTrp_Glu
+                //  NOTE: for deletions in single amino acid stretches or tandem repeats, the most C-terminal residue is arbitrarily
+                //  assigned to have been deleted
+                while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + aminoacids.size())
+                        .equals(StringUtils.join(aminoacids, ""))) {
+                    aminoacidPosition += aminoacids.size();
+                }
+
+                // Get flanking amino acids
+                String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 1, codonPosition);
+                String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
+
+                // Only 1 amino acid deleted
+                if (aminoacids.size() == 1) {
+                    // LRG_199p1:p.Val7del
+                    //  a deletion of amino acid Val7 in the reference sequence LRG_199p1
+                    hgvsString = "p." + leftAa + aminoacidPosition + "del";
+                } else {
+                    // More than 1 amino acid deleted, calculate the right flank
+                    String rightCodedAa = transcript.getProteinSequence()
+                            .substring(aminoacidPosition + aminoacids.size(), aminoacidPosition + aminoacids.size() + 1);
+                    String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+
+                    // NP_003997.1:p.Lys23_Val25del
+                    //  a deletion of amino acids Lys23 to Val25 in reference sequence NP_003997.1
+                    hgvsString = "p." + leftAa + aminoacidPosition + "_ " + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "del";
+                }
+            }
+
+            StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+            alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionLength, "");
+            List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
+            return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+        } else {
+            // call to frameshift
+            return null;
+        }
+    }
 
     private HgvsProtein calculateIndelHgvs() {
         getAlternateProteinSequence();
