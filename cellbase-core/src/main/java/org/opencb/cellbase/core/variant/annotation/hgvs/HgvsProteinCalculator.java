@@ -94,6 +94,7 @@ public class HgvsProteinCalculator {
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
+
         // three letter abbreviation
         String referenceAminoacid = VariantAnnotationUtils
                 .buildUpperLowerCaseString(VariantAnnotationUtils
@@ -102,9 +103,15 @@ public class HgvsProteinCalculator {
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         char[] chars = referenceCodon.toCharArray();
         chars[positionAtCodon - 1] = alternate.charAt(0);
+        String alternateAAUpperCase =
+                VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
+        if (StringUtils.isEmpty(alternateAAUpperCase)) {
+            logger.warn("Invalid alternate nucleotide symbol found for variant {}. Skipping protein HGVS "
+                    + "calculation.", variant.toString());
+            return null;
+        }
         // three letter abbreviation
-        String alternateAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(
-                VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars)));
+        String alternateAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(alternateAAUpperCase);
 
         // Step 2 -
         String hgvsString;
