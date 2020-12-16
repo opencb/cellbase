@@ -97,8 +97,8 @@ public class HgvsProteinCalculator {
 
         // three letter abbreviation
         String referenceAminoacid = VariantAnnotationUtils
-                .buildUpperLowerCaseString(VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
+                                .buildUpperLowerCaseString(VariantAnnotationUtils
+                               .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
 
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         char[] chars = referenceCodon.toCharArray();

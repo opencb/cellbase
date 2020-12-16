@@ -546,24 +546,36 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertNull(hgvsProtein);
+    }
 
-//        // STOP gain
-//        hgvsList = getVariantHgvs(new Variant("2",
-//                183702696,
-//                "G",
-//                "A"));
-//        // two protein hgvs expected
-//        assertNumberProteinHGVS(1, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000295113:p.Arg281Ter"));
-//
-//        // Arbitrary non-synonymous SNV
-//        hgvsList = getVariantHgvs(new Variant("22",
-//                38333177,
-//                "A",
-//                "G"));
-//        // two protein hgvs expected
-//        assertNumberProteinHGVS(2, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Asn800Ser", "ENSP00000416766:p.Asn114Ser"));
+    @Test
+    public void testSNVStopGain() throws Exception {
+        // STOP gain
+        // negative strand
+        Gene gene = getGene("ENSG00000162998");
+        Transcript transcript = getTranscript(gene, "ENST00000295113");
+        Variant variant = new Variant("2",
+                183702696,
+                "G",
+                "A");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Arg281Ter", hgvsProtein.getHgvs());
+    }
+
+    @Test
+    public void testSNVNonSyn() throws Exception {
+        // Arbitrary non-synonymous SNV
+        // ENSP00000215957
+        Gene gene = getGene("ENSG00000100139");
+        Transcript transcript = getTranscript(gene, "ENST00000215957");
+        Variant variant = new Variant("22",
+                38333177,
+                "A",
+                "G");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Asn800Ser", hgvsProtein.getHgvs());
     }
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
