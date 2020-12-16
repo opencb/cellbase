@@ -72,13 +72,12 @@ public class HgvsProteinCalculatorTest {
                 51027601,
                 "-",
                 "CCTCGCCCT");
-
+        // Reverse strand:  AGGGCGAGG
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("ENSP00000490017:p.Glu75_Glu77dup", hgvsProtein.getHgvs());
+//        Assert.assertEquals("ENSP00000490017:p.Glu75_Glu77dup", hgvsProtein.getHgvs());
+        Assert.assertEquals("p.Glu75_Glu77dup", hgvsProtein.getHgvs());
     }
-
-
 
     @Test
     public void testInsertionPositiveStrandPhase0() throws Exception {
