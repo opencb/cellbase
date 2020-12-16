@@ -27,7 +27,7 @@ public class HgvsCalculator {
     protected static final String MT = "MT";
     private static final String CODING_TRANSCRIPT_CHAR = "c.";
     private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
-    protected static final String PROTEIN_CHAR = ":p.";
+    protected static final String PROTEIN_CHAR = "p.";
     protected static final char UNDERSCORE = '_';
     protected static final String POSITIVE = "+";
     protected static final String UNKNOWN_AMINOACID = "X";

@@ -133,7 +133,6 @@ public class HgvsProteinCalculator {
 
         alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
         alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
-        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
 
         // Debug
         System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
@@ -148,7 +147,7 @@ public class HgvsProteinCalculator {
 //        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
         System.out.println(alternateProteinSequence);
 
-        return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
     }
 
     /**
@@ -274,8 +273,7 @@ public class HgvsProteinCalculator {
 
                 StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
                 alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codedAminoacids, ""));
-                List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
-                return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+                return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
             } else {
                 // no valid alternate provided, exception?
                 return null;
@@ -344,8 +342,7 @@ public class HgvsProteinCalculator {
                     }
                     StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
 //                    alternateProteinSequence.replace(codonPosition, codonPosition + deletionAaLength - 1, "");
-                    List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
-                    return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+                    return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 } else {
                     // delins?
                     return null;
@@ -478,8 +475,8 @@ public class HgvsProteinCalculator {
 
             StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
             alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionAaLength, "");
-            List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
-            return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+
+            return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
         } else {
             // Position at codon is not 1 but is multiple of 3, but there is still the possibility to be a deletion
             // Example: position at codon is 3 and 6 nucleotides are deleted, but ASP is not changed, only LYS and ARG deleted
@@ -514,8 +511,7 @@ public class HgvsProteinCalculator {
 
                     StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
                     alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionAaLength - 1, "");
-                    List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
-                    return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+                    return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 } else {
                     // delins?
                     return null;
@@ -524,15 +520,23 @@ public class HgvsProteinCalculator {
                 buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
                 return calculateFrameshiftHgvs();
             }
-
         }
+    }
+
+    private List<String> getProteinIds() {
+        List<String> proteinIds = new ArrayList<>();
+        proteinIds.add(transcript.getProteinID());
+        String uniprotAccession = transcriptUtils.getXrefId(UNIPROT_LABEL);
+        if (StringUtils.isNotEmpty(uniprotAccession)) {
+            proteinIds.add(uniprotAccession);
+        }
+        return proteinIds;
     }
 
     private HgvsProtein calculateFrameshiftHgvs() {
         getAlternateProteinSequence();
         return calculateHgvsString();
     }
-
 
     private void getAlternateProteinSequence() {
         alternateProteinSequence = new StringBuilder();
@@ -725,8 +729,7 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-        StringBuilder hgvsString = (new StringBuilder(buildingComponents.getProteinId()))
-                .append(HgvsCalculator.PROTEIN_CHAR);
+        StringBuilder hgvsString = new StringBuilder(HgvsCalculator.PROTEIN_CHAR);
 
         if (BuildingComponents.MutationType.DUPLICATION.equals(buildingComponents.getMutationType())) {
             if (buildingComponents.getAlternate().length() == 1) {
@@ -811,8 +814,7 @@ public class HgvsProteinCalculator {
         }
 
         String alternateProteinSequence = getAlternateCdnaSequence();
-        List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
-        return new HgvsProtein(proteinIds, hgvsString.toString(), alternateProteinSequence);
+        return new HgvsProtein(getProteinIds(), hgvsString.toString(), alternateProteinSequence);
     }
 
     /**
