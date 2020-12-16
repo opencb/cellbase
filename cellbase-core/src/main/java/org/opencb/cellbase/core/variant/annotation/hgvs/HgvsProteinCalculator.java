@@ -306,6 +306,14 @@ public class HgvsProteinCalculator {
 
                 String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);
                 String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
+
+                // Debug
+                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+                System.out.println("codonPosition = " + codonPosition);
+                System.out.println("positionAtCodon = " + positionAtCodon);
+                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+                System.out.println();
+
                 // Check if the affected amino acid remains the same
                 if (referenceAa.equals(newAlternateAa)) {
                     // Now we need to check if this is and Insertion ot Duplication
@@ -344,8 +352,9 @@ public class HgvsProteinCalculator {
 //                    alternateProteinSequence.replace(codonPosition, codonPosition + deletionAaLength - 1, "");
                     return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 } else {
-                    // delins?
-                    return null;
+                    // TODO testDuplicationAsNonsense()
+                    // HGVS Duplication
+                    return new HgvsProtein(getProteinIds(), "", "");
                 }
             } else {
                 // call to frameshift

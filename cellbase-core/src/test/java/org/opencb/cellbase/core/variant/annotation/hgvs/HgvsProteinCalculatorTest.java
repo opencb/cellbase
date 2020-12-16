@@ -259,6 +259,7 @@ public class HgvsProteinCalculatorTest {
     //@Test
     public void testDuplicationAsNonsense() throws Exception {
         // Issue #9 Dups reported as nonsense
+        // positive strand
         // 12271   X:71137733:-:CTC        X       71137733        -       CTC     indel   ENSP00000404373 p.Pro167dup     p.Tyr168Ter     vep_dup_cb_ter
         Gene gene = getGene("ENSG00000184634");
         Transcript transcript = getTranscript(gene, "ENST00000444034");
@@ -275,7 +276,7 @@ public class HgvsProteinCalculatorTest {
     ///////////// DELETIONS /////////////
     /////////////////////////////////////
 
-//    @Test
+    @Test
     public void testDeletionSynonymousFS() throws Exception {
         // Issue #3
         //2701    6:112061056:G:- 6       112061056       G       -       indel   ENSP00000357653 p.Ser57GlnfsTer27       p.Val56fs       fs_shorthand_diff_pos
@@ -291,7 +292,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Ser57GlnfsTer27", predictor.calculate().getHgvs());
     }
 
-   // @Test
+    //@Test
     public void testDeletionFS() throws Exception {
         // 2:47822224:T:-  2       47822224        T       -       indel   ENSP00000385398 p.Ile482PhefsTer6       p.Ile482fs
         Gene gene = getGene("ENSG00000138081");
@@ -320,7 +321,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Ser297del", predictor.calculate().getHgvs());
     }
 
-   // @Test
+    @Test
     public void testDeletion1() throws Exception {
         Gene gene = getGene("ENSG00000221859");
         Transcript transcript = getTranscript(gene, "ENST00000380095");
