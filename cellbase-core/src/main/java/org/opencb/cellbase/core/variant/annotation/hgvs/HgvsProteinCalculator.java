@@ -8,10 +8,7 @@ import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Predicts AA sequence given a transcript and a variant.
@@ -303,21 +300,22 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-        // Check if this is an in frame deletion
+        // Prepare variables
+        String hgvsString;
+        int deletionAaLength = variant.getReference().length() / 3;
+        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
-        if (positionAtCodon == 1 && variant.getReference().length() % 3 == 0) {
-            String hgvsString;
 
-            // Prepare variables
-            int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+        // Check if this is an in frame deletion
+        if (positionAtCodon == 1 && variant.getReference().length() % 3 == 0) {
+            // We copy codonPosition to aminoacidPosition to be free of changing aminoacidPosition when needed
             int aminoacidPosition = codonPosition;
             if (transcript.getProteinSequence().startsWith("X")) {
                 aminoacidPosition++;
             }
-            int deletionLength = variant.getReference().length() / 3;
 
             String nextRightAa = transcript.getProteinSequence()
-                    .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
+                    .substring(aminoacidPosition + deletionAaLength, aminoacidPosition + deletionAaLength + 1);
             if (nextRightAa.equalsIgnoreCase("STOP")) {
                 // HGVS Substitution: in theory, a nonsense variant can be considered as a deletion removing the C-terminal end of
                 // the protein (e.g. p.Trp26_Arg1623del). However, in HGVS nomenclature, nonsense variants are described as an
@@ -337,16 +335,16 @@ public class HgvsProteinCalculator {
                     String leftCodedAa = transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1);
                     String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
                     String rightCodedAa = transcript.getProteinSequence()
-                            .substring(aminoacidPosition + deletionLength, aminoacidPosition + deletionLength + 1);
+                            .substring(aminoacidPosition + deletionAaLength, aminoacidPosition + deletionAaLength + 1);
                     String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
-                    hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + deletionLength - 1) + "del";
+                    hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + deletionAaLength - 1) + "del";
                 } else {
                     // HGVS Deletion: a sequence change between the translation initiation (start) and termination (stop) codon where,
                     // compared to a reference sequence, one or more amino acids are not present (deleted)
 
                     // Get deleted sequence
-                    List<String> aminoacids =  new ArrayList<>(deletionLength);
-                    List<String> codedAminoacids =  new ArrayList<>(deletionLength);
+                    List<String> aminoacids =  new ArrayList<>(deletionAaLength);
+                    List<String> codedAminoacids =  new ArrayList<>(deletionAaLength);
                     String alternateCodon;
                     for (int i = 0; i < variant.getReference().length(); i += 3) {
                         alternateCodon = variant.getReference().substring(i, i + 3);
@@ -370,11 +368,11 @@ public class HgvsProteinCalculator {
 //                }
                     // keep moving to the right while the first amino acid deleted equals the first one after deletion
                     String aaAfterDeletion = transcript.getProteinSequence()
-                            .substring(aminoacidPosition + deletionLength - 1, aminoacidPosition + deletionLength);
+                            .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
                     while (transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition).equals(aaAfterDeletion)) {
                         aminoacidPosition += codedAminoacids.size();
                         aaAfterDeletion = transcript.getProteinSequence()
-                                .substring(aminoacidPosition + deletionLength -1, aminoacidPosition + deletionLength);
+                                .substring(aminoacidPosition + deletionAaLength -1, aminoacidPosition + deletionAaLength);
                     }
 
                     // Get flanking amino acids
@@ -400,14 +398,54 @@ public class HgvsProteinCalculator {
                 }
             }
 
-
             StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
-            alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionLength, "");
+            alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionAaLength, "");
             List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
             return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
         } else {
-            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
-            return calculateFrameshiftHgvs();
+            // Position at codon is not 1 but is multiple of 2, there is still the possibility to be a deletion
+            // Example: position at codon is 3 and 6 nucleotides are deleted, but ASP is not changed, only LYS and ARG deleted
+            //   CAAGCG/-
+            //
+            //   721    724    727    730    733
+            //   241    242    243    244    245
+            //   CGC    GAC    AAG    CGC    AGC
+            //   ---------**************-----------
+            //   164    165    166    167    168
+            //   ARG    ASP    LYS    ARG    SER
+            //   R      D      K      R      S
+            if (variant.getReference().length() % 3 == 0) {
+                // Get the new codon created after the deletion
+                String firstAffectedCodon = transcriptUtils.getCodon(codonPosition);
+                String lastAffectedCodon = transcriptUtils.getCodon(codonPosition + deletionAaLength);
+                String newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon) + lastAffectedCodon.substring(positionAtCodon);
+
+                String firstAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), firstAffectedCodon);
+                String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
+                if (firstAffectedAa.equals(newAlternateAa)) {
+                    String secondAffectedCodon = transcriptUtils.getCodon(codonPosition + 1);
+                    String secondAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), secondAffectedCodon);
+                    if (deletionAaLength == 1) {
+                        hgvsString = "p." + StringUtils.capitalize(secondAffectedAa.toLowerCase()) + (codonPosition + 1) + "del";
+                    } else {
+                        String lastAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), lastAffectedCodon);
+                        hgvsString = "p." + StringUtils.capitalize(secondAffectedAa.toLowerCase()) + (codonPosition + 1) + "_"
+                                + StringUtils.capitalize(lastAa.toLowerCase()) + (codonPosition + deletionAaLength) + "del";
+                    }
+
+                    StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+                    alternateProteinSequence.replace(codonPosition, codonPosition + deletionAaLength - 1, "");
+                    List<String> proteinIds = Arrays.asList(transcript.getProteinID(), transcriptUtils.getXrefId(UNIPROT_LABEL));
+                    return new HgvsProtein(proteinIds, hgvsString, alternateProteinSequence.toString());
+                } else {
+                    // delins?
+                    return null;
+                }
+            } else {
+                buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+                return calculateFrameshiftHgvs();
+            }
+
         }
     }
 

@@ -352,7 +352,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Asp1175_Glu1176del", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDeletion3() throws Exception {
         // Issue #4
         // off by one
@@ -365,7 +365,8 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("ENSP00000435452:p.Lys166_Arg167del", predictor.calculate().getHgvs());
+//        Assert.assertEquals("ENSP00000435452:p.Lys166_Arg167del", predictor.calculate().getHgvs());
+        Assert.assertEquals("p.Lys166_Arg167del", predictor.calculate().getHgvs());
     }
 
 
