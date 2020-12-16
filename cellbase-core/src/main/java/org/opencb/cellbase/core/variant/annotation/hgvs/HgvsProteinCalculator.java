@@ -353,8 +353,8 @@ public class HgvsProteinCalculator {
                     return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 } else {
                     // TODO testDuplicationAsNonsense()
-                    // HGVS Duplication
-                    return new HgvsProtein(getProteinIds(), "", "");
+                    // delins?
+                    return null;
                 }
             } else {
                 // call to frameshift
@@ -551,7 +551,6 @@ public class HgvsProteinCalculator {
         alternateProteinSequence = new StringBuilder();
 
         int phaseOffset = 0;
-        // current position in the protein string. JAVIER:  int aaPosition = ((codonPosition - 1) / 3) + 1;
         int currentAaIndex = 0;
         if (transcriptUtils.hasUnconfirmedStart()) {
             phaseOffset = transcriptUtils.getFirstCodonPhase();
@@ -719,6 +718,9 @@ public class HgvsProteinCalculator {
         // account potential
         // normalization/lef-right alignment
         // differences
+        // TODO this always fails. alternate is the AA and previous sequence is the last three AAs, for example:
+        //      alternate = GLU
+        //      previousSequence = EGE
         if (previousSequence.equals(alternate)) {
             return BuildingComponents.MutationType.DUPLICATION;
         }

@@ -292,9 +292,10 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Ser57GlnfsTer27", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDeletionFS() throws Exception {
         // 2:47822224:T:-  2       47822224        T       -       indel   ENSP00000385398 p.Ile482PhefsTer6       p.Ile482fs
+        // negative strand
         Gene gene = getGene("ENSG00000138081");
         Transcript transcript = getTranscript(gene, "ENST00000402508");
         Variant variant = new Variant("2",
@@ -306,7 +307,7 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Ile482PhefsTer6", predictor.calculate().getHgvs());
     }
 
-    //@Test
+   @Test
     public void testDeletion0() throws Exception {
         // Issue #4
         // 6:121447732:TTC:-  indel   ENSP00000282561 p.Ser297del     p.Ser297_Cys298del      del_cb_aa_1_out
@@ -371,7 +372,7 @@ public class HgvsProteinCalculatorTest {
 
 
     /////////////////////////////////////
-    ///////////// SNV /////////////
+    ///////////// SNV ///////////////////
     /////////////////////////////////////
 
     @Test
@@ -450,6 +451,103 @@ public class HgvsProteinCalculatorTest {
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000442578"));
     }
 
+    @Test
+    public void testSnv1() throws Exception {
+        // 288     11:77179045:G:A 11      77179045        G       A       snv     ENSP00000386635 p.Arg750=       p.Arg750=
+        Gene gene = getGene("ENSG00000137474");
+        Transcript transcript = getTranscript(gene, "ENST00000409619");
+        Variant variant = new Variant("12",
+                104742191,
+                "G",
+                "A");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Arg750=", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000386635"));
+
+
+        gene = getGene("ENSG00000137474");
+        transcript = getTranscript(gene, "ENST00000409619");
+        variant = new Variant("1g2",
+                104742191,
+                "G",
+                "A");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Arg750=", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000386635"));
+
+
+//        // Weird character ("U") in protein sequence (e.g. ENST00000525566/ENSP00000434516, position 648) must not
+//        // return any protein HGVS description
+//        List<String> hgvsList = getVariantHgvs(new Variant("12",
+//                104742191,
+//                "T",
+//                "C"));
+//        // six protein hgvs expected
+//        assertNumberProteinHGVS(0, hgvsList);
+//
+//        // Synonymous variant
+//        hgvsList = getVariantHgvs(new Variant("10",
+//                104865516,
+//                "G",
+//                "A"));
+//        // six protein hgvs expected
+//        assertNumberProteinHGVS(6, hgvsList);
+//        // Can't know which of these proteins correspond to the variant validator ones but HGVS descriptions seem to
+//        // align correctly with Variant Validator ones
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000339479:p.Val112=",
+//                "ENSP00000383960:p.Val112=",
+//                "ENSP00000392236:p.Val83=",
+//                "ENSP00000396468:p.Val112=",
+//                "ENSP00000411330:p.Val35=",
+//                "ENSP00000447664:p.Val47="));
+//
+//        // Affects STOP codon - warning message expected and no protein HGVS should be returned
+//        hgvsList = getVariantHgvs(new Variant("16",
+//                28488951,
+//                "T",
+//                "A"));
+//        // two protein hgvs expected
+//        assertNumberProteinHGVS(0, hgvsList);
+//
+//        // Affects STOP codon - warning message expected and no protein HGVS should be returned
+//        hgvsList = getVariantHgvs(new Variant("21",
+//                46058088,
+//                "T",
+//                "A"));
+//        // two protein hgvs expected
+//        assertNumberProteinHGVS(0, hgvsList);
+//
+//        // Invalid alternte nt - no prot hgvs should be returned
+//        hgvsList = getVariantHgvs(new Variant("2",
+//                183702696,
+//                "G",
+//                "S"));
+//        // two protein hgvs expected
+//        assertNumberProteinHGVS(0, hgvsList);
+//
+//        // STOP gain
+//        hgvsList = getVariantHgvs(new Variant("2",
+//                183702696,
+//                "G",
+//                "A"));
+//        // two protein hgvs expected
+//        assertNumberProteinHGVS(1, hgvsList);
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000295113:p.Arg281Ter"));
+//
+//        // Arbitrary non-synonymous SNV
+//        hgvsList = getVariantHgvs(new Variant("22",
+//                38333177,
+//                "A",
+//                "G"));
+//        // two protein hgvs expected
+//        assertNumberProteinHGVS(2, hgvsList);
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Asn800Ser", "ENSP00000416766:p.Asn114Ser"));
+    }
+
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
     // original sequence            ......CTGGCT
     // original sequence                        GTAATCAC......
@@ -459,7 +557,7 @@ public class HgvsProteinCalculatorTest {
     // codons                             |  |  |  |
     // altered aa sequence                T  T  L  STOP
     // Variant validator describes it as a simple frameshift and that's how we're handling it
-    //@Test
+    @Test
     public void testFrameShiftOutlier() throws Exception {
         Gene gene = getGene("ENSG00000018408");
         Transcript transcript = getTranscript(gene, "ENST00000465804");
@@ -487,7 +585,7 @@ public class HgvsProteinCalculatorTest {
     }
 
 
-    //@Test
+    @Test
     public void testDelins() throws Exception {
         // Issue #8 delins reported as dels
         // 166     14:91313274:CCTGCTGCC:- 14      91313274        CCTGCTGCC       -       indel   ENSP00000374507 p.Trp845_Val848delinsLeu        p.Trp845_Val848del      delins_as_del
@@ -503,6 +601,9 @@ public class HgvsProteinCalculatorTest {
     }
 
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////// UTILS ///////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Transcript getTranscript(Gene gene, String id) {
         for (Transcript transcript : gene.getTranscripts()) {
