@@ -516,6 +516,9 @@ public class VariantAnnotationUtils {
     }
 
     public static String buildUpperLowerCaseString(String aa) {
+        if (StringUtils.isEmpty(aa)) {
+            return null;
+        }
         StringBuilder stringBuilder = new StringBuilder(aa);
 
         for (int i = 1; i < stringBuilder.length(); i++) {

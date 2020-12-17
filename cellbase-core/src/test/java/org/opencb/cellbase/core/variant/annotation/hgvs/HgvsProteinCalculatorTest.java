@@ -375,6 +375,8 @@ public class HgvsProteinCalculatorTest {
     ///////////// SNV ///////////////////
     /////////////////////////////////////
 
+    // TODO add - 14:20447645:C:T bad reference codon
+
     @Test
     public void testSnv() throws Exception {
         // Issue #2 missing protein example

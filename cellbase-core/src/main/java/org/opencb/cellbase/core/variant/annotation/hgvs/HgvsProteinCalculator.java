@@ -94,9 +94,15 @@ public class HgvsProteinCalculator {
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
 
+        String referenceAAUppercase = VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
+        if (StringUtils.isEmpty(referenceAAUppercase)) {
+            logger.warn("Invalid reference nucleotide symbol {} found for variant {}. Skipping protein HGVS "
+                    + "calculation.", referenceAAUppercase, variant.toString());
+            return null;
+        }
         // three letter abbreviation
-        String referenceAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
+        String referenceAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(referenceAAUppercase);
 
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         char[] chars = referenceCodon.toCharArray();
@@ -104,8 +110,8 @@ public class HgvsProteinCalculator {
         String alternateAAUpperCase =
                 VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
         if (StringUtils.isEmpty(alternateAAUpperCase)) {
-            logger.warn("Invalid alternate nucleotide symbol found for variant {}. Skipping protein HGVS "
-                    + "calculation.", variant.toString());
+            logger.warn("Invalid alternate nucleotide symbol {} found for variant {}. Skipping protein HGVS "
+                    + "calculation.", alternateAAUpperCase, variant.toString());
             return null;
         }
         // three letter abbreviation
@@ -140,17 +146,17 @@ public class HgvsProteinCalculator {
         alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
 
         // Debug
-        System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
-        System.out.println("codonPosition = " + codonPosition);
-        System.out.println("referenceCodon = " + referenceCodon);
-        System.out.println("referenceAminoacid = " + referenceAminoacid);
-        System.out.println("positionAtCodon = " + positionAtCodon);
-        System.out.println("alternateAminoacid = " + alternateAminoacid);
-
-        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-//        System.out.println();
-//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println(alternateProteinSequence);
+//        System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+//        System.out.println("codonPosition = " + codonPosition);
+//        System.out.println("referenceCodon = " + referenceCodon);
+//        System.out.println("referenceAminoacid = " + referenceAminoacid);
+//        System.out.println("positionAtCodon = " + positionAtCodon);
+//        System.out.println("alternateAminoacid = " + alternateAminoacid);
+//
+//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+////        System.out.println();
+////        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println(alternateProteinSequence);
 
         return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
     }
@@ -271,11 +277,11 @@ public class HgvsProteinCalculator {
                 }
 
                 // Debug
-                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
-                System.out.println("codonPosition = " + codonPosition);
-                System.out.println("positionAtCodon = " + positionAtCodon);
-                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-                System.out.println();
+//                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+//                System.out.println("codonPosition = " + codonPosition);
+//                System.out.println("positionAtCodon = " + positionAtCodon);
+//                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//                System.out.println();
 
                 StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
                 alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codedAminoacids, ""));
@@ -314,11 +320,11 @@ public class HgvsProteinCalculator {
                 String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
 
                 // Debug
-                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
-                System.out.println("codonPosition = " + codonPosition);
-                System.out.println("positionAtCodon = " + positionAtCodon);
-                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-                System.out.println();
+//                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
+//                System.out.println("codonPosition = " + codonPosition);
+//                System.out.println("positionAtCodon = " + positionAtCodon);
+//                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//                System.out.println();
 
                 // Check if the affected amino acid remains the same
                 if (referenceAa.equals(newAlternateAa)) {
@@ -571,16 +577,15 @@ public class HgvsProteinCalculator {
         String alternateDnaSequence = getAlternateCdnaSequence();
 
         int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());
-//        int variantCdnaPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        System.out.println("variantCdnaPosition = " + HgvsCalculator.getCdsStart(transcript, variant.getStart()));
-        System.out.println("variantCdnaPosition = " + variantCdnaPosition);
+//        System.out.println("variantCdnaPosition = " + HgvsCalculator.getCdsStart(transcript, variant.getStart()));
+//        System.out.println("variantCdnaPosition = " + variantCdnaPosition);
 
         // Initial codon position. Index variables are always 0-based for working with strings
         int codonIndex = transcript.getCdnaCodingStart() + phaseOffset - 1;
         int terPosition = 0;
 
-        System.out.println(transcript.getcDnaSequence());
-        System.out.println(alternateDnaSequence);
+//        System.out.println(transcript.getcDnaSequence());
+//        System.out.println(alternateDnaSequence);
         // Loop through cDNA translating each codon
         while (alternateDnaSequence.length() > codonIndex + 3) {
 //            String referecenCodon = transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3);
@@ -639,10 +644,10 @@ public class HgvsProteinCalculator {
         }
 
         // Debug
-        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println();
-        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println(alternateProteinSequence);
+//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println();
+//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println(alternateProteinSequence);
 
         populateBuildingComponents();
     }
@@ -854,7 +859,7 @@ public class HgvsProteinCalculator {
         int cdnaVariantPosition = transcript.getCdnaCodingStart() + variantCdsPosition - 1;
         int cdnaVariantIndex = cdnaVariantPosition - 1;
 
-        System.out.println("cdnaVariantIndex = " + cdnaVariantIndex);
+//        System.out.println("cdnaVariantIndex = " + cdnaVariantIndex);
         switch (variant.getType()) {
             case SNV:
                 alternateDnaSequence.setCharAt(cdnaVariantIndex, alternate.charAt(0));
