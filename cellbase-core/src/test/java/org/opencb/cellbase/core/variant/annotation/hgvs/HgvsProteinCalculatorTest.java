@@ -23,7 +23,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Created by fjlopez on 14/02/17.
+ * All test cases are:
+ *
+ * grch38
+ * ensembl v90
+ * tested with cellbase 4.8
  */
 public class HgvsProteinCalculatorTest {
 
@@ -335,7 +339,6 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Cys95del", predictor.calculate().getHgvs());
     }
 
-
     @Test
     public void testDeletion2() throws Exception {
         // Issue #4
@@ -467,6 +470,33 @@ public class HgvsProteinCalculatorTest {
 
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000386635"));
     }
+
+    @Test
+    public void testSnvMissense() throws Exception {
+        Gene gene = getGene("ENSG00000221859");
+        Transcript transcript = getTranscript(gene, "ENST00000380095");
+        Variant variant = new Variant("21",
+                44637501,
+                "G",
+                "C");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("p.Glu28Asp", predictor.calculate().getHgvs());
+    }
+
+    @Test
+    public void testSnvStopGained() throws Exception {
+        Gene gene = getGene("ENSG00000221859");
+        Transcript transcript = getTranscript(gene, "ENST00000380095");
+        Variant variant = new Variant("21",
+                44637643,
+                "C",
+                "T");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("p.Gln76Ter", predictor.calculate().getHgvs());
+    }
+
 
     // ------------------- from HgvsCalculator --------------------------------
 //    @Test
