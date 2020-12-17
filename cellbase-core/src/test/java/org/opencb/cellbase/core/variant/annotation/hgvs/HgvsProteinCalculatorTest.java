@@ -405,6 +405,73 @@ public class HgvsProteinCalculatorTest {
 
     // TODO add - 14:20447645:C:T bad reference codon
 
+
+    @Test
+    public void testArrayOutOfBounds() throws Exception {
+        Gene gene = getGene("ENSG00000162688");
+        Transcript transcript = getTranscript(gene, "ENST00000361302");
+        Variant variant = new Variant("A",
+                99884391,
+                "G",
+                "A");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("Don't know!", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000355106"));
+    }
+
+    @Test
+    public void testSnvOffByOne() throws Exception {
+        Gene gene = getGene("ENSG00000162688");
+        Transcript transcript = getTranscript(gene, "ENST00000370165");
+        Variant variant = new Variant("A",
+                99884391,
+                "G",
+                "A");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Asn829Ser", hgvsProtein.getHgvs());
+
+        gene = getGene("ENSG00000130164");
+        transcript = getTranscript(gene, "ENST00000252444");
+        variant = new Variant("19",
+                11110721,
+                "A",
+                "G");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Glu422Gly", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000252444"));
+
+
+        gene = getGene("ENSG00000144028");
+        transcript = getTranscript(gene, "ENST00000323853");
+        variant = new Variant("2",
+                96291454,
+                "C",
+                "T");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Ala787Thr", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000317123"));
+
+        gene = getGene("ENSG00000160285");
+        transcript = getTranscript(gene, "ENST00000397728");
+        variant = new Variant("22",
+                46228567,
+                "G",
+                "A");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Thr16Ile", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000380837"));
+    }
+
     @Test
     public void testSnv() throws Exception {
         // Issue #2 missing protein example
