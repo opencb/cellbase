@@ -865,6 +865,7 @@ public class HgvsProteinCalculator {
                     alternateDnaSequence.insert(cdnaVariantIndex, alternate);
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
+                    cdnaVariantIndex = cdnaVariantIndex - 1;
                     alternateDnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + reference.length(), "");
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV.");
