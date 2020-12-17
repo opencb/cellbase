@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Created by fjlopez on 14/02/17.
@@ -387,6 +387,7 @@ public class HgvsProteinCalculatorTest {
                 155143536,
                 "G",
                 "A");
+
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Val428Met", hgvsProtein.getHgvs());
@@ -466,22 +467,22 @@ public class HgvsProteinCalculatorTest {
     }
 
     // ------------------- from HgvsCalculator --------------------------------
-    @Test
-    public void testSNVBadReferenceSequence() throws Exception {
-
-        // Weird character ("U") in protein sequence (e.g. ENST00000525566/ENSP00000434516, position 648) must not
-        // return any protein HGVS description
-        Gene gene = getGene("ENSG00000198431");
-        Transcript transcript = getTranscript(gene, "ENST00000525566");
-        Variant variant = new Variant("12",
-                104742191,
-                "T",
-                "C");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertNull(hgvsProtein);
-
-    }
+//    @Test
+//    public void testSNVBadReferenceSequence() throws Exception {
+//
+//        // Weird character ("U") in protein sequence (e.g. ENST00000525566/ENSP00000434516, position 648) must not
+//        // return any protein HGVS description
+//        Gene gene = getGene("ENSG00000198431");
+//        Transcript transcript = getTranscript(gene, "ENST00000525566");
+//        Variant variant = new Variant("12",
+//                104742191,
+//                "T",
+//                "C");
+//        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+//        HgvsProtein hgvsProtein = predictor.calculate();
+//        Assert.assertNull(hgvsProtein);
+//
+//    }
 
     @Test
     public void testSnvBadAltAA() throws Exception {

@@ -234,9 +234,10 @@ public class HgvsProteinCalculator {
                     }
 
                     if (aminoacids.size() == 1) {
-                        hgvsString = "p." + leftAa + codonPosition + "dup";
+                        hgvsString = "p." + leftAa + aminoacidPosition + "dup";
                     } else {
-                        hgvsString = "p." + leftAa + codonPosition + "_" + rightAa + (codonPosition + aminoacids.size() - 1) + "dup";
+                        hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1)
+                                + "dup";
                     }
                 } else {
                     // HGVS Insertion: a sequence change between the translation initiation (start) and termination (stop) codon where,
