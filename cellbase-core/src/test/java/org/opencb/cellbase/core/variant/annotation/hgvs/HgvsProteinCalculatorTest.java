@@ -191,11 +191,20 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Cys8HisfsTer?", predictor.calculate().getHgvs());
     }
 
-    // phase 1
-    // positive strand
+    @Test
+    public void testInsertionInframe() throws Exception {
+        Gene gene = getGene("ENSG00000077522");
+        Transcript transcript = getTranscript(gene, "ENST00000542672");
+        Variant variant = new Variant("1",
+                236747758,
+                "-",
+                "AAAAAGAGCC");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Lys499_Arg500insLysLysSer", hgvsProtein.getHgvs());
 
-    // phase 1
-    // negative strand
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000443495"));
+    }
 
     // -------------------- negative strand --------------------------------------
 
@@ -282,7 +291,6 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testDeletionInframe() throws Exception {
-
         Gene gene = getGene("ENSG00000165119");
         Transcript transcript = getTranscript(gene, "ENST00000481820");
         Variant variant = new Variant("9",
