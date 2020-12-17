@@ -236,9 +236,9 @@ public class HgvsProteinCalculator {
                     }
 
                     if (aminoacids.size() == 1) {
-                        hgvsString = "p." + leftAa + codonPosition + "dup";
+                        hgvsString = "p." + leftAa + aminoacidPosition + "dup";
                     } else {
-                        hgvsString = "p." + leftAa + codonPosition + "_" + rightAa + (codonPosition + aminoacids.size() - 1) + "dup";
+                        hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "dup";
                     }
                 } else {
                     // HGVS Insertion: a sequence change between the translation initiation (start) and termination (stop) codon where,
@@ -507,10 +507,10 @@ public class HgvsProteinCalculator {
             //   R      D      K      R      S
             if (variant.getReference().length() % 3 == 0) {
                 // Get the new codon created after the deletion
-                String firstAffectedCodon = transcriptUtils.getCodon(aminoacidPosition);
-                String lastAffectedCodon = transcriptUtils.getCodon(aminoacidPosition + deletionAaLength);
+                String firstAffectedCodon = transcriptUtils.getCodon(aminoacidPosition);    // GAC
+                String lastAffectedCodon = transcriptUtils.getCodon(aminoacidPosition + deletionAaLength);  // CGC
                 String newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon - 1)
-                        + lastAffectedCodon.substring(positionAtCodon - 1);
+                        + lastAffectedCodon.substring(positionAtCodon - 1); // GA + C = GAC
 
                 String firstAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), firstAffectedCodon);
                 String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
