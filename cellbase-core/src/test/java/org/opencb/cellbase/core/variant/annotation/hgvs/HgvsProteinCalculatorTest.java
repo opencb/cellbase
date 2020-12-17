@@ -281,6 +281,23 @@ public class HgvsProteinCalculatorTest {
     /////////////////////////////////////
 
     @Test
+    public void testDeletionInframe() throws Exception {
+
+        Gene gene = getGene("ENSG00000165119");
+        Transcript transcript = getTranscript(gene, "ENST00000481820");
+        Variant variant = new Variant("9",
+                83970774,
+                "CCA",
+                "-");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Gly29del", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000473957"));
+    }
+
+    @Test
     public void testDeletionSynonymousFS() throws Exception {
         // Issue #3
         //2701    6:112061056:G:- 6       112061056       G       -       indel   ENSP00000357653 p.Ser57GlnfsTer27       p.Val56fs       fs_shorthand_diff_pos
@@ -469,6 +486,19 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Arg750=", hgvsProtein.getHgvs());
 
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000386635"));
+    }
+
+    @Test
+    public void testSnvSynonymous() throws Exception {
+        Gene gene = getGene("ENSG00000221859");
+        Transcript transcript = getTranscript(gene, "ENST00000380095");
+        Variant variant = new Variant("21",
+                44637453,
+                "C",
+                "T");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("p.Ala12=", predictor.calculate().getHgvs());
     }
 
     @Test
