@@ -90,15 +90,13 @@ public class HgvsProteinCalculator {
     private HgvsProtein calculateSnvHgvs() {
         String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
 
-        // Step 1 - Get Aminoacid change. For SNV we just need to replace the nucleotide.
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
 
         // three letter abbreviation
-        String referenceAminoacid = VariantAnnotationUtils
-                                .buildUpperLowerCaseString(VariantAnnotationUtils
-                               .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
+        String referenceAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils
+                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon));
 
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
         char[] chars = referenceCodon.toCharArray();

@@ -376,7 +376,7 @@ public class HgvsProteinCalculatorTest {
     /////////////////////////////////////
 
     @Test
-    public void testSNV() throws Exception {
+    public void testSnv() throws Exception {
         // Issue #2 missing protein example
         // phase 0
         // positive strand
@@ -390,9 +390,7 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Val428Met", hgvsProtein.getHgvs());
-
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000420389", "P08473"));
-
     }
 
     @Test
@@ -486,56 +484,7 @@ public class HgvsProteinCalculatorTest {
     }
 
     @Test
-    public void testSNVSynonymous() throws Exception {
-        // Synonymous variant
-        Gene gene = getGene("ENSG00000076685");
-        Transcript transcript = getTranscript(gene, "ENST00000343289");
-        Variant variant = new Variant("10",
-                104865516,
-                "G",
-                "A");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Val112=", hgvsProtein.getHgvs());
-
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000339479:p.Val112=",
-//                "ENSP00000383960:p.Val112=",
-//                "ENSP00000392236:p.Val83=",
-//                "ENSP00000396468:p.Val112=",
-//                "ENSP00000411330:p.Val35=",
-//                "ENSP00000447664:p.Val47="));
-
-    }
-
-    @Test
-    public void testSNVStop() throws Exception {
-        // Affects STOP codon - warning message expected and no protein HGVS should be returned
-        // negative strand
-        Gene gene = getGene("ENSG00000188603");
-        Transcript transcript = getTranscript(gene, "ENST00000637985");
-        Variant variant = new Variant("16",
-                28488951,
-                "T",
-                "A");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertNull(hgvsProtein);
-
-        // Affects STOP codon - warning message expected and no protein HGVS should be returned
-        gene = getGene("ENSG00000228235");
-        transcript = getTranscript(gene, "ENST00000429512");
-        variant = new Variant("21",
-                46058088,
-                "T",
-                "A");
-        predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        Assert.assertNull(hgvsProtein);
-    }
-
-
-    @Test
-    public void testSNVBadAltAA() throws Exception {
+    public void testSnvBadAltAA() throws Exception {
         // Invalid alternte nt - no prot hgvs should be returned
         Gene gene = getGene("ENSG00000137474");
         Transcript transcript = getTranscript(gene, "ENST00000409619");
@@ -546,36 +495,6 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertNull(hgvsProtein);
-    }
-
-    @Test
-    public void testSNVStopGain() throws Exception {
-        // STOP gain
-        // negative strand
-        Gene gene = getGene("ENSG00000162998");
-        Transcript transcript = getTranscript(gene, "ENST00000295113");
-        Variant variant = new Variant("2",
-                183702696,
-                "G",
-                "A");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Arg281Ter", hgvsProtein.getHgvs());
-    }
-
-    @Test
-    public void testSNVNonSyn() throws Exception {
-        // Arbitrary non-synonymous SNV
-        // ENSP00000215957
-        Gene gene = getGene("ENSG00000100139");
-        Transcript transcript = getTranscript(gene, "ENST00000215957");
-        Variant variant = new Variant("22",
-                38333177,
-                "A",
-                "G");
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Asn800Ser", hgvsProtein.getHgvs());
     }
 
     // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
