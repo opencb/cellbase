@@ -440,7 +440,23 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Lys166_Arg167del", predictor.calculate().getHgvs());
     }
 
+    @Test
+    public void testArrayOutOfBoundsDeletion() throws Exception {
 
+//        23      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491305 p.Asp451IlefsTer5               cb_empty
+        Gene gene = getGene("ENSG00000153187");
+        Transcript transcript = getTranscript(gene, "ENST00000638475");
+        Variant variant = new Variant("1",
+                244856830,
+                "T",
+                "-");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Asp451IlefsTer5", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000491305"));
+
+    }
 
     /////////////////////////////////////
     ///////////// SNV ///////////////////
@@ -469,7 +485,13 @@ public class HgvsProteinCalculatorTest {
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Asn829Ser", hgvsProtein.getHgvs());
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000355106"));
+
+
+       // 1:244856830:T:-
     }
+
+
+
 
     @Test
     public void testSnvOffByOne() throws Exception {
