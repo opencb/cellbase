@@ -38,6 +38,8 @@ public class HgvsProteinCalculatorTest {
 
     }
 
+    // TODO add KeyError: '1:244856830:T:-', generated an error in the python script
+
     @Before
     public void setUp() throws IOException {
 
@@ -219,6 +221,8 @@ public class HgvsProteinCalculatorTest {
                 "TC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertNotNull(hgvsProtein);
+
         Assert.assertEquals("p.Asp20GlufsTer162", hgvsProtein.getHgvs());
 
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000461391"));

@@ -96,7 +96,8 @@ public class HgvsProteinCalculator {
 
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
-        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+        // FIXME - forcing to be > 0
+        int codonPosition = Math.max(transcriptUtils.getCodonPosition(cdsVariantStartPosition), 1);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
 
         String referenceAAUppercase = VariantAnnotationUtils
