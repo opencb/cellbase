@@ -193,6 +193,7 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testInsertionInframe() throws Exception {
+        // confirmed start, no flags
         Gene gene = getGene("ENSG00000077522");
         Transcript transcript = getTranscript(gene, "ENST00000542672");
         Variant variant = new Variant("1",
@@ -282,7 +283,8 @@ public class HgvsProteinCalculatorTest {
                 "CTC");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        Assert.assertEquals("p.Pro167dup", predictor.calculate().getHgvs());
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Pro167dup", hgvsProtein.getHgvs());
     }
 
     /////////////////////////////////////
@@ -415,12 +417,10 @@ public class HgvsProteinCalculatorTest {
 //        13      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000359184 p.Asn829Ser             cb_empty
 //        14      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000443495         p.Lys71Ter      vep_empty
 
-
-
         // 11      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000355106 p.Asn829Ser             cb_empty
         Gene gene = getGene("ENSG00000162688");
         Transcript transcript = getTranscript(gene, "ENST00000361302");
-        Variant variant = new Variant("A",
+        Variant variant = new Variant("1",
                 99884391,
                 "G",
                 "A");

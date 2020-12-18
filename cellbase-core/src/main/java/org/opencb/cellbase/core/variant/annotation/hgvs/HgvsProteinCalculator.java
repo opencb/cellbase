@@ -61,9 +61,9 @@ public class HgvsProteinCalculator {
 
         buildingComponents = new BuildingComponents();
 
-        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println(transcript.getProteinSequence());
-        System.out.println();
+//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println(transcript.getProteinSequence());
+//        System.out.println();
 
         switch (this.variant.getType()) {
             case SNV:
@@ -368,7 +368,7 @@ public class HgvsProteinCalculator {
 //                    alternateProteinSequence.replace(codonPosition, codonPosition + deletionAaLength - 1, "");
                     return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 } else {
-                    // TODO testDuplicationAsNonsense()
+                    // TODO testDuplicationAsNonsense(), should be dup, e.g. p.Pro167dup
                     // delins?
                     return null;
                 }
