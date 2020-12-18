@@ -95,6 +95,7 @@ public class HgvsProteinCalculator {
         String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
 
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
 
@@ -108,7 +109,8 @@ public class HgvsProteinCalculator {
         // three letter abbreviation
         String referenceAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(referenceAAUppercase);
 
-        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+        // FIXME - forcing to be > 0
+        int positionAtCodon = Math.max(transcriptUtils.getPositionAtCodon(cdsVariantStartPosition), 1);
         char[] chars = referenceCodon.toCharArray();
         chars[positionAtCodon - 1] = alternate.charAt(0);
         String alternateAAUpperCase =
