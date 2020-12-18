@@ -82,6 +82,9 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Glu75_Glu77dup", hgvsProtein.getHgvs());
+
+
+
     }
 
     @Test
@@ -291,10 +294,11 @@ public class HgvsProteinCalculatorTest {
         Assert.assertEquals("p.Tyr374IlefsTer2", predictor.calculate().getHgvs());
     }
 
-    //@Test
+    @Test
     public void testDuplicationAsNonsense() throws Exception {
         // Issue #9 Dups reported as nonsense
         // positive strand
+        // unconfirmed start
         // 12271   X:71137733:-:CTC        X       71137733        -       CTC     indel   ENSP00000404373 p.Pro167dup     p.Tyr168Ter     vep_dup_cb_ter
         Gene gene = getGene("ENSG00000184634");
         Transcript transcript = getTranscript(gene, "ENST00000444034");
@@ -306,6 +310,21 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Pro167dup", hgvsProtein.getHgvs());
+
+
+        //        3964    22:50731056:-:CCGGCC    22      50731056        -       CCGGCC  indel   ENSP00000489147 p.Pro1650_Gly1651dup            cb_empty
+//        3965    22:50731056:-:CCGGCC    22      50731056        -       CCGGCC  indel   ENSP00000489407 p.Pro1644_Gly1645dup            cb_empty
+        gene = getGene("ENSG00000251322");
+        transcript = getTranscript(gene, "ENST00000262795");
+        variant = new Variant("22",
+                50731056,
+                "-",
+                "CCGGCC");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        assertNotNull(hgvsProtein);
+        Assert.assertEquals("p.Pro1650_Gly1651dup", hgvsProtein.getHgvs());
     }
 
     /////////////////////////////////////
