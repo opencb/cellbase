@@ -207,6 +207,23 @@ public class HgvsProteinCalculatorTest {
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000443495"));
     }
 
+    @Test
+    public void testInsertionCdsStartGreaterThanCdsLength() throws Exception {
+        // 26225   16:2092113:-:TC 16      2092113 -       TC      indel   ENSP00000461391 p.Asp20GlufsTer162      p.Asp20ArgfsTer28       fs_shorthand_same_pos
+
+        Gene gene = getGene("ENSG00000007541");
+        Transcript transcript = getTranscript(gene, "ENST00000636657");
+        Variant variant = new Variant("16",
+                2092113,
+                "-",
+                "TC");
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Asp20GlufsTer162", hgvsProtein.getHgvs());
+
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000461391"));
+    }
+
     // -------------------- negative strand --------------------------------------
 
     @Test
