@@ -869,6 +869,7 @@ public class HgvsProteinCalculator {
 
         // genomic to cDNA
         int variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+
         // -1 to fix inclusive positions
         int cdnaVariantPosition = transcript.getCdnaCodingStart() + variantCdsPosition - 1;
         int cdnaVariantIndex = cdnaVariantPosition - 1;
@@ -884,7 +885,9 @@ public class HgvsProteinCalculator {
                     alternateDnaSequence.insert(cdnaVariantIndex, alternate);
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
-//                    cdnaVariantIndex = cdnaVariantIndex - 1;
+                    if (transcript.getStrand().equals("-")) {
+                        cdnaVariantIndex = cdnaVariantIndex - 1;
+                    }
                     alternateDnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + reference.length(), "");
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV.");
