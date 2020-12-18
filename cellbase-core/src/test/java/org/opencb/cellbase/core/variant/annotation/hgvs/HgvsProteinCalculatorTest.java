@@ -198,7 +198,7 @@ public class HgvsProteinCalculatorTest {
         Variant variant = new Variant("1",
                 236747758,
                 "-",
-                "AAAAAGAGCC");
+                "AAAAAGAGC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Lys499_Arg500insLysLysSer", hgvsProtein.getHgvs());
