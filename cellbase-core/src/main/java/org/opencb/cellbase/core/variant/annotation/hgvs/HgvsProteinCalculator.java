@@ -527,6 +527,11 @@ public class HgvsProteinCalculator {
                     String secondAffectedCodon = transcriptUtils.getCodon(aminoacidPosition + 1);
                     String secondAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), secondAffectedCodon);
                     if (deletionAaLength == 1) {
+                        // TODO make this general for more than 1 amino acid
+                        while (transcript.getProteinSequence().charAt(aminoacidPosition)
+                                == transcript.getProteinSequence().charAt(aminoacidPosition + 1)) {
+                            aminoacidPosition++;
+                        }
                         hgvsString = "p." + StringUtils.capitalize(secondAffectedAa.toLowerCase()) + (aminoacidPosition + 1) + "del";
                     } else {
                         String lastAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), lastAffectedCodon);
