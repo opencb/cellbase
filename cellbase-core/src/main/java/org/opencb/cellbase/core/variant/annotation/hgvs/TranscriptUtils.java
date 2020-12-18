@@ -195,6 +195,10 @@ public class TranscriptUtils {
     }
 
     public String getFormattedCdnaSequence() {
+        return this.getFormattedCdnaSequence(transcript.getcDnaSequence());
+    }
+
+    public String getFormattedCdnaSequence(String cdnaSequence) {
         StringBuilder cdnaPositions = new StringBuilder();
         StringBuilder codonPositions = new StringBuilder();
         StringBuilder formattedCdnaSequence = new StringBuilder();
@@ -217,7 +221,7 @@ public class TranscriptUtils {
         if (transcriptPhase > 0) {
             cdnaPositions.append(StringUtils.rightPad(String.valueOf(position == 0 ? 1 : position), transcriptPhase)).append(separator);
             codonPositions.append(StringUtils.rightPad(String.valueOf(position++), transcriptPhase)).append(separator);
-            formattedCdnaSequence.append(transcript.getcDnaSequence().substring(0, transcriptPhase)).append(separator);
+            formattedCdnaSequence.append(cdnaSequence.substring(0, transcriptPhase)).append(separator);
 
             if (transcript.getProteinSequence().startsWith("X")) {
                 aaPositions.append(StringUtils.rightPad("1", transcriptPhase)).append(separator);
@@ -233,10 +237,10 @@ public class TranscriptUtils {
 
         String codon, aa;
         boolean insideCodingSequence = transcript.getCdnaCodingStart() == 1;
-        for (int i = transcriptPhase; i < transcript.getcDnaSequence().length(); i += 3) {
+        for (int i = transcriptPhase; i < cdnaSequence.length(); i += 3) {
             cdnaPositions.append(StringUtils.rightPad(String.valueOf(i + 1), 4)).append("   ");
             codonPositions.append(StringUtils.rightPad(String.valueOf(position++), 4)).append("   ");
-            codon = transcript.getcDnaSequence().substring(i, Math.min(i + 3, transcript.getcDnaSequence().length()));
+            codon = cdnaSequence.substring(i, Math.min(i + 3, cdnaSequence.length()));
             formattedCdnaSequence.append(codon).append(separator);
 
             // We are now inside the protein coding region
