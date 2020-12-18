@@ -579,12 +579,22 @@ public class HgvsProteinCalculator {
         }
 
         String alternateDnaSequence = getAlternateCdnaSequence();
+//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
+//        System.out.println(transcript.getProteinSequence());
+//        System.out.println();
+
 
         int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());
 //        System.out.println("variantCdnaPosition = " + HgvsCalculator.getCdsStart(transcript, variant.getStart()));
 //        System.out.println("variantCdnaPosition = " + variantCdnaPosition);
 
         // Initial codon position. Index variables are always 0-based for working with strings
+//        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+//        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
+//        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+//        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+//        int firstCodonPosition = transcriptUtils.getFirstCodonPosition();
+
         int codonIndex = transcript.getCdnaCodingStart() + phaseOffset - 1;
         int terPosition = 0;
 
@@ -874,7 +884,7 @@ public class HgvsProteinCalculator {
                     alternateDnaSequence.insert(cdnaVariantIndex, alternate);
                 // deletion
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    cdnaVariantIndex = cdnaVariantIndex - 1;
+//                    cdnaVariantIndex = cdnaVariantIndex - 1;
                     alternateDnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + reference.length(), "");
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV.");
