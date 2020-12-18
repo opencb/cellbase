@@ -409,6 +409,15 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testArrayOutOfBounds() throws Exception {
+
+//        11      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000355106 p.Asn829Ser             cb_empty
+//        12      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000355537         p.Lys71Ter      vep_empty
+//        13      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000359184 p.Asn829Ser             cb_empty
+//        14      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000443495         p.Lys71Ter      vep_empty
+
+
+
+        // 11      1:99884391:A:G  1       99884391        A       G       snv     ENSP00000355106 p.Asn829Ser             cb_empty
         Gene gene = getGene("ENSG00000162688");
         Transcript transcript = getTranscript(gene, "ENST00000361302");
         Variant variant = new Variant("A",
@@ -418,7 +427,7 @@ public class HgvsProteinCalculatorTest {
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("Don't know!", hgvsProtein.getHgvs());
+        Assert.assertEquals("p.Asn829Ser", hgvsProtein.getHgvs());
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000355106"));
     }
 
