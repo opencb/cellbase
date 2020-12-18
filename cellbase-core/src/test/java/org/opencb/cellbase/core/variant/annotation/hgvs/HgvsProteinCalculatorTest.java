@@ -291,6 +291,7 @@ public class HgvsProteinCalculatorTest {
 
     @Test
     public void testDeletionInframe() throws Exception {
+        // Reverse Strand,  CDS 5' Incomplete
         Gene gene = getGene("ENSG00000165119");
         Transcript transcript = getTranscript(gene, "ENST00000481820");
         Variant variant = new Variant("9",

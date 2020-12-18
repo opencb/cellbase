@@ -61,6 +61,10 @@ public class HgvsProteinCalculator {
 
         buildingComponents = new BuildingComponents();
 
+        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+        System.out.println(transcript.getProteinSequence());
+        System.out.println();
+
         switch (this.variant.getType()) {
             case SNV:
                 return calculateSnvHgvs();
@@ -402,9 +406,9 @@ public class HgvsProteinCalculator {
 
         // We copy codonPosition to aminoacidPosition to be free of changing aminoacidPosition when needed
         int aminoacidPosition = codonPosition;
-        if (transcript.getProteinSequence().startsWith("X")) {
-            aminoacidPosition++;
-        }
+//        if (transcript.getProteinSequence().startsWith("X")) {
+//            aminoacidPosition++;
+//        }
 
         // Check if this is an in frame deletion
         if (positionAtCodon == 1 && variant.getReference().length() % 3 == 0) {

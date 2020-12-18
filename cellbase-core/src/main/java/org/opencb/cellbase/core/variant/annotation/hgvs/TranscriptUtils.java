@@ -102,6 +102,14 @@ public class TranscriptUtils {
     public String getCodon(int codonPosition) {
         if (codonPosition > 0) {
             int cdsCodonStart = ((codonPosition - 1) * 3) + 1;
+            if (hasUnconfirmedStart()) {
+                // firstCodonPhase is 1. Codon 4 starts at position 8:
+                //  cDNA        1    2      5      8      11
+                //  codon       1    2      3      4      5
+                //  sequence    G    CAG    ATG    GCT    TAT
+                int firstCodonPhase = getFirstCodonPhase();
+                cdsCodonStart -= (3 - firstCodonPhase);
+            }
             int cdnaCodonStart = cdsToCdna(cdsCodonStart);
             // adjust for manipulating strings, set to be zero base
             cdnaCodonStart = cdnaCodonStart - 1;
@@ -197,6 +205,7 @@ public class TranscriptUtils {
         String separator = "    ";
 
         int position = 1;
+        int aaPosition = 1;
         int transcriptPhase = (transcript.getCdnaCodingStart() - 1) % 3;
 
         // Unconfirmed start transcripts ALWAYS start at position 1
@@ -210,14 +219,20 @@ public class TranscriptUtils {
             codonPositions.append(StringUtils.rightPad(String.valueOf(position++), transcriptPhase)).append(separator);
             formattedCdnaSequence.append(transcript.getcDnaSequence().substring(0, transcriptPhase)).append(separator);
 
-            aaPositions.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
-            proteinSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
-            proteinCodedSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+            if (transcript.getProteinSequence().startsWith("X")) {
+                aaPositions.append(StringUtils.rightPad("1", transcriptPhase)).append(separator);
+                proteinSequence.append(StringUtils.rightPad("X", transcriptPhase)).append(separator);
+                proteinCodedSequence.append(StringUtils.rightPad("X", transcriptPhase)).append(separator);
+                aaPosition++;
+            } else {
+                aaPositions.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+                proteinSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+                proteinCodedSequence.append(StringUtils.repeat(' ', transcriptPhase)).append(separator);
+            }
         }
 
         String codon, aa;
         boolean insideCodingSequence = transcript.getCdnaCodingStart() == 1;
-        int aaPosition = 1;
         for (int i = transcriptPhase; i < transcript.getcDnaSequence().length(); i += 3) {
             cdnaPositions.append(StringUtils.rightPad(String.valueOf(i + 1), 4)).append("   ");
             codonPositions.append(StringUtils.rightPad(String.valueOf(position++), 4)).append("   ");
