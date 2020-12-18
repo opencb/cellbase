@@ -422,8 +422,8 @@ public class HgvsProteinCalculatorTest {
         Transcript transcript = getTranscript(gene, "ENST00000361302");
         Variant variant = new Variant("1",
                 99884391,
-                "G",
-                "A");
+                "A",
+                "G");
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
