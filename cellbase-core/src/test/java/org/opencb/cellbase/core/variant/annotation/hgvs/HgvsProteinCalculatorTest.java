@@ -344,8 +344,37 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Gly29del", hgvsProtein.getHgvs());
-
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000473957"));
+
+        // 9:83978229-83978231
+        // Reverse Strand (same gene as above), confirmed start
+        // ENSP00000317788.4:p.Gly385del
+        transcript = getTranscript(gene, "ENST00000351839");
+        variant = new Variant("9",
+                83978229,
+                "TTC",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Gly385del", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000317788"));
+
+
+        // forward strand
+        // confirmed start
+        gene = getGene("ENSG00000196549");
+        transcript = getTranscript(gene, "ENST00000492661");
+        variant = new Variant("3",
+                155116953,
+                "TGA",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Asp209del", hgvsProtein.getHgvs());
+        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000420389"));
+
     }
 
     @Test
@@ -443,7 +472,23 @@ public class HgvsProteinCalculatorTest {
     @Test
     public void testArrayOutOfBoundsDeletion() throws Exception {
 
-//        23      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491305 p.Asp451IlefsTer5               cb_empty
+//        21      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000410728 p.Asp325IlefsTer5               cb_empty
+//        22      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491601 p.Asp270IlefsTer5               cb_empty
+//        23      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491340 p.Asp272IlefsTer5               cb_empty
+//        24      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491294 p.Asp272IlefsTer5               cb_empty
+//        25      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000363193         p.Arg1266His    vep_empty
+//        26      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491685 p.Asp529IlefsTer5               cb_empty
+//        27      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000363215         p.Arg1266His    vep_empty
+//        28      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000492010 p.Asp252IlefsTer5               cb_empty
+//        29      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000283179 p.Asp467IlefsTer5               cb_empty
+//        30      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491305 p.Asp451IlefsTer5               cb_empty
+//        31      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000393151 p.Asp529IlefsTer5               cb_empty
+//        32      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491215 p.Asp548IlefsTer5               cb_empty
+//        33      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491491 p.Asp8IlefsTer5         cb_empty
+//        34      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491903 p.Asp74IlefsTer5                cb_empty
+//        35      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000491807 p.Asp272IlefsTer5               cb_empty
+//        36      1:244856830:T:- 1       244856830       T       -       indel   ENSP00000492573 p.Asp209IlefsTer5               cb_empty
+
         Gene gene = getGene("ENSG00000153187");
         Transcript transcript = getTranscript(gene, "ENST00000638475");
         Variant variant = new Variant("1",
@@ -490,14 +535,11 @@ public class HgvsProteinCalculatorTest {
        // 1:244856830:T:-
     }
 
-
-
-
     @Test
     public void testSnvOffByOne() throws Exception {
         Gene gene = getGene("ENSG00000162688");
         Transcript transcript = getTranscript(gene, "ENST00000370165");
-        Variant variant = new Variant("A",
+        Variant variant = new Variant("1",
                 99884391,
                 "G",
                 "A");
