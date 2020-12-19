@@ -139,12 +139,15 @@ public class TranscriptUtils {
             // - 2 if shifted two positions, i.e.
             // Sequence ---------ACTTACGGTC
             // Codons              ---|||---|||
-            if (cdsPosition > firstCodonPhase) {
-                cdsPosition -= firstCodonPhase;
-            } else {
-                // If CDS position belongs to the first incomplete codon we return 0
-                return 0;
+            if (firstCodonPhase != 0) {
+                cdsPosition = cdsPosition + (3 - firstCodonPhase);
             }
+
+//            if (cdsPosition > firstCodonPhase) {
+//                cdsPosition += firstCodonPhase;
+//            } else {
+//                return 0;
+//            }
         }
         // We add 1 to get the position not index
         return ((cdsPosition - 1) / 3) + 1;
@@ -173,6 +176,7 @@ public class TranscriptUtils {
             // Codons              ---|||---|||
             if (cdsPosition > firstCodonPhase) {
                 cdsPosition -= firstCodonPhase;
+//                cdsPosition += (3 - firstCodonPhase);
             } else {
                 // If CDS position belongs to the first incomplete codon we return 0
                 return 0;

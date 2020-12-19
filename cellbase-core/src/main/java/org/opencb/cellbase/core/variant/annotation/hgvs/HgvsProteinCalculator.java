@@ -61,9 +61,9 @@ public class HgvsProteinCalculator {
 
         buildingComponents = new BuildingComponents();
 
-//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-//        System.out.println(transcript.getProteinSequence());
-//        System.out.println();
+        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+        System.out.println(transcript.getProteinSequence());
+        System.out.println();
 
         switch (this.variant.getType()) {
             case SNV:
@@ -97,8 +97,16 @@ public class HgvsProteinCalculator {
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // FIXME - forcing to be > 0
-        int codonPosition = Math.max(transcriptUtils.getCodonPosition(cdsVariantStartPosition), 1);
+//        int codonPosition = Math.max(transcriptUtils.getCodonPosition(cdsVariantStartPosition), 1);
+//        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
+        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
+        // We copy codonPosition to aminoacidPosition to be free of changing aminoacidPosition when needed
+        int aminoacidPosition = codonPosition;
+//        if (transcript.getProteinSequence().startsWith("X")) {
+//            aminoacidPosition++;
+//        }
+
 
         String referenceAAUppercase = VariantAnnotationUtils
                 .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
@@ -186,9 +194,7 @@ public class HgvsProteinCalculator {
     private HgvsProtein calculateInsertionHgvs() {
         // Insertion must fall inside the coding region
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
-            return null;
-        }
+
 
         // Get variant alternate in the same strand than the transcript
         String hgvsString;
@@ -196,11 +202,15 @@ public class HgvsProteinCalculator {
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
 
+//        if (cdsVariantStartPosition < 1 || codonPosition >= transcript.getCdsLength()) {
+//            return null;
+//        }
+
         // We copy codonPosition to aminoacidPosition to be free of changing aminoacidPosition when needed
         int aminoacidPosition = codonPosition;
-        if (transcript.getProteinSequence().startsWith("X")) {
-            aminoacidPosition++;
-        }
+//        if (transcript.getProteinSequence().startsWith("X")) {
+//            aminoacidPosition++;
+//        }
 
         // Check if this is an in frame insertion
         if (positionAtCodon == 1 && variant.getAlternate().length() % 3 == 0) {
@@ -397,9 +407,10 @@ public class HgvsProteinCalculator {
     private HgvsProtein calculateDeletionHgvs() {
         // Deletion must fall inside the coding region
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
-            return null;
-        }
+//        cdsVariantStartPosition = 82;
+//        if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
+//            return null;
+//        }
 
         // Prepare variables
         String hgvsString;
