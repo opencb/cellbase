@@ -82,9 +82,6 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Glu75_Glu77dup", hgvsProtein.getHgvs());
-
-
-
     }
 
     @Test
@@ -200,6 +197,8 @@ public class HgvsProteinCalculatorTest {
     public void testInsertionInframe() throws Exception {
         // confirmed start, no flags
         // forward strand
+        // Results: ENSP00000355537.4:p.Lys499_Arg500insLysLysGlu and ENSP00000443495.1:p.Lys499_Arg500insLysLysGlu
+        // https://rest.ensembl.org/variant_recoder/human/1:236747758::AAAAAGAGC?content-type=application/json
         Gene gene = getGene("ENSG00000077522");
         Transcript transcript = getTranscript(gene, "ENST00000542672");
         Variant variant = new Variant("1",
@@ -208,8 +207,7 @@ public class HgvsProteinCalculatorTest {
                 "AAAAAGAGC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Lys499_Arg500insLysLysSer", hgvsProtein.getHgvs());
-
+        Assert.assertEquals("p.Lys499_Arg500insLysLysGlu", hgvsProtein.getHgvs());
         assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000443495"));
 
         // forward strand
@@ -221,41 +219,43 @@ public class HgvsProteinCalculatorTest {
                 "-",
                 "CTGCGAAGA");
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        assertNotNull(hgvsProtein);
-        Assert.assertEquals("p.Cys40_Asp42dup", hgvsProtein.getHgvs());
+        HgvsProtein hgvsProtein2 = predictor.calculate();
+        assertNotNull(hgvsProtein2);
+        Assert.assertEquals("p.Cys40_Asp42dup", hgvsProtein2.getHgvs());
 
         // reverse strand
         // unconfirmed start
+        // Result: ENSP00000461391.1:p.Gly31_Thr32dup
+        // https://rest.ensembl.org/variant_recoder/human/16:2092075::CGTCCC?content-type=application/json
         gene = getGene("ENSG00000008710");
         transcript = getTranscript(gene, "ENST00000561668");
         variant = new Variant("16",
-                2092075,
+                2092076,
                 "-",
                 "CGTCCC");
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        assertNotNull(hgvsProtein);
-        Assert.assertEquals("p.Gly31_Thr32dup", hgvsProtein.getHgvs());
+        HgvsProtein hgvsProtein3 = predictor.calculate();
+        assertNotNull(hgvsProtein3);
+        Assert.assertEquals("p.Gly31_Thr32dup", hgvsProtein3.getHgvs());
     }
 
     @Test
     public void testInsertionCdsStartGreaterThanCdsLength() throws Exception {
+        // FIXME is 2092113 the right coordinate?
         // 26225   16:2092113:-:TC 16      2092113 -       TC      indel   ENSP00000461391 p.Asp20GlufsTer162      p.Asp20ArgfsTer28       fs_shorthand_same_pos
-
-        Gene gene = getGene("ENSG00000007541");
-        Transcript transcript = getTranscript(gene, "ENST00000636657");
+        // Reverse strand, 5' incomplete
+        // Result: ENSP00000461391.1:p.Asp20GlyfsTer162,
+        // https://rest.ensembl.org/variant_recoder/human/16:2092113::TC?content-type=application/json
+        Gene gene = getGene("ENSG00000008710");
+        Transcript transcript = getTranscript(gene, "ENST00000561668");
         Variant variant = new Variant("16",
-                2092113,
+                2092114,
                 "-",
                 "TC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertNotNull(hgvsProtein);
-
-        Assert.assertEquals("p.Asp20GlufsTer162", hgvsProtein.getHgvs());
-
-        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000461391"));
+        Assert.assertEquals("p.Asp20GlyfsTer162", hgvsProtein.getHgvs());
     }
 
     // -------------------- negative strand --------------------------------------
@@ -327,6 +327,8 @@ public class HgvsProteinCalculatorTest {
         // positive strand
         // unconfirmed start
         // 12271   X:71137733:-:CTC        X       71137733        -       CTC     indel   ENSP00000404373 p.Pro167dup     p.Tyr168Ter     vep_dup_cb_ter
+        // Result: "ENSP00000404373.1:p.Thr166_Pro167insSer",
+        // https://rest.ensembl.org/variant_recoder/human/X:71137733::CTC?content-type=application/json
         Gene gene = getGene("ENSG00000184634");
         Transcript transcript = getTranscript(gene, "ENST00000444034");
         Variant variant = new Variant("X",
@@ -336,13 +338,13 @@ public class HgvsProteinCalculatorTest {
 
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Pro167dup", hgvsProtein.getHgvs());
-
-
-        //        3964    22:50731056:-:CCGGCC    22      50731056        -       CCGGCC  indel   ENSP00000489147 p.Pro1650_Gly1651dup            cb_empty
-//        3965    22:50731056:-:CCGGCC    22      50731056        -       CCGGCC  indel   ENSP00000489407 p.Pro1644_Gly1645dup            cb_empty
+        Assert.assertEquals("p.Thr166_Pro167insSer", hgvsProtein.getHgvs());
 
         // forward strand
+        // Result: ENSP00000489147.1:p.Ser1646_Gly1647insArgPro
+        // https://aug2017.rest.ensembl.org/variant_recoder/human/NC_000022.11:g.50731057_50731058insCGGCCC?content-type=application/json
+        // FIXME after Ensembl 102 the protein chanegd and the resultis now
+        //  https://rest.ensembl.org/variant_recoder/human/22:50731056::CCGGCC?content-type=application/json
         gene = getGene("ENSG00000251322");
         transcript = getTranscript(gene, "ENST00000262795");
         variant = new Variant("22",
@@ -351,9 +353,10 @@ public class HgvsProteinCalculatorTest {
                 "CCGGCC");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        assertNotNull(hgvsProtein);
-        Assert.assertEquals("p.Pro1650_Gly1651dup", hgvsProtein.getHgvs());
+        HgvsProtein hgvsProtein2 = predictor.calculate();
+        assertNotNull(hgvsProtein2);
+        System.out.println("hgvsProtein2 = " + hgvsProtein2.getIds());
+        Assert.assertEquals("p.Ser1646_Gly1647insArgPro", hgvsProtein2.getHgvs());
     }
 
     /////////////////////////////////////
@@ -377,7 +380,7 @@ public class HgvsProteinCalculatorTest {
 
         // 9:83978229-83978231
         // Reverse Strand (same gene as above), confirmed start
-        // ENSP00000317788.4:p.Gly385del
+        // ENSP00000317788.4:p.Glu8del
         transcript = getTranscript(gene, "ENST00000351839");
         variant = new Variant("9",
                 83978229,
@@ -385,9 +388,9 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Gly385del", hgvsProtein.getHgvs());
-        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000317788"));
+        HgvsProtein hgvsProtein2 = predictor.calculate();
+        Assert.assertEquals("p.Glu8del", hgvsProtein2.getHgvs());
+        assertThat(hgvsProtein2.getIds(), CoreMatchers.hasItems("ENSP00000317788"));
 
 
         // forward strand
@@ -400,9 +403,9 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Asp209del", hgvsProtein.getHgvs());
-        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000420389"));
+        HgvsProtein hgvsProtein3 = predictor.calculate();
+        Assert.assertEquals("p.Asp209del", hgvsProtein3.getHgvs());
+        assertThat(hgvsProtein3.getIds(), CoreMatchers.hasItems("ENSP00000420389"));
 
         // forward strand
         // unconfirmed start
@@ -414,8 +417,8 @@ public class HgvsProteinCalculatorTest {
                 "-");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
-        hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Pro9del", hgvsProtein.getHgvs());
+        HgvsProtein hgvsProtein4 = predictor.calculate();
+        Assert.assertEquals("p.Pro9del", hgvsProtein4.getHgvs());
     }
 
     @Test

@@ -194,7 +194,9 @@ public class HgvsProteinCalculator {
     private HgvsProtein calculateInsertionHgvs() {
         // Insertion must fall inside the coding region
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-
+        if (transcript.getStrand().equals("+")) {
+            cdsVariantStartPosition++;
+        }
 
         // Get variant alternate in the same strand than the transcript
         String hgvsString;
@@ -226,18 +228,14 @@ public class HgvsProteinCalculator {
                     codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
                 }
 
-                // Get position and flanking amino acids
-                String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 2, codonPosition - 1);
-                String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-                int codonIndex = codonPosition - 1;
-                String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
-                String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
                 // Create HGVS string
                 // IMPORTANT: Check if this is a HGVS Duplication instead of a HGVS Insertion
-                String previousSequence = transcript.getProteinSequence().substring(codonPosition - aminoacids.size() - 1,
-                        codonPosition - 1);
-                if (previousSequence.equals(StringUtils.join(codedAminoacids, ""))) {
+                String previousSequence = transcript.getProteinSequence().substring(aminoacidPosition - aminoacids.size() - 1,
+                        aminoacidPosition - 1);
+                String postSequence = transcript.getProteinSequence().substring(aminoacidPosition - 1,
+                        aminoacidPosition + aminoacids.size() - 1);
+                if (previousSequence.equals(StringUtils.join(codedAminoacids, "")) || postSequence.equals(StringUtils.join(codedAminoacids, ""))) {
                     // HGVS Duplication: a sequence change between the translation initiation (start) and termination (stop) codon where,
                     // compared to a reference sequence, a copy of one or more amino acids are inserted directly C-terminal
                     // of the original copy of that sequence.
@@ -257,15 +255,23 @@ public class HgvsProteinCalculator {
                     }
 
                     if (aminoacids.size() == 1) {
-                        hgvsString = "p." + leftAa + aminoacidPosition + "dup";
+                        hgvsString = "p." + aminoacids.get(0) + (aminoacidPosition - aminoacids.size()) + "dup";
                     } else {
-                        hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1)
-                                + "dup";
+                        hgvsString = "p." + aminoacids.get(0) + (aminoacidPosition - aminoacids.size()) + "_"
+                                + aminoacids.get(aminoacids.size() - 1) + (aminoacidPosition - 1) + "dup";
                     }
                 } else {
                     // HGVS Insertion: a sequence change between the translation initiation (start) and termination (stop) codon where,
                     // compared to the reference sequence, one or more amino acids are inserted, which is not a frame shift and
                     // where the insertion is not a copy of a sequence immediately N-terminal (5')
+
+                    // Get position and flanking amino acids
+                    int codonIndex = codonPosition - 1;
+                    String leftCodedAa = transcript.getProteinSequence().substring(codonIndex - 1, codonIndex);
+                    String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
+                    String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
+                    String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+
                     if (aminoacids.size() <= 5) {
                         // p.Lys2_Gly3insGlnSerLys
                         //  the insertion of amino acids GlnSerLys between amino acids Lys2 and Gly3
@@ -319,47 +325,72 @@ public class HgvsProteinCalculator {
             // GLU    GLU    GLY    GLU    GLY    GLY    VAL
             // E      E      G      E      G      G      V
             if (variant.getAlternate().length() % 3 == 0) {
-                // Get the new codon created after the deletion
-                String referenceCodon = transcriptUtils.getCodon(codonPosition);
-                String newAlternateCodon;
-                String newAInsertedAlternate;
-                if (positionAtCodon == 2) {
-                    newAlternateCodon = alternate.substring(alternate.length() - 1) + referenceCodon.substring(positionAtCodon - 1);
-                    newAInsertedAlternate = referenceCodon.substring(0, positionAtCodon - 1)
-                            + alternate.substring(0, alternate.length() - 1);
-                } else {    // positionAtCodon == 3
-                    newAlternateCodon = alternate.substring(alternate.length() - 2) + referenceCodon.substring(positionAtCodon - 1);
-                    newAInsertedAlternate = referenceCodon.substring(0, positionAtCodon - 1)
-                            + alternate.substring(0, alternate.length() - 2);
+                // If it is an insertion (or duplication) the reference codon must remain intact.
+                // Check if the possible insertion is happening to the left or to the right of reference codon.
+                // Left Insertion: codon formed with the end of the insertion is the same as reference, insertion happens in the left.
+//                String newAlternateCodon;
+//                String newAInsertedAlternate;
+//                String newAlternateAa;
+//                if (positionAtCodon == 2) {
+//                    newAlternateCodon = alternate.substring(alternate.length() - 1) + refCodon.substring(positionAtCodon - 1);
+//                    newAInsertedAlternate = refCodon.substring(0, positionAtCodon - 1)
+//                            + alternate.substring(0, alternate.length() - 1);
+//                } else {    // positionAtCodon == 3
+//                    newAlternateCodon = alternate.substring(alternate.length() - 2) + refCodon.substring(positionAtCodon - 1);
+//                    newAInsertedAlternate = refCodon.substring(0, positionAtCodon - 1)
+//                            + alternate.substring(0, alternate.length() - 2);
+//                }
+//                newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
+
+                // Get the reference codon and the new sequence inserted
+                String refCodon = transcriptUtils.getCodon(codonPosition);
+                String refAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), refCodon);
+                String insertedSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
+
+                // First we need to calculate the amino acid sequence to be inserted
+                List<String> aminoacids =  new ArrayList<>(insertedSequence.length() / 3);
+                List<String> codedAminoacids =  new ArrayList<>(insertedSequence.length() / 3);
+                for (int i = 0; i < insertedSequence.length(); i += 3) {
+                    String alternateCodon = insertedSequence.substring(i, i + 3);
+                    String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
+                    aminoacids.add(VariantAnnotationUtils.buildUpperLowerCaseString(alternateAa));
+                    codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
                 }
 
-                String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);
-                String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
-
-                // Debug
-//                System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
-//                System.out.println("codonPosition = " + codonPosition);
-//                System.out.println("positionAtCodon = " + positionAtCodon);
-//                System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-//                System.out.println();
-
-                // Check if the affected amino acid remains the same
-                if (referenceAa.equals(newAlternateAa)) {
-                    // Now we need to check if this is and Insertion ot Duplication
-                    // First we need to calculate the amino acid sequence to be inserted
-                    List<String> aminoacids =  new ArrayList<>(newAInsertedAlternate.length() / 3);
-                    List<String> codedAminoacids =  new ArrayList<>(newAInsertedAlternate.length() / 3);
-                    String alternateCodon;
-                    for (int i = 0; i < newAInsertedAlternate.length(); i += 3) {
-                        alternateCodon = newAInsertedAlternate.substring(i, i + 3);
-                        String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
-                        aminoacids.add(VariantAnnotationUtils.buildUpperLowerCaseString(alternateAa));
-                        codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
+                // Insertion (or duplication) need the reference codon to be the same.
+                // Check if the reference codon is at any end of the new inserted sequence
+                if (refAa.equalsIgnoreCase(aminoacids.get(0)) || refAa.equalsIgnoreCase(aminoacids.get(aminoacids.size() - 1))) {
+                    // Now we need to decide if this is and Insertion ot Duplication
+                    // First, check if the new sequence is inserted in left or right.
+                    String insertSide;
+                    String sequenceAtTheLeft;
+                    if (refAa.equalsIgnoreCase(aminoacids.get(0))) {
+                        insertSide = "RIGHT";
+                        aminoacids.remove(0);
+                        codedAminoacids.remove(0);
+                        aminoacidPosition++;
+                    } else {
+                        insertSide = "LEFT";
+                        aminoacids.remove(aminoacids.size() - 1);
+                        codedAminoacids.remove(codedAminoacids.size() - 1);
                     }
 
-                    if (transcript.getProteinSequence().substring(aminoacidPosition - codedAminoacids.size() - 1, aminoacidPosition - 1)
-                            .equalsIgnoreCase(StringUtils.join(codedAminoacids, ""))) {
+                    // Second,
+                    String previousSequence = transcript.getProteinSequence().substring(aminoacidPosition - aminoacids.size() - 1,
+                            aminoacidPosition - 1);
+                    String postSequence = transcript.getProteinSequence().substring(aminoacidPosition - 1,
+                            aminoacidPosition + aminoacids.size() - 1);
+                    if (previousSequence.equals(StringUtils.join(codedAminoacids, "")) || postSequence.equals(StringUtils.join(codedAminoacids, ""))) {
                         // HGVS Duplication
+                        // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion
+                        String aaAfterDuplication = transcript.getProteinSequence()
+                                .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
+                        while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDuplication)) {
+                            aminoacidPosition += codedAminoacids.size();
+                            aaAfterDuplication = transcript.getProteinSequence()
+                                    .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
+                        }
+
                         if (aminoacids.size() == 1) {
                             hgvsString = "p." + aminoacids.get(0) + (aminoacidPosition - aminoacids.size()) + "dup";
                         } else {
@@ -369,13 +400,17 @@ public class HgvsProteinCalculator {
                     } else {
                         // HGVS Insertion
                         // TODO implement this case
-                        String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 2, codonPosition - 1);
+                        String leftCodedAa = transcript.getProteinSequence().substring(aminoacidPosition - 2, aminoacidPosition - 1);
                         String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-                        int codonIndex = codonPosition - 1;
+                        int codonIndex = aminoacidPosition - 1;
                         String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
                         String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
-                        hgvsString = "p." + leftAa + (codonPosition - 1) + "_" + rightAa + codonPosition + "ins" + aminoacids.size();
+                        if (aminoacids.size() <= 5) {
+                            hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_" + rightAa + aminoacidPosition + "ins" + StringUtils.join(aminoacids, "");
+                        } else {
+                            hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_" + rightAa + aminoacidPosition + "ins" + aminoacids.size();
+                        }
                     }
                     StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
 //                    alternateProteinSequence.replace(codonPosition, codonPosition + deletionAaLength - 1, "");
@@ -406,8 +441,15 @@ public class HgvsProteinCalculator {
      */
     private HgvsProtein calculateDeletionHgvs() {
         // Deletion must fall inside the coding region
-        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-//        cdsVariantStartPosition = 82;
+        int cdsVariantStartPosition;
+        if (transcript.getStrand().equals("+")) {
+            cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        } else {
+            cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
+            // FIXME Method HgvsCalculator.getCdsStart wringly returns +1 for reverse strand
+            cdsVariantStartPosition--;
+        }
+
 //        if (cdsVariantStartPosition < 1 || cdsVariantStartPosition > transcript.getCdsLength()) {
 //            return null;
 //        }
@@ -489,18 +531,19 @@ public class HgvsProteinCalculator {
                                 .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
                     }
 
-                    // Get flanking amino acids
-                    String leftCodedAa = transcript.getProteinSequence().substring(codonPosition - 2, codonPosition - 1);
-                    String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-
                     // Only 1 amino acid deleted
                     if (aminoacids.size() == 1) {
                         // LRG_199p1:p.Val7del
                         //  a deletion of amino acid Val7 in the reference sequence LRG_199p1
+                        String leftCodedAa = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+                        String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
                         hgvsString = "p." + leftAa + aminoacidPosition + "del";
                     } else {
-                        // More than 1 amino acid deleted, calculate the right flank
+                        // More than 1 amino acid deleted, calculate the flank amino acids
                         int aminoAcidIndex = aminoacidPosition - 1;
+                        String leftCodedAa = transcript.getProteinSequence().substring(aminoAcidIndex - 1, aminoAcidIndex);
+                        String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
+
                         String rightCodedAa = transcript.getProteinSequence()
                                 .substring(aminoAcidIndex + aminoacids.size() - 1, aminoAcidIndex + aminoacids.size());
                         String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
@@ -598,9 +641,9 @@ public class HgvsProteinCalculator {
         }
 
         String alternateDnaSequence = getAlternateCdnaSequence();
-//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
-//        System.out.println(transcript.getProteinSequence());
-//        System.out.println();
+        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
+        System.out.println(transcript.getProteinSequence());
+        System.out.println();
 
 
         int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());
@@ -608,11 +651,15 @@ public class HgvsProteinCalculator {
 //        System.out.println("variantCdnaPosition = " + variantCdnaPosition);
 
         // Initial codon position. Index variables are always 0-based for working with strings
-//        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-//        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
-//        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
-//        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
-//        int firstCodonPosition = transcriptUtils.getFirstCodonPosition();
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+        if (transcript.getStrand().equals("+")) {
+            cdsVariantStartPosition++;
+        }
+        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
+        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
+        String codon = transcriptUtils.getCodon(codonPosition);
+        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+        int firstCodonPosition = transcriptUtils.getFirstCodonPosition();
 
         int codonIndex = transcript.getCdnaCodingStart() + phaseOffset - 1;
         int terPosition = 0;

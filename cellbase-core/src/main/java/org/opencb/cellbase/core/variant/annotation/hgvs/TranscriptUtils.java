@@ -261,8 +261,8 @@ public class TranscriptUtils {
                 } else {
                     proteinSequence.append(aa).append(separator);
                 }
-                aaPositions.append(StringUtils.rightPad(String.valueOf(aaPosition++), 3)).append(separator);
-                proteinCodedSequence.append(StringUtils.rightPad(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa), 3)).append(separator);
+                aaPositions.append(StringUtils.rightPad(String.valueOf(aaPosition++), 4)).append("   ");
+                proteinCodedSequence.append(StringUtils.rightPad(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa), 4)).append("   ");
             } else {
                 aaPositions.append(" - ").append(separator);
                 proteinSequence.append(" - ").append(separator);
