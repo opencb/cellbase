@@ -35,6 +35,7 @@ public class HgvsProteinCalculator {
     private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
     protected BuildingComponents buildingComponents = null;
 
+    public static final int MAX_NUMBER_AMINOACIDS_DISPLAYED = 10;
 
     /**
      * Constructor.
@@ -194,10 +195,6 @@ public class HgvsProteinCalculator {
     private HgvsProtein calculateInsertionHgvs() {
         // Get CDS position
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (transcript.getStrand().equals("+")) {
-            // FIXME HgvsCalculator.getCdsStart already returns +1 for reverse transcripts
-            cdsVariantStartPosition++;
-        }
 
         // Get variant alternate in the same strand than the transcript
         String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
@@ -208,13 +205,14 @@ public class HgvsProteinCalculator {
         // Alternate length for Insertions and Duplications must be multiple of 3, otherwise it is a frameshift.
         if (variant.getAlternate().length() % 3 == 0) {
             if (positionAtCodon == 1) {
-                // An inframe HGVS Insertion or Duplicatio, insert is happening between codons.
+                // An in-frame HGVS Insertion or Duplication, insert is happening between codons.
                 return this.hgvsInsertionFormatter(alternate, codonPosition);
             } else {
-                // Position at codon is not 1 and therefore codon is split, but there is still the possibility of having
-                // an inframe HGVS Insertion or Duplication.
+                // Position at codon is not 1 and therefore the codon is split, but there is still the possibility of having
+                // an in-frame HGVS Insertion or Duplication.
+                //
                 // Example: position at codon is 2 and 9 nucleotides are inserted, but GLY is not changed, only three amino acid are inserted
-                // 231 -/AGGGCGAGG
+                // Variant at:  231 -/AGGGCGAGG  resulting in:  p.Glu75_Glu77dup
                 // 218    221    224    227    230    233    236
                 // 74     75     76     77     78     79     80
                 // GAG    GAG    GGC    GAG    G GC   GGG    GTG
@@ -222,7 +220,9 @@ public class HgvsProteinCalculator {
                 // 73     74     75     76     77     78     79
                 // GLU    GLU    GLY    GLU    GLY    GLY    VAL
                 // E      E      G      E      G      G      V
-
+                //
+                // The inserted codons are: G_AG - GGC - GAG - G_GC
+                //                           GLU   GLY   GLU    GLY
                 // Note: if it is an insertion or duplication the original reference codon must remain intact after being split. Then,
                 // the insertion can happen on the left or right of the reference codon. Left Insertion: codon formed with the end of
                 // the insertion is the same as reference, insertion happens in the left.
@@ -239,6 +239,26 @@ public class HgvsProteinCalculator {
                 String insertLeftAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), insSequence.substring(0, 3));
                 String insertRightAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
                         insSequence.substring(insSequence.length() - 3));
+
+                // Check special case when a new STOP codon is inserted
+                if (insertLeftAa.equalsIgnoreCase("STOP") || insertRightAa.equalsIgnoreCase("STOP")) {
+                    if (insertLeftAa.equalsIgnoreCase("STOP")) {
+                        // HGVS Substitution, if the codon affected becomes a STOP codon with on inserteion on the left then this is just
+                        // an amino acid substitution
+                        String hgvsString = "p." + StringUtils.capitalize(refAa.toLowerCase()) + codonPosition + "Ter";
+                        StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+                        alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codonPosition, ""));
+                        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
+                    } else {
+                        // HGVS DELETION-INSERTION
+                        // p.(Pro578_Lys579delinsLeuTer)
+                        //  the predicted change at the protein level resulting from DNA variant NM_080877.2c.1733_1735delinsTTT is a
+                        //  deletion of amino acids Pro578 and Lys579 replaced with LeuTer
+                        // One single amino acid at codonPosition is deleted
+                        return this.hgvsDeletionInsertionFormatter(alternate, codonPosition, codonPosition);
+                    }
+                }
+
                 if (refAa.equalsIgnoreCase(insertLeftAa) || refAa.equalsIgnoreCase(insertRightAa)) {
                     // Check if the new sequence is inserted left or right to the original reference codon.
                     // Remove the reference codon and update codonPosition for the insertion
@@ -248,12 +268,11 @@ public class HgvsProteinCalculator {
                     } else {
                         insSequence = insSequence.substring(0, insSequence.length() - 3);
                     }
-
                     return this.hgvsInsertionFormatter(insSequence, codonPosition);
                 } else {
-                    // TODO testDuplicationAsNonsense(), should be dup, e.g. p.Pro167dup
-                    // delins?
-                    return null;
+                    // HGVS DELETION-INSERTION
+                    // The insertion happens between codonPosition - 1 and codonPosition
+                    return this.hgvsDeletionInsertionFormatter(alternate, codonPosition - 1, codonPosition);
                 }
             }
         } else {
@@ -320,29 +339,49 @@ public class HgvsProteinCalculator {
             String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
             String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
-            if (aminoacids.size() <= 5) {
-                // p.Lys2_Gly3insGlnSerLys
-                //  the insertion of amino acids GlnSerLys between amino acids Lys2 and Gly3
-                //  changing MetLysGlyHisGlnGlnCys to MetLysGlnSerLysGlyHisGlnGlnCys
-                hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
-                        + rightAa + aminoacidPosition + "ins" + StringUtils.join(aminoacids, "");
+            // Check if a STOP codon is being inserted
+            int stopIndex = -1;
+            for (int i = 0; i < aminoacids.size(); i++) {
+                if (aminoacids.get(i).equalsIgnoreCase("STOP")) {
+                    stopIndex = i;
+                    break;
+                }
+            }
+
+            // At least one amino acid is inserted
+            if (aminoacids.size() <= MAX_NUMBER_AMINOACIDS_DISPLAYED) {
+                if (stopIndex < 0) {
+                    // p.Lys2_Gly3insGlnSerLys
+                    //  the insertion of amino acids GlnSerLys between amino acids Lys2 and Gly3
+                    //  changing MetLysGlyHisGlnGlnCys to MetLysGlnSerLysGlyHisGlnGlnCys
+                    hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
+                            + rightAa + aminoacidPosition + "ins" + StringUtils.join(aminoacids, "");
+                } else {
+                    // p.(Met3_His4insGlyTer)
+                    //  the predicted consequence at the protein level of an insertion at the DNA level (c.9_10insGGGTAG) is the
+                    //  insertion of GlyTer (alternatively Gly*)
+                    //  NOTE: this is not described as p.(Met3_Ile3418delinsGly), a deletion-insertion replacing the entire C-terminal
+                    //  protein coding sequence downstream of Met3 with a Gly)
+                    List<String> nonStopCodonAminoAcids = aminoacids.subList(0, stopIndex);
+                    hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
+                            + rightAa + aminoacidPosition + "ins" + StringUtils.join(nonStopCodonAminoAcids, "") + "Ter";
+                }
             } else {
                 // Check if last amino acid inserted is a STOP codon:
-                int stopPosition = aminoacids.indexOf("STOP") + 1;
-                if (stopPosition > 0) {
+                if (stopIndex < 0) {
+                    // p.Arg78_Gly79ins23
+                    //  the in-frame insertion of a 23 amino acid sequence between amino acids Arg78 and Gly79
+                    //  NOTE: it must be possible to deduce the 23 inserted amino acids from the description at DNA or RNA level
+                    hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
+                            + rightAa + aminoacidPosition + "ins" + aminoacids.size();
+                } else {
                     // NP_060250.2:p.Gln746_Lys747ins*63
                     //  the in-frame insertion of a 62 amino acid sequence ending at a stop codon at position *63 between
                     //  amino acids Gln746 and Lys747.
                     //  NOTE: it must be possible to deduce the inserted amino acid sequence from the description given
                     //  at DNA or RNA level
                     hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
-                            + rightAa + aminoacidPosition + "ins" + "*" + stopPosition;
-                } else {
-                    // p.Arg78_Gly79ins23
-                    //  the in-frame insertion of a 23 amino acid sequence between amino acids Arg78 and Gly79
-                    //  NOTE: it must be possible to deduce the 23 inserted amino acids from the description at DNA or RNA level
-                    hgvsString = "p." + leftAa + (aminoacidPosition - 1) + "_"
-                            + rightAa + aminoacidPosition + "ins" + aminoacids.size();
+                            + rightAa + aminoacidPosition + "ins" + "*" + (stopIndex + 1);
                 }
             }
         }
@@ -532,6 +571,80 @@ public class HgvsProteinCalculator {
                 return calculateFrameshiftHgvs();
             }
         }
+    }
+
+    private HgvsProtein hgvsDeletionInsertionFormatter(String alternate, int leftAminoAcidPosition, int rightAminoAcidPosition) {
+        String hgvsString = "";
+
+        // Get amino acid sequence of the insertion
+        List<String> aminoacids =  new ArrayList<>(alternate.length() / 3);
+//        List<String> codedAminoacids =  new ArrayList<>(alternate.length() / 3);
+        String alternateCodon;
+        for (int i = 0; i < alternate.length(); i += 3) {
+            alternateCodon = alternate.substring(i, i + 3);
+            String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
+            aminoacids.add(VariantAnnotationUtils.buildUpperLowerCaseString(alternateAa));
+//            codedAminoacids.add(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa));
+        }
+
+        // Check if a STOP codon is being inserted
+        int stopIndex = -1;
+        for (int i = 0; i < aminoacids.size(); i++) {
+            if (aminoacids.get(i).equalsIgnoreCase("STOP")) {
+                stopIndex = i;
+                break;
+            }
+        }
+
+        // Get position and flanking amino acids
+        String leftCodedAa = transcript.getProteinSequence().substring(leftAminoAcidPosition - 1, leftAminoAcidPosition);
+        String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
+        String rightCodedAa = transcript.getProteinSequence().substring(rightAminoAcidPosition - 1, rightAminoAcidPosition);
+        String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+
+        // One single amino acid is deleted
+        if (leftAminoAcidPosition == rightAminoAcidPosition) {
+            // At least one amino acid is inserted
+            if (aminoacids.size() <= MAX_NUMBER_AMINOACIDS_DISPLAYED) {
+                if (stopIndex < 0) {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "delins" + StringUtils.join(aminoacids, "");
+                } else {
+                    List<String> nonStopCodonAminoAcids = aminoacids.subList(0, stopIndex);
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "delins" + StringUtils.join(nonStopCodonAminoAcids, "") + "Ter";
+                }
+            } else {
+                // Check if last amino acid inserted is a STOP codon:
+                if (stopIndex < 0) {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "delins" + "(" + aminoacids.size() + ")";
+                } else {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "delins" + "(" + (stopIndex + 1) + ")";
+                }
+            }
+        } else {
+            if (aminoacids.size() <= MAX_NUMBER_AMINOACIDS_DISPLAYED) {
+                if (stopIndex < 0) {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "_"
+                            + rightAa + rightAminoAcidPosition + "delins" +  StringUtils.join(aminoacids, "");
+                } else {
+                    List<String> nonStopCodonAminoAcids = aminoacids.subList(0, stopIndex);
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "_"
+                            + rightAa + rightAminoAcidPosition + "delins" + StringUtils.join(nonStopCodonAminoAcids, "") + "Ter";
+                }
+            } else {
+                // Check if last amino acid inserted is a STOP codon:
+                if (stopIndex < 0) {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "_"
+                            + rightAa + rightAminoAcidPosition + "delins" + "(" + aminoacids.size() + ")";
+                } else {
+                    hgvsString = "p." + leftAa + leftAminoAcidPosition + "_"
+                            + rightAa + rightAminoAcidPosition + "delins" + "(" + (stopIndex + 1) + ")";
+                }
+            }
+        }
+
+        StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+//        alternateProteinSequence.replace(aminoacidPosition, aminoacidPosition + deletionAaLength - 1, "");
+        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
     }
 
     private List<String> getProteinIds() {

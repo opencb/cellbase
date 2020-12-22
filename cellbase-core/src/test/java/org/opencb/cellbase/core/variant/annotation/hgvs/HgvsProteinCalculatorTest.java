@@ -67,6 +67,16 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Lys411_Gln412insSer", hgvsProtein.getHgvs());
+
+        gene = getGene("ENSG00000165119");
+        transcript = getTranscript(gene, "ENST00000376263");
+        variant = new Variant("9",
+                83970290,
+                "-",
+                "CTA");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein1 = predictor.calculate();
+        Assert.assertEquals("p.Lys411_Gln412insTer", hgvsProtein1.getHgvs());
     }
 
     @Test
@@ -100,6 +110,25 @@ public class HgvsProteinCalculatorTest {
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Leu757AlafsTer79", hgvsProtein.getHgvs());
+    }
+
+    @Test
+    public void testStopGainedInsertionPositiveStrand() throws Exception {
+        // 17:18173905:-:A  indel   ENSP00000408800 p.Leu757AlafsTer79      p.Leu757fs      fs_shorthand_same_pos
+        // positive strand, confirmed start
+        // Result: ENSP00000408800.3:p.Phe568Ter     why not Phe568delinsTer?
+        // http://aug2017.archive.ensembl.org/Homo_sapiens/Variation/Explore?db=core;g=ENSG00000091536;r=17:18153395-18179222;source=dbSNP;t=ENST00000418233;v=rs746666103;vdb=variation;vf=112226266
+        // Note: https://rest.ensembl.org/variant_recoder/human/17:18166483::AGCTTCCCCTTTTCCCAGAAG?content-type=application/json
+        Gene gene = getGene("ENSG00000091536");
+        Transcript transcript = getTranscript(gene, "ENST00000418233");
+        Variant variant = new Variant("17",
+                18166484,
+                "-",
+                "AGCTTCCCCTTTTCCCAGAAG");
+        //AGCTTCCCCTTTTCCCAGAAGCC
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Phe568Ter", hgvsProtein.getHgvs());
     }
 
     @Test
@@ -196,26 +225,40 @@ public class HgvsProteinCalculatorTest {
     @Test
     public void testInsertionInframe() throws Exception {
         // confirmed start, no flags
-        // forward strand
-        // Results: ENSP00000355537.4:p.Lys499_Arg500insLysLysGlu and ENSP00000443495.1:p.Lys499_Arg500insLysLysGlu
-        // https://rest.ensembl.org/variant_recoder/human/1:236747758::AAAAAGAGC?content-type=application/json
+        // forward strand, rs751051082
+        // Results: ENSP00000443495.1:p.Lys499_Arg500insLysLysSer
         Gene gene = getGene("ENSG00000077522");
         Transcript transcript = getTranscript(gene, "ENST00000542672");
         Variant variant = new Variant("1",
-                236747758,
+                236747759,
                 "-",
-                "AAAAAGAGC");
+                "AAAAGAGCC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("p.Lys499_Arg500insLysLysGlu", hgvsProtein.getHgvs());
-        assertThat(hgvsProtein.getIds(), CoreMatchers.hasItems("ENSP00000443495"));
+        Assert.assertEquals("p.Lys499_Arg500insLysLysSer", hgvsProtein.getHgvs());
+
+
+        // confirmed start, no flags
+        // forward strand
+        // Results: ENSP00000355537.4:p.Lys499_Arg500insLysLysGlu and ENSP00000443495.1:p.Lys499_Arg500insLysLysGlu
+        // https://rest.ensembl.org/variant_recoder/human/1:236747758::AAAAAGAGC?content-type=application/json
+        gene = getGene("ENSG00000077522");
+        transcript = getTranscript(gene, "ENST00000542672");
+        variant = new Variant("1",
+                236747759,
+                "-",
+                "AAAAAGAGC");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein1 = predictor.calculate();
+        Assert.assertEquals("p.Lys499_Arg500insLysLysGlu", hgvsProtein1.getHgvs());
+        assertThat(hgvsProtein1.getIds(), CoreMatchers.hasItems("ENSP00000443495"));
 
         // forward strand
         // unconfirmed start
         gene = getGene("ENSG00000130164");
         transcript = getTranscript(gene, "ENST00000560467");
         variant = new Variant("19",
-                11105430,
+                11105431,
                 "-",
                 "CTGCGAAGA");
         predictor = new HgvsProteinCalculator(variant, transcript);
@@ -332,7 +375,7 @@ public class HgvsProteinCalculatorTest {
         Gene gene = getGene("ENSG00000184634");
         Transcript transcript = getTranscript(gene, "ENST00000444034");
         Variant variant = new Variant("X",
-                71137733,
+                71137734,
                 "-",
                 "CTC");
 
@@ -348,14 +391,13 @@ public class HgvsProteinCalculatorTest {
         gene = getGene("ENSG00000251322");
         transcript = getTranscript(gene, "ENST00000262795");
         variant = new Variant("22",
-                50731056,
+                50731058,
                 "-",
-                "CCGGCC");
+                "CGGCCC");
 
         predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein2 = predictor.calculate();
         assertNotNull(hgvsProtein2);
-        System.out.println("hgvsProtein2 = " + hgvsProtein2.getIds());
         Assert.assertEquals("p.Ser1646_Gly1647insArgPro", hgvsProtein2.getHgvs());
     }
 
