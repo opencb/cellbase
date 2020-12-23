@@ -211,8 +211,8 @@ public class HgvsProteinCalculator {
                 // Position at codon is not 1 and therefore the codon is split, but there is still the possibility of having
                 // an in-frame HGVS Insertion or Duplication.
                 //
-                // Example: position at codon is 2 and 9 nucleotides are inserted, but GLY is not changed, only three amino acid are inserted
-                // Variant at:  231 -/AGGGCGAGG  resulting in:  p.Glu75_Glu77dup
+                // Example: position at codon is 2 and 9 nucleotides are inserted, but GLY is not changed, only three amino acid are
+                // inserted Variant at:  231 -/AGGGCGAGG  resulting in:  p.Glu75_Glu77dup
                 // 218    221    224    227    230    233    236
                 // 74     75     76     77     78     79     80
                 // GAG    GAG    GGC    GAG    G GC   GGG    GTG
@@ -316,7 +316,7 @@ public class HgvsProteinCalculator {
                     .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
             while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDuplication)) {
 //                aminoacidPosition += codedAminoacids.size();
-                aminoacidPosition ++;
+                aminoacidPosition++;
                 aaAfterDuplication = transcript.getProteinSequence()
                         .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
             }
@@ -441,8 +441,8 @@ public class HgvsProteinCalculator {
                     // Check for a very special case when the first Met (Met1) is deleted, we need to find another Met after the deletion
                     if (aminoacidPosition == 1) {
                         // p.Gly2_Met46del
-                        //  a deletion of amino acids Gly2 to Met46 as a consequence of a variant silencing translation initiation ate Met1 but
-                        //  activating a new downstream translation initiation site (at Met46)
+                        //  a deletion of amino acids Gly2 to Met46 as a consequence of a variant silencing translation initiation ate Met1
+                        //  but activating a new downstream translation initiation site (at Met46)
                         //  NOTE: the 3’ rule has been applied.
 
                         // We look for the first 'M' after the deletion end:  int i = deletionAaLength;
@@ -469,7 +469,7 @@ public class HgvsProteinCalculator {
                             //  as a consequence of a variant in the translation initiation codon no protein is produced
                             //  NOTE: LRG_199p1:p.0? can be used when you predict that no protein is produced. Do not use descriptions
                             //  like “p.Met1Thr”, this is for sure not the consequence of the effect on protein translation
-                            hgvsString = "p.0" ;
+                            hgvsString = "p.0";
                         }
                     } else {
                         // HGVS Deletion: a sequence change between the translation initiation (start) and termination (stop) codon where,
@@ -572,7 +572,7 @@ public class HgvsProteinCalculator {
                 .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
         while (transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition).equals(aaAfterDeletion)) {
 //            aminoacidPosition += codedAminoacids.size();
-            aminoacidPosition ++;
+            aminoacidPosition++;
             aaAfterDeletion = transcript.getProteinSequence()
                     .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
         }
