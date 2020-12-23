@@ -62,9 +62,9 @@ public class HgvsProteinCalculator {
 
         buildingComponents = new BuildingComponents();
 
-        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println(transcript.getProteinSequence());
-        System.out.println();
+//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
+//        System.out.println(transcript.getProteinSequence());
+//        System.out.println();
 
         switch (this.variant.getType()) {
             case SNV:
@@ -704,9 +704,9 @@ public class HgvsProteinCalculator {
         }
 
         String alternateDnaSequence = getAlternateCdnaSequence();
-        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
-        System.out.println(transcript.getProteinSequence());
-        System.out.println();
+//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
+//        System.out.println(transcript.getProteinSequence());
+//        System.out.println();
 
 
         int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());

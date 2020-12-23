@@ -145,6 +145,18 @@ public class HgvsProteinCalculatorTest {
                 "T");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         Assert.assertEquals("p.Lys71Ter", predictor.calculate().getHgvs());
+
+
+        gene = getGene("ENSG00000077522");
+        transcript = getTranscript(gene, "ENST00000546208");
+        variant = new Variant("1",
+                236717940,
+                "-",
+                "T");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        Assert.assertEquals("???", predictor.calculate().getHgvs());
+
+
     }
 
     @Test
