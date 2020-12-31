@@ -25,13 +25,13 @@ public class HgvsProteinCalculator {
 
     private static final String MT = "MT";
     private static final String STOP_STRING = "STOP";
-    private static final String FRAMESHIFT_SUFFIX = "fs";
-    private static final String EXTENSION_TAG = "ext";
-    private static final String UNKOWN_STOP_CODON_POSITION = "*?";
-    private static final String TERMINATION_SUFFIX = "Ter";
-    private static final String INS_SUFFIX = "ins";
-    private static final String DUP_SUFFIX = "dup";
-    private static final char STOP_CODON_INDICATOR = '*';
+//    private static final String FRAMESHIFT_SUFFIX = "fs";
+//    private static final String EXTENSION_TAG = "ext";
+//    private static final String UNKOWN_STOP_CODON_POSITION = "*?";
+//    private static final String TERMINATION_SUFFIX = "Ter";
+//    private static final String INS_SUFFIX = "ins";
+//    private static final String DUP_SUFFIX = "dup";
+//    private static final char STOP_CODON_INDICATOR = '*';
     private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
     protected BuildingComponents buildingComponents = null;
 
@@ -56,30 +56,27 @@ public class HgvsProteinCalculator {
      */
     public HgvsProtein calculate() {
         // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
-        if (!transcriptUtils.isCoding() || transcript.getProteinSequence() == null) {
+        if (!transcriptUtils.isCoding() || StringUtils.isEmpty(transcript.getProteinSequence())) {
             return null;
         }
 
         buildingComponents = new BuildingComponents();
 
-        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-        System.out.println(transcript.getProteinSequence());
-        System.out.println();
-
         switch (this.variant.getType()) {
             case SNV:
                 return calculateSnvHgvs();
             case INDEL:
-                // insertion
                 if (StringUtils.isBlank(variant.getReference())) {
+                    // insertion
                     return calculateInsertionHgvs();
-                    // deletion
-                } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    return calculateDeletionHgvs();
                 } else {
-                    logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
-                            + "identifiers.");
-                    return null;
+                    // deletion
+                    if (StringUtils.isBlank(variant.getAlternate())) {
+                        return calculateDeletionHgvs();
+                    } else {
+                        logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS identifiers.");
+                        return null;
+                    }
                 }
             case INSERTION:
                 return calculateInsertionHgvs();
@@ -87,30 +84,45 @@ public class HgvsProteinCalculator {
                 return calculateDeletionHgvs();
             default:
                 // TODO throw an error?
-                logger.error("Don't know how to handle variant of type {}", variant.getType());
+                logger.error("Don't know how to handle this variant of type {}", variant.getType());
                 return null;
         }
     }
 
     private HgvsProtein calculateSnvHgvs() {
-        String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
+        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+            return null;
+        }
+
+        if (!transcriptUtils.isExonic(variant.getStart())) {
+            return null;
+        }
+
+        String alternate = transcript.getStrand().equals("+")
+                ? variant.getAlternate()
+                : VariantAnnotationUtils.reverseComplementary(variant.getAlternate());
 
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-
-        // FIXME - forcing to be > 0
-//        int codonPosition = Math.max(transcriptUtils.getCodonPosition(cdsVariantStartPosition), 1);
-//        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
+        // FIXME we need to change this method
+        if (transcript.getStrand().equals("-")) {
+            cdsVariantStartPosition--;
+        }
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         String referenceCodon = transcriptUtils.getCodon(codonPosition);
-        // We copy codonPosition to aminoacidPosition to be free of changing aminoacidPosition when needed
-        int aminoacidPosition = codonPosition;
-//        if (transcript.getProteinSequence().startsWith("X")) {
-//            aminoacidPosition++;
-//        }
 
+        // Check the SNV is not in the first or last incomplete codons
+        if (transcriptUtils.hasUnconfirmedStart() && codonPosition == 1
+                && (referenceCodon.length() < 3 || referenceCodon.contains("N"))) {
+            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getcDnaSequence());
+        }
+        if (transcriptUtils.hasUnconfirmedSEnd() && codonPosition >= transcript.getProteinSequence().length()
+                && (referenceCodon.length() < 3 || referenceCodon.contains("N"))) {
+            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getcDnaSequence());
+        }
 
+        // TODO check unconfirmed end, example: 1:201359245:G:T
         String referenceAAUppercase = VariantAnnotationUtils
-                .getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), referenceCodon);
+                .getAminoacid(VariantAnnotationUtils.MT.equals(variant.getChromosome()), referenceCodon);
         if (StringUtils.isEmpty(referenceAAUppercase)) {
             logger.warn("Invalid reference nucleotide symbol {} found for variant {}. Skipping protein HGVS "
                     + "calculation.", referenceAAUppercase, variant.toString());
@@ -124,7 +136,7 @@ public class HgvsProteinCalculator {
         char[] chars = referenceCodon.toCharArray();
         chars[positionAtCodon - 1] = alternate.charAt(0);
         String alternateAAUpperCase =
-                VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(transcript.getChromosome()), new String(chars));
+                VariantAnnotationUtils.getAminoacid(VariantAnnotationUtils.MT.equals(variant.getChromosome()), new String(chars));
         if (StringUtils.isEmpty(alternateAAUpperCase)) {
             logger.warn("Invalid alternate nucleotide symbol {} found for variant {}. Skipping protein HGVS "
                     + "calculation.", alternateAAUpperCase, variant.toString());
@@ -133,47 +145,53 @@ public class HgvsProteinCalculator {
         // three letter abbreviation
         String alternateAminoacid = VariantAnnotationUtils.buildUpperLowerCaseString(alternateAAUpperCase);
 
-        // Step 2 -
         String hgvsString;
         if (referenceAminoacid.equals(alternateAminoacid)) {
-            // SILENT mutation, this includes one STOP codon to another STOP codon
-            hgvsString = "p." + referenceAminoacid + codonPosition + "=";
-        } else {    // Different aminocacid, several scenarios
-            if (referenceCodon.equalsIgnoreCase("STOP")) {
-                // STOP lost     --> extension
-                //  call to frameshift
-                buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
-                return calculateFrameshiftHgvs();
-            } else if (alternateAminoacid.equalsIgnoreCase("STOP")) {
-                // NONSENSE
-                hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
+            // silent (no change)
+            //  NP_003997.1:p.Cys188=
+            //  amino acid Cys188 is not changed (DNA level change ..TGC.. to ..TGT..)
+            //  NOTE: the description p.= means the entire protein coding region was analysed and no variant was found that changes
+            //  (or is predicted to change) the protein sequence.
+            // This includes one STOP codon to another STOP codon. We need to chech the STOP codon is not a Sec amino acid
+            if (referenceAminoacid.equalsIgnoreCase(STOP_STRING) && codonPosition < transcript.getProteinSequence().length()
+                    && transcript.getProteinSequence().charAt(codonPosition - 1) != 'U') {
+                hgvsString = "p.Ter" + codonPosition + "=";
             } else {
-                if ("Met".equals(referenceAminoacid) && codonPosition == 1) {
-                    // start lost
-                    hgvsString = "p.Met1?";
+                hgvsString = "p." + referenceAminoacid + codonPosition + "=";
+            }
+        } else {
+            // Different amino acid, several scenarios
+            if (referenceAminoacid.equalsIgnoreCase("STOP")) { // && codonPosition < transcript.getProteinSequence().length()
+//                    && transcript.getProteinSequence().charAt(codonPosition - 1) != 'U'
+                // translation termination codon (stop codon, no-stop change)
+                return calculateFrameshiftHgvs();
+            } else {
+                if (alternateAminoacid.equalsIgnoreCase("STOP")) {
+                    // nonsense
+                    //  LRG_199p1:p.Trp24Ter (p.Trp24*)
+                    //  amino acid Trp24 is changed to a stop codon (Ter, *)
+                    //  NOTE: this change is not described as a deletion of the C-terminal end of the protein (i.e. p.Trp24_Met36853del)
+                    hgvsString = "p." + referenceAminoacid + codonPosition + "Ter";
                 } else {
-                    // MISSENSE --> Substitution
-                    hgvsString = "p." + referenceAminoacid + codonPosition + alternateAminoacid;
+                    if ("Met".equals(referenceAminoacid) && codonPosition == 1) {
+                        // translation initiation codon
+                        // unknown
+                        //  LRG_199p1:p.Met1?
+                        //  the consequence, at the protein level, of a variant affecting the translation initiation codon #
+                        //  can not be predicted (i.e. is unknown)
+                        hgvsString = "p.Met1?";
+                    } else {
+                        // missense
+                        //  LRG_199p1:p.Trp24Cys
+                        //  amino acid Trp24 is changed to a Cys
+                        hgvsString = "p." + referenceAminoacid + codonPosition + alternateAminoacid;
+                    }
                 }
             }
         }
 
         alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
-        alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
-
-        // Debug
-//        System.out.println("cdsVariantStartPosition = " + cdsVariantStartPosition);
-//        System.out.println("codonPosition = " + codonPosition);
-//        System.out.println("referenceCodon = " + referenceCodon);
-//        System.out.println("referenceAminoacid = " + referenceAminoacid);
-//        System.out.println("positionAtCodon = " + positionAtCodon);
-//        System.out.println("alternateAminoacid = " + alternateAminoacid);
-//
-//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-////        System.out.println();
-////        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
-//        System.out.println(alternateProteinSequence);
-
+//        alternateProteinSequence.setCharAt(codonPosition, alternateAminoacid.charAt(0));
         return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
     }
 
@@ -193,11 +211,18 @@ public class HgvsProteinCalculator {
      * @return
      */
     private HgvsProtein calculateInsertionHgvs() {
+        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+            return null;
+        }
+
         // Get CDS position
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
 
         // Get variant alternate in the same strand than the transcript
-        String alternate = transcript.getStrand().equals("+") ? variant.getAlternate() : reverseComplementary(variant.getAlternate());
+        String alternate = transcript.getStrand().equals("+")
+                ? variant.getAlternate()
+                : VariantAnnotationUtils.reverseComplementary(variant.getAlternate());
+
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
 
@@ -240,25 +265,28 @@ public class HgvsProteinCalculator {
                 String insertRightAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
                         insSequence.substring(insSequence.length() - 3));
 
-                // Check special case when a new STOP codon is inserted
-                if (insertLeftAa.equalsIgnoreCase("STOP") || insertRightAa.equalsIgnoreCase("STOP")) {
-                    if (insertLeftAa.equalsIgnoreCase("STOP")) {
-                        // HGVS Substitution, if the codon affected becomes a STOP codon with on inserteion on the left then this is just
-                        // an amino acid substitution
-                        String hgvsString = "p." + StringUtils.capitalize(refAa.toLowerCase()) + codonPosition + "Ter";
-                        StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
-                        alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codonPosition, ""));
-                        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
-                    } else {
-                        // HGVS DELETION-INSERTION
-                        // p.(Pro578_Lys579delinsLeuTer)
-                        //  the predicted change at the protein level resulting from DNA variant NM_080877.2c.1733_1735delinsTTT is a
-                        //  deletion of amino acids Pro578 and Lys579 replaced with LeuTer
-                        // One single amino acid at codonPosition is deleted
-                        return this.hgvsDeletionInsertionFormatter(codonPosition, codonPosition, alternate);
-                    }
+                // Check special case when a new STOP codon is inserted on the left
+                if (insertLeftAa.equalsIgnoreCase("STOP")) {
+                    // HGVS Substitution, if the codon affected becomes a STOP codon with on insertion on the left then this is just
+                    // an amino acid substitution
+                    String hgvsString = "p." + StringUtils.capitalize(refAa.toLowerCase()) + codonPosition + "Ter";
+                    StringBuilder alternateProteinSequence = new StringBuilder(transcript.getProteinSequence());
+                    alternateProteinSequence.insert(codonPosition - 1, StringUtils.join(codonPosition, ""));
+                    return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
                 }
 
+                // Check special case when a new STOP codon is inserted on the right
+                // TODO Think about this case a bit more, not clear if this is a delins or just an insertion
+                if (insertRightAa.equalsIgnoreCase("STOP")) {
+                    // HGVS DELETION-INSERTION
+                    // p.(Pro578_Lys579delinsLeuTer)
+                    //  the predicted change at the protein level resulting from DNA variant NM_080877.2c.1733_1735delinsTTT is a
+                    //  deletion of amino acids Pro578 and Lys579 replaced with LeuTer
+                    // One single amino acid at codonPosition is deleted
+                    return this.hgvsDeletionInsertionFormatter(codonPosition, codonPosition, alternate);
+                }
+
+                // Check if the the original amino acid is kept
                 if (refAa.equalsIgnoreCase(insertLeftAa) || refAa.equalsIgnoreCase(insertRightAa)) {
                     // Check if the new sequence is inserted left or right to the original reference codon.
                     // Remove the reference codon and update codonPosition for the insertion
@@ -277,7 +305,6 @@ public class HgvsProteinCalculator {
             }
         } else {
             // call to frameshift
-            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
             return calculateFrameshiftHgvs();
         }
     }
@@ -297,11 +324,48 @@ public class HgvsProteinCalculator {
 
         // Create HGVS string
         // IMPORTANT: Check if this is a HGVS Duplication instead of a HGVS Insertion
-        String prevSequence = transcript.getProteinSequence().substring(aminoacidPosition - aminoacids.size() - 1,
-                aminoacidPosition - 1);
-        String postSequence = transcript.getProteinSequence().substring(aminoacidPosition - 1,
-                aminoacidPosition + aminoacids.size() - 1);
-        if (prevSequence.equals(StringUtils.join(codedAminoacids, "")) || postSequence.equals(StringUtils.join(codedAminoacids, ""))) {
+        // keep moving to the right (3' Rule) while the first amino acid inserted equals the first one after insertion
+        // New algorithm to move to the right the insertion ONLY if a duplication exists.
+        // Example:
+        // Original Sequence: A B C A B C A B C D   and   Insertion Sequence: c a b
+        // Result:  A B C A B c a b C A B C D
+        // We iterate over all possible splits (left and right) and move to the right. Iterations:
+        // 1. cab == CAB
+        // 2. Bca == bCA
+        // 3. ABc == abC  Yes! move to the right 2 positions and start again!
+        boolean isDuplication = false;
+        boolean keepMovingRight = true;
+        String insertSeq = StringUtils.join(codedAminoacids, "");
+        while (keepMovingRight) {
+            keepMovingRight = false;
+            // Start iterating of all possible insert sequence splits
+            for (int i = 0; i <= codedAminoacids.size(); i++) {
+                // Check we are i the right ranges
+                if (aminoacidPosition - i - 1 < 0
+                        || aminoacidPosition + insertSeq.length() - i - 1 > transcript.getProteinSequence().length()) {
+                    continue;
+                }
+
+                // Calculate left and right seq for this iteration
+                String leftSeq = transcript.getProteinSequence().substring(aminoacidPosition - i - 1, aminoacidPosition - 1)
+                        + insertSeq.substring(0, insertSeq.length() - i);
+                String rightSeq = insertSeq.substring(insertSeq.length() - i)
+                        + transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition + insertSeq.length() - i - 1);
+                if (leftSeq.equals(rightSeq)) {
+                    // A Duplication has been found! This variable is used below.
+                    isDuplication = true;
+                    // Update amino acid position (move right) ONLY if a the duplication is on the right!
+                    // Last iteration checks if the Duplication is on the left of insertion amino acid.
+                    if (i != insertSeq.length()) {
+                        aminoacidPosition += insertSeq.length() - i;
+                        keepMovingRight = true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (isDuplication) {
             // HGVS Duplication: a sequence change between the translation initiation (start) and termination (stop) codon where,
             // compared to a reference sequence, a copy of one or more amino acids are inserted directly C-terminal
             // of the original copy of that sequence.
@@ -311,33 +375,48 @@ public class HgvsProteinCalculator {
             // p.Ala3_Ser5dup (several amino acids)
             //  a duplication of amino acids Ala3 to Ser5 in the sequence MetGlyAlaArgSerSerHis to MetGlyAlaArgSerAlaArgSerSerHis
 
-            // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion
-            String aaAfterDuplication = transcript.getProteinSequence()
-                    .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
-            while (transcript.getProteinSequence().substring(aminoacidPosition, aminoacidPosition + 1).equals(aaAfterDuplication)) {
-//                aminoacidPosition += codedAminoacids.size();
-                aminoacidPosition++;
-                aaAfterDuplication = transcript.getProteinSequence()
-                        .substring(aminoacidPosition + aminoacids.size() - 1, aminoacidPosition + aminoacids.size());
-            }
-
+            String leftDupAa =  String.valueOf(transcript.getProteinSequence().charAt(aminoacidPosition - aminoacids.size() - 1));
             if (aminoacids.size() == 1) {
-                hgvsString = "p." + aminoacids.get(0) + (aminoacidPosition - aminoacids.size()) + "dup";
+                hgvsString = "p." + StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(leftDupAa).toLowerCase())
+                        + (aminoacidPosition - aminoacids.size()) + "dup";
             } else {
-                hgvsString = "p." + aminoacids.get(0) + (aminoacidPosition - aminoacids.size()) + "_"
-                        + aminoacids.get(aminoacids.size() - 1) + (aminoacidPosition - 1) + "dup";
+                String rightDupAa =  String.valueOf(transcript.getProteinSequence().charAt(aminoacidPosition - 2));
+                hgvsString = "p." + StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(leftDupAa).toLowerCase())
+                        + (aminoacidPosition - aminoacids.size()) + "_"
+                        + StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(rightDupAa).toLowerCase())
+                        + (aminoacidPosition - 1) + "dup";
             }
         } else {
             // HGVS Insertion: a sequence change between the translation initiation (start) and termination (stop) codon where,
             // compared to the reference sequence, one or more amino acids are inserted, which is not a frame shift and
             // where the insertion is not a copy of a sequence immediately N-terminal (5')
 
+            // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion,
+            // Example: check 11:6390701:-:CTGGCGCTGGCG
+            String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+            while (codedAminoacids.get(0).equals(aaAfterInsertion)) {
+                aminoacidPosition++;
+                aminoacids.remove(0);
+                codedAminoacids.remove(0);
+                aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
+                codedAminoacids.add(aaAfterInsertion);
+                aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+            }
+
             // Get position and flanking amino acids
             int codonIndex = aminoacidPosition - 1;
             String leftCodedAa = transcript.getProteinSequence().substring(codonIndex - 1, codonIndex);
             String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-            String rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
-            String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+
+            String rightCodedAa;
+            String rightAa;
+            if (codonIndex < transcript.getProteinSequence().length()) {
+                rightCodedAa = transcript.getProteinSequence().substring(codonIndex, codonIndex + 1);
+                rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
+            } else {
+                // Means the insertion is right after the last codon.
+                rightAa = "Ter";
+            }
 
             // Check if a STOP codon is being inserted
             int stopIndex = -1;
@@ -403,18 +482,33 @@ public class HgvsProteinCalculator {
      * @return
      */
     private HgvsProtein calculateDeletionHgvs() {
+        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+            return null;
+        }
+
         int cdsVariantStartPosition;
+        String referenceAllele = variant.getReference();
         if (transcript.getStrand().equals("+")) {
-            cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+            if (variant.getStart() < transcript.getGenomicCodingStart() && variant.getEnd() >= transcript.getGenomicCodingStart()) {
+                referenceAllele = variant.getReference().substring(transcript.getGenomicCodingStart() - variant.getStart());
+                cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingStart());
+            } else {
+                cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+            }
         } else {
-            cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
+            if (variant.getStart() <= transcript.getGenomicCodingEnd() && variant.getEnd() > transcript.getGenomicCodingEnd()) {
+                referenceAllele = variant.getReference().substring(0, transcript.getGenomicCodingEnd() - variant.getStart() + 1);
+                cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingEnd());
+            } else {
+                cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
+            }
             // FIXME Method HgvsCalculator.getCdsStart wringly returns +1 for reverse strand
             cdsVariantStartPosition--;
         }
 
         // Prepare variables
         String hgvsString;
-        int deletionAaLength = variant.getReference().length() / 3;
+        int deletionAaLength = referenceAllele.length() / 3;
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
 
@@ -422,9 +516,13 @@ public class HgvsProteinCalculator {
         int aminoacidPosition = codonPosition;
 
         // Check if this is an in frame deletion
-        if (this.variant.getReference().length() % 3 == 0) {
+        if (referenceAllele.length() % 3 == 0) {
             if (positionAtCodon == 1) {
                 // TODO Check is the aminoposition is the STOP codon, this is a HGVS extension, is this a frameshift?
+                if (aminoacidPosition + deletionAaLength > transcript.getProteinSequence().length()) {
+                    // Deletion includes STOP codon
+                    return null;
+                }
 
                 String nextAminoAcidAfterDeletion = transcript.getProteinSequence()
                         .substring(aminoacidPosition + deletionAaLength, aminoacidPosition + deletionAaLength + 1);
@@ -474,7 +572,7 @@ public class HgvsProteinCalculator {
                     } else {
                         // HGVS Deletion: a sequence change between the translation initiation (start) and termination (stop) codon where,
                         // compared to a reference sequence, one or more amino acids are not present (deleted)
-                        return this.hgvsDeletionFormatter(aminoacidPosition, this.variant.getReference());
+                        return this.hgvsDeletionFormatter(aminoacidPosition, referenceAllele);
                     }
                 }
 
@@ -493,6 +591,13 @@ public class HgvsProteinCalculator {
                 //   164    165    166    167    168
                 //   ARG    ASP    LYS    ARG    SER
                 //   R      D      K      R      S
+
+                // Check is deletion include STOP codon
+                // TODO check this implementation
+                if (aminoacidPosition + deletionAaLength > transcript.getProteinSequence().length()) {
+//                    return calculateFrameshiftHgvs();
+                    return null;
+                }
 
                 // Get the new codon created after the deletion
                 String firstAffectedCodon = transcriptUtils.getCodon(aminoacidPosition);    // GAC
@@ -536,7 +641,6 @@ public class HgvsProteinCalculator {
                 }
             }
         } else {
-            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
             return calculateFrameshiftHgvs();
         }
     }
@@ -550,9 +654,8 @@ public class HgvsProteinCalculator {
 
         // Get deleted sequence
         List<String> aminoacids =  new ArrayList<>(deletionAaLength);
-        String alternateCodon;
-        for (int i = 0; i < variant.getReference().length(); i += 3) {
-            alternateCodon = variant.getReference().substring(i, i + 3);
+        for (int i = 0; i < referenceAllele.length(); i += 3) {
+            String alternateCodon = referenceAllele.substring(i, i + 3);
             String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
             aminoacids.add(alternateAa);
         }
@@ -567,33 +670,44 @@ public class HgvsProteinCalculator {
         //  NOTE: for deletions in single amino acid stretches or tandem repeats, the most C-terminal residue is arbitrarily
         //  assigned to have been deleted
         //
-        // We keep moving to the right while the first amino acid deleted equals the first one after deletion
-        String aaAfterDeletion = transcript.getProteinSequence()
-                .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
-        while (transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition).equals(aaAfterDeletion)) {
-//            aminoacidPosition += codedAminoacids.size();
-            aminoacidPosition++;
-            aaAfterDeletion = transcript.getProteinSequence()
+        // We keep moving to the right while the first amino acid deleted equals the first one after deletion.
+        // Check if we are at the end of the protein.
+        if (aminoacidPosition + deletionAaLength <= transcript.getProteinSequence().length()) {
+            String aaAfterDeletion = transcript.getProteinSequence()
                     .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
+            while (transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition).equals(aaAfterDeletion)) {
+                aminoacidPosition++;
+                // Check of there is enough protein sequence, we might reached the end
+                if (aminoacidPosition + deletionAaLength <= transcript.getProteinSequence().length()) {
+                    aaAfterDeletion = transcript.getProteinSequence()
+                            .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
+                } else {
+                    // we have reached the end of the protein
+                    break;
+                }
+            }
         }
 
-        // Get flanking amino acids
-        // First amino acid DELETED
+        // Get first amino acid DELETED
         String leftCodedAa = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
         String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
-        // Last amino acid DELETED
-        String rightCodedAa = transcript.getProteinSequence()
-                .substring(aminoacidPosition + aminoacids.size() - 2, aminoacidPosition + aminoacids.size() - 1);
-        String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
 
         // Only 1 amino acid deleted
         if (aminoacids.size() == 1) {
             // LRG_199p1:p.Val7del
             //  a deletion of amino acid Val7 in the reference sequence LRG_199p1
-            hgvsString = "p." + leftAa + aminoacidPosition + "del";
+            if (aminoacidPosition == 1 && leftAa.equals("Met")) {
+                hgvsString = "p." + leftAa + aminoacidPosition + "?";
+            } else {
+                hgvsString = "p." + leftAa + aminoacidPosition + "del";
+            }
         } else {
             // NP_003997.1:p.Lys23_Val25del
             //  a deletion of amino acids Lys23 to Val25 in reference sequence NP_003997.1
+            // Get last amino acid DELETED
+            String rightCodedAa = transcript.getProteinSequence()
+                    .substring(aminoacidPosition + aminoacids.size() - 2, aminoacidPosition + aminoacids.size() - 1);
+            String rightAa = VariantAnnotationUtils.TO_LONG_AA.get(rightCodedAa);
             hgvsString = "p." + leftAa + aminoacidPosition + "_" + rightAa + (aminoacidPosition + aminoacids.size() - 1) + "del";
         }
 
@@ -673,65 +787,115 @@ public class HgvsProteinCalculator {
         return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
     }
 
+    /**
+     * This method can prodce 2 HGVS mutations
+     *
+     * HGVS Frame shift: a sequence change between the translation initiation (start) and termination (stop) codon where,
+     * compared to a reference sequence, translation shifts to another reading frame.
+     *
+     * HGVS Extension: a sequence change extending the reference amino acid sequence at the N- or C-terminal end
+     * with one or more amino acids.
+     *
+     * @return
+     */
     private HgvsProtein calculateFrameshiftHgvs() {
-//        getAlternateProteinSequence();
-//        return calculateHgvsString();
-
-        // Get CDS position
-        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (cdsVariantStartPosition == 0) {
-            return new HgvsProtein(getProteinIds(), "", transcript.getProteinSequence());
+        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+            return null;
         }
 
-        String hgvsString = "";
-        StringBuilder alternateProteinSequence = new StringBuilder();
+        // Get CDS position
+        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
+        if (cdsVariantStartPosition == 0) {
+//            return new HgvsProtein(getProteinIds(), "", transcript.getProteinSequence());
+            return null;
+        }
+
+        String hgvsString;
 
         int phaseOffset = 0;
         int currentAaIndex = 0;
+        StringBuilder alternateProteinSeq = new StringBuilder();
         if (transcriptUtils.hasUnconfirmedStart()) {
             phaseOffset = transcriptUtils.getFirstCodonPhase();
 
             // if reference protein sequence start with X, prepend X to our new alternate sequence also
             if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
-                alternateProteinSequence.append("X");
+                alternateProteinSeq.append("X");
                 currentAaIndex++;
             }
         }
 
         int codonIndex = transcript.getCdnaCodingStart() + phaseOffset  - 1;
-
         int firstDiffIndex = -1;
         String firstReferencedAa = "";
         String firstAlternateAa = "";
         int stopIndex = -1;
-        String stopReferenceAa = "";
-        String alternateCdnaSequence = getAlternateCdnaSequence();
-        while (alternateCdnaSequence.length() > codonIndex + 3) {
+        String stopAlternateAa = "";
+        int originalStopIndex = -1;
+        String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
+
+        // We ned to include the STOP codon in the loop to check if there is a variant braking the STOP codon
+        while (codonIndex + 3 <= alternateCdnaSeq.length()) {
             // Build the new amino acid sequence
-            String alternateCodon = alternateCdnaSequence.substring(codonIndex, codonIndex + 3);
+            String alternateCodon = alternateCdnaSeq.substring(codonIndex, codonIndex + 3);
             String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
             String alternateCodedAa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa);
-            alternateProteinSequence.append(alternateCodedAa);
+            alternateProteinSeq.append(alternateCodedAa);
 
             // Alternate protein can miss a STOP codon and be longer than the reference protein
-            String referenceCodedAa = null;
-            if (transcript.getProteinSequence().length() > currentAaIndex) {
-                referenceCodedAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
-            }
+            if (currentAaIndex < transcript.getProteinSequence().length()) {
+                String referenceCodedAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
+//                System.out.println((currentAaIndex + 1) + ": " + referenceCodedAa + " - " + alternateCodedAa + " - " + alternateCodon);
 
-            if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
-                // If STOP codon is found first means it is first difference and we need to report the reference amino acid
-                if (firstDiffIndex == -1 && referenceCodedAa != null) {
-                    stopReferenceAa = StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
+                // STOP codons cannot exist inside the protein, and if a new STOP codon is generated the while loop os broken below.
+                // The only explanation for this STOP codpn is to be the SEC amino acid.
+                if (alternateAa .equalsIgnoreCase(STOP_STRING) && transcript.getProteinSequence().charAt(currentAaIndex) == 'U') {
+                    alternateAa = "SEC";
+                    alternateCodedAa = "U";
+                    alternateProteinSeq.replace(alternateProteinSeq.length() - 1, alternateProteinSeq.length(), alternateCodedAa);
                 }
-                stopIndex = currentAaIndex;
-                break;
-            }
 
-            if (!alternateCodedAa.equals(referenceCodedAa) && firstDiffIndex == -1) {
-                firstReferencedAa = StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
-                firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
-                firstDiffIndex = currentAaIndex;
+                // Compare reference and new alternate amino acid.
+                // Note if a premature STOP codon comes up this is also false
+                if (!alternateCodedAa.equals(referenceCodedAa)) {
+                    // Keep the first amino acid changed, including a premature STOP codon
+                    if (firstDiffIndex == -1) {
+                        firstReferencedAa = StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
+                        firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
+                        firstDiffIndex = currentAaIndex;
+
+                    }
+
+                    if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
+                        stopIndex = currentAaIndex;
+                        break;
+                    }
+                }
+            } else {
+                // We have passed the protein sequence, the first time we get here is the STOP codon.
+                // Incomplete 3' proteins do not reach this point, while finish before because last codon is not complete.'
+//                System.out.println((currentAaIndex + 1) + ": null - " + alternateCodedAa + " - " + alternateCodon);
+                if (currentAaIndex == transcript.getProteinSequence().length()) {
+                    if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
+                        // STOP codon remains the same
+//                        stopReferenceAa = StringUtils.capitalize(alternateAa.toLowerCase());
+                        stopIndex = currentAaIndex;
+                        break;
+                    } else {
+                        // STOP codon has changed
+                        stopAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
+                        originalStopIndex = currentAaIndex;
+                    }
+                } else {
+                    if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
+                        // A new STOP codon found after the original STOP codon, there are two possibilities:
+                        //  1. there is an amino acid change
+                        //  2. the original STOP codon is lost
+                        // The position is adjusted below.
+                        stopIndex = currentAaIndex;
+                        break;
+                    }
+                }
             }
 
             // move to next codon and amino acid
@@ -739,13 +903,24 @@ public class HgvsProteinCalculator {
             currentAaIndex++;
         }
 
+        // Create the HGVS string
         if (firstDiffIndex >= 0) {
             if (stopIndex >= 0) {
-                // p.Arg97ProfsTer23 (short p.Arg97fs)
-                //  a variant with Arg97 as the first amino acid changed, shifting the reading frame, replacing it for a Pro and
-                //  terminating at position Ter23.
-                hgvsString = "p." + firstReferencedAa + (firstDiffIndex + 1) + firstAlternateAa + "fsTer"
-                        + (stopIndex - firstDiffIndex + 1);
+                if (firstAlternateAa.equalsIgnoreCase(STOP_STRING)) {
+                    // p.(Tyr4*)
+                    //  the predicted consequence at the protein level of the variant ATGGATGCATACGTCACG.. to ATGGATGCATA\_GTCACG (c.12delC)
+                    //  is a Tyr to translation termination codon.
+                    //  NOTE: the variant is described as a substitution, not as a frame shift (p.Tyr4TerfsTer1)
+                    //
+                    // We have found a STOP codon but not amino acid change
+                    hgvsString = "p." + firstReferencedAa + (firstDiffIndex + 1) + "Ter";
+                } else {
+                    // p.Arg97ProfsTer23 (short p.Arg97fs)
+                    //  a variant with Arg97 as the first amino acid changed, shifting the reading frame, replacing it for a Pro and
+                    //  terminating at position Ter23.
+                    hgvsString = "p." + firstReferencedAa + (firstDiffIndex + 1) + firstAlternateAa + "fsTer"
+                            + (stopIndex - firstDiffIndex + 1);
+                }
             } else {
                 // p.Ile327Argfs*? (short p.Ile327fs)   * == Ter
                 //  the predicted consequence of a frame shifting variant changes Ile327 to an Arg but the new reading frame
@@ -754,369 +929,28 @@ public class HgvsProteinCalculator {
             }
         } else {
             // No amino acid difference found
-            if (StringUtils.isNotEmpty(stopReferenceAa)) {
-                // p.(Tyr4*)
-                //  the predicted consequence at the protein level of the variant ATGGATGCATACGTCACG.. to ATGGATGCATA\_GTCACG (c.12delC)
-                //  is a Tyr to translation termination codon.
-                //  NOTE: the variant is described as a substitution, not as a frame shift (p.Tyr4TerfsTer1)
-                //
-                // We have found a STOP codon first
-                hgvsString = "p." + stopReferenceAa + (stopIndex + 1) + "Ter";
-            } else {
-                // No new stop codon found. This means that exactly the SAME protein is created.
-                hgvsString = "";
-            }
-        }
-
-        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSequence.toString());
-    }
-
-
-    private void getAlternateProteinSequence() {
-        alternateProteinSequence = new StringBuilder();
-
-        int phaseOffset = 0;
-        int currentAaIndex = 0;
-        if (transcriptUtils.hasUnconfirmedStart()) {
-            phaseOffset = transcriptUtils.getFirstCodonPhase();
-
-            // if reference protein sequence start with X, prepend X to our new alternate sequence also
-            if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
-                alternateProteinSequence.append("X");
-                currentAaIndex++;
-            }
-        }
-
-        String alternateDnaSequence = getAlternateCdnaSequence();
-//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence(alternateDnaSequence));
-//        System.out.println(transcript.getProteinSequence());
-//        System.out.println();
-
-
-        int variantCdnaPosition = transcript.getCdnaCodingStart() + HgvsCalculator.getCdsStart(transcript, variant.getStart());
-//        System.out.println("variantCdnaPosition = " + HgvsCalculator.getCdsStart(transcript, variant.getStart()));
-//        System.out.println("variantCdnaPosition = " + variantCdnaPosition);
-
-        // Initial codon position. Index variables are always 0-based for working with strings
-        int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (transcript.getStrand().equals("+")) {
-            cdsVariantStartPosition++;
-        }
-        int cdna = transcriptUtils.cdsToCdna(cdsVariantStartPosition);
-        int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
-        String codon = transcriptUtils.getCodon(codonPosition);
-        int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
-        int firstCodonPosition = transcriptUtils.getFirstCodonPosition();
-
-        int codonIndex = transcript.getCdnaCodingStart() + phaseOffset - 1;
-        int terPosition = 0;
-
-//        System.out.println(transcript.getcDnaSequence());
-//        System.out.println(alternateDnaSequence);
-        // Loop through cDNA translating each codon
-        while (alternateDnaSequence.length() > codonIndex + 3) {
-//            String referecenCodon = transcript.getcDnaSequence().substring(codonIndex, codonIndex + 3);
-//            String referenceAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referecenCodon);
-
-            String alternateCodon = alternateDnaSequence.substring(codonIndex, codonIndex + 3);
-            // Three letter AA, eg. PHE and single letter AA, eg. L
-            String alternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), alternateCodon);
-            String alternateCodedAa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(alternateAa);
-
-            // build the new sequence
-            alternateProteinSequence.append(alternateCodedAa);
-
-            String referenceCodedAa =  null;
-            // Alternate protein can miss a STOP codon and be longer than the reference protein
-            if (transcript.getProteinSequence().length() > currentAaIndex) {
-                referenceCodedAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
-            }
-
-            if (terPosition > 0) {
-                terPosition++;
-            }
-
-            if (STOP_STRING.equals(alternateAa)) {
-                if (terPosition > 0) {
-                    buildingComponents.setTerminator(terPosition);
+            if (stopIndex >= 0) {
+                if (StringUtils.isNotEmpty(stopAlternateAa)) {
+                    // A new STOP codon hs been found, but not amino amino acid has changed so the original STOP codon changed
+                    hgvsString = "p.Ter" + (originalStopIndex + 1) + stopAlternateAa + "extTer"
+                            + (stopIndex - transcript.getProteinSequence().length());
                 } else {
-                    // if terPosition is 0 means the
-                    buildingComponents.setStart(currentAaIndex + 1);
-                    buildingComponents.setEnd(currentAaIndex + 1);
-//                    buildingComponents.setReferenceStart(referenceAa);
-//                    buildingComponents.setReferenceEnd(referenceAa);
-                    buildingComponents.setAlternate(STOP_STRING);
-                    buildingComponents.setTerminator(-1);
-                    buildingComponents.setMutationType(BuildingComponents.MutationType.SUBSTITUTION);
+                    // Silent mutation in the STOP codon
+                    hgvsString = "p.Ter" + (stopIndex + 1) + "=";
                 }
-                break;
-                // we found first different amino acid
             } else {
-                // if terminator position is 0, we haven't found the first different AA yet
-                if (terPosition == 0 && !alternateCodedAa.equals(referenceCodedAa)) {
-                    buildingComponents.setAlternate(alternateAa);
-                    // put back to 1 - base
-                    int start = currentAaIndex + 1;
-                    buildingComponents.setStart(start);
-                    // FIXME valid only for insertions?
-                    buildingComponents.setEnd(start - 1);
-                    terPosition = 1;
-                }
-            }
-
-            // move to the next letter
-            currentAaIndex++;
-            // move to next codon
-            codonIndex = codonIndex + 3;
-        }
-
-        // Debug
-//        System.out.println("Reference:\n" + transcriptUtils.getFormattedCdnaSequence());
-//        System.out.println();
-//        System.out.println("Alternate:\n" + transcriptUtils.getFormattedCdnaSequence());
-//        System.out.println(alternateProteinSequence);
-
-        populateBuildingComponents();
-    }
-
-
-    private void populateBuildingComponents() {
-
-        buildingComponents.setProteinId(transcript.getProteinID());
-
-        int start = buildingComponents.getStart();
-        int end = buildingComponents.getEnd();
-
-        String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence().charAt(end - 1));
-
-        // Might get out of sequence boundaries after right aligning resulting in a protein extension. Will then
-        // set referenceEndShortSymbol to null to enable following if to pass
-        String referenceEndShortSymbol
-                = start == (transcript.getProteinSequence().length() + 1)
-                ? null
-                : String.valueOf(transcript.getProteinSequence().charAt(start - 1));
-
-//        String referenceStartShortSymbol = buildingComponents.getReferenceStart();
-//        String referenceEndShortSymbol = buildingComponents.getReferenceEnd();
-
-        // Do not generate protein HGVS if insertion affects an unconfirmed start, i.e. overlaps with an "X"
-        // symbol in the protein sequence
-        if (VariantAnnotationUtils.TO_LONG_AA.containsKey(referenceStartShortSymbol)
-                && (referenceEndShortSymbol == null
-                || VariantAnnotationUtils.TO_LONG_AA.containsKey(referenceEndShortSymbol))) {
-
-
-            buildingComponents.setReferenceStart(VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils
-                    .TO_LONG_AA.get(referenceStartShortSymbol)));
-
-            // null if the insertion is an extension, i.e. start is the next position after the last aa in the
-            // protein sequence
-            buildingComponents.setReferenceEnd(referenceEndShortSymbol == null
-                    ? null
-                    : VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils
-                    .TO_LONG_AA.get(referenceEndShortSymbol)));
-
-            BuildingComponents.MutationType mutationType = getMutationType();
-            buildingComponents.setMutationType(mutationType);
-            // frameshift for del/ins is already populated
-            if (buildingComponents.getKind() == null) {
-                buildingComponents.setKind(isFrameshift()
-                        ? BuildingComponents.Kind.FRAMESHIFT
-                        : BuildingComponents.Kind.INFRAME);
-            }
-        }
-    }
-
-    @Deprecated
-    private BuildingComponents.MutationType getMutationType() {
-
-        String proteinSequence = transcript.getProteinSequence();
-        int start = buildingComponents.getStart();
-        String alternate = buildingComponents.getAlternate();
-
-        // Insertion at stop codon - extension
-        // Recall proteinVariant.getStart() is base 1
-        if (start == (proteinSequence.length() + 1)) {
-            return BuildingComponents.MutationType.EXTENSION;
-        }
-
-        // If stop gained then skip any normalisation; If there's a stop gain the stop indicator will always be the last
-        // element of the predicted sequence, as prediction stops as soon as a STOP codon is found
-        if (STOP_CODON_INDICATOR == alternate.charAt(alternate.length() - 1)) {
-            return BuildingComponents.MutationType.STOP_GAIN;
-        }
-
-        if (STOP_STRING.equals(alternate)) {
-            return BuildingComponents.MutationType.STOP_GAIN;
-        }
-
-        // Check duplication
-        // TODO: Assuming end = start - 1; might need adjusting
-        String previousSequence = proteinSequence.substring(Math.max(0, start - alternate.length() - 1), start - 1);
-        // normalized one in order to take into
-        // account potential
-        // normalization/lef-right alignment
-        // differences
-        // TODO this always fails. alternate is the AA and previous sequence is the last three AAs, for example:
-        //      alternate = GLU
-        //      previousSequence = EGE
-        if (previousSequence.equals(alternate)) {
-            return BuildingComponents.MutationType.DUPLICATION;
-        }
-
-        return BuildingComponents.MutationType.INSERTION;
-    }
-
-    /**
-     * Using the variant and transcript provided, builds the HGVS protein string.
-     *
-     * @return protein HGVS string
-     */
-    @Deprecated
-    private HgvsProtein calculateHgvsString() {
-
-        // wasn't able to process sequence, won't be able to build hgvs string
-        if (buildingComponents == null) {
-            return null;
-        }
-
-        StringBuilder hgvsString = new StringBuilder(HgvsCalculator.PROTEIN_CHAR);
-
-        if (BuildingComponents.MutationType.DUPLICATION.equals(buildingComponents.getMutationType())) {
-            if (buildingComponents.getAlternate().length() == 1) {
-                // assuming end = start - 1
-                hgvsString.append(VariantAnnotationUtils
-                        .buildUpperLowerCaseString(VariantAnnotationUtils
-                                .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
-                        .append(buildingComponents.getEnd());
-            } else {
-                // assuming end = start - 1
-                hgvsString.append(VariantAnnotationUtils
-                        .buildUpperLowerCaseString(VariantAnnotationUtils
-                                .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
-                        .append(buildingComponents.getStart() - buildingComponents.getAlternate().length())
-                        .append(HgvsCalculator.UNDERSCORE)
-                        .append(VariantAnnotationUtils
-                                .buildUpperLowerCaseString(VariantAnnotationUtils
-                                        .TO_LONG_AA.get(String.valueOf(buildingComponents
-                                                .getAlternate()
-                                                .charAt(buildingComponents.getAlternate().length() - 1)))))
-                        .append(buildingComponents.getEnd());
-            }
-            hgvsString.append(DUP_SUFFIX);
-//            .append(buildingComponents.getAlternate())
-
-
-        } else {
-            if (BuildingComponents.MutationType.EXTENSION.equals(buildingComponents.getMutationType())) {
-                try {
-                    hgvsString.append(TERMINATION_SUFFIX)
-                            .append(buildingComponents.getStart())
-                            .append(VariantAnnotationUtils
-                                    .buildUpperLowerCaseString(VariantAnnotationUtils
-                                            .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
-                            .append(EXTENSION_TAG)
-                            .append(UNKOWN_STOP_CODON_POSITION);
-                } catch (NullPointerException e) {
-                    int a = 1;
-                    throw e;
-                }
-
-            } else {
-                if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
-                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())
-                            && buildingComponents.getTerminator() < 0) {
-                        hgvsString.append(buildingComponents.getReferenceEnd())
-                                .append(buildingComponents.getStart())
-                                .append(TERMINATION_SUFFIX);
-                    } else {
-                        // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
-                        hgvsString.append(buildingComponents.getReferenceEnd())
-                                .append(buildingComponents.getStart())
-                                .append(VariantAnnotationUtils.buildUpperLowerCaseString(buildingComponents.getAlternate()))
-                                .append(FRAMESHIFT_SUFFIX)
-                                .append(TERMINATION_SUFFIX);
-
-                        if (buildingComponents.getTerminator() > 0) {
-//                stringBuilder.append(FRAMESHIFT_SUFFIX);
-                            hgvsString.append(buildingComponents.getTerminator());
-                        } else {
-                            hgvsString.append("?");
-                        }
-                    }
-
+                if (StringUtils.isNotEmpty(stopAlternateAa)) {
+                    // Original STOP codon changed and no new STOP codon found
+                    hgvsString = "p.Ter" + (originalStopIndex + 1) + stopAlternateAa + "extTer?";
                 } else {
-                    if (BuildingComponents.MutationType.STOP_GAIN.equals(buildingComponents.getMutationType())) {
-                        hgvsString.append(buildingComponents.getReferenceEnd())
-                                .append(buildingComponents.getStart())
-                                .append(TERMINATION_SUFFIX);
-                    } else {
-                        // assuming end = start - 1
-                        hgvsString.append(buildingComponents.getReferenceStart())
-                                .append(buildingComponents.getEnd())
-                                .append(HgvsCalculator.UNDERSCORE)
-                                .append(buildingComponents.getReferenceEnd())
-                                .append(buildingComponents.getStart())
-                                .append(INS_SUFFIX)
-                                .append(formatAaSequence(buildingComponents.getAlternate()));
-                    }
+                    // Not found firstDiffIndex and stopIndex, this means no AA changed and no STOP codon found. This typically happens
+                    // in incomplete 3' ends
+                    hgvsString = "p.Ter" + (currentAaIndex + 1) + "=";
                 }
             }
         }
 
-        String alternateProteinSequence = getAlternateCdnaSequence();
-        return new HgvsProtein(getProteinIds(), hgvsString.toString(), alternateProteinSequence);
-    }
-
-    /**
-     *
-     * @return the DNA sequence updated with the alternate sequence
-     */
-    protected String getAlternateCdnaSequence() {
-        StringBuilder alternateDnaSequence = new StringBuilder(transcript.getcDnaSequence());
-
-        String reference = variant.getReference();
-        String alternate = variant.getAlternate();
-
-        if (this.transcript.getStrand().equals("-")) {
-            alternate = reverseComplementary(alternate);
-        }
-
-        // genomic to cDNA
-        int variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        if (variantCdsPosition < 0) {
-            return alternateDnaSequence.toString();
-        }
-
-        // -1 to fix inclusive positions
-        int cdnaVariantPosition = transcript.getCdnaCodingStart() + variantCdsPosition - 1;
-        int cdnaVariantIndex = cdnaVariantPosition - 1;
-
-//        System.out.println("cdnaVariantIndex = " + cdnaVariantIndex);
-        switch (variant.getType()) {
-            case SNV:
-                alternateDnaSequence.setCharAt(cdnaVariantIndex, alternate.charAt(0));
-                break;
-            case INDEL:
-                // insertion
-                if (StringUtils.isBlank(variant.getReference())) {
-                    alternateDnaSequence.insert(cdnaVariantIndex, alternate);
-                    // deletion
-                } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    if (transcript.getStrand().equals("-")) {
-                        cdnaVariantIndex = cdnaVariantIndex - 1;
-                    }
-                    alternateDnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + reference.length(), "");
-                } else {
-                    logger.debug("No HGVS implementation available for variant MNV.");
-                    return null;
-                }
-                break;
-            default:
-                logger.debug("No HGVS implementation available for structural variants. Found {}.", variant.getType());
-                return null;
-        }
-        return alternateDnaSequence.toString();
+        return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSeq.toString());
     }
 
     protected char aaAt(int position) {
@@ -1133,21 +967,6 @@ public class HgvsProteinCalculator {
 
     protected String getSequence(int start, int end) {
         return alternateProteinSequence.subSequence(start, end).toString();
-    }
-
-    private String formatAaSequence(String alternate) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < alternate.length(); i++) {
-            stringBuilder.append(VariantAnnotationUtils
-                    .buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA
-                            .get(String.valueOf(alternate.charAt(i)))));
-        }
-        return stringBuilder.toString();
-    }
-
-    // FIXME should be variant.start - cdnastart % 3 == 0, to be safe
-    private boolean isFrameshift() {
-        return !(variant.getAlternate().length() % 3 == 0);
     }
 
     // FIXME need to do this check early
@@ -1169,7 +988,6 @@ public class HgvsProteinCalculator {
         return false;
     }
 
-
     private List<String> getProteinIds() {
         List<String> proteinIds = new ArrayList<>();
         proteinIds.add(transcript.getProteinID());
@@ -1179,19 +997,4 @@ public class HgvsProteinCalculator {
         }
         return proteinIds;
     }
-
-    private String reverseComplementary(String string) {
-        StringBuilder stringBuilder = new StringBuilder(string).reverse();
-        for (int i = 0; i < stringBuilder.length(); i++) {
-            char nextNt = stringBuilder.charAt(i);
-            // Protection against weird characters, e.g. alternate:"TBS" found in ClinVar
-            if (VariantAnnotationUtils.COMPLEMENTARY_NT.containsKey(nextNt)) {
-                stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(nextNt));
-            } else {
-                return null;
-            }
-        }
-        return stringBuilder.toString();
-    }
-
 }

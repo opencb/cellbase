@@ -103,6 +103,8 @@ public class HgvsCalculator {
         switch (normalizedVariant.getType()) {
             case SNV:
                 return new HgvsSNVCalculator(genomeDBAdaptor);
+            case INSERTION:
+            case DELETION:
             case INDEL:
                 if (StringUtils.isBlank(normalizedVariant.getReference())) {
                     return new HgvsInsertionCalculator(genomeDBAdaptor);

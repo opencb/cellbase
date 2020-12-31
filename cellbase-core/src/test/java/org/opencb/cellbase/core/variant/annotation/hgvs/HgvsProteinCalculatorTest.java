@@ -155,7 +155,8 @@ public class HgvsProteinCalculatorTest {
                 "T");
         predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertEquals("", hgvsProtein.getHgvs());
+//        Assert.assertEquals("", hgvsProtein.getHgvs());
+        Assert.assertNull(hgvsProtein);
     }
 
     @Test
