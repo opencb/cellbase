@@ -94,8 +94,7 @@ public class HgvsCalculator {
             // Normalization set to false - if needed, it would have been done already two lines above
             //return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
             HgvsProteinCalculator hgvsProteinCalculator = new HgvsProteinCalculator(normalizedVariant, transcript);
-            //HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
-            HgvsProtein hgvsProtein = null;
+            HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
             if (hgvsProtein != null) {
                 for (String id : hgvsProtein.getIds()) {
                     String hgvsString = id + ":" + hgvsProtein.getHgvs();
