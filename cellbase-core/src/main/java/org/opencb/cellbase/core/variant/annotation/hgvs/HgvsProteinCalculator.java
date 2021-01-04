@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * Predicts AA sequence given a transcript and a variant.
+ * Calculates HGVS protein string based on variant and transcript.
  */
 public class HgvsProteinCalculator {
 

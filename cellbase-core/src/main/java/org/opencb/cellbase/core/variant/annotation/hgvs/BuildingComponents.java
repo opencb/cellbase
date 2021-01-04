@@ -18,7 +18,6 @@ public class BuildingComponents {
         DELETION_INSERTION,
         FRAMESHIFT,
         EXTENSION,
-
         STOP_GAIN
     }
 
