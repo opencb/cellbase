@@ -221,8 +221,36 @@ public class TranscriptUtils {
     }
 
     public boolean isExonic(int genomicPosition) {
+        return isExonic(genomicPosition, genomicPosition);
+    }
+
+    public boolean isExonic(int start, int end) {
         for (Exon exon : transcript.getExons()) {
-            if (genomicPosition >= exon.getStart() && genomicPosition <= exon.getEnd()) {
+            if (start == end) {
+                if (start >= exon.getStart() && start <= exon.getEnd()) {
+                    return true;
+                }
+            } else {
+                if (start >= exon.getStart() && start <= exon.getEnd() && end >= exon.getStart() && end <= exon.getEnd()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isExonicSpliceSite(int position) {
+        for (Exon exon : transcript.getExons()) {
+            if (position > exon.getEnd() - 2 && position <= exon.getEnd()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isExonicSpliceSite(int start, int end) {
+        for (Exon exon : transcript.getExons()) {
+            if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
                 return true;
             }
         }

@@ -161,8 +161,10 @@ public class HgvsProteinCalculator {
             }
         } else {
             // Different amino acid, several scenarios
-            if (referenceAminoacid.equalsIgnoreCase("STOP")) { // && codonPosition < transcript.getProteinSequence().length()
-//                    && transcript.getProteinSequence().charAt(codonPosition - 1) != 'U'
+            if (referenceAminoacid.equalsIgnoreCase("STOP")) {
+                // TODO add this:
+                // && codonPosition < transcript.getProteinSequence().length()
+                // && transcript.getProteinSequence().charAt(codonPosition - 1) != 'U'
                 // translation termination codon (stop codon, no-stop change)
                 return calculateFrameshiftHgvs();
             } else {
@@ -212,6 +214,10 @@ public class HgvsProteinCalculator {
      */
     private HgvsProtein calculateInsertionHgvs() {
         if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+            return null;
+        }
+
+        if (!transcriptUtils.isExonic(variant.getStart())) {
             return null;
         }
 
@@ -328,10 +334,10 @@ public class HgvsProteinCalculator {
         // New algorithm to move to the right the insertion ONLY if a duplication exists.
         // Example:
         // Original Sequence: A B C A B C A B C D   and   Insertion Sequence: c a b
-        // Result:  A B C A B c a b C A B C D
+        // Result:  A B C A B C A B c a b C D E
         // We iterate over all possible splits (left and right) and move to the right. Iterations:
-        // 1. cab == CAB
-        // 2. Bca == bCA
+        // 1. cab == CDE
+        // 2. Bca == bCD
         // 3. ABc == abC  Yes! move to the right 2 positions and start again!
         boolean isDuplication = false;
         boolean keepMovingRight = true;
@@ -485,6 +491,23 @@ public class HgvsProteinCalculator {
         if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
             return null;
         }
+
+        if (!transcriptUtils.isExonic(variant.getStart(), variant.getEnd())) {
+            return null;
+        }
+
+        if (transcriptUtils.isExonicSpliceSite(variant.getStart(), variant.getEnd())) {
+            return null;
+        }
+//        if (transcript.getStrand().equals("+")) {
+//            if (transcriptUtils.isExonicSpliceSite(variant.getStart())) {
+//                return null;
+//            }
+//        } else {
+//            if (transcriptUtils.isExonicSpliceSite(variant.getEnd())) {
+//                return null;
+//            }
+//        }
 
         int cdsVariantStartPosition;
         String referenceAllele = variant.getReference();
