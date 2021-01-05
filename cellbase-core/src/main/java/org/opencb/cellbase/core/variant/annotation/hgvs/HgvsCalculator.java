@@ -74,28 +74,36 @@ public class HgvsCalculator {
     }
 
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+
+        List<String> hgvsStrings = new ArrayList<>();
+
         // Check variant falls within transcript coords
         if (variant.getStart() <= transcript.getEnd() && variant.getEnd() >= transcript.getStart()) {
             // We cannot know the type of variant before normalization has been carried out
             Variant normalizedVariant = normalize(variant, normalize);
-            HgvsCalculator hgvsCalculator = getHgvsCalculator(normalizedVariant);
-            // Can be null if there's no hgvs implementation for the variant type
-            if (hgvsCalculator != null) {
-                // Normalization set to false - if needed, it would have been done already two lines above
-                //return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
-                HgvsProteinCalculator hgvsProteinCalculator = new HgvsProteinCalculator(normalizedVariant, transcript);
-                HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
-                if (hgvsProtein != null) {
-                    List<String> hgvsStrings = new ArrayList<>();
-                    for (String id : hgvsProtein.getIds()) {
-                        String hgvsString = id + ":" + hgvsProtein.getHgvs();
-                        hgvsStrings.add(hgvsString);
-                    }
-                    return hgvsStrings;
+//            HgvsCalculator hgvsCalculator = getHgvsCalculator(normalizedVariant);
+//            // Can be null if there's no hgvs implementation for the variant type
+//            if (hgvsCalculator != null) {
+
+            HgvsTranscriptCalculator hgvsTranscriptCalculator = new HgvsTranscriptCalculator(genomeDBAdaptor, normalizedVariant,
+                    transcript, geneId);
+            String hgvsTranscript = hgvsTranscriptCalculator.calculate();
+            if (StringUtils.isNotEmpty(hgvsTranscript)) {
+                hgvsStrings.add(hgvsTranscript);
+            }
+            // Normalization set to false - if needed, it would have been done already two lines above
+            //return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
+            HgvsProteinCalculator hgvsProteinCalculator = new HgvsProteinCalculator(normalizedVariant, transcript);
+            HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
+            if (hgvsProtein != null) {
+                for (String id : hgvsProtein.getIds()) {
+                    String hgvsString = id + ":" + hgvsProtein.getHgvs();
+                    hgvsStrings.add(hgvsString);
                 }
             }
         }
-        return Collections.emptyList();
+
+        return hgvsStrings;
     }
 
     private HgvsCalculator getHgvsCalculator(Variant normalizedVariant) {
@@ -147,6 +155,7 @@ public class HgvsCalculator {
         return transcript.getCdnaCodingEnd() != 0;
     }
 
+    @Deprecated
     protected void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
                                           String genomicAlternate, Transcript transcript,
                                           BuildingComponents buildingComponents) {
@@ -180,6 +189,7 @@ public class HgvsCalculator {
         buildingComponents.setCdnaEnd(genomicToCdnaCoord(transcript, end));
     }
 
+    @Deprecated
     protected String reverseComplementary(String string) {
         StringBuilder stringBuilder = new StringBuilder(string).reverse();
         for (int i = 0; i < stringBuilder.length(); i++) {
@@ -238,7 +248,8 @@ public class HgvsCalculator {
         }
     }
 
-    protected static CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
+
+    public static CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
         if (isCoding(transcript)) {
             return genomicToCdnaCoordInCodingTranscript(transcript, genomicPosition);
         } else {
@@ -246,6 +257,7 @@ public class HgvsCalculator {
         }
 
     }
+
 
     private static CdnaCoord genomicToCdnaCoordInNonCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
@@ -314,6 +326,7 @@ public class HgvsCalculator {
 
     }
 
+    @Deprecated
     private static CdnaCoord genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
@@ -454,6 +467,7 @@ public class HgvsCalculator {
         return cdnaCoord;
     }
 
+    @Deprecated
     private static int getCdnaPosition(Transcript transcript, int genomicPosition) {
 
         int i = 0;
