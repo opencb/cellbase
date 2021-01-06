@@ -250,16 +250,20 @@ public class TranscriptUtils {
 
     public boolean isExonicSpliceSite(int start, int end) {
         for (Exon exon : transcript.getExons()) {
+//            if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
+//                return true;
+//            }
             if (transcript.getStrand().equals("+")) {
                 if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
                     return true;
                 }
             } else {
-                if ((start >= exon.getStart() && start < exon.getStart() + 2)) {
-                    return true;
-                }
+                // TODO
+                System.out.println("Check this");
+//                if ((end >= exon.getStart() && end < exon.getStart() + 2) || (start >= exon.getStart() && start < exon.getStart() + 2)) {
+//                    return true;
+//                }
             }
-
         }
         return false;
     }

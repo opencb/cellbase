@@ -217,9 +217,10 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-        if (!transcriptUtils.isExonic(variant.getStart())) {
-            return null;
-        }
+        // TODO review this, Insertions happen on the left, the first position of the intron is a valid exonic position for VEP.
+//        if (!transcriptUtils.isExonic(variant.getStart() - 1)) {
+//            return null;
+//        }
 
         // Get CDS position
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
