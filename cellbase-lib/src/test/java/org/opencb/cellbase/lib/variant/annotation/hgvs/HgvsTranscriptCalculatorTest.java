@@ -86,7 +86,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
                 "CCCTGTCCAGCCAGCCCATTGACCACGAAGACAGCACCATGCAGGCCGGACAGGGAGGCGATCCAGATCTCGG");
 
         HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeDBAdaptor, variant, transcript,"ENSG00000179364");
-        Assert.assertEquals("p.Trp845_Val848delinsLeu", predictor.calculate());
+        Assert.assertEquals("ENST00000447393(ENSG00000179364):c.566_567ins73", predictor.calculate());
     }
 
 

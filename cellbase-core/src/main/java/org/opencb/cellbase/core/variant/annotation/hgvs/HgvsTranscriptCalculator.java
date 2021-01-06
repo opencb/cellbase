@@ -333,7 +333,7 @@ public class HgvsTranscriptCalculator {
                                                                           Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
-        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
+        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
