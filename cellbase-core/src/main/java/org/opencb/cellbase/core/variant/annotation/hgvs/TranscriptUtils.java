@@ -221,7 +221,12 @@ public class TranscriptUtils {
     }
 
     public boolean isExonic(int genomicPosition) {
-        return isExonic(genomicPosition, genomicPosition);
+        for (Exon exon : transcript.getExons()) {
+            if (genomicPosition >= exon.getStart() && genomicPosition <= exon.getEnd()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isExonic(int start, int end) {
@@ -231,7 +236,7 @@ public class TranscriptUtils {
                     return true;
                 }
             } else {
-                if (start >= exon.getStart() && start <= exon.getEnd() && end >= exon.getStart() && end <= exon.getEnd()) {
+                if (start >= exon.getStart() && start <= exon.getEnd() || end >= exon.getStart() && end <= exon.getEnd()) {
                     return true;
                 }
             }
@@ -250,19 +255,8 @@ public class TranscriptUtils {
 
     public boolean isExonicSpliceSite(int start, int end) {
         for (Exon exon : transcript.getExons()) {
-//            if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
-//                return true;
-//            }
-            if (transcript.getStrand().equals("+")) {
-                if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
-                    return true;
-                }
-            } else {
-                // TODO
-                System.out.println("Check this");
-//                if ((end >= exon.getStart() && end < exon.getStart() + 2) || (start >= exon.getStart() && start < exon.getStart() + 2)) {
-//                    return true;
-//                }
+            if ((start > exon.getEnd() - 2 && start <= exon.getEnd()) || (end > exon.getEnd() - 2 && end <= exon.getEnd())) {
+                return true;
             }
         }
         return false;
@@ -318,7 +312,22 @@ public class TranscriptUtils {
                                 referenceAllele = referenceAllele.substring(transcript.getGenomicCodingStart() - variant.getStart());
                                 variantCdsPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingStart());
                             } else {
-                                variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+                                boolean intronExonBoundary = false;
+                                Exon overlapExon = null;
+                                for (Exon exon : transcript.getExons()) {
+                                    if (variant.getStart() < exon.getStart() && variant.getEnd() >= exon.getEnd()) {
+                                        intronExonBoundary = true;
+                                        overlapExon = exon;
+                                        break;
+                                    }
+                                }
+                                if (intronExonBoundary) {
+                                    referenceAllele = referenceAllele.substring(overlapExon.getGenomicCodingStart() - variant.getStart());
+                                    variantCdsPosition = HgvsCalculator.getCdsStart(transcript, overlapExon.getGenomicCodingStart());
+                                } else {
+                                    // Normal exonic deletion
+                                    variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+                                }
                             }
                         } else {
                             if (variant.getStart() <= transcript.getGenomicCodingEnd()
@@ -326,6 +335,22 @@ public class TranscriptUtils {
                                 referenceAllele = referenceAllele.substring(0, transcript.getGenomicCodingEnd() - variant.getStart() + 1);
                                 variantCdsPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingEnd());
                             } else {
+//                                boolean intronExonBoundary = false;
+//                                Exon overlapExon = null;
+//                                for (Exon exon : transcript.getExons()) {
+//                                    if (variant.getStart() <= exon.getEnd() && variant.getEnd() > exon.getEnd()) {
+//                                        intronExonBoundary = true;
+//                                        overlapExon = exon;
+//                                        break;
+//                                    }
+//                                }
+//                                if (intronExonBoundary) {
+//                                    referenceAllele = referenceAllele.substring(overlapExon.getGenomicCodingStart() - variant.getStart());
+//                                    variantCdsPosition = HgvsCalculator.getCdsStart(transcript, overlapExon.getGenomicCodingEnd());
+//                                } else {
+//                                    // Normal exonic deletion
+//                                    variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
+//                                }
                                 variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
                             }
                             // FIXME Method HgvsCalculator.getCdsStart wringly returns +1 for reverse strand

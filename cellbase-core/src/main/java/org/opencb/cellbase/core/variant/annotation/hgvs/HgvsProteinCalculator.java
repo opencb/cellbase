@@ -217,10 +217,11 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-        // TODO review this, Insertions happen on the left, the first position of the intron is a valid exonic position for VEP.
-//        if (!transcriptUtils.isExonic(variant.getStart() - 1)) {
-//            return null;
-//        }
+        boolean isStartExonic = transcriptUtils.isExonic(variant.getStart());
+        boolean isEndExonic = transcriptUtils.isExonic(variant.getEnd());
+        if (!isStartExonic && !isEndExonic) {
+            return null;
+        }
 
         // Get CDS position
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
@@ -493,29 +494,28 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-        if (!transcriptUtils.isExonic(variant.getStart(), variant.getEnd())) {
+        boolean isStartExonic = transcriptUtils.isExonic(variant.getStart());
+        boolean isEndExonic = transcriptUtils.isExonic(variant.getEnd());
+        if (!isStartExonic || !isEndExonic) {
             return null;
         }
-
-        if (transcriptUtils.isExonicSpliceSite(variant.getStart(), variant.getEnd())) {
-            return null;
-        }
-//        if (transcript.getStrand().equals("+")) {
-//            if (transcriptUtils.isExonicSpliceSite(variant.getStart())) {
-//                return null;
-//            }
-//        } else {
-//            if (transcriptUtils.isExonicSpliceSite(variant.getEnd())) {
-//                return null;
-//            }
-//        }
 
         int cdsVariantStartPosition;
         String referenceAllele = variant.getReference();
         if (transcript.getStrand().equals("+")) {
+            // FIXME This only slves the positive strand we need to think about the negative strand
+            if (transcriptUtils.isExonicSpliceSite(variant.getStart(), variant.getEnd())) {
+                return null;
+            }
+
+            // Deletion overlaps 5' UTR and the beginning of the coding region
             if (variant.getStart() < transcript.getGenomicCodingStart() && variant.getEnd() >= transcript.getGenomicCodingStart()) {
-                referenceAllele = variant.getReference().substring(transcript.getGenomicCodingStart() - variant.getStart());
-                cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingStart());
+                if (transcriptUtils.hasUnconfirmedStart()) {
+                    return null;
+                } else {
+                    referenceAllele = variant.getReference().substring(transcript.getGenomicCodingStart() - variant.getStart());
+                    cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, transcript.getGenomicCodingStart());
+                }
             } else {
                 cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
             }
@@ -857,7 +857,6 @@ public class HgvsProteinCalculator {
         String stopAlternateAa = "";
         int originalStopIndex = -1;
         String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
-
         // We ned to include the STOP codon in the loop to check if there is a variant braking the STOP codon
         while (codonIndex + 3 <= alternateCdnaSeq.length()) {
             // Build the new amino acid sequence
