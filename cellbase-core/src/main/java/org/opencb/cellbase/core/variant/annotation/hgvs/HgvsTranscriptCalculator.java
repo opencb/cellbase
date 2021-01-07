@@ -231,12 +231,17 @@ public class HgvsTranscriptCalculator {
                     // Insertion or Insertion normalized as duplication
                     // example:
                     // "ENST00000382869.3:c.1735+32dupA", 1000_1001 insATG
-                    return mutationType + buildingComponents.getAlternate();
+                    if ("ins".equals(mutationType)) {
+                        return mutationType + buildingComponents.getAlternate();
+                    } else {
+                        return mutationType;
+                    }
                 } else if (StringUtils.isBlank(variant.getAlternate())) {
                     // Delete
                     // example:
                     // 1000_1003d elATG
-                    return mutationType + buildingComponents.getReferenceStart();
+                    //return mutationType + buildingComponents.getReferenceStart();
+                    return mutationType;
                 } else {
                     LOGGER.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
                             + "identifiers.");
