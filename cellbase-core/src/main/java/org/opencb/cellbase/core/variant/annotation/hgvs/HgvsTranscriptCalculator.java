@@ -111,7 +111,28 @@ public class HgvsTranscriptCalculator {
         buildingComponents.setReferenceStart(reference);
         buildingComponents.setAlternate(alternate);
 
-        return formatTranscriptString(buildingComponents);
+        StringBuilder allele = new StringBuilder();
+        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+        allele.append(":");
+
+        String cdnaCoordinates = buildingComponents.getCdnaStart().toString();
+        String dnaAllele = buildingComponents.getReferenceStart() + '>' + buildingComponents.getAlternate();
+
+        String transcriptChar = null;
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+            transcriptChar = CODING_TRANSCRIPT_CHAR;
+        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+            transcriptChar = NON_CODING_TRANSCRIPT_CHAR;
+        } else {
+            throw new NotImplementedException("HGVS calculation not implemented for variant "
+                    + buildingComponents.getChromosome() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
+                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+        }
+
+        allele.append(transcriptChar).append(cdnaCoordinates + dnaAllele);
+
+        return allele.toString();
     }
 
     private String calculateInsertionHgvsString() {
@@ -161,7 +182,35 @@ public class HgvsTranscriptCalculator {
             buildingComponents.setTranscriptId(transcript.getId());
             buildingComponents.setGeneId(geneId);
 
-            return formatTranscriptString(buildingComponents);
+            // return formatTranscriptString(buildingComponents);
+            StringBuilder allele = new StringBuilder();
+            allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+            allele.append(":");
+
+            String cdnaCoordinates = buildingComponents.getCdnaStart().toString();
+            if (buildingComponents.getCdnaStart() != null && !buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
+                cdnaCoordinates = cdnaCoordinates + "_" + buildingComponents.getCdnaEnd().toString();
+            }
+            String dnaAllele = formatMutationType(buildingComponents.getMutationType());
+            if (BuildingComponents.MutationType.INSERTION.equals(buildingComponents.getMutationType())) {
+                dnaAllele = dnaAllele + buildingComponents.getAlternate();
+            }
+
+            String transcriptChar = null;
+            if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+                transcriptChar = CODING_TRANSCRIPT_CHAR;
+            } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+                transcriptChar = NON_CODING_TRANSCRIPT_CHAR;
+            } else {
+                throw new NotImplementedException("HGVS calculation not implemented for variant "
+                        + buildingComponents.getChromosome() + ":"
+                        + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
+                        + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+            }
+
+            allele.append(transcriptChar).append(cdnaCoordinates + dnaAllele);
+
+            return allele.toString();
         } else {
             return null;
         }
@@ -186,27 +235,26 @@ public class HgvsTranscriptCalculator {
         buildingComponents.setTranscriptId(transcript.getId());
         buildingComponents.setGeneId(geneId);
 
-        return formatTranscriptString(buildingComponents);
+      //  return formatTranscriptString(buildingComponents);
 //        return hgvsStringBuildingComponents.format();
-    }
-
-    /**
-     * Generate a transcript HGVS string.
-     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
-     * @return String containing an HGVS formatted variant representation
-     */
-    private String formatTranscriptString(BuildingComponents buildingComponents) {
 
         StringBuilder allele = new StringBuilder();
         allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
         allele.append(":");
 
+
+        String dnaAllele = formatMutationType(buildingComponents.getMutationType());
+
+        String cdnaCoordinates = buildingComponents.getCdnaStart().toString();
+        if (buildingComponents.getCdnaStart() != null && !buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
+            cdnaCoordinates = cdnaCoordinates + "_" + buildingComponents.getCdnaEnd().toString();
+        }
+
+        String transcriptChar = null;
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
-            allele.append(CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
-                    + formatDnaAllele(buildingComponents));
+            transcriptChar = CODING_TRANSCRIPT_CHAR;
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
-            allele.append(NON_CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
-                    + formatDnaAllele(buildingComponents));
+            transcriptChar = NON_CODING_TRANSCRIPT_CHAR;
         } else {
             throw new NotImplementedException("HGVS calculation not implemented for variant "
                     + buildingComponents.getChromosome() + ":"
@@ -214,45 +262,74 @@ public class HgvsTranscriptCalculator {
                     + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
         }
 
+        allele.append(transcriptChar).append(cdnaCoordinates + dnaAllele);
+
         return allele.toString();
-
     }
 
-    private String formatDnaAllele(BuildingComponents buildingComponents) {
-        switch (variant.getType()) {
-            case SNV:
-                return buildingComponents.getReferenceStart() + '>' + buildingComponents.getAlternate();
-            case INSERTION:
-            case DELETION:
-            case INDEL:
-                String mutationType = formatMutationType(buildingComponents.getMutationType());
+    /**
+     * Generate a transcript HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+//    private String formatTranscriptString(BuildingComponents buildingComponents) {
+//
+//        StringBuilder allele = new StringBuilder();
+//        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+//        allele.append(":");
+//
+//        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+//            allele.append(CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
+//                    + formatDnaAllele(buildingComponents));
+//        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+//            allele.append(NON_CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
+//                    + formatDnaAllele(buildingComponents));
+//        } else {
+//            throw new NotImplementedException("HGVS calculation not implemented for variant "
+//                    + buildingComponents.getChromosome() + ":"
+//                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
+//                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+//        }
+//
+//        return allele.toString();
+//
+//    }
 
-                if (StringUtils.isBlank(variant.getReference())) {
-                    // Insertion or Insertion normalized as duplication
-                    // example:
-                    // "ENST00000382869.3:c.1735+32dupA", 1000_1001 insATG
-                    if ("ins".equals(mutationType)) {
-                        return mutationType + buildingComponents.getAlternate();
-                    } else {
-                        return mutationType;
-                    }
-                } else if (StringUtils.isBlank(variant.getAlternate())) {
-                    // Delete
-                    // example:
-                    // 1000_1003d elATG
-                    //return mutationType + buildingComponents.getReferenceStart();
-                    return mutationType;
-                } else {
-                    LOGGER.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
-                            + "identifiers.");
-                    return null;
-                }
-            default:
-                LOGGER.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
-                        + "  of HGVS identifiers.", variant.getType());
-                return null;
-        }
-    }
+//    private String formatDnaAllele(BuildingComponents buildingComponents) {
+//        switch (variant.getType()) {
+//            case SNV:
+//                return buildingComponents.getReferenceStart() + '>' + buildingComponents.getAlternate();
+//            case INSERTION:
+//            case DELETION:
+//            case INDEL:
+//                String mutationType = formatMutationType(buildingComponents.getMutationType());
+//
+//                if (StringUtils.isBlank(variant.getReference())) {
+//                    // Insertion or Insertion normalized as duplication
+//                    // example:
+//                    // "ENST00000382869.3:c.1735+32dupA", 1000_1001 insATG
+//                    if ("ins".equals(mutationType)) {
+//                        return mutationType + buildingComponents.getAlternate();
+//                    } else {
+//                        return mutationType;
+//                    }
+//                } else if (StringUtils.isBlank(variant.getAlternate())) {
+//                    // Delete
+//                    // example:
+//                    // 1000_1003d elATG
+//                    //return mutationType + buildingComponents.getReferenceStart();
+//                    return mutationType;
+//                } else {
+//                    LOGGER.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
+//                            + "identifiers.");
+//                    return null;
+//                }
+//            default:
+//                LOGGER.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
+//                        + "  of HGVS identifiers.", variant.getType());
+//                return null;
+//        }
+//    }
 
     private String formatMutationType(BuildingComponents.MutationType mutationType) {
         switch (mutationType) {
@@ -281,25 +358,25 @@ public class HgvsTranscriptCalculator {
         return stringBuilder.toString();
     }
 
-    private String formatCdnaCoords(BuildingComponents buildingComponents) {
-        switch (variant.getType()) {
-            case SNV:
-                return buildingComponents.getCdnaStart().toString();
-            case INSERTION:
-            case DELETION:
-            case INDEL:
-                if (buildingComponents.getCdnaStart() != null
-                        && buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
-                    return buildingComponents.getCdnaStart().toString();
-                } else {
-                    return buildingComponents.getCdnaStart().toString() + "_" + buildingComponents.getCdnaEnd().toString();
-                }
-            default:
-                LOGGER.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
-                        + "  of HGVS identifiers.", variant.getType());
-                return null;
-        }
-    }
+//    private String formatCdnaCoords(BuildingComponents buildingComponents) {
+//        switch (variant.getType()) {
+//            case SNV:
+//                return buildingComponents.getCdnaStart().toString();
+//            case INSERTION:
+//            case DELETION:
+//            case INDEL:
+//                if (buildingComponents.getCdnaStart() != null
+//                        && buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
+//                    return buildingComponents.getCdnaStart().toString();
+//                } else {
+//                    return buildingComponents.getCdnaStart().toString() + "_" + buildingComponents.getCdnaEnd().toString();
+//                }
+//            default:
+//                LOGGER.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
+//                        + "  of HGVS identifiers.", variant.getType());
+//                return null;
+//        }
+//    }
 
     private void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
                                             String genomicAlternate, Transcript transcript,
