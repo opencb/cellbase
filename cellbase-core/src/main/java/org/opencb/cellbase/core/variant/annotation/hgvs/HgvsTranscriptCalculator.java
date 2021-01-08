@@ -267,11 +267,11 @@ public class HgvsTranscriptCalculator {
         return allele.toString();
     }
 
-    /**
-     * Generate a transcript HGVS string.
-     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
-     * @return String containing an HGVS formatted variant representation
-     */
+//    /**
+//     * Generate a transcript HGVS string.
+//     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+//     * @return String containing an HGVS formatted variant representation
+//     */
 //    private String formatTranscriptString(BuildingComponents buildingComponents) {
 //
 //        StringBuilder allele = new StringBuilder();

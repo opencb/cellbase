@@ -508,6 +508,10 @@ public class CliOptionsParser {
                 false, arity = 1)
         public String category = "protein";
 
+        @Parameter(names = {"-m", "--mutation-type"}, description = "Which variant type to analyse: 'SNV', 'INSERTION', 'DELETION'. Leave "
+                + "enpty to analyse all types",
+                required = false, arity = 1)
+        public String mutationType;
     }
 
 

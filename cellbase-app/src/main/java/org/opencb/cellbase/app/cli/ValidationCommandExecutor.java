@@ -105,6 +105,35 @@ public class ValidationCommandExecutor extends CommandExecutor {
                 String variantId = cols[0] + ":" + cols[1] + ":" + cols[3].replace(".", "-") + ":"
                         + cols[4].replace(".", "-");
                 Variant variant = Variant.parseVariant(variantId);
+
+                // skip variant based on user input. if no input, process all
+                String mutationType = validationCommandOptions.mutationType;
+                if (StringUtils.isNotEmpty(mutationType)) {
+                    switch (validationCommandOptions.mutationType) {
+                        case "SNV":
+                            if (StringUtils.isBlank(variant.getReference()) || StringUtils.isBlank(variant.getAlternate())) {
+                                continue;
+                            }
+                            break;
+                        case "INSERTION":
+                        case "DELETION":
+                        case "INDEL":
+                            if (StringUtils.isBlank(variant.getReference())) {
+                                if (!"INSERTION".equals(mutationType) && !"INDEL".equals(mutationType)) {
+                                    continue;
+                                }
+                            } else if (StringUtils.isBlank(variant.getAlternate())) {
+                                if (!"DELETION".equals(mutationType) && !"INDEL".equals(mutationType)) {
+                                    continue;
+                                }
+                            } else {
+                                continue;
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+                }
                 // query for cellbase annotation
                 QueryResult<VariantAnnotation> variantAnnotationQueryResult =
                         variantAnnotationCalculator.getAnnotationByVariant(variant, getQueryOptions());
