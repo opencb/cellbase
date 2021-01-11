@@ -2,14 +2,16 @@ package org.opencb.cellbase.core.config;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by jacobo on 29/03/19.
@@ -75,9 +77,9 @@ public class CellBaseConfigurationTest {
 
         CellBaseConfiguration.overwriteEnvVariables(configuration, envVariables);
 
-        assertEquals(configuration.getDatabases().getMongodb().getHost(), "myHost");
-        assertEquals(configuration.getDatabases().getMongodb().getUser(), "me");
-        assertEquals(configuration.getDatabases().getMongodb().getPassword(), "1234");
+        Assertions.assertEquals(configuration.getDatabases().getMongodb().getHost(), "myHost");
+        Assertions.assertEquals(configuration.getDatabases().getMongodb().getUser(), "me");
+        Assertions.assertEquals(configuration.getDatabases().getMongodb().getPassword(), "1234");
         assertThat(configuration.getDatabases().getMongodb().getOptions().entrySet(), hasItem(Pair.of("authenticationDatabase", "admin")));
         assertThat(configuration.getDatabases().getMongodb().getOptions().entrySet(), hasItem(Pair.of("replicaSet", "IDK")));
         assertThat(configuration.getDatabases().getMongodb().getOptions().entrySet(), hasItem(Pair.of("readPreference", "any")));

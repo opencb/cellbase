@@ -12,7 +12,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.assertTrue;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

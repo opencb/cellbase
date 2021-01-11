@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.hamcrest.CoreMatchers;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**

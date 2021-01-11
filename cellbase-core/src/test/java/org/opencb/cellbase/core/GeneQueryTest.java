@@ -21,15 +21,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.commons.datastore.core.ObjectMap;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GeneQueryTest {
 

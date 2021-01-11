@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -122,6 +122,6 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testHgvs() throws Exception {
         List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG");
-        assertEquals(4, results.get(0).getResults().size());
+        assertEquals(5, results.get(0).getResults().size());
     }
 }

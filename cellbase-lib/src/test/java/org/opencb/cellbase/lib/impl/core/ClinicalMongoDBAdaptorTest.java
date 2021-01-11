@@ -45,10 +45,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static junit.framework.TestCase.assertNotNull;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 24/03/17.
@@ -622,7 +621,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query7.put(ParamConstants.QueryParams.SOURCE.key(), "cosmic");
         QueryOptions options = new QueryOptions();
         CellBaseDataResult<Variant> CellBaseDataResult9 = clinicalDBAdaptor.get(query7, options);
-        assertNotNull("Should return the CellBaseDataResult of id=COSM306824", CellBaseDataResult9.getResults());
+        // "Should return the CellBaseDataResult of id=COSM306824"
+        assertNotNull(CellBaseDataResult9.getResults());
         assertThat(CellBaseDataResult9.getResults().get(0).getAnnotation().getTraitAssociation().stream()
                         .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
                         .collect(Collectors.toList()),

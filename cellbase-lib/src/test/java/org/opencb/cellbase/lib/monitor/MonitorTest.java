@@ -1,13 +1,15 @@
 package org.opencb.cellbase.lib.monitor;
 
 
-import org.junit.Ignore;
-import org.junit.Test;
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
 
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.SpeciesUtilsTest;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.commons.monitor.HealthCheckResponse;
 
 
@@ -15,7 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 12/10/17.
@@ -43,16 +45,18 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         Path path = Paths.get(getClass()
                 .getResource("/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
-        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                .load(MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
+        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
+                SpeciesUtilsTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
+                CellBaseConfiguration.ConfigurationFileFormat.YAML);
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        Monitor monitor = new Monitor();
+        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+        Monitor monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         HealthCheckResponse health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
 
         // Empty gene collection
         clearDB(GRCH37_DBNAME);
-        monitor = new Monitor();
+        monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
 
@@ -69,25 +73,23 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         // "Local" monitoring - unknown mongo host
         cellBaseConfiguration.getDatabases().getMongodb().setHost(FAKE);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        monitor = new Monitor();
+        monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
 
-        // Remote monitoring all OK
-        monitor = new Monitor();
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
-        assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
-
-        // Remote monitoring - unknown http host
-        monitor = new Monitor();
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
-        assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
-
-        // Remote monitoring - known http host but status end point not available
-        monitor = new Monitor();
-        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
-        assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
+//        // Remote monitoring all OK
+//        monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+//        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
+//        assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
+//
+//        // Remote monitoring - unknown http host
+//        monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+//        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
+//        assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
+//
+//        // Remote monitoring - known http host but status end point not available
+//        monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+//        health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
+//        assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());
     }
-
-
 }

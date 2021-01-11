@@ -16,10 +16,7 @@
 
 package org.opencb.cellbase.lib.loader;
 
-import org.junit.After;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
 import java.util.ArrayList;
@@ -67,7 +64,7 @@ public class MongoDBCellBaseLoaderTest {
 //        loader.init();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         loader.close();
     }
