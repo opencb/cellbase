@@ -191,10 +191,7 @@ public class HgvsTranscriptCalculator {
             if (buildingComponents.getCdnaStart() != null && !buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
                 cdnaCoordinates = cdnaCoordinates + "_" + buildingComponents.getCdnaEnd().toString();
             }
-            String dnaAllele = formatMutationType(buildingComponents.getMutationType());
-            if (BuildingComponents.MutationType.INSERTION.equals(buildingComponents.getMutationType())) {
-                dnaAllele = dnaAllele + buildingComponents.getAlternate();
-            }
+            String dnaAllele = formatMutationType(buildingComponents.getMutationType()) + buildingComponents.getAlternate();
 
             String transcriptChar = null;
             if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
@@ -242,8 +239,7 @@ public class HgvsTranscriptCalculator {
         allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
         allele.append(":");
 
-
-        String dnaAllele = formatMutationType(buildingComponents.getMutationType());
+        String dnaAllele = formatMutationType(buildingComponents.getMutationType()) + buildingComponents.getReferenceStart();;
 
         String cdnaCoordinates = buildingComponents.getCdnaStart().toString();
         if (buildingComponents.getCdnaStart() != null && !buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
