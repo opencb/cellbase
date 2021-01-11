@@ -19,8 +19,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.assertEquals;
 
 public class VcfStringAnnotatorTaskTest {
 

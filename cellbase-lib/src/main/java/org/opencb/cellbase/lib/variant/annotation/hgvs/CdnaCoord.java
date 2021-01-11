@@ -28,7 +28,7 @@ public class CdnaCoord {
 
     private int referencePosition = 0;
     private int offset = 0;
-    private Landmark landmark;
+    private Landmark landmark = null;
 
     public CdnaCoord() {
     }
@@ -61,7 +61,7 @@ public class CdnaCoord {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (landmark.equals(Landmark.CDNA_STOP_CODON)) {
+        if (landmark != null && landmark.equals(Landmark.CDNA_STOP_CODON)) {
             stringBuilder.append("*");
             if (referencePosition != 0) {
                 // Remove sign

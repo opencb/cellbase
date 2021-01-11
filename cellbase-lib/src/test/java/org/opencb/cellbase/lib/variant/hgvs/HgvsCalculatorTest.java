@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.variant.hgvs;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,8 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
     }
 
-    @Test
+    // protein tests are all in the protein calculator test
+    @Ignore
     public void testProteinHgvsInsertion() throws Exception {
         // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
         // original sequence            ......CTGGCT
@@ -287,7 +289,9 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "ENSP00000215957:p.His241_Gln243dup"));
     }
 
-    @Test
+
+    // protein tests are all in the protein calculator test
+    @Ignore
     public void testProteinHgvsSNV() throws Exception {
         // Weird character ("U") in protein sequence (e.g. ENST00000525566/ENSP00000434516, position 648) must not
         // return any protein HGVS description
@@ -357,7 +361,9 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Asn800Ser","ENSP00000416766:p.Asn114Ser"));
     }
 
-    @Test
+
+    // protein tests are all in the protein calculator test
+    @Ignore
     public void testProteinHgvsDeletion() throws Exception {
         // Made-up variant derived from a ClinVar deletion that used to break the code; start falls outside coding
         // region but after right aligning both fall within the coding region
@@ -709,21 +715,6 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "ENST00000444807(ENSG00000133665):c.270+51_270+52ins5"));
 
     }
-
-//<<<<<<< HEAD
-//    private List<String> getVariantHgvs(Variant variant) throws QueryException, IllegalAccessException {
-//        GeneQuery geneQuery = new GeneQuery();
-//        Region region = new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
-//        geneQuery.setRegions(Arrays.asList(region));
-//        geneQuery.setIncludes(Arrays.asList("name,id,transcripts.id,"
-//                + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
-//                + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
-//                + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
-//                + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
-//                + "transcripts.exons.cdsStart,transcripts.exons.cdsEnd,"
-//                + "transcripts.exons.end"));
-//        List<Gene> geneList = geneManager.search(geneQuery).getResults();
-//=======
 
     private List<String> getVariantHgvs(Variant variant) throws QueryException, IllegalAccessException {
         GeneQuery query = new GeneQuery();

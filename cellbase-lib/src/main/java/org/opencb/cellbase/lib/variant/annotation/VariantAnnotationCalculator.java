@@ -1127,6 +1127,8 @@ public class VariantAnnotationCalculator {
             case MNV:
                 return new ConsequenceTypeMNVCalculator(genomeManager);
             case CNV:
+            case COPY_NUMBER_GAIN:
+            case COPY_NUMBER:
                 if (variant.getSv().getCopyNumber() == null) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
@@ -1141,7 +1143,7 @@ public class VariantAnnotationCalculator {
             case BREAKEND:
                 return new ConsequenceTypeBNDCalculator();
             default:
-                throw new UnsupportedURLVariantFormat();
+                throw new UnsupportedURLVariantFormat("Invalid variant type " + VariantAnnotationUtils.getVariantType(variant));
         }
     }
 

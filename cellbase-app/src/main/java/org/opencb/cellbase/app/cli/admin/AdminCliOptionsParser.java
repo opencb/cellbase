@@ -37,6 +37,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private IndexCommandOptions indexCommandOptions;
     private InstallCommandOptions installCommandOptions;
     private ServerCommandOptions serverCommandOptions;
+    private ValidationCommandOptions validationCommandOptions;
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -49,6 +50,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         indexCommandOptions = new IndexCommandOptions();
         installCommandOptions = new InstallCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
+        validationCommandOptions = new ValidationCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
@@ -56,6 +58,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("install", installCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
+        jCommander.addCommand("validate", validationCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
@@ -206,6 +209,38 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public int port;
     }
 
+    @Parameters(commandNames = {"validate"}, commandDescription = "Compare CellBase HGVS strings to Ensembl VEP. Only valid for GRCh38.")
+    public class ValidationCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        public String assembly = "GRCh38";
+
+        @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
+        public String inputFile;
+
+        @Parameter(names = {"-V", "--vep-file"}, description = "Full path to VEP annotation JSON file", required = true, arity = 1)
+        public String vepFile;
+
+        @Parameter(names = {"-o", "--output-dir"}, description = "Output directory where the comparison report is saved", required = false,
+                arity = 1)
+        public String outputDirectory = "/tmp";
+
+        @Parameter(names = {"-t", "--type"}, description = "Which type to analyse: 'Protein', 'Transcript' or 'Both'", required =
+                false, arity = 1)
+        public String category = "protein";
+
+        @Parameter(names = {"-m", "--mutation-type"}, description = "Which variant type to analyse: 'SNV', 'INSERTION', 'DELETION'. Leave "
+                + "enpty to analyse all types",
+                required = false, arity = 1)
+        public String mutationType;
+    }
+
     @Override
     public boolean isHelp() {
         String parsedCommand = jCommander.getParsedCommand();
@@ -242,5 +277,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public InstallCommandOptions getInstallCommandOptions() { return installCommandOptions; }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
+
+    public ValidationCommandOptions getValidationCommandOptions() { return validationCommandOptions; }
 
 }

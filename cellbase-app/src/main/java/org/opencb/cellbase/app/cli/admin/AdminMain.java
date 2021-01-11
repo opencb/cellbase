@@ -75,6 +75,9 @@ public class AdminMain {
                     case "server":
                         commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
                         break;
+                    case "validate":
+                        commandExecutor = new ValidationCommandExecutor(cliOptionsParser.getValidationCommandOptions());
+                        break;
                     default:
                         break;
                 }
