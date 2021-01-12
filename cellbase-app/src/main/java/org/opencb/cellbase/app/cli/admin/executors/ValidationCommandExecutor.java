@@ -280,6 +280,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
     private QueryOptions getQueryOptions() {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.put("include", "hgvs");
+        queryOptions.put("consequenceTypeSource", "ensembl");
         return queryOptions;
     }
 
