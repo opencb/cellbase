@@ -5,7 +5,7 @@ defaultSpecies: "hsapiens"
 rest:
   hosts:
 #  - "http://bioinfo.hpc.cam.ac.uk/cellbase"
-   - "http://bioinfodev.hpc.cam.ac.uk/cellbase-5.0.0-SNAPSHOT"
+   - "https://ws.opencb.org/cellbase-5.0.0"
 #  - "http://localhost:9090/cellbase-5.0.0-SNAPSHOT"
   timeout: 2000
 
