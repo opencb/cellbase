@@ -1336,6 +1336,8 @@ public class VariantAnnotationCalculator {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                 break;
             case CNV:
+            case COPY_NUMBER_GAIN:
+            case COPY_NUMBER:
                 if (imprecise) {
                     regionList.add(new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
                             variant.getStart() + cnvExtraPadding));
