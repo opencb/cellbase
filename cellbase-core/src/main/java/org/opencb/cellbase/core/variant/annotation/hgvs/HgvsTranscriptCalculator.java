@@ -239,7 +239,7 @@ public class HgvsTranscriptCalculator {
         allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
         allele.append(":");
 
-        String dnaAllele = formatMutationType(buildingComponents.getMutationType()) + buildingComponents.getReferenceStart();;
+        String dnaAllele = formatMutationType(buildingComponents.getMutationType()) + buildingComponents.getReferenceStart();
 
         String cdnaCoordinates = buildingComponents.getCdnaStart().toString();
         if (buildingComponents.getCdnaStart() != null && !buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
