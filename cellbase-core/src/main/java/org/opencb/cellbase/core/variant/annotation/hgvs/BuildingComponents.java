@@ -10,6 +10,16 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 public class BuildingComponents {
 
     enum Kind { CODING, NON_CODING, INFRAME, FRAMESHIFT }
+    enum MutationType {
+        SUBSTITUTION,
+        DELETION,
+        INSERTION,
+        DUPLICATION,
+        DELETION_INSERTION,
+        FRAMESHIFT,
+        EXTENSION,
+        STOP_GAIN
+    }
 
     // HGVS string parts
     private String prefix;
@@ -18,7 +28,7 @@ public class BuildingComponents {
     private String transcriptId;
     private String proteinId;
     private Kind kind;
-    private String mutationType;
+    private MutationType mutationType;
     private int start;
     private int end;
     private String referenceStart; // reference allele/amino acid at variant start
@@ -81,11 +91,11 @@ public class BuildingComponents {
         this.kind = kind;
     }
 
-    public String getMutationType() {
+    public MutationType getMutationType() {
         return mutationType;
     }
 
-    public void setMutationType(String mutationType) {
+    public void setMutationType(MutationType mutationType) {
         this.mutationType = mutationType;
     }
 

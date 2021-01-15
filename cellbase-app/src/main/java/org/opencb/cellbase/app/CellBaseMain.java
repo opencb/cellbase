@@ -80,6 +80,9 @@ public class CellBaseMain {
                     case "post-load":
                         commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
                         break;
+                    case "validate":
+                        commandExecutor = new ValidationCommandExecutor(cliOptionsParser.getValidationCommandOptions());
+                        break;
                     default:
                         break;
                 }

@@ -134,8 +134,8 @@ public class VariantAnnotationUtils {
 
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
-    public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
-    public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(22); // 22 AA
+    public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(40); // 22 AA
+    public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(40); // 22 AA
     private static final String ATG = "ATG";
     private static final String ATA = "ATA";
     private static final String TAA = "TAA";
@@ -143,6 +143,9 @@ public class VariantAnnotationUtils {
     private static final String AGA = "AGA";
     private static final String AGG = "AGG";
     private static final String TGA = "TGA";
+
+    public static final String MT = "MT";
+    public static final String UNKNOWN_AMINOACID = "X";
 
     static {
 
@@ -254,6 +257,8 @@ public class VariantAnnotationUtils {
         A_TO_CODON.get("PRO").add("CCC");
         A_TO_CODON.get("PRO").add("CCA");
         A_TO_CODON.get("PRO").add("CCG");
+//        A_TO_CODON.put("SEC", new ArrayList<>());
+//        A_TO_CODON.get("SEC").add("TGA");
         A_TO_CODON.put("SER", new ArrayList<String>());
         A_TO_CODON.get("SER").add("TCT");
         A_TO_CODON.get("SER").add("TCC");
@@ -432,6 +437,7 @@ public class VariantAnnotationUtils {
         TO_ABBREVIATED_AA.put("PRO", "P");
         TO_ABBREVIATED_AA.put("SER", "S");
         TO_ABBREVIATED_AA.put("THR", "T");
+        TO_ABBREVIATED_AA.put("SEC", "U");
         TO_ABBREVIATED_AA.put("TRP", "W");
         TO_ABBREVIATED_AA.put("TYR", "Y");
         TO_ABBREVIATED_AA.put("VAL", "V");
@@ -513,6 +519,9 @@ public class VariantAnnotationUtils {
     }
 
     public static String buildUpperLowerCaseString(String aa) {
+        if (StringUtils.isEmpty(aa)) {
+            return null;
+        }
         StringBuilder stringBuilder = new StringBuilder(aa);
 
         for (int i = 1; i < stringBuilder.length(); i++) {
@@ -643,5 +652,19 @@ public class VariantAnnotationUtils {
         }
         return variant.getType();
 //        return getVariantType(variant.getReferenceStart(), variant.getAlternate());
+    }
+
+    public static String reverseComplementary(String string) {
+        StringBuilder stringBuilder = new StringBuilder(string).reverse();
+        for (int i = 0; i < stringBuilder.length(); i++) {
+            char nextNt = stringBuilder.charAt(i);
+            // Protection against weird characters, e.g. alternate:"TBS" found in ClinVar
+            if (VariantAnnotationUtils.COMPLEMENTARY_NT.containsKey(nextNt)) {
+                stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(nextNt));
+            } else {
+                return null;
+            }
+        }
+        return stringBuilder.toString();
     }
 }

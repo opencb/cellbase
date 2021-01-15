@@ -43,7 +43,7 @@ public class CliOptionsParser {
     private QueryGrpcCommandOptions queryGrpcCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
-
+    private ValidationCommandOptions validationCommandOptions;
 
     public CliOptionsParser() {
         generalOptions = new GeneralOptions();
@@ -60,6 +60,7 @@ public class CliOptionsParser {
         queryGrpcCommandOptions = new QueryGrpcCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
+        validationCommandOptions = new ValidationCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
@@ -68,6 +69,7 @@ public class CliOptionsParser {
         jCommander.addCommand("query-grpc", queryGrpcCommandOptions);
         jCommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
+        jCommander.addCommand("validate", validationCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
@@ -481,6 +483,38 @@ public class CliOptionsParser {
 
     }
 
+    @Parameters(commandNames = {"validate"}, commandDescription = "Compare CellBase HGVS strings to Ensembl VEP. Only valid for GRCh38.")
+    public class ValidationCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        public String assembly = "GRCh38";
+
+        @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
+        public String inputFile;
+
+        @Parameter(names = {"-V", "--vep-file"}, description = "Full path to VEP annotation JSON file", required = true, arity = 1)
+        public String vepFile;
+
+        @Parameter(names = {"-o", "--output-dir"}, description = "Output directory where the comparison report is saved", required = false,
+                arity = 1)
+        public String outputDirectory = "/tmp";
+
+        @Parameter(names = {"-t", "--type"}, description = "Which type to analyse: 'Protein', 'Transcript' or 'Both'", required =
+                false, arity = 1)
+        public String category = "protein";
+
+        @Parameter(names = {"-m", "--mutation-type"}, description = "Which variant type to analyse: 'SNV', 'INSERTION', 'DELETION'. Leave "
+                + "enpty to analyse all types",
+                required = false, arity = 1)
+        public String mutationType;
+    }
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -572,5 +606,7 @@ public class CliOptionsParser {
     public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }
 
     public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
+
+    public ValidationCommandOptions getValidationCommandOptions() { return validationCommandOptions; }
 
 }
