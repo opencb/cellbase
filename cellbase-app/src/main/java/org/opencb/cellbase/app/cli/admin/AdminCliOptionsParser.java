@@ -181,6 +181,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
         public boolean dropIndexesFirst;
+
+        @Parameter(names = {"--validate"}, description = "Compare the existing indexes in specified database with the index JSON file",
+                arity = 0)
+        public boolean validate;
     }
 
     @Parameters(commandNames = {"install"}, commandDescription = "Set up sharding for CellBase")

@@ -92,7 +92,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             }
             loadRunner = new LoadRunner(loader, database, numThreads, configuration);
             if (createIndexes) {
-                indexManager = new IndexManager(configuration);
+                indexManager = new IndexManager(configuration, database);
             }
 
             String[] loadOptions;
@@ -354,8 +354,8 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
         logger.info("Loading indexes for '{}' collection ...", collectionName);
         try {
-            indexManager.createMongoDBIndexes(collectionName, database, true);
-        } catch (CellbaseException | IOException e) {
+            indexManager.createMongoDBIndexes(collectionName, true);
+        } catch (IOException e) {
             logger.error("Error creating indexes:" + e.toString());
         }
     }

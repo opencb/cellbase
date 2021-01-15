@@ -28,39 +28,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class IndexManager {
 
     private CellBaseConfiguration configuration;
     private Logger logger;
+    private String databaseName;
+    private MongoDBIndexUtils mongoDBIndexUtils;
 
-    public IndexManager(CellBaseConfiguration configuration) {
+    public IndexManager(CellBaseConfiguration configuration, String databaseName) {
         this.configuration = configuration;
-        logger = LoggerFactory.getLogger(this.getClass());
+        this.databaseName = databaseName;
+
+        init();
     }
 
-    /**
-     * Create indexes. Exception thrown if species or assembly is incorrect. NULL assembly value will default to
-     * first assembly in the config file.
-     *
-     * @param data list of collections to index
-     * @param speciesName name of species
-     * @param assemblyName name of assembly
-     * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
-     *                         already exists.
-     * @throws IOException if configuration file can't be read
-     * @throws CellbaseException if indexes file isn't found, or invalid input
-     */
-    public void createMongoDBIndexes(String data, String speciesName, String assemblyName, boolean dropIndexesFirst)
-            throws CellbaseException, IOException {
-        Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
-        if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            createMongoDBIndexes(new String[0], species.getSpecies(), species.getAssembly(), dropIndexesFirst);
-        } else {
-            String[] collections = data.split(",");
-            createMongoDBIndexes(collections, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
+    private void init() {
+        logger = LoggerFactory.getLogger(this.getClass());
+
+        Path indexFile = Paths.get("/mongodb-indexes.json");
+        if (indexFile == null) {
+            try {
+                throw new CellbaseException("Index file mongodb-indexes.json not found");
+            } catch (CellbaseException e) {
+                e.printStackTrace();
+            }
         }
+        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
+        MongoDataStore mongoDataStore = factory.getMongoDBDatastore(databaseName);
+        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
     }
 
     /**
@@ -68,52 +67,42 @@ public class IndexManager {
      * given database does not already exist.
      *
      * @param collectionName create indexes for this collection, can be "all" or a list of collection names
-     * @param databaseName name of database
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
      *                         already exists.
      * @throws IOException if configuration file can't be read
      * @throws CellbaseException if indexes file isn't found
      */
-    public void createMongoDBIndexes(String collectionName, String databaseName, boolean dropIndexesFirst)
-            throws IOException, CellbaseException {
-        InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
-        if (resourceAsStream == null) {
-            throw new CellbaseException("Index file mongodb-indexes.json not found");
-        }
-        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        MongoDataStore mongoDataStore = factory.getMongoDBDatastore(databaseName);
-
+    public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
-            MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
+            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
             logger.info("Loaded all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
-                MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collection, dropIndexesFirst);
+                mongoDBIndexUtils.createIndexes(collection, dropIndexesFirst);
                 logger.info("Loaded index for {} ", collection);
             }
         }
     }
 
-    private void createMongoDBIndexes(String[] collections, String species, String assembly, boolean dropIndexesFirst)
-            throws IOException, CellbaseException {
-        InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
-        if (resourceAsStream == null) {
-            throw new CellbaseException("Index file mongodb-indexes.json not found");
-        }
-        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        MongoDataStore mongoDataStore = factory.getMongoDBDatastore(species, assembly);
-        if (collections == null || collections.length == 0) {
-            MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
+    /**
+     * Validate indexes for specified collection. Will throw an exception if given database does not already exist.
+     *
+     * @param collectionName create indexes for this collection, can be "all" or a list of collection names
+     * @throws IOException if configuration file can't be read
+     * @throws CellbaseException if indexes file isn't found
+     */
+    public void validateMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
+        if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
+            mongoDBIndexUtils.validateAllIndexes();
+            logger.info("Validated all indexes");
         } else {
-            for (String collectionName : collections) {
-                try {
-                    MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
-                } catch (NullPointerException e) {
-                    throw new CellbaseException("Error creating an index for collection '" + collectionName
-                            + "', collection does not exist");
-                }
+            String[] collections = collectionName.split(",");
+            for (String collection : collections) {
+                mongoDBIndexUtils.validateIndexes(collection, dropIndexesFirst);
+                logger.info("Validated index for {} ", collection);
             }
         }
     }
+
 }
