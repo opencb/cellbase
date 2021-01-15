@@ -18,7 +18,6 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 
 import java.io.IOException;
@@ -38,7 +37,7 @@ public class IndexCommandExecutor extends CommandExecutor {
         try {
             IndexManager indexManager = new IndexManager(configuration, indexCommandOptions.database);
             if (indexCommandOptions.validate) {
-                indexManager.validateMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.dropIndexesFirst);
+                indexManager.validateMongoDBIndexes(indexCommandOptions.data);
             } else {
                 indexManager.createMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.dropIndexesFirst);
             }

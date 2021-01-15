@@ -17,10 +17,8 @@
 package org.opencb.cellbase.lib.indexer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.SpeciesUtils;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -49,7 +47,7 @@ public class IndexManager {
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
 
-        Path indexFile = Paths.get("/mongodb-indexes.json");
+        Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
         if (indexFile == null) {
             try {
                 throw new CellbaseException("Index file mongodb-indexes.json not found");
@@ -70,7 +68,6 @@ public class IndexManager {
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
      *                         already exists.
      * @throws IOException if configuration file can't be read
-     * @throws CellbaseException if indexes file isn't found
      */
     public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
@@ -90,16 +87,15 @@ public class IndexManager {
      *
      * @param collectionName create indexes for this collection, can be "all" or a list of collection names
      * @throws IOException if configuration file can't be read
-     * @throws CellbaseException if indexes file isn't found
      */
-    public void validateMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
+    public void validateMongoDBIndexes(String collectionName) throws IOException {
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
             mongoDBIndexUtils.validateAllIndexes();
             logger.info("Validated all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
-                mongoDBIndexUtils.validateIndexes(collection, dropIndexesFirst);
+                mongoDBIndexUtils.validateIndexes(collection);
                 logger.info("Validated index for {} ", collection);
             }
         }

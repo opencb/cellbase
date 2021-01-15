@@ -18,7 +18,6 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.lib.EtlCommons;

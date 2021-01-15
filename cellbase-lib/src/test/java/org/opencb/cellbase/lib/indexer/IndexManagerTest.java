@@ -18,15 +18,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
-    IndexManager indexManager = null;
+    private IndexManager indexManager = null;
+    private String databaseName = "cellbase_hsapiens_grch37_v4";
 
     public IndexManagerTest() throws IOException {
-        indexManager = new IndexManager(cellBaseConfiguration);
+        indexManager = new IndexManager(cellBaseConfiguration, databaseName);
     }
 
     @Test
     public void testIndexes() throws IOException, CellbaseException {
-        indexManager.createMongoDBIndexes("repeats", "hsapiens", "grch37", true);
+        indexManager.createMongoDBIndexes("repeats", true);
 
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore("hsapiens", "grch37");
@@ -42,16 +43,5 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
         assertEquals(expectedToString, index.getResults().toString());
     }
 
-    @Test
-    public void testBadName() throws IOException, CellbaseException {
-        final String INVALID_NAME = "foobar";
 
-        // don't provide assembly
-        CellbaseException thrown =
-                assertThrows(CellbaseException.class,
-                        () -> indexManager.createMongoDBIndexes(INVALID_NAME, "hsapiens", "grch37", true),
-                        "Expected createMongoDBIndexes() to throw an exception, but it didn't");
-
-        assertEquals("Error creating an index for collection 'foobar', collection does not exist", thrown.getMessage());
-    }
 }

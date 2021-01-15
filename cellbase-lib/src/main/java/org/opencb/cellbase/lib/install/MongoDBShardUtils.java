@@ -132,7 +132,8 @@ public class MongoDBShardUtils {
         Map<String, ObjectMap> indexes = new HashMap<>();
         indexes.put("fields", new ObjectMap((Map) keyMap));
         indexes.put("options", new ObjectMap((Map) options));
-        MongoDBIndexUtils.createIndex(mongoDataStore, collectionName, Arrays.asList(indexes));
+        MongoDBIndexUtils mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, null);
+        mongoDBIndexUtils.createIndexes(collectionName, Arrays.asList(indexes), false);
     }
 
     private static Map<String, Object> createKeyMap(SpeciesConfiguration.ShardConfig shardConfig) {
