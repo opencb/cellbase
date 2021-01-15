@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Created by fjlopez on 15/05/17.
  */
 public class DgvBuilderTest {
-    @Test
+            
     public void parse() throws Exception {
         Path dgvFile = Paths.get(getClass().getResource("/dgv.txt.gz").getFile());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "dgv.test");
