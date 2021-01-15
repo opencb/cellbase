@@ -36,7 +36,7 @@ public class ClientConfigurationTest {
 
         clientConfiguration.setVersion("v4");
         
-        RestConfig restConfig = new RestConfig(Arrays.asList("bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "bioinfodev.hpc.cam.ac.uk/cellbase"), 2000);
+        RestConfig restConfig = new RestConfig(Arrays.asList("ws.opencb.org/cellbase-4.8.2", "ws.opencb.org/cellbase"), 2000);
         GrpcConfig grpcConfig = new GrpcConfig("localhost:9091");
 
         clientConfiguration.setRest(restConfig);

@@ -30,6 +30,7 @@ public class ClientConfiguration {
 
     private String version;
     private String defaultSpecies;
+    private String defaultAssembly;
     private String logLevel;
 
     private RestConfig rest;
@@ -71,6 +72,7 @@ public class ClientConfiguration {
         final StringBuilder sb = new StringBuilder("ClientConfiguration{");
         sb.append("version='").append(version).append('\'');
         sb.append(", defaultSpecies='").append(defaultSpecies).append('\'');
+        sb.append(", defaultSpecies='").append(defaultAssembly).append('\'');
         sb.append(", logLevel='").append(logLevel).append('\'');
         sb.append(", rest=").append(rest);
         sb.append(", grpc=").append(grpc);
@@ -93,6 +95,15 @@ public class ClientConfiguration {
 
     public ClientConfiguration setDefaultSpecies(String defaultSpecies) {
         this.defaultSpecies = defaultSpecies;
+        return this;
+    }
+
+    public String getDefaultAssembly() {
+        return defaultAssembly;
+    }
+
+    public ClientConfiguration setDefaultAssembly(String defaultAssembly) {
+        this.defaultAssembly = defaultAssembly;
         return this;
     }
 

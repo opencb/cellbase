@@ -1,11 +1,12 @@
 ---
 version: "v4"
 defaultSpecies: "hsapiens"
+defaultAssembly: "GRCh37"
 logLevel: "info"
-logFile: ""
+
 rest:
   hosts:
-  - "http://bioinfo.hpc.cam.ac.uk/cellbase"
+  - "http://ws.opencb.org/cellbase"
 #  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"
   #- "http://localhost:8080/cellbase-4.5.5"
   timeout: 2000

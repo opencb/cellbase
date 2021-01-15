@@ -36,7 +36,7 @@ public class CellBaseClient {
 
 
     public CellBaseClient(ClientConfiguration clientConfiguration) {
-        this(clientConfiguration.getDefaultSpecies(), clientConfiguration);
+        this(clientConfiguration.getDefaultSpecies(), clientConfiguration.getDefaultAssembly(), clientConfiguration);
     }
 
     public CellBaseClient(String species, ClientConfiguration clientConfiguration) {
