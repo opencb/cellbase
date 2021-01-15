@@ -1,8 +1,10 @@
 package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -26,6 +28,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by fjlopez on 14/02/17.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
     private GeneMongoDBAdaptor geneDBAdaptor;
@@ -34,7 +37,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     public HgvsCalculatorTest() throws IOException {
     }
 
-    @Before
+    @BeforeAll
     public void init() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

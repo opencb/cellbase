@@ -4,16 +4,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.TestInstance;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.SpeciesUtilsTest;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -36,6 +37,7 @@ import java.util.List;
  *
  * (most tests are in hgvscalculatortest but those are for grch37)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
 
@@ -51,7 +53,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
     // TODO add KeyError: '1:244856830:T:-', generated an error in the python script
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
 
 
@@ -92,7 +94,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
                 "CCCTGTCCAGCCAGCCCATTGACCACGAAGACAGCACCATGCAGGCCGGACAGGGAGGCGATCCAGATCTCGG");
 
         HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeManager, variant, transcript,"ENSG00000179364");
-        Assert.assertEquals("ENST00000447393(ENSG00000179364):c.566_567ins73", predictor.calculate());
+        assertEquals("ENST00000447393(ENSG00000179364):c.566_567ins73", predictor.calculate());
     }
 
 

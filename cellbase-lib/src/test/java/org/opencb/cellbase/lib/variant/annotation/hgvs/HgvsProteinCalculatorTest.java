@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.Assert.*;
+
+import org.junit.jupiter.api.TestInstance;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -21,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
 
 /**
  * All test cases are:
@@ -30,6 +31,7 @@ import static org.junit.Assert.*;
  * ensembl v99
  * tested with cellbase 5
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HgvsProteinCalculatorTest {
 
     private ObjectMapper jsonObjectMapper;
@@ -41,14 +43,14 @@ public class HgvsProteinCalculatorTest {
 
     // TODO add KeyError: '1:244856830:T:-', generated an error in the python script
 
-    @Before
+    @BeforeAll
     public void setUp() throws IOException {
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene.test.json.gz").getFile()));
+
+        geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").getFile()));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,7 +159,7 @@ public class HgvsProteinCalculatorTest {
         predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
 //        Assert.assertEquals("", hgvsProtein.getHgvs());
-        Assert.assertNull(hgvsProtein);
+        assertNull(hgvsProtein);
     }
 
     @Test
@@ -312,7 +314,7 @@ public class HgvsProteinCalculatorTest {
                 "TC");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertNotNull(hgvsProtein);
+        assertNotNull(hgvsProtein);
         assertEquals("p.Asp20GlyfsTer162", hgvsProtein.getHgvs());
     }
 
@@ -413,7 +415,7 @@ public class HgvsProteinCalculatorTest {
         predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein2 = predictor.calculate();
         assertNotNull(hgvsProtein2);
-        assertEquals("p.Ser1646_Gly1647insArgPro", hgvsProtein2.getHgvs());
+        assertEquals("p.Ser1523_Gly1524insArgPro", hgvsProtein2.getHgvs());
     }
 
     /////////////////////////////////////
@@ -822,7 +824,7 @@ public class HgvsProteinCalculatorTest {
                 "S");
         HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
         HgvsProtein hgvsProtein = predictor.calculate();
-        Assert.assertNull(hgvsProtein);
+        assertNull(hgvsProtein);
     }
 
     @Test
@@ -847,7 +849,7 @@ public class HgvsProteinCalculatorTest {
 
     private Transcript getTranscript(Gene gene, String id) {
         for (Transcript transcript : gene.getTranscripts()) {
-            if (transcript.getId().equals(id)) {
+            if (transcript.getId().startsWith(id)) {
                 return transcript;
             }
         }
