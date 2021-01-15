@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.SpeciesUtilsTest;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -64,11 +66,14 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").getFile()));
 
-        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                .load(GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
+        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
+                HgvsTranscriptCalculatorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
+                CellBaseConfiguration.ConfigurationFileFormat.YAML);
+
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
 
