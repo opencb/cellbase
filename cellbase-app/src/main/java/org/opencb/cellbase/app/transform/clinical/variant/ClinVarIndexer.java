@@ -36,8 +36,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
     private static final int VARIANT_SUMMARY_START_COLUMN = 19;
     private static final int VARIANT_SUMMARY_END_COLUMN = 20;
-    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 21;
-    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 22;
+    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 32;
+    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 33;
     private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
     private static final int VARIANT_SUMMARY_GENE_COLUMN = 4;
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
@@ -698,7 +698,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418;RCV000540418;RCV000540418;RCV000000066
-                Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split(";")));
+                Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split("\\|")));
                 // Fill in rcvToAlleleLocationData map
                 for (String rcv : rcvSet) {
                     List<AlleleLocationData> alleleLocationDataList;
@@ -803,6 +803,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (emptySequence(reference) && !emptySequence(alternate) && end == (start + 1)) {
             // NOTE! swapped start and end
             return new SequenceLocation(chromosome, end, start, reference, alternate);
+        } else if (emptySequence(alternate) && !emptySequence(reference) && end - start == 0) {
+            // variant summary file has the wrong location for deletions. Adjust!
+            return new SequenceLocation(chromosome, start - 1, end, reference, alternate);
         } else {
             return new SequenceLocation(chromosome, start, end, reference, alternate);
         }

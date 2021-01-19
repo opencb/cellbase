@@ -133,7 +133,7 @@ public class ClinVarParser extends CellBaseParser {
                 sequenceLocation.setReferenceAllele(parseEmptyAllele(parts[21]));
                 sequenceLocation.setAlternateAllele(parseEmptyAllele(parts[22]));
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
-                String[] rcvArray = parts[11].split(";");
+                String[] rcvArray = parts[11].split("|");
                 for (String rcv : rcvArray) {
                     rcvToSequenceLocation.put(rcv, sequenceLocation);
                 }

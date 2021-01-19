@@ -328,7 +328,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             // TODO: allow these variants
             validVariant = false;
         } else if (gDescriptionArray[1].matches("\\d+")) { // Expecting number of deleted nts here
-            sequenceLocation.setReference(fastaIndexManager.query("17", sequenceLocation.getStart(),
+            sequenceLocation.setReference(fastaIndexManager.query(sequenceLocation.getChromosome(), sequenceLocation.getStart(),
                     sequenceLocation.getEnd()));
             sequenceLocation.setAlternate("");
         } else if (gDescriptionArray[1].matches(VARIANT_STRING_PATTERN)) { // Avoid allele strings containing Ns, for example
