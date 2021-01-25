@@ -729,8 +729,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 SequenceLocation sequenceLocation = parseSequenceLocation(parts);
 
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
-                // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418;RCV000540418;RCV000540418;RCV000000066
-                Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split(";")));
+                // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418|RCV000540418|RCV000540418|RCV000000066
+                Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split("\\|")));
                 // Fill in rcvToAlleleLocationData map
                 for (String rcv : rcvSet) {
                     List<AlleleLocationData> alleleLocationDataList;
