@@ -83,18 +83,18 @@ public class ClinicalVariantParserTest {
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz");
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantParser(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
+        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(1, parsedVariantList.size());
+        assertEquals(2, parsedVariantList.size());
 
 
         List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
-        assertEquals(1, variantList.size());
+        assertEquals(2, variantList.size());
         Variant variant = variantList.get(0);
         assertEquals("13", variant.getChromosome());
-        assertEquals(Integer.valueOf(32339555), variant.getStart());
-        assertEquals("A", variant.getReference());
+        assertEquals(Integer.valueOf(32339556), variant.getStart());
+        assertEquals("", variant.getReference());
         assertEquals("G", variant.getAlternate());
 
     }
