@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli;
 
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.opencb.cellbase.client.config.ClientConfiguration;
@@ -34,6 +35,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 
 /**
  * Created by imedina on 03/02/15.
