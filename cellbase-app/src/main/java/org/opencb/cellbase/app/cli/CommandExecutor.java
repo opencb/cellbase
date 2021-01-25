@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli;
 
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -29,6 +30,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 
 /**
  * Created by imedina on 03/02/15.
@@ -84,11 +86,10 @@ public abstract class CommandExecutor {
 //            stderr.setThreshold(Level.toLevel(logLevel));
 //        }
 //
-        logger = LoggerFactory.getLogger(this.getClass().toString());
-        this.logLevel = logLevel;
-
         Level level = Level.toLevel(logLevel, Level.INFO);
         Configurator.setRootLevel(level);
+        logger = LoggerFactory.getLogger(this.getClass().toString());
+        this.logLevel = logLevel;
     }
 
     public boolean isVerbose() {

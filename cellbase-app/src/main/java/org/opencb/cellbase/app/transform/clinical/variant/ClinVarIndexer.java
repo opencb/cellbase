@@ -36,8 +36,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
     private static final int VARIANT_SUMMARY_START_COLUMN = 19;
     private static final int VARIANT_SUMMARY_END_COLUMN = 20;
-    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 21;
-    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 22;
+    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 32;
+    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 33;
     private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
     private static final int VARIANT_SUMMARY_GENE_COLUMN = 4;
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
