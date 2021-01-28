@@ -49,6 +49,7 @@
                     <include>configuration.json</include>
                     <include>git.properties</include>
                     <include>log4j2.xml</include>
+                    <include>log4j2.file.xml</include>
                 </includes>
             </resource>
         </resources>
