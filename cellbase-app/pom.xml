@@ -136,7 +136,7 @@
                                     <arg value="${build.dir}/clients"/>
                                 </exec>
 
-                                <echo>Copying to ${build.dir}</echo>
+                                <echo>Copying to build dir: ${build.dir}</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/cloud"/>
