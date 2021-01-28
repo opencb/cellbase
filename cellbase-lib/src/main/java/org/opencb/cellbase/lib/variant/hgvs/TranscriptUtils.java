@@ -130,7 +130,9 @@ public class TranscriptUtils {
             cdnaCodonStart = cdnaCodonStart - 1;
 
             int cdnaCodonEnd = Math.min(cdnaCodonStart + 3, transcript.getCdnaCodingEnd());
-            return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
+            if (cdnaCodonStart >= 0 && transcript.getcDnaSequence().length() > cdnaCodonEnd) {
+                return transcript.getcDnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
+            }
         }
         return "";
     }
@@ -299,6 +301,9 @@ public class TranscriptUtils {
             case DELETION:
             case INDEL:
                 if (StringUtils.isBlank(variant.getReference()) || variant.getReference().equals("-")) {
+                    if (cdnaVariantIndex < 0) {
+                        return null;
+                    }
                     // Insertion
                     alternateCdnaSequence.insert(cdnaVariantIndex, alternate);
                 } else {
@@ -357,6 +362,9 @@ public class TranscriptUtils {
                             variantCdsPosition--;
                         }
                         cdnaVariantIndex = cdsToCdna(variantCdsPosition) - 1;
+                        if (cdnaVariantIndex < 0 || alternateCdnaSequence.length() < cdnaVariantIndex + referenceAllele.length()) {
+                            return null;
+                        }
                         alternateCdnaSequence.replace(cdnaVariantIndex, cdnaVariantIndex + referenceAllele.length(), "");
                     } else {
                         System.out.println("No valid INDEL variant: " + variant.getId());
