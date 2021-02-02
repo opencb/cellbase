@@ -669,8 +669,16 @@ public class VariantAnnotationCalculator {
                     if (consequenceType3 != null) {
                         String referenceCodon = consequenceType1.getCodon().split("/")[0].toUpperCase();
                         // WARNING: assumes variants are sorted according to their coordinates
-                        String alternateCodon = variant0.getAlternate() + variant1.getAlternate()
-                                + variant2.getAlternate();
+                        String alternateCodon = null;
+
+                        // negative strand
+                        if ("-".equals(variant0.getStrand())) {
+                            alternateCodon = variant2.getAlternate() + variant1.getAlternate() + variant0.getAlternate();
+                        } else {
+                            alternateCodon = variant0.getAlternate() + variant1.getAlternate() + variant2.getAlternate();
+                        }
+
+
                         codon = referenceCodon + "/" + alternateCodon;
                         alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
@@ -702,8 +710,17 @@ public class VariantAnnotationCalculator {
                         referenceCodonArray[codonIdx1] = Character.toUpperCase(referenceCodonArray[codonIdx1]);
                         referenceCodonArray[codonIdx2] = Character.toUpperCase(referenceCodonArray[codonIdx2]);
                         char[] alternateCodonArray = referenceCodonArray.clone();
-                        alternateCodonArray[codonIdx1] = variant0.getAlternate().toUpperCase().toCharArray()[0];
-                        alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
+
+                        // negative strand
+                        if ("-".equals(variant0.getStrand())) {
+                            alternateCodonArray[codonIdx1] =
+                                    VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
+                            alternateCodonArray[codonIdx2] =
+                                    VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0]);
+                        } else {
+                            alternateCodonArray[codonIdx1] = variant0.getAlternate().toUpperCase().toCharArray()[0];
+                            alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
+                        }
 
                         codon = String.valueOf(referenceCodonArray) + "/" + String.valueOf(alternateCodonArray);
                         alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());

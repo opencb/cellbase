@@ -1908,6 +1908,81 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        }
     }
 
+
+
+    //////////////////////////////////////
+    // below is tested with grch38 data //
+    // the test is hardcoded to read 37 //
+    // but it lies. it is 38 data       //
+    //////////////////////////////////////
+
+    private void initGrch38() throws Exception {
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/grch38/variation_chr11.test.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+    }
+
+
+    @Test
+    public void testMnvConsequenceTypes() throws Exception {
+
+        initGrch38();
+
+        Variant variant = new Variant("11:47441668:CTG:TTA");
+        variant.setStrand("-");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("phased", true);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+
+        assertEquals(2, queryResult.getResult().size());
+        List<VariantAnnotation> results = queryResult.getResult();
+
+
+        // variant 1
+        VariantAnnotation variantAnnotation = results.get(0);
+
+        assertEquals("stop_gained", variantAnnotation.getDisplayConsequenceType());
+
+        List<ConsequenceType> consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        ConsequenceType consequenceType = getConsequenceType(consequenceTypeList, "ENST00000298854");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001587",
+                        "stop_gained")));
+        assertEquals("CaG/TaA", consequenceType.getCodon());
+
+        // variant 2
+        variantAnnotation = results.get(1);
+        assertEquals("stop_gained", variantAnnotation.getDisplayConsequenceType());
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000524487");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001587",
+                        "stop_gained")));
+        assertEquals("CaG/TaA", consequenceType.getCodon());
+    }
+
+
+
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
                                             Class<T> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
