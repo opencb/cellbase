@@ -24,6 +24,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;

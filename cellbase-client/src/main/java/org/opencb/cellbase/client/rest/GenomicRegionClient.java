@@ -20,7 +20,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 

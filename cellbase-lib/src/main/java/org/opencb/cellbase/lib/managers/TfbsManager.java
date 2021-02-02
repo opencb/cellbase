@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.queries.TfbsQuery;
+import org.opencb.cellbase.core.api.TfbsQuery;
 import org.opencb.cellbase.core.common.regulatory.Tfbs;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;

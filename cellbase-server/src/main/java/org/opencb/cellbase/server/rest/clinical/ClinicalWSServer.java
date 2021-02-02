@@ -19,12 +19,12 @@ package org.opencb.cellbase.server.rest.clinical;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.SpeciesUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 

@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.queries.RepeatsQuery;
+import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.RepeatsMongoDBAdaptor;
 

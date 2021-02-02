@@ -27,7 +27,7 @@ import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.slf4j.Logger;

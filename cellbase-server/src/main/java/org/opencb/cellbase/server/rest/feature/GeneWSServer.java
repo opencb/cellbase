@@ -26,10 +26,12 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.*;
+import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.SpeciesUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 

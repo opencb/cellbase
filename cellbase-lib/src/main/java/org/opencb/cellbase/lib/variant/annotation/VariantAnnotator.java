@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.query.QueryException;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

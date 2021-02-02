@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

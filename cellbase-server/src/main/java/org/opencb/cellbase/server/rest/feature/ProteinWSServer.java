@@ -19,12 +19,12 @@ package org.opencb.cellbase.server.rest.feature;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.ProteinQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
-import org.opencb.cellbase.core.api.queries.TranscriptQuery;
+import org.opencb.cellbase.core.api.ProteinQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.SpeciesUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 

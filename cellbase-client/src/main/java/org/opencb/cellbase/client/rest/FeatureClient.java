@@ -19,7 +19,7 @@ package org.opencb.cellbase.client.rest;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.GroupByFields;
 import org.opencb.cellbase.client.rest.models.GroupCount;
-import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 

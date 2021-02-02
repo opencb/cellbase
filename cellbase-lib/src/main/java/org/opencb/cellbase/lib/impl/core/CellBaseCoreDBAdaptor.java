@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 

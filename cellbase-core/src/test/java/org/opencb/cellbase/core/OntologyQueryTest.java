@@ -18,8 +18,8 @@ package org.opencb.cellbase.core;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.api.queries.OntologyQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.OntologyQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 
 import java.util.HashMap;
 import java.util.Map;

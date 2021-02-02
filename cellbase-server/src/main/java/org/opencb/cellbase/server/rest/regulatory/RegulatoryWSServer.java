@@ -19,11 +19,11 @@ package org.opencb.cellbase.server.rest.regulatory;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.QueryException;
-import org.opencb.cellbase.core.api.queries.RegulationQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.SpeciesUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 

@@ -30,13 +30,13 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.GenomeQuery;
-import org.opencb.cellbase.core.api.queries.ProjectionQueryOptions;
-import org.opencb.cellbase.core.common.DNASequenceUtils;
+import org.opencb.cellbase.core.api.GenomeQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
+import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -193,7 +193,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             String strand = "1";
             String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";
             if (queryStrand.equals("-1") || queryStrand.equals("-")) {
-                sequence = DNASequenceUtils.reverseComplement(sequence);
+                sequence = VariantAnnotationUtils.reverseComplement(sequence);
                 strand = "-1";
             }
 

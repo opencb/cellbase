@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.rest.VariantClient;
-import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
 

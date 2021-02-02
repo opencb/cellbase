@@ -23,8 +23,8 @@ import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.GeneQuery;
+import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 

@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.tools.feature.BigWigManager;
 import org.opencb.biodata.tools.sequence.FastaIndex;
-import org.opencb.cellbase.core.api.queries.FileQuery;
+import org.opencb.cellbase.core.api.FileQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;

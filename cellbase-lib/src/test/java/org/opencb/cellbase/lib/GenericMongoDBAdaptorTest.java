@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.loader.LoadRunner;
+import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;

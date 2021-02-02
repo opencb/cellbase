@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.server.rest;
 
-import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.server.RestServer;
 
 

@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.queries.OntologyQuery;
+import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.OntologyMongoDBAdaptor;
 

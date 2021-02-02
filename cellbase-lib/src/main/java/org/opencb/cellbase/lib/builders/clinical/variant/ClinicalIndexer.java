@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
-import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;

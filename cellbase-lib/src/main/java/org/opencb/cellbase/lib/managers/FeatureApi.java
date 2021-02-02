@@ -17,10 +17,10 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;

@@ -17,11 +17,11 @@
 package org.opencb.cellbase.lib;
 
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.SpeciesUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.loader.LoadRunner;
+import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

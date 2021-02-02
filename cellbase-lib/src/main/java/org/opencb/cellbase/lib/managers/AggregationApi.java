@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 public interface AggregationApi<Q extends AbstractQuery, T> extends FeatureApi<Q, T> {

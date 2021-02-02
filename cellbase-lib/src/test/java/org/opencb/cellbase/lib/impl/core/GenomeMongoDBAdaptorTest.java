@@ -24,7 +24,7 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
-import org.opencb.cellbase.core.api.queries.GenomeQuery;
+import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
