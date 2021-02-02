@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.common.drug;
 /**
  * Created by mbleda on 1/15/14.
  */
+@Deprecated
 public class Interactor {
     private String id;
     private String name;

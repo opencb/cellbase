@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Created by mbleda on 12/12/13.
  */
-
+@Deprecated
 public class Partner {
     private String id;
     private String name;

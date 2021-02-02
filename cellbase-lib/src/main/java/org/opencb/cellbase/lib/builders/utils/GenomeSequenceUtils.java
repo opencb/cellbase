@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders.utils;
 
+import org.opencb.commons.utils.CompressionUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -83,7 +84,7 @@ public class GenomeSequenceUtils {
                     // we have read whole chromosome sequence, it's time to store it
                     if (!chromosome.contains("PATCH") && !chromosome.contains("HSCHR")) {
                         System.out.println("Loading chrom: " + chromosome);
-                        genomeSequenceMap.put(chromosome, StringUtils.gzip(sequenceStringBuilder.toString()));
+                        genomeSequenceMap.put(chromosome, CompressionUtils.gzip(sequenceStringBuilder.toString()));
                     }
                 }
                 // initialize data structures and empty previous sequence

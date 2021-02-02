@@ -149,9 +149,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.CLINICAL_VARIANTS_DATA:
                             parser = buildClinicalVariants();
                             break;
-//                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-//                            parser = buildStructuralVariants();
-//                            break;
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
@@ -178,17 +175,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         } catch (IOException | CellbaseException e) {
             logger.error(e.getMessage());
         }
-    }
-
-    @Deprecated
-    private CellBaseBuilder buildStructuralVariants() {
-        Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
-        copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
-        Path structuralVariantsFile = structuralVariantsFolder.resolve(EtlCommons.DGV_FILE);
-
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.STRUCTURAL_VARIANTS_JSON,
-                true);
-        return new DgvBuilder(structuralVariantsFile, serializer);
     }
 
     private CellBaseBuilder buildRepeats() {

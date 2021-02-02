@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.builders.utils;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.opencb.commons.utils.CompressionUtils;
 
 import java.nio.file.Paths;
 import java.util.Iterator;
@@ -50,7 +51,7 @@ public class GenomeSequenceUtilsTest {
         Iterator<Map.Entry<String, byte[]>> iter = sequenceMap.entrySet().iterator();
         while(iter.hasNext()) {
             Map.Entry<String, byte[]> entry = iter.next();
-            System.out.println(entry.getKey()+": "+StringUtils.gunzip(entry.getValue()).length());
+            System.out.println(entry.getKey() + ": " + CompressionUtils.gunzip(entry.getValue()).length());
         }
     }
 
