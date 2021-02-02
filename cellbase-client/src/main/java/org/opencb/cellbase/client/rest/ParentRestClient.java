@@ -100,6 +100,7 @@ public class ParentRestClient<T> {
         jsonObjectMapper.addMixIn(CellBaseDataResult.class, CellBaseDataResultMixIn.class);
     }
 
+    // These methods keep backwark compatability with CellBase 4.x
     public interface CellBaseDataResponseMixIn<T> {
         @JsonAlias("response")
         List<CellBaseDataResult<T>> getResponses();

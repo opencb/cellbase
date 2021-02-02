@@ -36,6 +36,7 @@ public class IndexManager {
     private Logger logger;
     private String databaseName;
     private MongoDBIndexUtils mongoDBIndexUtils;
+    private MongoDataStore mongoDataStore;
 
     public IndexManager(CellBaseConfiguration configuration, String databaseName) {
         this.configuration = configuration;
@@ -56,8 +57,8 @@ public class IndexManager {
             }
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        MongoDataStore mongoDataStore = factory.getMongoDBDatastore(databaseName);
-        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
+        this.mongoDataStore = factory.getMongoDBDatastore(databaseName);
+//        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
     }
 
     /**
@@ -70,13 +71,15 @@ public class IndexManager {
      * @throws IOException if configuration file can't be read
      */
     public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
+        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
-            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
+//            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
+            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
             logger.info("Loaded all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
-                mongoDBIndexUtils.createIndexes(collection, dropIndexesFirst);
+                mongoDBIndexUtils.createIndexes(mongoDataStore, indexResourceStream, collection, dropIndexesFirst);
                 logger.info("Loaded index for {} ", collection);
             }
         }
@@ -90,12 +93,12 @@ public class IndexManager {
      */
     public void validateMongoDBIndexes(String collectionName) throws IOException {
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
-            mongoDBIndexUtils.validateAllIndexes();
+//            mongoDBIndexUtils.validateAllIndexes();
             logger.info("Validated all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
-                mongoDBIndexUtils.validateIndexes(collection);
+//                mongoDBIndexUtils.validateIndexes(collection);
                 logger.info("Validated index for {} ", collection);
             }
         }

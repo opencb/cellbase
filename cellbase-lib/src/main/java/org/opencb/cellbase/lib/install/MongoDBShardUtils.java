@@ -20,18 +20,18 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
+import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.MongoDBDatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
-
-import java.util.*;
-
-import org.opencb.cellbase.core.common.Species;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MongoDBShardUtils {
 
@@ -132,8 +132,9 @@ public class MongoDBShardUtils {
         Map<String, ObjectMap> indexes = new HashMap<>();
         indexes.put("fields", new ObjectMap((Map) keyMap));
         indexes.put("options", new ObjectMap((Map) options));
-        MongoDBIndexUtils mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, null);
-        mongoDBIndexUtils.createIndexes(collectionName, Arrays.asList(indexes), false);
+        // FIXME We need to correctly call to MongoDBIndexUtils
+//        MongoDBIndexUtils mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, null);
+//        MongoDBIndexUtils.createIndexes(mongoDataStore, Collections.singletonList(indexes), false);
     }
 
     private static Map<String, Object> createKeyMap(SpeciesConfiguration.ShardConfig shardConfig) {
