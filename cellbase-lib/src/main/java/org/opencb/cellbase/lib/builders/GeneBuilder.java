@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.formats.feature.gff.Gff2;
@@ -29,9 +28,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,8 +37,6 @@ import java.util.*;
 
 public class GeneBuilder extends CellBaseBuilder {
 
-    private static final String ENSEMBL_GTF_DBNAME = "ensembl_gtf";
-    private static final java.lang.String ENSEMBL_GTF_DISPLAY = "Ensembl GTF";
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
@@ -68,18 +63,6 @@ public class GeneBuilder extends CellBaseBuilder {
     private final String SOURCE = ParamConstants.QueryParams.ENSEMBL.key();
     private SpeciesConfiguration speciesConfiguration;
 
-//    private Connection sqlConn;
-//    private PreparedStatement sqlQuery;
-
-    private int CHUNK_SIZE = 2000;
-//    private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
-//    private Set<String> indexedSequences;
-
-//    private int featureCounter = -1; // initialize to -1 so that first +1 sets it to 0
-//    private String[] featureTypes = {"exon", "cds", "start_codon", "stop_codon"};
-//    private String currentFeature = "";
-//    private Map<String, Object> currentTranscriptMap;
-
     private int geneCounter;
     private ArrayList<String> geneList;
     private String geneName;
@@ -90,15 +73,13 @@ public class GeneBuilder extends CellBaseBuilder {
     private String feature;
     private Gtf nextGtfToReturn;
 
-    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      SpeciesConfiguration speciesConfiguration,
+    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile, SpeciesConfiguration speciesConfiguration,
                       CellBaseSerializer serializer) throws CellbaseException {
         this(geneDirectoryPath, genomeSequenceFastaFile, speciesConfiguration, false, serializer);
     }
 
-    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                      CellBaseSerializer serializer) throws CellbaseException {
+    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile, SpeciesConfiguration speciesConfiguration,
+                       boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellbaseException {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
@@ -123,6 +104,7 @@ public class GeneBuilder extends CellBaseBuilder {
                        Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path genomeSequenceFilePath,
                        SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
+
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
         this.xrefsFile = xrefsFile;
@@ -146,7 +128,6 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     public void parse() throws Exception {
-
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
@@ -244,6 +225,12 @@ public class GeneBuilder extends CellBaseBuilder {
                 } else {
                     exon = exonDict.get(transcriptIdWithoutVersion + "_" + exon.getExonNumber());
                     if (gtf.getFeature().equalsIgnoreCase("CDS")) {
+                        // Protein ID is only present in CDS lines
+                        String proteinId = gtf.getAttributes().get("protein_id") != null
+                                ? gtf.getAttributes().get("protein_id") + "." + gtf.getAttributes().get("protein_version")
+                                : "";
+                        transcript.setProteinId(proteinId);
+
                         if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
                             // CDS states the beginning of coding start
                             exon.setGenomicCodingStart(gtf.getStart());
@@ -262,7 +249,7 @@ public class GeneBuilder extends CellBaseBuilder {
                             cds += gtf.getEnd() - gtf.getStart() + 1;
                             transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
 
-                            exon.setPhase(Integer.valueOf(gtf.getFrame()));
+                            exon.setPhase(Integer.parseInt(gtf.getFrame()));
 
                             if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                                 transcript.setGenomicCodingStart(gtf.getStart());
@@ -292,7 +279,7 @@ public class GeneBuilder extends CellBaseBuilder {
                             // increment in the coding length
                             cds += gtf.getEnd() - gtf.getStart() + 1;
                             transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                            exon.setPhase(Integer.valueOf(gtf.getFrame()));
+                            exon.setPhase(Integer.parseInt(gtf.getFrame()));
 
                             if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
                                 transcript.setGenomicCodingStart(gtf.getStart());
@@ -306,8 +293,7 @@ public class GeneBuilder extends CellBaseBuilder {
                                 transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
                             }
                         }
-                        // no strand dependent
-                        transcript.setProteinId(gtf.getAttributes().get("protein_id"));
+
                     }
 //                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
 //                    // nothing to do
@@ -355,37 +341,35 @@ public class GeneBuilder extends CellBaseBuilder {
 
     private Transcript getTranscript(Gene gene, GeneBuilderIndexer indexer, TabixReader tabixReader, Gtf gtf, String transcriptId)
             throws IOException, RocksDBException {
-        Transcript transcript;
+        Map<String, String> gtfAttributes = gtf.getAttributes();
+
+        // To match Ensembl, we set the ID as transcript+version. This also matches the Ensembl website.
+        String transcriptIdWithVersion = transcriptId + "." + gtfAttributes.get("transcript_version");
+        String biotype = gtfAttributes.get("transcript_biotype") != null ? gtfAttributes.get("transcript_biotype") : "";
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
         List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
-        Map<String, String> gtfAttributes = gtf.getAttributes();
+
         List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId), indexer);
-
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, indexer.getConstraints(transcriptId));
-        // to match Ensembl, we set the ID as transcript+version. This also matches the Ensembl website.
-        String transcriptIdWithVersion = transcriptId + "." + gtfAttributes.get("transcript_version");
 
-        transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"),
-                (gtfAttributes.get("transcript_biotype") != null)
-                        ? gtfAttributes.get("transcript_biotype")
-                        : SOURCE,
-                "KNOWN", SOURCE, transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), gtfAttributes.get("transcript_version"), 0, 0, 0, 0,
-                0, "", "", indexer.getXrefs(transcriptId), new ArrayList<Exon>(),
+        Transcript transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"), biotype,
+                "KNOWN", SOURCE, transcriptChromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(),
+                gtfAttributes.get("transcript_version"), 0, 0, 0, 0,
+                0, "", "", indexer.getXrefs(transcriptId), new ArrayList<>(),
                 transcriptTfbses, transcriptAnnotation);
 
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
         // that the xrefs array contains all ids present in the GTF file
-        addGtfXrefs(transcript, gene);
+        addGtfXrefs(transcript, gene, gtfAttributes);
 
-        // initialise
+        // Initialise Flags
         transcript.setFlags(new HashSet<>());
-
         String tags = gtf.getAttributes().get("tag");
-        if (tags != null) {
-            transcript.setFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
+        if (StringUtils.isNotEmpty(tags)) {
+            transcript.getFlags().addAll(Arrays.asList(tags.split(",")));
         }
+
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
             // split on space so "5 (assigned to previous version 3)" and "5" both become "TS:5"
@@ -393,9 +377,8 @@ public class GeneBuilder extends CellBaseBuilder {
             transcript.getFlags().add("TSL:" + truncatedSupportLevel);
         }
 
-        transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
         transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
-
+        transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
         gene.getTranscripts().add(transcript);
 
         // Do not change order!! size()-1 is the index of the transcript ID
@@ -461,26 +444,18 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-//    private FastaIndexManager getFastaIndexManager() throws Exception {
-//        FastaIndexManager fastaIndexManager;
-//        fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
-//        if (!fastaIndexManager.isConnected()) {
-//            fastaIndexManager.index();
-//        }
-//
-//        return fastaIndexManager;
-//    }
-
-    private void addGtfXrefs(Transcript transcript, Gene gene) {
-        List<Xref> xrefList = transcript.getXrefs();
-        if (xrefList == null) {
-            xrefList = new ArrayList<>();
-            transcript.setXrefs(xrefList);
+    private void addGtfXrefs(Transcript transcript, Gene gene, Map<String, String> gtfAttributes) {
+        if (transcript.getXrefs() == null) {
+            transcript.setXrefs(new ArrayList<>());
         }
-        xrefList.add(new Xref(gene.getId(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
-        xrefList.add(new Xref(gene.getName(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
-        xrefList.add(new Xref(transcript.getId(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
-        xrefList.add(new Xref(transcript.getName(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
+        transcript.getXrefs().add(new Xref(gene.getId(), "ensembl_gene", "Ensembl Gene"));
+        transcript.getXrefs().add(new Xref(gene.getName(), "hgnc_symbol", "HGNC Symbol"));
+        transcript.getXrefs().add(new Xref(transcript.getId(), "ensembl_transcript", "Ensembl Transcript"));
+        transcript.getXrefs().add(new Xref(transcript.getName(), "ensembl_transcript_name", "Ensembl Transcript Name"));
+
+        if (gtfAttributes.get("ccds_id") != null) {
+            transcript.getXrefs().add(new Xref(gtfAttributes.get("ccds_id"), "ccds_id", "CCDS"));
+        }
     }
 
     private void initializePointers(Map<String, Map<String, Map<String, Object>>> gtfMap) {
@@ -538,8 +513,8 @@ public class GeneBuilder extends CellBaseBuilder {
 
     private Gtf getExonCDSLine(Integer exonStart, Integer exonEnd, List cdsList) {
         for (Object cdsObject : cdsList) {
-            Integer cdsStart = ((Gtf) cdsObject).getStart();
-            Integer cdsEnd = ((Gtf) cdsObject).getEnd();
+            int cdsStart = ((Gtf) cdsObject).getStart();
+            int cdsEnd = ((Gtf) cdsObject).getEnd();
             if (cdsStart <= exonEnd && cdsEnd >= exonStart) {
                 return (Gtf) cdsObject;
             }
@@ -587,7 +562,7 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
-        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashMap();
+        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashMap<>();
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
@@ -657,12 +632,10 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private void addGTFLineToGTFMap(Map<String, Object> gtfMapTranscriptEntry, Gtf gtf) {
-
-        String featureType = gtf.getFeature().toLowerCase();
-
         // Add exon/cds GTF line to the corresponding gene entry in the map
+        String featureType = gtf.getFeature().toLowerCase();
         if (featureType.equals("exon") || featureType.equals("cds")) {
-            List gtfList = null;
+            List gtfList;
             // Check if there were exons already stored
             if (gtfMapTranscriptEntry.containsKey(featureType)) {
                 gtfList =  (List) gtfMapTranscriptEntry.get(featureType);
@@ -676,7 +649,6 @@ public class GeneBuilder extends CellBaseBuilder {
         } else if (featureType.equals("start_codon") || featureType.equals("stop_codon")) {
             gtfMapTranscriptEntry.put(featureType, gtf);
         }
-
     }
 
     private List<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, TabixReader tabixReader) throws IOException {
@@ -688,9 +660,9 @@ public class GeneBuilder extends CellBaseBuilder {
         int transcriptStart = transcript.getStart();
         int transcriptEnd = transcript.getEnd();
 
-        TabixReader.Iterator iter = tabixReader.query(chromosome, transcriptStart, transcriptEnd);
 
         String line;
+        TabixReader.Iterator iter = tabixReader.query(chromosome, transcriptStart, transcriptEnd);
         while ((line = iter.next()) != null) {
             String[] elements = line.split("\t");
 
@@ -809,14 +781,6 @@ public class GeneBuilder extends CellBaseBuilder {
         return previousGene == null || !newGeneId.equals(previousGene.getId());
     }
 
-//    private int getChunk(int position) {
-//        return (position / CHUNK_SIZE);
-//    }
-//
-//    private int getOffset(int position) {
-//        return (position % CHUNK_SIZE);
-//    }
-
     private void updateTranscriptAndGeneCoords(Transcript transcript, Gene gene, Gtf gtf) {
         if (transcript.getStart() > gtf.getStart()) {
             transcript.setStart(gtf.getStart());
@@ -831,7 +795,6 @@ public class GeneBuilder extends CellBaseBuilder {
             gene.setEnd(gtf.getEnd());
         }
     }
-
 
     private void getGtfFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
@@ -858,26 +821,5 @@ public class GeneBuilder extends CellBaseBuilder {
                 break;
             }
         }
-    }
-
-    @Deprecated
-    private void serializeRDB(RocksDB rdb) throws IOException {
-        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
-        // named "iterator"
-        RocksIterator rocksIterator = rdb.newIterator();
-
-        ObjectMapper mapper = new ObjectMapper();
-        logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
-                serializer.getOutdir().resolve(serializer.getFileName()));
-        int counter = 0;
-        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            serializer.serialize(mapper.readValue(rocksIterator.value(), Gene.class));
-            counter++;
-            if (counter % 10000 == 0) {
-                logger.info("{} written", counter);
-            }
-        }
-        serializer.close();
-        logger.info("Done.");
     }
 }
