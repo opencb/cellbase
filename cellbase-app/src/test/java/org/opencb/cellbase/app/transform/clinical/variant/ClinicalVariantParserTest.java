@@ -206,14 +206,13 @@ public class ClinicalVariantParserTest {
             // the RCV and one SCV
             assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
             assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
-                    + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
-                    + "9:107594052:-:CTCTGCCTCCTGAG,"
-                    + "9:107594069:-:AAGTGATT,"
-                    + "9:107594080:-:GTGCC,"
-                    + "9:107594088:-:GCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG",
+                    + "9:107594023:-:TGGCGTGACCTCAGCTCACTGC,"
+                    + "9:107594026:-:CTCTGCCTCCTGAG,"
+                    + "9:107594029:-:AAGTGATT,"
+                    + "9:107594032:-:GTGCC,"
+                    + "9:107594035:-:GCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG",
                     variant);
         }
-
     }
 
     private void assertEvidenceEntriesHaplotype(String expectedHaplotype, Variant variant) {
