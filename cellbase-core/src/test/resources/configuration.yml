@@ -1,4 +1,4 @@
-﻿version: v5
+version: v5
 apiVersion: "${cellbase.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
@@ -36,7 +36,7 @@ databases:
       password: "${CELLBASE.DB.PASSWORD}"
 server:
   rest:
-    port: "${CELLBASE.SERVER.REST.PORT}"
+    port: 9090
 defaultOutdir: "/tmp"
 download:
   ensembl:

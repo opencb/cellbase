@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.config;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,21 +18,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CellBaseConfigurationTest {
 
-    CellBaseConfiguration cellBaseConfiguration;
+    private CellBaseConfiguration cellBaseConfiguration;
 
     @BeforeAll
     public void setUp() throws Exception {
         cellBaseConfiguration = CellBaseConfiguration.load(
-                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
-                CellBaseConfiguration.ConfigurationFileFormat.JSON);
+                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/configuration.yml"),
+                CellBaseConfiguration.ConfigurationFileFormat.YAML);
     }
 
     @Test
     public void load() throws Exception {
         cellBaseConfiguration = CellBaseConfiguration.load(
-                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
-                CellBaseConfiguration.ConfigurationFileFormat.JSON);
-        System.out.println(new ObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(cellBaseConfiguration));
+                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/configuration.yml"),
+                CellBaseConfiguration.ConfigurationFileFormat.YAML);
     }
 
     @Test
@@ -43,26 +41,26 @@ public class CellBaseConfigurationTest {
 
     @Test
     public void vertebrates() {
-        Assertions.assertEquals(3, cellBaseConfiguration.getSpecies().getVertebrates().size());
+        Assertions.assertEquals(9, cellBaseConfiguration.getSpecies().getVertebrates().size());
     }
 
     @Test
     public void metazoa() {
-        Assertions.assertEquals(1, cellBaseConfiguration.getSpecies().getMetazoa().size());
+        Assertions.assertEquals(3, cellBaseConfiguration.getSpecies().getMetazoa().size());
     }
 
     @Test
     public void fungi() {
-        Assertions.assertEquals(1, cellBaseConfiguration.getSpecies().getFungi().size());
+        Assertions.assertEquals(3, cellBaseConfiguration.getSpecies().getFungi().size());
     }
 
     @Test
     public void plants() {
-        Assertions.assertEquals(2, cellBaseConfiguration.getSpecies().getPlants().size());
+        Assertions.assertEquals(7, cellBaseConfiguration.getSpecies().getPlants().size());
     }
 
     @Test
-    public void testEnvVars() throws Exception {
+    public void testEnvVars() {
         CellBaseConfiguration configuration = new CellBaseConfiguration();
         Map<String, String> envVariables = new HashMap<>();
 
