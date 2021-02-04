@@ -25,6 +25,11 @@ public class DownloadProperties {
 
     private EnsemblProperties ensembl;
     private EnsemblProperties ensemblGenomes;
+    private URLProperties refSeq;
+    private URLProperties refSeqFasta;
+    private URLProperties refSeqProteinFasta;
+    private URLProperties refSeqCdna;
+    private URLProperties maneSelect;
 
     private URLProperties geneUniprotXref;
     private URLProperties geneExpressionAtlas;
@@ -63,10 +68,6 @@ public class DownloadProperties {
     private URLProperties goObo;
     private URLProperties doidObo;
     private URLProperties goAnnotation;
-    private URLProperties refSeq;
-    private URLProperties refSeqFasta;
-    private URLProperties refSeqProteinFasta;
-    private URLProperties refSeqCdna;
     private URLProperties revel;
 
     public EnsemblProperties getEnsembl() {
@@ -84,6 +85,15 @@ public class DownloadProperties {
 
     public DownloadProperties setEnsemblGenomes(EnsemblProperties ensemblGenomes) {
         this.ensemblGenomes = ensemblGenomes;
+        return this;
+    }
+
+    public URLProperties getManeSelect() {
+        return maneSelect;
+    }
+
+    public DownloadProperties setManeSelect(URLProperties maneSelect) {
+        this.maneSelect = maneSelect;
         return this;
     }
 

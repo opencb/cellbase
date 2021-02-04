@@ -55,6 +55,17 @@ download:
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
       host: ftp://ftp.ensemblgenomes.org/pub
+  refSeq:
+    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+  refSeqFasta:
+    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
+  refSeqProteinFasta:
+    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
+  refSeqCdna:
+    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
+  maneSelect:
+    host: ftp://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.91/MANE.GRCh38.v0.91.summary.txt.gz
+    version: 0.91
   geneUniprotXref:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
   geneExpressionAtlas:
@@ -129,14 +140,6 @@ download:
     host: http://purl.obolibrary.org/obo/doid.obo
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
-  refSeq:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
-  refSeqFasta:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
-  refSeqProteinFasta:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
-  refSeqCdna:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   revel:
     host: https://rothsj06.u.hpc.mssm.edu/revel_grch38_all_chromosomes.csv.zip
 species:

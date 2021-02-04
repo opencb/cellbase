@@ -50,6 +50,7 @@ public class GeneBuilderIndexer {
     private RocksDB rocksdb;
     private static final String DESCRIPTION_SUFFIX = "_description";
     private static final String XREF_SUFFIX = "_xref";
+    private static final String MANE_SUFFIX = "_mane";
     private static final String PROTEIN_XREF_SUFFIX = "_protein_xref";
     private static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
     private static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
@@ -79,12 +80,13 @@ public class GeneBuilderIndexer {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    public void index(Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path proteinFastaFile, Path cDnaFastaFile,
-                      String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                      Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile)
+    public void index(Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path uniprotIdMappingFile, Path proteinFastaFile,
+                      Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
+                      Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile)
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
+        indexManeMapping(maneFile);
         indexProteinSequences(proteinFastaFile);
         indexCdnaSequences(cDnaFastaFile);
         indexExpression(species, geneExpressionFile);
@@ -94,6 +96,33 @@ public class GeneBuilderIndexer {
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
+    }
+
+    private void indexManeMapping(Path maneMappingFile) throws IOException, RocksDBException {
+        logger.info("Indexing MANE mapping data ...");
+
+        if (maneMappingFile != null && Files.exists(maneMappingFile) && Files.size(maneMappingFile) > 0) {
+            BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_refseq", fields[5]);
+                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_refseq_protein", fields[6]);
+                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_flag", fields[9]);
+            }
+            bufferedReader.close();
+        } else {
+            logger.warn("MANE mapping file " + maneMappingFile + " not found");
+        }
+    }
+
+    public String getMane(String id, String field) throws RocksDBException {
+        String key = id + MANE_SUFFIX + "_" + field;
+        byte[] value = rocksdb.get(key.getBytes());
+        if (value != null) {
+            return new String(value);
+        }
+        return null;
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

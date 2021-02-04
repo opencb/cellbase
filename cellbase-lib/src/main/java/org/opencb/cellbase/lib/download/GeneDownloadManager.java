@@ -79,14 +79,55 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         downloadFiles.addAll(downloadEnsemblData(geneFolder));
+        downloadFiles.addAll(downloadRefSeq(refseqFolder));
+        downloadFiles.add(downloadMane(geneFolder));
         downloadFiles.add(downloadDrugData(geneFolder));
         downloadFiles.addAll(downloadGeneUniprotXref(geneFolder));
         downloadFiles.add(downloadGeneExpressionAtlas(geneFolder));
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-        downloadFiles.addAll(downloadRefSeq(refseqFolder));
         runGeneExtraInfo(geneFolder);
+
+        return downloadFiles;
+    }
+
+    private List<DownloadFile> downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
+        logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
+        List<String> downloadedUrls = new ArrayList<>(4);
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+
+        String ensemblHost = ensemblHostUrl + "/" + ensemblRelease;
+        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
+            ensemblHost = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
+        }
+
+        String ensemblCollection = "";
+        if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
+            // WARN: assuming there's just one assembly
+            ensemblCollection =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
+        }
+
+        // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
+        // to download the correct GTF file.
+        String version = ensemblRelease.split("-")[1];
+        String url = ensemblHost + "/gtf/" + ensemblCollection + speciesShortName + "/*" + version + ".gtf.gz";
+        String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
+        downloadFiles.add(downloadFile(url, fileName));
+        downloadedUrls.add(url);
+
+        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/pep/*.pep.all.fa.gz";
+        fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
+        downloadFiles.add(downloadFile(url, fileName));
+        downloadedUrls.add(url);
+
+        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/cdna/*.cdna.all.fa.gz";
+        fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
+        downloadFiles.add(downloadFile(url, fileName));
+        downloadedUrls.add(url);
+
+        saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+                geneFolder.resolve("ensemblCoreVersion.json"));
 
         return downloadFiles;
     }
@@ -142,6 +183,18 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return null;
     }
 
+    private DownloadFile downloadMane(Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading MANE Select ...");
+            String url = configuration.getDownload().getManeSelect().getHost();
+            saveVersionData(EtlCommons.GENE_DATA, "MANE Select", configuration.getDownload().getManeSelect().getVersion(),
+                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("maneSelectVersion.json"));
+            String[] array = url.split("/");
+            return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
+        }
+        return null;
+    }
+
     private DownloadFile downloadGO(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading go annotation...");
@@ -176,45 +229,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return null;
     }
 
-    private List<DownloadFile> downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
-        logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
-        List<String> downloadedUrls = new ArrayList<>(4);
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-
-        String ensemblHost = ensemblHostUrl + "/" + ensemblRelease;
-        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
-            ensemblHost = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
-        }
-
-        String ensemblCollection = "";
-        if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
-            // WARN: assuming there's just one assembly
-            ensemblCollection =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
-        }
-
-        // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
-        // to download the correct GTF file.
-        String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + ensemblCollection + speciesShortName + "/*" + version + ".gtf.gz";
-        String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/pep/*.pep.all.fa.gz";
-        fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/cdna/*.cdna.all.fa.gz";
-        fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
-                geneFolder.resolve("ensemblCoreVersion.json"));
-
-        return downloadFiles;
-    }
 
     private String getUniProtReleaseNotesUrl() {
         return URI.create(configuration.getDownload().getGeneUniprotXref().getHost()).resolve("../../../").toString()

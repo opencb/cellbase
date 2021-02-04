@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import htsjdk.tribble.readers.TabixReader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -45,6 +45,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path cDnaFastaFile;
     private Path geneDescriptionFile;
     private Path xrefsFile;
+    private Path maneFile;
     private Path uniprotIdMappingFile;
     private Path tfbsFile;
     private Path tabixFile;
@@ -80,7 +81,9 @@ public class GeneBuilder extends CellBaseBuilder {
 
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile, SpeciesConfiguration speciesConfiguration,
                        boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellbaseException {
-        this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
+        this(null, geneDirectoryPath.resolve("description.txt"),
+                geneDirectoryPath.resolve("xrefs.txt"),
+                geneDirectoryPath.resolve("MANE.GRCh38.v0.91.summary.txt.gz"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz.tbi"),
@@ -99,8 +102,8 @@ public class GeneBuilder extends CellBaseBuilder {
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path tabixFile,
-                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path uniprotIdMappingFile, Path tfbsFile,
+                       Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
                        Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path genomeSequenceFilePath,
                        SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
@@ -108,6 +111,7 @@ public class GeneBuilder extends CellBaseBuilder {
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
         this.xrefsFile = xrefsFile;
+        this.maneFile = maneFile;
         this.uniprotIdMappingFile = uniprotIdMappingFile;
         this.tfbsFile = tfbsFile;
         this.tabixFile = tabixFile;
@@ -137,7 +141,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
         try {
             // process files and put values in rocksdb
-            indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
+            indexer.index(geneDescriptionFile, xrefsFile, maneFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
                     geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile);
 
@@ -362,19 +366,32 @@ public class GeneBuilder extends CellBaseBuilder {
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
         // that the xrefs array contains all ids present in the GTF file
         addGtfXrefs(transcript, gene, gtfAttributes);
+        for (String suffix: Arrays.asList("refseq", "refseq_protein")) {
+            String maneRefSeq = indexer.getMane(transcriptIdWithVersion, suffix);
+            if (StringUtils.isNotEmpty(maneRefSeq)) {
+                transcript.getXrefs().add(new Xref(maneRefSeq, "mane_select_" + suffix,
+                        "MANE Select RefSeq" + (suffix.contains("_") ? "protein" : "")));
+            }
+        }
 
         // Initialise Flags
+        // 1. GTF tags
         transcript.setFlags(new HashSet<>());
         String tags = gtf.getAttributes().get("tag");
         if (StringUtils.isNotEmpty(tags)) {
             transcript.getFlags().addAll(Arrays.asList(tags.split(",")));
         }
-
+        // 2. TSL
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
             // split on space so "5 (assigned to previous version 3)" and "5" both become "TS:5"
             String truncatedSupportLevel = supportLevel.split(" ")[0];
-            transcript.getFlags().add("TSL:" + truncatedSupportLevel);
+            transcript.getFlags().add("TSL" + truncatedSupportLevel);
+        }
+        // 3. MANE Flag
+        String maneFlag = indexer.getMane(transcriptIdWithVersion, "flag");
+        if (StringUtils.isNotEmpty(maneFlag)) {
+            transcript.getFlags().add(maneFlag);
         }
 
         transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
