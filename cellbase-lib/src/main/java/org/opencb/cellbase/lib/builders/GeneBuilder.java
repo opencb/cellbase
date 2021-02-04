@@ -209,10 +209,10 @@ public class GeneBuilder extends CellBaseBuilder {
                 String transcriptIdWithoutVersion = transcript.getId().split("\\.")[0];
                 if (gtf.getFeature().equalsIgnoreCase("exon")) {
                     // Obtaining the exon sequence
-                    //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                    String exonId = gtf.getAttributes().get("exon_id") + "." + gtf.getAttributes().get("exon_version");
                     String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
 
-                    exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
+                    exon = new Exon(exonId, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
                             .getAttributes().get("exon_number")), exonSequence);
                     transcript.getExons().add(exon);
@@ -370,7 +370,7 @@ public class GeneBuilder extends CellBaseBuilder {
             String maneRefSeq = indexer.getMane(transcriptIdWithVersion, suffix);
             if (StringUtils.isNotEmpty(maneRefSeq)) {
                 transcript.getXrefs().add(new Xref(maneRefSeq, "mane_select_" + suffix,
-                        "MANE Select RefSeq" + (suffix.contains("_") ? "protein" : "")));
+                        "MANE Select RefSeq" + (suffix.contains("_") ? " Protein" : "")));
             }
         }
 
