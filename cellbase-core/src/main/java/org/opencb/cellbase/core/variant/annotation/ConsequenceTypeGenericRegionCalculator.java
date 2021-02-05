@@ -444,46 +444,25 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         }
 
         if (regionsOverlap(spliceSite1, spliceSite1 + 1, variantStart, variantEnd)) {  // Variant donor/acceptor
-            if ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD) {  // Big cnvs should not be annotated with such a detail
-                SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (variantStart <= spliceSite2 || variantEnd <= spliceSite2);
-            } else {
-                // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (variantStart <= spliceSite2 || variantEnd <= spliceSite2);
-            }
-        } else if (regionsOverlap(spliceSite1 + 2, spliceSite1 + 7, variantStart, variantEnd)) {
-            // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
-            if ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD) {
-                SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
-            }
+            SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
             // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
             junctionSolution[0] = (variantStart <= spliceSite2 || variantEnd <= spliceSite2);
-        } else if (regionsOverlap(spliceSite1 - 3, spliceSite1 - 1, variantStart, variantEnd)
-                // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
-                && ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD)) {
+        } else if (regionsOverlap(spliceSite1 + 2, spliceSite1 + 7, variantStart, variantEnd)) {
+            // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
+            SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
+            // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+            junctionSolution[0] = (variantStart <= spliceSite2 || variantEnd <= spliceSite2);
+        } else if (regionsOverlap(spliceSite1 - 3, spliceSite1 - 1, variantStart, variantEnd)) {
             SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
         }
 
         if (regionsOverlap(spliceSite2 - 1, spliceSite2, variantStart, variantEnd)) {  // Variant donor/acceptor
-            if ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD) {  // Big cnvs should not be annotated with such a detail
-                SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
-                // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (spliceSite1 <= variantStart || spliceSite1 <= variantEnd);
-            } else {
-                // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (spliceSite1 <= variantStart || spliceSite1 <= variantEnd);
-            }
-        } else if (regionsOverlap(spliceSite2 - 7, spliceSite2 - 2, variantStart, variantEnd)) {
-            // Insertion coordinates are passed to this function as (variantStart-1,variantStart) {
-            if ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD) {
-                SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
-            }
-            // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
+            SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
             junctionSolution[0] = (spliceSite1 <= variantStart || spliceSite1 <= variantEnd);
-        } else if (regionsOverlap(spliceSite2 + 1, spliceSite2 + 3, variantStart, variantEnd)
-                // Insertion coordinates are passed to this function as (variantStart-1,variantStart) {
-                && ((variantEnd - variantStart) <= BIG_VARIANT_SIZE_THRESHOLD)) {
+        } else if (regionsOverlap(spliceSite2 - 7, spliceSite2 - 2, variantStart, variantEnd)) {
+            SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
+            junctionSolution[0] = (spliceSite1 <= variantStart || spliceSite1 <= variantEnd);
+        } else if (regionsOverlap(spliceSite2 + 1, spliceSite2 + 3, variantStart, variantEnd)) {
             SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
         }
     }
