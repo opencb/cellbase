@@ -73,13 +73,14 @@ public class IndexManager {
     public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
         InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
-//            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
-            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
+            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
+//            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
             logger.info("Loaded all indexes");
         } else {
             String[] collections = collectionName.split(",");
             for (String collection : collections) {
-                mongoDBIndexUtils.createIndexes(mongoDataStore, indexResourceStream, collection, dropIndexesFirst);
+                mongoDBIndexUtils.createIndexes(collection, dropIndexesFirst);
+//                mongoDBIndexUtils.createIndexes(mongoDataStore, indexResourceStream, collection, dropIndexesFirst);
                 logger.info("Loaded index for {} ", collection);
             }
         }
