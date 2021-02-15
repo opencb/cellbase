@@ -724,7 +724,9 @@ public class VariantAnnotationCalculator {
 
                         // negative strand
                         if ("-".equals(variant0.getStrand())) {
-                            alternateCodon = variant2.getAlternate() + variant1.getAlternate() + variant0.getAlternate();
+                            alternateCodon = "" + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate())
+                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate())
+                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate());
                         } else {
                             alternateCodon = variant0.getAlternate() + variant1.getAlternate() + variant2.getAlternate();
                         }
