@@ -295,47 +295,65 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
+        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                         "non_coding_transcript_exon_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
+
+
 
         variant = new Variant("22:16328960-16339130:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
+        assertEquals(5, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                         "non_coding_transcript_exon_variant"),
                         new SequenceOntologyTerm("SO:0001906",
                                 "feature_truncation"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         variant = new Variant("22:16328960-16339130:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
+        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                                 "non_coding_transcript_exon_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         variant = new Variant("22:16328960-16339130:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
+        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                                 "non_coding_transcript_exon_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         /**
          * Whole affected coding transcript
@@ -383,7 +401,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
+        assertEquals(6, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
                                 "terminator_codon_variant"),
@@ -392,13 +410,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                         new SequenceOntologyTerm("SO:0001624",
                                 "3_prime_UTR_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         variant = new Variant("22:17254012-17281248:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(5, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
+        assertEquals(7, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001578",
                                 "stop_lost"),
@@ -409,13 +431,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                         new SequenceOntologyTerm("SO:0001627",
                                 "intron_variant"),
                         new SequenceOntologyTerm("SO:0001906",
-                                "feature_truncation")));
+                                "feature_truncation"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         variant = new Variant("22:17254012-17281248:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
+        assertEquals(6, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
                                 "terminator_codon_variant"),
@@ -424,13 +450,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                         new SequenceOntologyTerm("SO:0001624",
                                 "3_prime_UTR_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         variant = new Variant("22:17254012-17281248:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(1, consequenceTypeResult.getNumResults());
-        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
+        assertEquals(6, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
                                 "terminator_codon_variant"),
@@ -439,7 +469,11 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                         new SequenceOntologyTerm("SO:0001624",
                                 "3_prime_UTR_variant"),
                         new SequenceOntologyTerm("SO:0001627",
-                                "intron_variant")));
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant")));
 
         /**
          * Insertions affecting non coding transcript
@@ -540,8 +574,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms(),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))));
-        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms().size());
-        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms().size());
+        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms().size());
+        assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                         "non_coding_transcript_exon_variant")));
@@ -578,8 +612,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms(),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))));
-        assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms().size());
-        assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms().size());
+        assertEquals(5, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms().size());
+        assertEquals(5, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000461467").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001906",
                         "feature_truncation")));
@@ -1539,13 +1573,13 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:818401-819973:<CN10>"),
                         new QueryOptions());
-        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"2/3\"},{\"percentage\":56.52173913043478,\"number\":\"3/3\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
+        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"2/3\"},{\"percentage\":56.52173913043478,\"number\":\"3/3\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:819287-820859:<CN3>"),
                         new QueryOptions());
-        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"2/3\"},{\"percentage\":100,\"number\":\"3/3\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001590\",\"name\":\"terminator_codon_variant\"},{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
+        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"2/3\"},{\"percentage\":100,\"number\":\"3/3\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001590\",\"name\":\"terminator_codon_variant\"},{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
@@ -1605,7 +1639,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"),
                         new QueryOptions());  // should not return NPE
-        assertObjectListEquals("[{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000399839\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"7/10\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000330232\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"4/7\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000262607\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"6/9\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000449907\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"7/10\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000399837\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":100,\"number\":\"7/10\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000469063\",\"strand\":\"-\",\"biotype\":\"processed_transcript\",\"exonOverlap\":[{\"percentage\":94.60154241645245,\"number\":\"1/2\"}],\"cdnaPosition\":22,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001792\",\"name\":\"non_coding_transcript_exon_variant\"},{\"accession\":\"SO:0001906\",\"name\":\"feature_truncation\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"geneName\":\"CECR1\",\"ensemblGeneId\":\"ENSG00000093072\",\"ensemblTranscriptId\":\"ENST00000480276\",\"strand\":\"-\",\"biotype\":\"processed_transcript\",\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"AC005300.5\",\"ensemblGeneId\":\"ENSG00000236325\",\"ensemblTranscriptId\":\"ENST00000428401\",\"strand\":\"+\",\"biotype\":\"processed_pseudogene\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001631\",\"name\":\"upstream_gene_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]},{\"geneName\":null,\"ensemblGeneId\":null,\"ensemblTranscriptId\":null,\"strand\":null,\"biotype\":null,\"exonOverlap\":null,\"transcriptAnnotationFlags\":null,\"cdnaPosition\":null,\"cdsPosition\":null,\"codon\":null,\"proteinVariantAnnotation\":null,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001782\",\"name\":\"TF_binding_site_variant\"}]}]",
+        assertObjectListEquals("[{\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000399839\", \"strand\": \"-\", \"biotype\": \"protein_coding\", \"exonOverlap\": [{\"number\": \"7/10\", \"percentage\": 100.0}], \"transcriptAnnotationFlags\": [\"CCDS\", \"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001580\", \"name\": \"coding_sequence_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000330232\", \"strand\": \"-\", \"biotype\": \"protein_coding\", \"exonOverlap\": [{\"number\": \"4/7\", \"percentage\": 100.0}], \"transcriptAnnotationFlags\": [\"CCDS\", \"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001580\", \"name\": \"coding_sequence_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000262607\", \"strand\": \"-\", \"biotype\": \"protein_coding\", \"exonOverlap\": [{\"number\": \"6/9\", \"percentage\": 100.0}], \"transcriptAnnotationFlags\": [\"CCDS\", \"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001580\", \"name\": \"coding_sequence_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000449907\", \"strand\": \"-\", \"biotype\": \"protein_coding\", \"exonOverlap\": [{\"number\": \"7/10\", \"percentage\": 100.0}], \"transcriptAnnotationFlags\": [\"CCDS\", \"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001580\", \"name\": \"coding_sequence_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000399837\", \"strand\": \"-\", \"biotype\": \"protein_coding\", \"exonOverlap\": [{\"number\": \"7/10\", \"percentage\": 100.0}], \"transcriptAnnotationFlags\": [\"CCDS\", \"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001580\", \"name\": \"coding_sequence_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001574\", \"name\": \"splice_acceptor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000469063\", \"strand\": \"-\", \"biotype\": \"processed_transcript\", \"exonOverlap\": [{\"number\": \"1/2\", \"percentage\": 94.60154}], \"transcriptAnnotationFlags\": null, \"cdnaPosition\": 22, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001792\", \"name\": \"non_coding_transcript_exon_variant\"}, {\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001575\", \"name\": \"splice_donor_variant\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]}, {\"geneName\": \"CECR1\", \"ensemblGeneId\": \"ENSG00000093072\", \"ensemblTranscriptId\": \"ENST00000480276\", \"strand\": \"-\", \"biotype\": \"processed_transcript\", \"exonOverlap\": null, \"transcriptAnnotationFlags\": null, \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0002083\", \"name\": \"2KB_downstream_variant\"}]}, {\"geneName\": \"AC005300.5\", \"ensemblGeneId\": \"ENSG00000236325\", \"ensemblTranscriptId\": \"ENST00000428401\", \"strand\": \"+\", \"biotype\": \"processed_pseudogene\", \"exonOverlap\": null, \"transcriptAnnotationFlags\": [\"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001631\", \"name\": \"upstream_gene_variant\"}]}, {\"geneName\": null, \"ensemblGeneId\": null, \"ensemblTranscriptId\": null, \"strand\": null, \"biotype\": null, \"exonOverlap\": null, \"transcriptAnnotationFlags\": null, \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001566\", \"name\": \"regulatory_region_variant\"}]}, {\"geneName\": null, \"ensemblGeneId\": null, \"ensemblTranscriptId\": null, \"strand\": null, \"biotype\": null, \"exonOverlap\": null, \"transcriptAnnotationFlags\": null, \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001782\", \"name\": \"TF_binding_site_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
@@ -1907,6 +1941,81 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //            vepFileIndex++;
 //        }
     }
+
+
+
+    //////////////////////////////////////
+    // below is tested with grch38 data //
+    // the test is hardcoded to read 37 //
+    // but it lies. it is 38 data       //
+    //////////////////////////////////////
+
+    private void initGrch38() throws Exception {
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/grch38/variation_chr11.test.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+    }
+
+
+    @Test
+    public void testMnvConsequenceTypes() throws Exception {
+
+        initGrch38();
+
+        Variant variant = new Variant("11:47441668:CTG:TTA");
+        variant.setStrand("-");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("phased", true);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+
+        assertEquals(2, queryResult.getResult().size());
+        List<VariantAnnotation> results = queryResult.getResult();
+
+
+        // variant 1
+        VariantAnnotation variantAnnotation = results.get(0);
+
+        assertEquals("stop_gained", variantAnnotation.getDisplayConsequenceType());
+
+        List<ConsequenceType> consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        ConsequenceType consequenceType = getConsequenceType(consequenceTypeList, "ENST00000298854");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001587",
+                        "stop_gained")));
+        assertEquals("CaG/TaA", consequenceType.getCodon());
+
+        // variant 2
+        variantAnnotation = results.get(1);
+        assertEquals("stop_gained", variantAnnotation.getDisplayConsequenceType());
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000524487");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001587",
+                        "stop_gained")));
+        assertEquals("CaG/TaA", consequenceType.getCodon());
+    }
+
+
 
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
                                             Class<T> clazz) throws IOException {

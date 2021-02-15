@@ -279,7 +279,7 @@
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
-
+                <cellbase.log.file>cellbase.log</cellbase.log.file>
                 <CELLBASE.DB.NEO4J.HOST>localhost:27017</CELLBASE.DB.NEO4J.HOST>
             </properties>
         </profile>
