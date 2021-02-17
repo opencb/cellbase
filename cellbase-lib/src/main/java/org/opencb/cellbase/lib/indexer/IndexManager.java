@@ -58,7 +58,7 @@ public class IndexManager {
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         this.mongoDataStore = factory.getMongoDBDatastore(databaseName);
-//        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
+        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
     }
 
     /**

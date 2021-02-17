@@ -17,11 +17,11 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
             for (Transcript transcript: transcriptCellBaseDataResult.getResults()) {
                 // transcript.id will have version. id is from the user, so can include the version or not.
                 if (transcript.getId().startsWith(id)) {
-                    cdnaSequence = transcript.getcDnaSequence();
+                    cdnaSequence = transcript.getCdnaSequence();
                     break;
                 }
             }

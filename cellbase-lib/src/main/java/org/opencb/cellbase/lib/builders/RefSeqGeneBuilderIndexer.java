@@ -20,18 +20,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.formats.sequence.fasta.Fasta;
-import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.MirnaTarget;
 import org.opencb.biodata.models.core.TargetGene;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -40,91 +34,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class RefSeqGeneBuilderIndexer {
-
-    private RocksDB rocksdb;
-    private static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
-    private static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
-    private static final String DISEASE_SUFFIX = "_disease";
-    private static final String DRUGS_SUFFIX = "_drug";
-    private static final String MIRTARBASE_SUFFIX = "_mirtarbase";
-
-    private RocksDbManager rocksDbManager;
-    protected Logger logger;
-    private Options dbOption = null;
-    private String dbLocation = null;
+public class RefSeqGeneBuilderIndexer extends GeneBuilderIndexer{
 
     public RefSeqGeneBuilderIndexer(Path refSeqDirectoryPath) {
-        init(refSeqDirectoryPath);
+        super(refSeqDirectoryPath);
     }
 
-    private void init(Path refSeqDirectoryPath) {
-        rocksDbManager = new RocksDbManager();
-        dbLocation = refSeqDirectoryPath.toString() + "/integration.idx";
-        rocksdb = rocksDbManager.getDBConnection(dbLocation);
-        dbOption = new Options().setCreateIfMissing(true);
-
-        logger = LoggerFactory.getLogger(this.getClass());
-    }
-
-    public void index(Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath, Path disgenetFile,
-                      Path miRTarBaseFile)
-            throws IOException, RocksDBException, FileFormatException {
+    public void index(Path maneFile, Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath, Path disgenetFile,
+                      Path miRTarBaseFile) throws IOException, RocksDBException, FileFormatException {
+        indexManeMapping(maneFile, "refseq");
         indexProteinSequences(proteinFastaFile);
         indexCdnaSequences(cDnaFastaFile);
         indexDrugs(geneDrugFile);
         indexDiseases(hpoFilePath, disgenetFile);
         indexMiRTarBase(miRTarBaseFile);
-    }
-
-    private void indexProteinSequences(Path proteinFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading protein sequences...");
-        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)
-                && Files.size(proteinFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(proteinFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                rocksDbManager.update(rocksdb, fasta.getId() + PROTEIN_SEQUENCE_SUFFIX, fasta.getSeq());
-            }
-        } else {
-            logger.warn("Protein fasta file " + proteinFastaFile + " not found");
-            logger.warn("RefSeq's protein sequences not loaded");
-        }
-    }
-
-    public String getProteinFasta(String id) throws RocksDBException {
-        String key = id + PROTEIN_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
-    }
-
-    private void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading RefSeq's cDNA sequences...");
-        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
-                && Files.size(cDnaFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                rocksDbManager.update(rocksdb, fasta.getId() + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
-            }
-        } else {
-            logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
-            logger.warn("RefSeq's cDNA sequences not loaded");
-        }
-    }
-
-    public String getCdnaFasta(String id) throws RocksDBException {
-        String key = id + CDNA_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
     }
 
     private void indexDrugs(Path geneDrugFile) throws IOException, RocksDBException {
@@ -358,7 +281,4 @@ public class RefSeqGeneBuilderIndexer {
         }
     }
 
-    protected void close() throws IOException {
-        rocksDbManager.closeIndex(rocksdb, dbOption, dbLocation);
-    }
 }

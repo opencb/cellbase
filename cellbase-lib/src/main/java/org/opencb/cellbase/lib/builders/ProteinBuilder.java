@@ -16,22 +16,31 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ProteinBuilder extends CellBaseBuilder {
 
@@ -62,27 +71,26 @@ public class ProteinBuilder extends CellBaseBuilder {
             throw new IOException("File '" + uniprotFilesDir + "' not valid");
         }
 
+        RocksDB rocksDb = getDBConnection();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        ObjectWriter jsonObjectWriter = mapper.writerFor(Entry.class);
+
         proteinMap = new HashMap<>(30000);
-        UniProtParser up = new UniProtParser();
+//        UniProtParser up = new UniProtParser();
         try {
-            File[] files = uniprotFilesDir.toFile().listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".xml") || name.endsWith(".xml.gz");
-                }
-            });
+            File[] files = uniprotFilesDir.toFile().listFiles((dir, name) -> name.endsWith(".xml") || name.endsWith(".xml.gz"));
 
             for (File file : files) {
-                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
+                Uniprot uniprot = (Uniprot) UniProtParser.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
 
                 for (Entry entry : uniprot.getEntry()) {
-                    String entryOrganism = null;
-                    Iterator<OrganismNameType> iter = entry.getOrganism().getName().iterator();
-                    while (iter.hasNext()) {
-                        entryOrganism = iter.next().getValue();
+                    String entryOrganism;
+                    for (OrganismNameType organismNameType : entry.getOrganism().getName()) {
+                        entryOrganism = organismNameType.getValue();
                         if (entryOrganism.equals(species)) {
-                            proteinMap.put(entry.getAccession().get(0), entry);
-//                            serializer.serialize(entry);
+//                            proteinMap.put(entry.getAccession().get(0), entry);
+                            rocksDb.put(entry.getAccession().get(0).getBytes(), jsonObjectWriter.writeValueAsBytes(entry));
                         }
                     }
                 }
@@ -106,7 +114,10 @@ public class ProteinBuilder extends CellBaseBuilder {
                         iprAdded = false;
                         BigInteger start = BigInteger.valueOf(Integer.parseInt(fields[4]));
                         BigInteger end = BigInteger.valueOf(Integer.parseInt(fields[5]));
-                        for (FeatureType featureType : proteinMap.get(fields[0]).getFeature()) {
+//                        for (FeatureType featureType : proteinMap.get(fields[0]).getFeature()) {
+                        byte[] bytes = rocksDb.get(fields[0].getBytes());
+                        Entry entry = mapper.readValue(bytes, Entry.class);
+                        for (FeatureType featureType : entry.getFeature()) {
                             if (featureType.getLocation() != null && featureType.getLocation().getBegin() != null
                                     && featureType.getLocation().getBegin().getPosition() != null
                                     && featureType.getLocation().getEnd().getPosition() != null
@@ -134,7 +145,10 @@ public class ProteinBuilder extends CellBaseBuilder {
                             locationType.setEnd(positionType2);
                             featureType.setLocation(locationType);
 
-                            proteinMap.get(fields[0]).getFeature().add(featureType);
+//                            proteinMap.get(fields[0]).getFeature().add(featureType);
+                            bytes = rocksDb.get(fields[0].getBytes());
+                            entry = mapper.readValue(bytes, Entry.class);
+                            entry.getFeature().add(featureType);
                         }
 
                         if (!visited.contains(fields[0])) {
@@ -152,12 +166,31 @@ public class ProteinBuilder extends CellBaseBuilder {
             }
 
             // Serialize and save results
-            for (Entry entry : proteinMap.values()) {
+            RocksIterator rocksIterator = rocksDb.newIterator();
+            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+                Entry entry = mapper.readValue(rocksIterator.value(), Entry.class);
                 serializer.serialize(entry);
             }
 
-        } catch (JAXBException e) {
+            rocksDb.close();
+        } catch (JAXBException | RocksDBException e) {
             e.printStackTrace();
         }
+    }
+
+    private RocksDB getDBConnection() {
+        // a static method that loads the RocksDB C++ library.
+        RocksDB.loadLibrary();
+        // the Options class contains a set of configurable DB options
+        // that determines the behavior of a database.
+        Options options = new Options().setCreateIfMissing(true);
+        try {
+            return RocksDB.open(options, uniprotFilesDir.resolve("integration.idx").toString());
+        } catch (RocksDBException e) {
+            // do some error handling
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return null;
     }
 }

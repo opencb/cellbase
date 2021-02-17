@@ -140,14 +140,14 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. "
                 + "Indicate here the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This "
                 + "parameter must be used together with a custom file provided at --input and the data to update indicated at --data.",
-                required = false, arity = 1)
+                arity = 1)
         public String field;
 
         @Parameter(names = {"--overwrite-inner-fields"}, description = "Use this parameter together with --fields to specify"
                 + " which inner attributes shall be overwritten for updated objects, "
                 + " e.g. --fields annotation --overwrite-inner-fields consequenceTypes,displayConsequenceType,conservation"
                 + " List of inner fields must be specified as a comma-separated list (no spaces in between).",
-                required = false, arity = 1)
+                arity = 1)
         public String innerFields;
 
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
@@ -156,8 +156,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", arity = 1)
         public int numThreads = 2;
 
-        @Parameter(names = {"--index"}, description = "After loading, add index to the database", arity = 0)
-        public boolean index;
+        @Parameter(names = {"--skip-index"}, description = "After loading, add index to the database", arity = 0)
+        public boolean skipIndex;
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();

@@ -70,9 +70,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
         }
-        if (loadCommandOptions.index) {
-            createIndexes = true;
-        }
+        createIndexes = !loadCommandOptions.skipIndex;
     }
 
 

@@ -43,6 +43,10 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected final Logger logger;
 
 
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, CellBaseConfiguration configuration) {
+        this(blockingQueue, data, database, null, null, configuration);
+    }
+
     public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, String field,
                           String[] innerFields, CellBaseConfiguration configuration) {
         this.blockingQueue = blockingQueue;

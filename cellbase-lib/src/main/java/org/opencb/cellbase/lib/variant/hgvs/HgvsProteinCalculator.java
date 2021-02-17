@@ -132,11 +132,11 @@ public class HgvsProteinCalculator {
         // Check the SNV is not in the first or last incomplete codons
         if (transcriptUtils.hasUnconfirmedStart() && codonPosition == 1
                 && (referenceCodon.length() < 3 || referenceCodon.contains("N"))) {
-            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getcDnaSequence());
+            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getCdnaSequence());
         }
         if (transcriptUtils.hasUnconfirmedSEnd() && codonPosition >= transcript.getProteinSequence().length()
                 && (referenceCodon.length() < 3 || referenceCodon.contains("N"))) {
-            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getcDnaSequence());
+            return new HgvsProtein(getProteinIds(), "p.Ter" + codonPosition + "=", transcript.getCdnaSequence());
         }
 
         // TODO check unconfirmed end, example: 1:201359245:G:T

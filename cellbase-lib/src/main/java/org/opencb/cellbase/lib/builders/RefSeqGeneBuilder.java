@@ -38,7 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
-    private Path disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
+    private Path maneFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -51,9 +51,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private boolean seenStopCodon = false;
 
 
-    public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration,
-                             CellBaseSerializer serializer) {
+    public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
+
         this.speciesConfiguration = speciesConfiguration;
 
         getGtfFileFromDirectoryPath(refSeqDirectoryPath);
@@ -68,6 +68,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void setAnnotationFiles(Path refSeqDirectoryPath) {
         Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
+        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v0.91.summary.txt.gz");
         geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
         disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
         hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
@@ -118,8 +119,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
 
         // index protein sequences for later
-        RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(proteinFastaFile.getParent());
-        indexer.index(proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
+        RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
+        indexer.index(maneFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -189,7 +190,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             return;
         }
         exonDbxrefs.addAll(geneDbxrefs);
-        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+//        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
+        transcript.getXrefs().addAll(exonDbxrefs);
         transcript.getXrefs().add(new Xref(transcript.getName(), "HGNC", "HGNC Symbol"));
 
         // transcript has version, e.g. XR_002957988.1. put both XR_002957988 AND XR_002957988.1 in xrefs
@@ -510,8 +512,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private Set<Xref> parseXrefs(Gtf gtf) {
-        String xrefs = gtf.getAttributes().get("db_xref");
         Set<Xref> xrefSet = new HashSet<>();
+        String xrefs = gtf.getAttributes().get("db_xref");
         if (StringUtils.isNotEmpty(xrefs)) {
             for (String xrefString : xrefs.split(",")) {
                 String[] dbxrefParts = xrefString.split(":", 2);
@@ -534,17 +536,33 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, String version, RefSeqGeneBuilderIndexer indexer)
             throws RocksDBException {
         Map<String, String> gtfAttributes = gtf.getAttributes();
+
+        String name = gene.getName();
         String biotype = gtfAttributes.get("gbkey");
         if ("mRNA".equals(biotype)) {
             biotype = "protein_coding";
         }
-        String transcriptName = gene.getName();
-        transcript = new Transcript(transcriptId, transcriptName, biotype, status, SOURCE, chromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), version, 0, 0, 0, 0, 0,
-                "", "", null, new ArrayList<Exon>(), null, null);
-        transcriptDict.put(transcriptId, transcript);
+        transcript = new Transcript(transcriptId, name, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), biotype, status,
+                0, 0, 0, 0, 0,
+                indexer.getCdnaFasta(transcriptId), "", "", "", version, SOURCE,
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), new TranscriptAnnotation());
+
+        for (String suffix: Arrays.asList("ensembl", "ensembl_protein")) {
+            String maneRefSeq = indexer.getMane(transcriptId, suffix);
+            if (StringUtils.isNotEmpty(maneRefSeq)) {
+                transcript.getXrefs().add(new Xref(maneRefSeq, "mane_select_" + suffix,
+                        "MANE Select Ensembl" + (suffix.contains("_") ? " Protein" : "")));
+            }
+        }
+
+        String maneFlag = indexer.getMane(transcriptId, "flag");
+        if (StringUtils.isNotEmpty(maneFlag)) {
+            transcript.getFlags().add(maneFlag);
+        }
+
         gene.getTranscripts().add(transcript);
-        transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
+
+        transcriptDict.put(transcriptId, transcript);
         return transcript;
     }
 

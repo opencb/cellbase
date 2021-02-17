@@ -23,20 +23,11 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.formats.sequence.fasta.Fasta;
-import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
+import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.ExpressionCall;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.models.variant.avro.Constraint;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.commons.utils.FileUtils;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -45,39 +36,19 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-public class GeneBuilderIndexer {
+public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
 
-    private RocksDB rocksdb;
     private static final String DESCRIPTION_SUFFIX = "_description";
     private static final String XREF_SUFFIX = "_xref";
-    private static final String MANE_SUFFIX = "_mane";
     private static final String PROTEIN_XREF_SUFFIX = "_protein_xref";
-    private static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
-    private static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
     private static final String EXPRESSION_SUFFIX = "_expression";
-    private static final String DRUGS_SUFFIX = "_drug";
-    private static final String DISEASE_SUFFIX = "_disease";
     private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String ONTOLOGY_SUFFIX = "_ontology";
     private static final String OBO_SUFFIX = "_obo";
     private static final String MIRBASE_SUFFIX = "_mirbase";
-    private static final String MIRTARBASE_SUFFIX = "_mirtarbase";
-    private RocksDbManager rocksDbManager;
-    protected Logger logger;
-    private Options dbOption = null;
-    private String dbLocation = null;
 
-    public GeneBuilderIndexer(Path geneDirectoryPath) {
-        init(geneDirectoryPath);
-    }
-
-    private void init(Path geneDirectoryPath) {
-        rocksDbManager = new RocksDbManager();
-        dbLocation = geneDirectoryPath.toString() + "/integration.idx";
-        rocksdb = rocksDbManager.getDBConnection(dbLocation);
-        dbOption = new Options().setCreateIfMissing(true);
-
-        logger = LoggerFactory.getLogger(this.getClass());
+    public EnsemblGeneBuilderIndexer(Path geneDirectoryPath) {
+        super(geneDirectoryPath);
     }
 
     public void index(Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path uniprotIdMappingFile, Path proteinFastaFile,
@@ -86,7 +57,7 @@ public class GeneBuilderIndexer {
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
-        indexManeMapping(maneFile);
+        indexManeMapping(maneFile, "ensembl");
         indexProteinSequences(proteinFastaFile);
         indexCdnaSequences(cDnaFastaFile);
         indexExpression(species, geneExpressionFile);
@@ -96,33 +67,6 @@ public class GeneBuilderIndexer {
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
-    }
-
-    private void indexManeMapping(Path maneMappingFile) throws IOException, RocksDBException {
-        logger.info("Indexing MANE mapping data ...");
-
-        if (maneMappingFile != null && Files.exists(maneMappingFile) && Files.size(maneMappingFile) > 0) {
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t", -1);
-                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_refseq", fields[5]);
-                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_refseq_protein", fields[6]);
-                rocksDbManager.update(rocksdb, fields[7] + MANE_SUFFIX + "_flag", fields[9]);
-            }
-            bufferedReader.close();
-        } else {
-            logger.warn("MANE mapping file " + maneMappingFile + " not found");
-        }
-    }
-
-    public String getMane(String id, String field) throws RocksDBException {
-        String key = id + MANE_SUFFIX + "_" + field;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
@@ -227,58 +171,6 @@ public class GeneBuilderIndexer {
             xrefs.addAll(proteinXrefs);
         }
         return xrefs;
-    }
-
-    private void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading ENSEMBL's cDNA sequences...");
-        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
-                && Files.size(cDnaFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                rocksDbManager.update(rocksdb, fasta.getId().split("\\.")[0] + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
-            }
-        } else {
-            logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
-            logger.warn("ENSEMBL's cDNA sequences not loaded");
-        }
-    }
-
-    public String getCdnaFasta(String id) throws RocksDBException {
-        String key = id + CDNA_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
-    }
-
-    private void indexProteinSequences(Path proteinFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading ENSEMBL's protein sequences...");
-        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)
-                && Files.size(proteinFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(proteinFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                rocksDbManager.update(rocksdb,
-                        fasta.getDescription().split("transcript:")[1].split("\\s")[0].split("\\.")[0]
-                                + PROTEIN_SEQUENCE_SUFFIX, fasta.getSeq());
-            }
-        } else {
-            logger.warn("Protein fasta file " + proteinFastaFile + " not found");
-            logger.warn("ENSEMBL's protein sequences not loaded");
-        }
-    }
-
-    public String getProteinFasta(String id) throws RocksDBException {
-        String key = id + PROTEIN_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
     }
 
     private void indexExpression(String species, Path geneExpressionFile) throws IOException, RocksDBException {
@@ -489,7 +381,6 @@ public class GeneBuilderIndexer {
         } else {
             logger.error("gnomad constraints file not found");
         }
-
     }
 
     public List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
@@ -717,7 +608,4 @@ public class GeneBuilderIndexer {
         }
     }
 
-    protected void close() throws IOException {
-        rocksDbManager.closeIndex(rocksdb, dbOption, dbLocation);
-    }
 }

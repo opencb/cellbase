@@ -97,6 +97,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
+
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -137,7 +138,7 @@ public class GeneBuilder extends CellBaseBuilder {
         Exon exon = null;
         int cdna = 1;
         int cds = 1;
-        GeneBuilderIndexer indexer = new GeneBuilderIndexer(gtfFile.getParent());
+        EnsemblGeneBuilderIndexer indexer = new EnsemblGeneBuilderIndexer(gtfFile.getParent());
 
         try {
             // process files and put values in rocksdb
@@ -234,6 +235,7 @@ public class GeneBuilder extends CellBaseBuilder {
                                 ? gtf.getAttributes().get("protein_id") + "." + gtf.getAttributes().get("protein_version")
                                 : "";
                         transcript.setProteinId(proteinId);
+                        transcript.setProteinSequence(indexer.getProteinFasta(proteinId));
 
                         if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
                             // CDS states the beginning of coding start
@@ -343,7 +345,7 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private Transcript getTranscript(Gene gene, GeneBuilderIndexer indexer, TabixReader tabixReader, Gtf gtf, String transcriptId)
+    private Transcript getTranscript(Gene gene, EnsemblGeneBuilderIndexer indexer, TabixReader tabixReader, Gtf gtf, String transcriptId)
             throws IOException, RocksDBException {
         Map<String, String> gtfAttributes = gtf.getAttributes();
 
@@ -356,11 +358,12 @@ public class GeneBuilder extends CellBaseBuilder {
         List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId), indexer);
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, indexer.getConstraints(transcriptId));
 
-        Transcript transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"), biotype,
-                "KNOWN", SOURCE, transcriptChromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(),
-                gtfAttributes.get("transcript_version"), 0, 0, 0, 0,
-                0, "", "", indexer.getXrefs(transcriptId), new ArrayList<>(),
-                transcriptTfbses, transcriptAnnotation);
+        Transcript transcript = new Transcript(transcriptIdWithVersion, gtfAttributes.get("transcript_name"), transcriptChromosome,
+                gtf.getStart(), gtf.getEnd(), gtf.getStrand(), biotype, "KNOWN",
+                0, 0, 0, 0, 0,
+                indexer.getCdnaFasta(transcriptIdWithVersion), "", "", "",
+                gtfAttributes.get("transcript_version"), SOURCE, new ArrayList<>(), indexer.getXrefs(transcriptId), transcriptTfbses,
+                new HashSet<>(), transcriptAnnotation);
 
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
@@ -376,7 +379,6 @@ public class GeneBuilder extends CellBaseBuilder {
 
         // Initialise Flags
         // 1. GTF tags
-        transcript.setFlags(new HashSet<>());
         String tags = gtf.getAttributes().get("tag");
         if (StringUtils.isNotEmpty(tags)) {
             transcript.getFlags().addAll(Arrays.asList(tags.split(",")));
@@ -394,8 +396,6 @@ public class GeneBuilder extends CellBaseBuilder {
             transcript.getFlags().add(maneFlag);
         }
 
-        transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
-        transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
         gene.getTranscripts().add(transcript);
 
         // Do not change order!! size()-1 is the index of the transcript ID
@@ -403,7 +403,7 @@ public class GeneBuilder extends CellBaseBuilder {
         return transcript;
     }
 
-    private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(List<Xref> xrefs,  GeneBuilderIndexer indexer)
+    private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(List<Xref> xrefs,  EnsemblGeneBuilderIndexer indexer)
             throws IOException, RocksDBException {
         if (xrefs == null || indexer == null) {
             return null;

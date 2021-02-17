@@ -175,7 +175,7 @@ public class GeneBuilderTest {
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
         Transcript transcript = getTranscript("ENST00000456328.2", genes);
         assertNotNull(transcript);
-        assertEquals(TRANSCRIPT_SEQUENCE, transcript.getcDnaSequence());
+        assertEquals(TRANSCRIPT_SEQUENCE, transcript.getCdnaSequence());
         assertEquals("2", transcript.getVersion());
         assertEquals("ensembl", transcript.getSource());
         Set<String> flags = transcript.getFlags();

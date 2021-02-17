@@ -117,7 +117,7 @@ public class TranscriptUtils {
 
                 if (codonPosition == 1 && firstCodonPhase != 0) {
                     return StringUtils.repeat('N', 3 - firstCodonPhase)
-                            + transcript.getcDnaSequence().substring(0, firstCodonPhase);
+                            + transcript.getCdnaSequence().substring(0, firstCodonPhase);
                 }
 
                 // If first phase is not 0 we need to adjust codons to fetch a real one
@@ -130,7 +130,7 @@ public class TranscriptUtils {
             cdnaCodonStart = cdnaCodonStart - 1;
 
             int cdnaCodonEnd = Math.min(cdnaCodonStart + 3, transcript.getCdnaCodingEnd());
-            return transcript.getcDnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
+            return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
         }
         return "";
     }
@@ -263,7 +263,7 @@ public class TranscriptUtils {
     }
 
     public String getFormattedCdnaSequence() {
-        return this.getFormattedCdnaSequence(transcript.getcDnaSequence());
+        return this.getFormattedCdnaSequence(transcript.getCdnaSequence());
     }
 
     /**
@@ -274,11 +274,11 @@ public class TranscriptUtils {
      */
     protected String getAlternateCdnaSequence(Variant variant) {
         if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
-            return transcript.getcDnaSequence();
+            return transcript.getCdnaSequence();
         }
 
         // Create a StringBuilder to easily mannipulate the string
-        StringBuilder alternateCdnaSequence = new StringBuilder(transcript.getcDnaSequence());
+        StringBuilder alternateCdnaSequence = new StringBuilder(transcript.getCdnaSequence());
         String alternate = transcript.getStrand().equals("+")
                 ? variant.getAlternate()
                 : VariantAnnotationUtils.reverseComplement(variant.getAlternate());
