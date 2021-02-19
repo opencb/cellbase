@@ -2035,12 +2035,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
                         "splice_region_variant"),
                         new SequenceOntologyTerm("SO:0001574",
-                                "splice_acceptor_variant"),
-                        new SequenceOntologyTerm("SO:0001575",
-                                "splice_donor_variant"))
+                                "splice_acceptor_variant"))
         );
-
-
     }
 
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
