@@ -2015,7 +2015,33 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("CaG/TaA", consequenceType.getCodon());
     }
 
+    @Test
+    public void testSpliceAnnotation() throws Exception {
 
+        initGrch38();
+
+        Variant variant = new Variant("11:68409894:TCCTCCTCACCTGCTGCCAGACCATCAGCCGCGCCTTCATGAACGGGAGCTCGGTGGAGCACGTGGTGGAGTTTGGCCTTGACTACCCCGAGGGCATGGCCGTTGACTGGATGGGCAAGAACCTCTACTGGGCCGACACTGGGACCAACAGAATCGAAGTGGCGCGGCTGGACGGGCAGTTCCGGCAAGTCCTCGTGTGGAGGGACTTGGACAACCCGAGGTCGCTGGCCCTGGATCCCACCAAGG:-");
+        variant.setStrand("+");
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        List<VariantAnnotation> results = queryResult.getResult();
+        VariantAnnotation variantAnnotation = results.get(0);
+
+        List<ConsequenceType> consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        ConsequenceType consequenceType = getConsequenceType(consequenceTypeList, "ENST00000529993");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
+                        "splice_region_variant"),
+                        new SequenceOntologyTerm("SO:0001574",
+                                "splice_acceptor_variant"),
+                        new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant"))
+        );
+
+
+    }
 
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
                                             Class<T> clazz) throws IOException {
