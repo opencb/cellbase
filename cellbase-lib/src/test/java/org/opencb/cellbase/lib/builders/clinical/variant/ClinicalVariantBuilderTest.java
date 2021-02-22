@@ -119,13 +119,26 @@ public class ClinicalVariantBuilderTest {
         assertEquals(4, parsedVariantList.size());
 
 
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
-        assertEquals(2, variantList.size());
+//        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
+//        assertEquals(2, variantList.size());
+//        Variant variant = variantList.get(0);
+//        assertEquals("13", variant.getChromosome());
+//        assertEquals(Integer.valueOf(32339556), variant.getStart());
+//        assertEquals("", variant.getReference());
+//        assertEquals("G", variant.getAlternate());
+
+        // deletion
+        // Chr11: 5225487 - 5225488 (on Assembly GRCh38)
+        // TTA     T
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000780307");
+        assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
-        assertEquals("13", variant.getChromosome());
-        assertEquals(Integer.valueOf(32339556), variant.getStart());
-        assertEquals("", variant.getReference());
-        assertEquals("G", variant.getAlternate());
+        assertEquals("11", variant.getChromosome());
+        assertEquals(Integer.valueOf(5225487), variant.getStart());
+        assertEquals("TA", variant.getReference());
+        assertEquals("", variant.getAlternate());
+
+
 
         // deletion
         // Chr11: 5225487 - 5225488 (on Assembly GRCh38)
