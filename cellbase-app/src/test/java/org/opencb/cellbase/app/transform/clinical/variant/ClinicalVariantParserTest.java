@@ -42,10 +42,33 @@ public class ClinicalVariantParserTest {
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
+    private void initGrch38()  throws Exception  {
+        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant/grch38").toURI());
+        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(), Paths.get("/tmp/clinicalVariant4").toFile());
+        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant4");
+
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.fai").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.fai").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gzi").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.gzi").toFile());
+
+        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz");
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
+    }
+
     @Test
     public void testDecompose() throws Exception {
         // Remove all previous clinical variant temporary test data
         cleanUp();
+
+        initGrch38();
 
 /**
  * clinvar id 266834
@@ -66,38 +89,35 @@ public class ClinicalVariantParserTest {
  *     438988
  * correct ID, wrong positions
  */
-        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant/grch38").toURI());
-        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(), Paths.get("/tmp/clinicalVariant4").toFile());
-        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant4");
 
-        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
-                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toURI()).toFile(),
-                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toFile());
-        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
-                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.fai").toURI()).toFile(),
-                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.fai").toFile());
-        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
-                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gzi").toURI()).toFile(),
-                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.gzi").toFile());
-
-        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz");
-
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(2, parsedVariantList.size());
+        assertEquals(3, parsedVariantList.size());
 
 
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
-        assertEquals(2, variantList.size());
+//        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
+//        assertEquals(2, variantList.size());
+//        Variant variant = variantList.get(0);
+//        assertEquals("13", variant.getChromosome());
+//        assertEquals(Integer.valueOf(32339556), variant.getStart());
+//        assertEquals("", variant.getReference());
+//        assertEquals("G", variant.getAlternate());
+
+        // deletion
+        // Chr11: 5225487 - 5225488 (on Assembly GRCh38)
+        // TTA     T
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000780307");
+        assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
-        assertEquals("13", variant.getChromosome());
-        assertEquals(Integer.valueOf(32339556), variant.getStart());
-        assertEquals("", variant.getReference());
-        assertEquals("G", variant.getAlternate());
+        assertEquals("11", variant.getChromosome());
+        assertEquals(Integer.valueOf(5225487), variant.getStart());
+        assertEquals("TA", variant.getReference());
+        assertEquals("", variant.getAlternate());
+
+
 
     }
+
 
     @Test
     public void noNormaliseTest() throws Exception {
