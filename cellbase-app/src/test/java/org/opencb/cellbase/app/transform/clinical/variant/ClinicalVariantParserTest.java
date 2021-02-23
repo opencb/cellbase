@@ -92,29 +92,35 @@ public class ClinicalVariantParserTest {
 
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(3, parsedVariantList.size());
+        assertEquals(4, parsedVariantList.size());
 
 
-//        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
-//        assertEquals(2, variantList.size());
-//        Variant variant = variantList.get(0);
-//        assertEquals("13", variant.getChromosome());
-//        assertEquals(Integer.valueOf(32339556), variant.getStart());
-//        assertEquals("", variant.getReference());
-//        assertEquals("G", variant.getAlternate());
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
+        assertEquals(2, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("13", variant.getChromosome());
+        assertEquals(Integer.valueOf(32339556), variant.getStart());
+        assertEquals("", variant.getReference());
+        assertEquals("G", variant.getAlternate());
 
         // deletion
         // Chr11: 5225487 - 5225488 (on Assembly GRCh38)
         // TTA     T
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000780307");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000780307");
         assertEquals(1, variantList.size());
-        Variant variant = variantList.get(0);
+        variant = variantList.get(0);
         assertEquals("11", variant.getChromosome());
         assertEquals(Integer.valueOf(5225487), variant.getStart());
         assertEquals("TA", variant.getReference());
         assertEquals("", variant.getAlternate());
 
-
+        variantList = getVariantByAccession(parsedVariantList, "RCV000003943");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
+        assertEquals("19", variant.getChromosome());
+        assertEquals(Integer.valueOf(11089411), variant.getStart());
+        assertEquals("T", variant.getReference());
+        assertEquals("", variant.getAlternate());
 
     }
 
