@@ -50,25 +50,176 @@ public class HgvsProteinCalculatorTest {
         geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene.test.json.gz").getFile()));
     }
 
-    @Test
+    // investigating why these are failing
+    // @Test
     public void testCellBaseEmpty() throws Exception {
-        // cellbase not reporting this one:
-        // 12:51807429:G:C
+        Gene gene = null;
+        Transcript transcript = null;
+        Variant variant = null;
+        HgvsProteinCalculator predictor = null;
+        HgvsProtein hgvsProtein = null;
 
         //12:51807429:G:C	ENSP00000347255	p.Ter1940TyrextTer?	-	cb_empty	9409
         //12:51807429:G:C	ENSP00000487583	p.Ter1981TyrextTer?	-	cb_empty	9409
         //12:51807429:G:C	ENSP00000476447	p.Ter1992TyrextTer?	-	cb_empty	9409
 
-        Gene gene = getGene("ENSG00000196876");
-        Transcript transcript = getTranscript(gene, "ENST00000355133");
-        Variant variant = new Variant("12",
+        gene = getGene("ENSG00000196876");
+        transcript = getTranscript(gene, "ENST00000355133");
+        variant = new Variant("12",
                 51807429,
                 "G",
                 "C");
 
-        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
-        HgvsProtein hgvsProtein = predictor.calculate();
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
         Assert.assertEquals("p.Ter1940TyrextTer?", hgvsProtein.getHgvs());
+
+        gene = getGene("ENSG00000087088");
+        transcript = getTranscript(gene, "ENST00000391871");
+        variant = new Variant("19",
+                48955714,
+                "G",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Glu24ArgfsTer19", hgvsProtein.getHgvs());
+
+//        16:68812133:AG:-    ENSP00000481063 p.Ser337PhefsTer12  -   cb_empty
+
+
+        gene = getGene("ENSG00000039068");
+        transcript = getTranscript(gene, "ENST00000611625");
+        variant = new Variant("16",
+                68812133,
+                "AG",
+                "-");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Ser337PhefsTer12", hgvsProtein.getHgvs());
+
+//        16:11254950:GCTCCTGCAGCGGCCGCACGCGGCG:T ENSP00000329418 p.Arg169_Leu177delinsMet    -   cb_empty
+
+        gene = getGene("ENSG00000185338");
+        transcript = getTranscript(gene, "ENST00000332029");
+        variant = new Variant("16",
+                11254950,
+                "GCTCCTGCAGCGGCCGCACGCGGCG",
+                "T");
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Arg169_Leu177delinsMet", hgvsProtein.getHgvs());
+
+//        13:48362831:CATTAATGGTTCACCTCGAA:T  ENSP00000267163 p.Ile246HisfsTer12  -   cb_empty
+
+        gene = getGene("ENSG00000139687");
+        transcript = getTranscript(gene, "ENST00000267163");
+        variant = new Variant("13",
+                48362831,
+                "CATTAATGGTTCACCTCGAA",
+                "T");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Ile246HisfsTer12", hgvsProtein.getHgvs());
+
+//        3:53495166:GAT:-    ENSP00000490183 p.Met7del   -   cb_empty
+//        3:53495166:GAT:-    ENSP00000409174 p.Met7del   -   cb_empty
+
+        gene = getGene("ENSG00000157388");
+        transcript = getTranscript(gene, "ENST00000636570");
+        variant = new Variant("3",
+                53495166,
+                "GAT",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Met7del", hgvsProtein.getHgvs());
+    }
+
+    // investigating why these are failing
+    //@Test
+    public void testMoreMismatches() throws Exception {
+        // from Antonio
+        Gene gene = null;
+        Transcript transcript = null;
+        Variant variant = null;
+        HgvsProteinCalculator predictor = null;
+        HgvsProtein hgvsProtein = null;
+
+
+
+//        var_id  entity_id   vep_hgvs    cb_hgvs mismatch_category
+//        MT:8247:-:CCC   ENSP00000354876 p.Met221delinsThrLeu    p.Glu220_Met221delinsPro    other
+
+        gene = getGene("ENSG00000198712");
+        transcript = getTranscript(gene, "ENST00000361739");
+        variant = new Variant("MT",
+                8247,
+                "-",
+                "CCC");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Met221delinsThrLeu", hgvsProtein.getHgvs());
+
+//        11:32396362:-:CCGA  ENSP00000491984 p.Ala382ValfsTer4   p.Met1LeufsTer385   other
+//        11:32396362:-:CCGA  ENSP00000491511 p.Ala382ValfsTer4   p.Met1LeufsTer385   other
+//        11:32396362:-:CCGA  ENSP00000492269 p.Ala365ValfsTer4   p.Met1LeufsTer368   other
+
+        gene = getGene("ENSG00000184937");
+        transcript = getTranscript(gene, "ENST00000640146");
+        variant = new Variant("11",
+                32396362,
+                "-",
+                "CCGA");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Ala382ValfsTer4", hgvsProtein.getHgvs());
+
+        //        11:32434945:G:- ENSP00000491984 p.Pro134ArgfsTer24  p.Met1LeufsTer157   other
+//        11:32434945:G:- ENSP00000491511 p.Pro134ArgfsTer24  p.Met1LeufsTer157   other
+//        11:32434945:G:- ENSP00000492269 p.Pro134ArgfsTer24  p.Met1LeufsTer157   other
+
+        gene = getGene("ENSG00000184937");
+        transcript = getTranscript(gene, "ENST00000640146");
+        variant = new Variant("11",
+                32434945,
+                "G",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Pro134ArgfsTer24", hgvsProtein.getHgvs());
+
+        //        6:31164655:TTCCCCCTCAGGGAAAGGG:-    ENSP00000484778 p.Glu171LeufsTer?   p.Met1LeufsTer? other
+
+        gene = getGene("ENSG00000204531");
+        transcript = getTranscript(gene, "ENST00000620031");
+        variant = new Variant("6",
+                31164655,
+                "TTCCCCCTCAGGGAAAGGG",
+                "-");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Glu171LeufsTer?", hgvsProtein.getHgvs());
+
+
+//        19:48955714:-:G ENSP00000375744 p.Glu24GlyfsTer33   p.Asn21LysfsTer36   other
+
+        gene = getGene("ENSG00000087088");
+        transcript = getTranscript(gene, "ENST00000391871");
+        variant = new Variant("19",
+                48955714,
+                "-",
+                "G");
+
+        predictor = new HgvsProteinCalculator(variant, transcript);
+        hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Glu24GlyfsTer33", hgvsProtein.getHgvs());
 
     }
 

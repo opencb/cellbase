@@ -11,7 +11,7 @@ if [ -e "${BASEDIR}/monitor/dd-java-agent.jar" ]; then
     MONITOR_AGENT="-javaagent:${BASEDIR}/monitor/dd-java-agent.jar"
 fi
 
-export JAVA_HEAP="100G"
+export JAVA_HEAP="10G"
 export CELLBASE_LOG_DIR=${CELLBASE_LOG_DIR}
 export CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-"INFO"}
 export CELLBASE_LOG_CONFIG="log4j2.file.xml"

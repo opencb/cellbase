@@ -176,7 +176,10 @@ public class ClinicalVariantParser extends CellBaseParser {
 
     private Variant parseVariantFromVariantId(String variantId) {
         String[] parts = variantId.split(":", -1); // -1 to include empty fields
-        return new Variant(parts[0].trim(), Integer.valueOf(parts[1].trim()), parts[2], parts[3]);
+        //return new Variant(parts[0].trim(), Integer.valueOf(parts[1].trim()), parts[2], parts[3]);
+        // start and end are separated by a dash -
+        String start = parts[1].split("-")[0];
+        return new Variant(parts[0].trim(), Integer.valueOf(start), parts[2], parts[3]);
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {
