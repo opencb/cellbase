@@ -87,6 +87,26 @@ public class ClinicalVariantBuilderTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
     }
 
+
+    @Test
+    public void testReallyLongVariant() throws Exception {
+        cleanUp();
+
+        initGrch38();
+
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(5, parsedVariantList.size());
+
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV001064159");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("10", variant.getChromosome());
+        assertEquals(Integer.valueOf(102617428), variant.getStart());
+        assertEquals("AGTGAGAAGGCCCTTTTTCTTCTCCCTCCTTCCTTTCATAGACTTCCTTGCCCACCCCTCCTCTTCTCCCTTGGCAGCTCTTGATGGCACCCCTTCCTGGGGGGCTGGTCATGAATGCCTCATGGATTCAGGGCCTGGGGCCTGTGTGTAGGTATGGAGTGTGGATGCTGCTACCCACTCCAGCAGCTTAGGAGCACTTCCTGACCTTCTCCCCCTGTCACCTGAGACACAAGTGTTAACTCTCCAGGCCCTGGCTCTTGGTAATTCTGGTTCCCCGTGGAAATCCAGGTTGGAGGGATATAAGACTTTCTGCACCTTGGGTAAACCAAGGTACAAGAACTCAAGGATGAAGCAAGATGGGAGGATGTGTGGAGGCCACTCTCCAATGGCTACATGGAAATCCCACCAGAATTCAGACAGTGGCATGTGTGCCTGGACCAGGGCTGGGCAGGCCTC", variant.getReference());
+        assertEquals("", variant.getAlternate());
+
+    }
+
     @Test
     public void testDecompose() throws Exception {
         // Remove all previous clinical variant temporary test data

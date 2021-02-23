@@ -1218,7 +1218,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("3", 37089111, "TGTTGAGTTTCTGAA", "T");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(37089112), queryResult.getResult().get(0).getStart());
+        assertEquals(Integer.valueOf(37089111), queryResult.getResult().get(0).getStart());
         assertEquals("GTTGAGTTTCTGAA", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNull(queryResult.getResult().get(0).getTraitAssociation());
@@ -1235,7 +1235,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("13", 32912901, "TAAGA", "T");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(32912902), queryResult.getResult().get(0).getStart());
+        assertEquals(Integer.valueOf(32912901), queryResult.getResult().get(0).getStart());
         assertEquals("AAGA", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
