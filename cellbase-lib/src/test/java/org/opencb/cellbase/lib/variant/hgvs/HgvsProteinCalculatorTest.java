@@ -75,6 +75,28 @@ public class HgvsProteinCalculatorTest {
 
     }
 
+    @Test
+    public void testCellBaseEmpty() throws Exception {
+        // cellbase not reporting this one:
+        // 12:51807429:G:C
+
+        //12:51807429:G:C	ENSP00000347255	p.Ter1940TyrextTer?	-	cb_empty	9409
+        //12:51807429:G:C	ENSP00000487583	p.Ter1981TyrextTer?	-	cb_empty	9409
+        //12:51807429:G:C	ENSP00000476447	p.Ter1992TyrextTer?	-	cb_empty	9409
+
+        Gene gene = getGene("ENSG00000196876");
+        Transcript transcript = getTranscript(gene, "ENST00000355133");
+        Variant variant = new Variant("12",
+                51807429,
+                "G",
+                "C");
+
+        HgvsProteinCalculator predictor = new HgvsProteinCalculator(variant, transcript);
+        HgvsProtein hgvsProtein = predictor.calculate();
+        Assert.assertEquals("p.Ter1940TyrextTer?", hgvsProtein.getHgvs());
+
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////// INSERTIONS //////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
