@@ -835,9 +835,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (emptySequence(reference) && !emptySequence(alternate) && end == (start + 1)) {
             // NOTE! swapped start and end
             return new SequenceLocation(chromosome, end, start, reference, alternate);
-        } else if (alternate.length() == 1 && reference.length() > 1 && reference.startsWith(alternate)) {
-            // variant summary file has the wrong location for deletions. Adjust!
-            return new SequenceLocation(chromosome, start - 1, end, reference, alternate);
+//        } else if (alternate.length() == 1 && reference.length() > 1 && reference.startsWith(alternate)) {
+//            // variant summary file has the wrong location for deletions. Adjust!
+//            return new SequenceLocation(chromosome, start - 1, end, reference, alternate);
         } else {
             return new SequenceLocation(chromosome, start, end, reference, alternate);
         }
