@@ -298,7 +298,7 @@ public class HgvsProteinCalculator {
                 }
 
                 // Check if the the original amino acid is kept
-                if (refAa.equalsIgnoreCase(insertLeftAa) || refAa.equalsIgnoreCase(insertRightAa)) {
+                if (StringUtils.isNotEmpty(refAa) && (refAa.equalsIgnoreCase(insertLeftAa) || refAa.equalsIgnoreCase(insertRightAa))) {
                     // Check if the new sequence is inserted left or right to the original reference codon.
                     // Remove the reference codon and update codonPosition for the insertion
                     if (refAa.equalsIgnoreCase(insertLeftAa)) {
