@@ -20,39 +20,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.mongodb.util.JSON;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
-import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
 
@@ -1218,7 +1200,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("3", 37089111, "TGTTGAGTTTCTGAA", "T");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(37089111), queryResult.getResult().get(0).getStart());
+        assertEquals(Integer.valueOf(37089112), queryResult.getResult().get(0).getStart());
         assertEquals("GTTGAGTTTCTGAA", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNull(queryResult.getResult().get(0).getTraitAssociation());
@@ -1235,7 +1217,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("13", 32912901, "TAAGA", "T");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(32912901), queryResult.getResult().get(0).getStart());
+        assertEquals(Integer.valueOf(32912902), queryResult.getResult().get(0).getStart());
         assertEquals("AAGA", queryResult.getResult().get(0).getReference());
         assertEquals("", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
@@ -1243,6 +1225,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
 
     }
+
 
     private boolean containsAccession(VariantAnnotation variantAnnotation, String accession) {
         boolean found = false;
