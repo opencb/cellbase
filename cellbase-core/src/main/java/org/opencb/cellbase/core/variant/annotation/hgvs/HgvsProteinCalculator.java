@@ -311,7 +311,7 @@ public class HgvsProteinCalculator {
                 } else {
                     // HGVS DELETION-INSERTION
                     // The insertion happens between codonPosition - 1 and codonPosition
-                    return this.hgvsDeletionInsertionFormatter(codonPosition - 1, codonPosition, alternate);
+                    return this.hgvsDeletionInsertionFormatter(codonPosition, codonPosition, insSequence);
                 }
             }
         } else {
@@ -851,8 +851,6 @@ public class HgvsProteinCalculator {
             return null;
         }
 
-
-
         // Get CDS position
         int cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getEnd());
         if (cdsVariantStartPosition == 0) {
@@ -889,9 +887,10 @@ public class HgvsProteinCalculator {
             Quite simply, there is not a rule. This is a situation of exceptional biology which we are only able to annotate correctly
             because of our expert manual gene annotators analysing the data in detail."
 
-            Only relevant for frameshifts, and transcripts with confirmed starts.
+            Only relevant for frameshifts and where transcripts with confirmed starts. Should not be needed if Ensembl ever makes the
+            non-ATG start tag available in the GTF file.
             */
-            // fast forward past first
+            // fast forward past first codon
             alternateProteinSeq.append("M");
             currentAaIndex++;
             codonIndex += 3;
@@ -917,7 +916,8 @@ public class HgvsProteinCalculator {
             // Alternate protein can miss a STOP codon and be longer than the reference protein
             if (currentAaIndex < transcript.getProteinSequence().length()) {
                 String referenceCodedAa = String.valueOf(transcript.getProteinSequence().charAt(currentAaIndex));
-//                System.out.println((currentAaIndex + 1) + ": " + referenceCodedAa + " - " + alternateCodedAa + " - " + alternateCodon);
+                //System.out.println((currentAaIndex + 1) + ": " + referenceCodedAa + " - " + alternateCodedAa + " - " + alternateCodon +
+                //        "(" + codonIndex + ")");
 
                 // STOP codons cannot exist inside the protein, and if a new STOP codon is generated the while loop os broken below.
                 // The only explanation for this STOP codpn is to be the SEC amino acid.
@@ -940,7 +940,6 @@ public class HgvsProteinCalculator {
                         firstReferencedAa = StringUtils.capitalize(longAA.toLowerCase());
                         firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
                         firstDiffIndex = currentAaIndex;
-
                     }
 
                     if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
@@ -951,7 +950,7 @@ public class HgvsProteinCalculator {
             } else {
                 // We have passed the protein sequence, the first time we get here is the STOP codon.
                 // Incomplete 3' proteins do not reach this point, while finish before because last codon is not complete.'
-//                System.out.println((currentAaIndex + 1) + ": null - " + alternateCodedAa + " - " + alternateCodon);
+                //System.out.println((currentAaIndex + 1) + ": null - " + alternateCodedAa + " - " + alternateCodon);
                 if (currentAaIndex == transcript.getProteinSequence().length()) {
                     if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
                         // STOP codon remains the same
@@ -1028,41 +1027,6 @@ public class HgvsProteinCalculator {
         }
 
         return new HgvsProtein(getProteinIds(), hgvsString, alternateProteinSeq.toString());
-    }
-
-    protected char aaAt(int position) {
-        return alternateProteinSequence.subSequence(position, position).charAt(0);
-    }
-
-    /**
-     *
-     * @return the AA sequence for the alternate
-     */
-    protected String getSequence() {
-        return alternateProteinSequence.toString();
-    }
-
-    protected String getSequence(int start, int end) {
-        return alternateProteinSequence.subSequence(start, end).toString();
-    }
-
-    // FIXME need to do this check early
-    protected boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
-        if (buildingComponents.getCdnaStart().getOffset() == 0  // Start falls within coding exon
-                && buildingComponents.getCdnaEnd().getOffset() == 0) { // End falls within coding exon
-
-            List<Exon> exonList = transcript.getExons();
-            // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
-            // coordinate to the position
-            Exon nearestExon = exonList.stream().min(Comparator.comparing(exon ->
-                    Math.min(Math.abs(variant.getStart() - exon.getStart()),
-                            Math.abs(variant.getStart() - exon.getEnd())))).get();
-
-            // Check if the same exon contains the variant end
-            return variant.getEnd() >= nearestExon.getStart() && variant.getEnd() <= nearestExon.getEnd();
-
-        }
-        return false;
     }
 
     private List<String> getProteinIds() {
