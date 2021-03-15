@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
