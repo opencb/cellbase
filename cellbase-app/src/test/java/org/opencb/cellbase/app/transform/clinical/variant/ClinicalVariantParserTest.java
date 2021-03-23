@@ -77,7 +77,7 @@ public class ClinicalVariantParserTest {
         assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
         assertEquals("10", variant.getChromosome());
-        assertEquals(Integer.valueOf(102617429), variant.getStart());
+        assertEquals(Integer.valueOf(102617428), variant.getStart());
         assertEquals("AGTGAGAAGGCCCTTTTTCTTCTCCCTCCTTCCTTTCATAGACTTCCTTGCCCACCCCTCCTCTTCTCCCTTGGCAGCTCTTGATGGCACCCCTTCCTGGGGGGCTGGTCATGAATGCCTCATGGATTCAGGGCCTGGGGCCTGTGTGTAGGTATGGAGTGTGGATGCTGCTACCCACTCCAGCAGCTTAGGAGCACTTCCTGACCTTCTCCCCCTGTCACCTGAGACACAAGTGTTAACTCTCCAGGCCCTGGCTCTTGGTAATTCTGGTTCCCCGTGGAAATCCAGGTTGGAGGGATATAAGACTTTCTGCACCTTGGGTAAACCAAGGTACAAGAACTCAAGGATGAAGCAAGATGGGAGGATGTGTGGAGGCCACTCTCCAATGGCTACATGGAAATCCCACCAGAATTCAGACAGTGGCATGTGTGCCTGGACCAGGGCTGGGCAGGCCTC", variant.getReference());
         assertEquals("", variant.getAlternate());
 
@@ -132,7 +132,7 @@ public class ClinicalVariantParserTest {
         assertEquals(1, variantList.size());
         variant = variantList.get(0);
         assertEquals("11", variant.getChromosome());
-        assertEquals(Integer.valueOf(5225488), variant.getStart());
+        assertEquals(Integer.valueOf(5225487), variant.getStart());
         assertEquals("TA", variant.getReference());
         assertEquals("", variant.getAlternate());
 
@@ -140,7 +140,7 @@ public class ClinicalVariantParserTest {
         assertEquals(1, variantList.size());
         variant = variantList.get(0);
         assertEquals("19", variant.getChromosome());
-        assertEquals(Integer.valueOf(11089412), variant.getStart());
+        assertEquals(Integer.valueOf(11089411), variant.getStart());
         assertEquals("T", variant.getReference());
         assertEquals("", variant.getAlternate());
 
