@@ -141,7 +141,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        logger.info("options: {}", options.toJson());
+        logger.debug("options: {}", options.toJson());
         return postDBFiltering(query, mongoDBCollection.find(bson, options));
     }
 
