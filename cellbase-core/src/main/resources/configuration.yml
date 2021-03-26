@@ -93,7 +93,9 @@ download:
   gerp:
     host: ftp://ftp.ensembl.org/pub/current_compara/conservation_scores/103_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
   clinvar:
-    host: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2020-02.xml.gz
+    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-03.xml.gz
+  clinvarVariation:
+    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-03.xml.gz
   clinvarSummary:
     host: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
   clinvarVariationAllele:
