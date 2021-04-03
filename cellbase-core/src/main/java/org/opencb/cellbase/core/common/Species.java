@@ -18,71 +18,86 @@ package org.opencb.cellbase.core.common;
 
 public class Species {
 
-    private String species;
+    private String id;
     private String common;
     private String scientific;
     private String assembly;
     private String taxonomy;
 
-    public Species(String species, String assembly, String taxonomy) {
-        super();
-        this.species = species;
+    public Species(String id, String assembly) {
+        this.id = id;
         this.assembly = assembly;
-        this.taxonomy = taxonomy;
     }
 
-    public Species(String shortName, String commonName, String scientificName, String assembly) {
-        super();
-        this.species = shortName;
+    public Species(String id, String commonName, String scientificName, String assembly) {
+        this.id = id;
         this.common = commonName;
         this.scientific = scientificName;
         this.assembly = assembly;
     }
 
+    public Species(String id, String common, String scientific, String assembly, String taxonomy) {
+        this.id = id;
+        this.common = common;
+        this.scientific = scientific;
+        this.assembly = assembly;
+        this.taxonomy = taxonomy;
+    }
 
     @Override
     public String toString() {
-        return species + "\t" + common + "\t" + scientific + "\t" + assembly;
+        final StringBuilder sb = new StringBuilder("Species{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", common='").append(common).append('\'');
+        sb.append(", scientific='").append(scientific).append('\'');
+        sb.append(", assembly='").append(assembly).append('\'');
+        sb.append(", taxonomy='").append(taxonomy).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
-
-    public String getSpecies() {
-        return species;
+    public String getId() {
+        return id;
     }
 
-
-    public void setSpecies(String species) {
-        this.species = species;
+    public Species setId(String id) {
+        this.id = id;
+        return this;
     }
-
 
     public String getCommon() {
         return common;
     }
 
-
-    public void setCommon(String common) {
+    public Species setCommon(String common) {
         this.common = common;
+        return this;
     }
-
 
     public String getScientific() {
         return scientific;
     }
 
-
-    public void setScientific(String scientific) {
+    public Species setScientific(String scientific) {
         this.scientific = scientific;
+        return this;
     }
-
 
     public String getAssembly() {
         return assembly;
     }
 
-
-    public void setAssembly(String assembly) {
+    public Species setAssembly(String assembly) {
         this.assembly = assembly;
+        return this;
     }
 
+    public String getTaxonomy() {
+        return taxonomy;
+    }
+
+    public Species setTaxonomy(String taxonomy) {
+        this.taxonomy = taxonomy;
+        return this;
+    }
 }
