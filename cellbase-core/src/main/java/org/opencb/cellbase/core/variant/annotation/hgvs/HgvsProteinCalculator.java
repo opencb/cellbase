@@ -35,7 +35,7 @@ public class HgvsProteinCalculator {
     protected BuildingComponents buildingComponents = null;
 
     public static final int MAX_NUMBER_AMINOACIDS_DISPLAYED = 10;
-
+    private static final Integer MAXIMUM_HGVS_DELETION_LENGTH = 1000;
     /**
      * Constructor.
      *
@@ -54,6 +54,10 @@ public class HgvsProteinCalculator {
      * @return HGVSp string for variant and transcript
      */
     public HgvsProtein calculate() {
+        // Check reference and alternate alleles do not contain unexpected characters
+        if (!HgvsCalculator.isValid(this.variant)) {
+            return null;
+        }
         // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
         if (!transcriptUtils.isCoding() || StringUtils.isEmpty(transcript.getProteinSequence())) {
             return null;
@@ -80,7 +84,12 @@ public class HgvsProteinCalculator {
             case INSERTION:
                 return calculateInsertionHgvs();
             case DELETION:
-                return calculateDeletionHgvs();
+                // Only for deletions shorter than a threshold
+                if (variant.getLength() < MAXIMUM_HGVS_DELETION_LENGTH) {
+                    return calculateDeletionHgvs();
+                } else {
+                    return null;
+                }
             default:
                 // TODO throw an error?
                 logger.error("Don't know how to handle this variant of type {}", variant.getType());
@@ -232,6 +241,11 @@ public class HgvsProteinCalculator {
 
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+
+        // No prediction to be made if the variant falls on the first codon and this codon is incomplete
+        if (positionAtCodon == 0) {
+            return null;
+        }
 
         // Check if this is an in an insertion, duplication or frameshift.
         // Alternate length for Insertions and Duplications must be multiple of 3, otherwise it is a frameshift.
