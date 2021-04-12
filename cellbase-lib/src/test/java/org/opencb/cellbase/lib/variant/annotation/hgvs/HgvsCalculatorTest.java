@@ -42,14 +42,42 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 
+    public void initGRch38() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/hgvs/gene_grch38.test.json.gz").toURI());
+        loadRunner.load(path, "gene");
+        path = Paths.get(getClass()
+                .getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
+        hgvsCalculator = new HgvsCalculator(dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37"));
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+    }
+
     @Test
     public void testIncompleteStartCodon() throws Exception {
         // incomplete start codon
         // VEP isn't predicting these, so we aren't either. But should not throw an exception!
+        // grch37
         List<String> hgvsList = getVariantHgvs(new Variant("X",
                 153050159,
                 "-",
                 "CCC"));
+        // no protein hgvs expected
+        assertNumberProteinHGVS(0, hgvsList);
+    }
+
+    @Test
+    public void testTooLongInsertion() throws Exception {
+        initGRch38();
+
+        // SVs aren't supported for HGVS but should not throw an exception!
+        // 8:978015-978014::TGGGTTCTGGTCTTTGGTGTTGTGGGGAGGGCGTCGGGGATGCAGTGAGGGGCTGGGTTCTGGTCTTTGGTGTTGTGGGGAGGGCGTCGGGGATGCAGTGAGAGGG
+        // grch38
+        List<String> hgvsList = getVariantHgvs(new Variant("8",
+                978015,
+                "-",
+                "TGGGTTCTGGTCTTTGGTGTTGTGGGGAGGGCGTCGGGGATGCAGTGAGGGGCTGGGTTCTGGTCTTTGGTGTTGTGGGGAGGGCGTCGGGGATGCAGTGAGAGGG"));
         // no protein hgvs expected
         assertNumberProteinHGVS(0, hgvsList);
     }
