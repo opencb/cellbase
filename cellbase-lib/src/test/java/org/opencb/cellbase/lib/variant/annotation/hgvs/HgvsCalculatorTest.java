@@ -43,6 +43,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testIncompleteStartCodon() throws Exception {
+        // incomplete start codon
+        // VEP isn't predicting these, so we aren't either. But should not throw an exception!
+        List<String> hgvsList = getVariantHgvs(new Variant("X",
+                153050159,
+                "-",
+                "CCC"));
+        // no protein hgvs expected
+        assertNumberProteinHGVS(0, hgvsList);
+    }
+
+    @Test
     public void testProteinHgvsInsertion() throws Exception {
         // Frameshift on the last aa causes generation of exact same aa followed by stop codon, i.e.
         // original sequence            ......CTGGCT
