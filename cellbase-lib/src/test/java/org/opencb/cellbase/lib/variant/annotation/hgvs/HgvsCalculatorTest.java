@@ -212,18 +212,27 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "CTTFGA"));
         // none protein hgvs expected
         assertNumberProteinHGVS(0, hgvsList);
-//
-//        // An example that used to fail taken from ClinVar
-//        hgvsList = getVariantHgvs(new Variant("10",
-//                104263974,
-//                "-",
-//                "C"));
-//        // three protein hgvs expected, checked against variant validator
-//        assertNumberProteinHGVS(3, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000358918:p.Ala25fs",
-//                "ENSP00000358915:p.Ala25fs",
-//                "ENSP00000411597:p.Ala25fs"));
-//
+
+        // An example that used to fail taken from ClinVar
+        hgvsList = getVariantHgvs(new Variant("10",
+                104263974,
+                "-",
+                "C"));
+        // three protein hgvs expected, checked against ensembl
+        // http://grch37.ensembl.org/Homo_sapiens/Variation/Explore?db=core;g=ENSG00000107882;r=10:104263744-104393292;
+        // source=dbSNP;t=ENST00000369902;v=rs587776579;vdb=variation;vf=262434456
+        //     NC_000010.10:g.104263980_104263981insC
+        //    ENST00000369899.2:c.71_72insC
+        //    ENSP00000358915.2:p.Ala25GlyfsTer23
+        //    ENST00000369902.3:c.71_72insC
+        //    ENSP00000358918.3:p.Ala25GlyfsTer23
+        //    ENST00000423559.2:c.71_72insC
+        //    ENSP00000411597.2:p.Ala25GlyfsTer23
+        assertNumberProteinHGVS(3, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000358918:p.Ala25GlyfsTer23",
+                "ENSP00000358915:p.Ala25GlyfsTer23",
+                "ENSP00000411597:p.Ala25GlyfsTer23"));
+
         // Unexpected nt character "F" should not return any protein HGVS
         hgvsList = getVariantHgvs(new Variant("22",
                 38318124,
@@ -231,16 +240,16 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "FGA"));
         // two protein hgvs expected
         assertNumberProteinHGVS(0, hgvsList);
-//
-//        // Affects last incomplete codon (i.e. end of the codon goes beyond transcript ENST00000513223 sequence). Just
-//        // one protein HGVS (validated with variant validator) must be returned for the other coding transcript
-//        // (ENST00000264930/ENSP00000264930).
-//        hgvsList = getVariantHgvs(new Variant("22",
-//                38318124,
-//                "-",
-//                "TAA"));
-//        // two protein hgvs expected
-//        assertNumberProteinHGVS(2, hgvsList);
+
+        // Affects last incomplete codon (i.e. end of the codon goes beyond transcript ENST00000513223 sequence). Just
+        // one protein HGVS (validated with variant validator) must be returned for the other coding transcript
+        // (ENST00000264930/ENSP00000264930).
+        hgvsList = getVariantHgvs(new Variant("22",
+                38318124,
+                "-",
+                "TAA"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(2, hgvsList);
 //        // I have no good means of checking "ENSP00000404543:p.Gln155Ter" as this
 //        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
 //        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
