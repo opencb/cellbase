@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.common.clinical;
 
-import org.opencb.biodata.formats.variant.clinvar.v59jaxb.PublicSetType;
+import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.PublicSetType;
 
 /**
  * Created by parce on 10/29/14.

@@ -18,8 +18,8 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v59jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.rcv.ClinvarParser;
+import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -31,6 +31,8 @@ import org.rocksdb.RocksDBException;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -38,8 +40,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.io.File;
-import java.io.FilenameFilter;
 
 //import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 
@@ -48,7 +48,7 @@ import java.io.FilenameFilter;
  */
 public class ClinVarIndexer extends ClinicalIndexer {
 
-    private static final String CLINVAR_CONTEXT = "org.opencb.biodata.formats.variant.clinvar.v59jaxb";
+    private static final String CLINVAR_CONTEXT = "org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb";
 
     private static final String CLINVAR_NAME = "clinvar";
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
