@@ -207,24 +207,25 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "TAA"));
         // two protein hgvs expected
         assertNumberProteinHGVS(2, hgvsList);
-//        // I have no good means of checking "ENSP00000404543:p.Gln155Ter" as this
-//        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
-//        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
-//        // test this particular bit of code (insertion of a STOP codon). The other one (ENSP00000215957:p.Gln239Ter)
-//        // has been properly validated with variant validator
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Gln239Ter", "ENSP00000404543:p.Gln155Ter"));
-//
-//        // Affects last incomplete codon (i.e. end of the codon goes beyond transcript (ENST00000513223) sequence). Just
-//        // one protein HGVS (validated with variant validator) must be returned for the other coding transcript
-//        // (ENST00000264930/ENSP00000264930).
-//        hgvsList = getVariantHgvs(new Variant("5",
-//                1057644,
-//                "-",
-//                "A"));
-//        // two protein hgvs expected
-//        assertNumberProteinHGVS(1, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000264930:p.Lys990fs"));
-//
+        // I have no good means of checking "ENSP00000404543:p.Gln155Ter" as this
+        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
+        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
+        // test this particular bit of code (insertion of a STOP codon). The other one (ENSP00000215957:p.Gln239Ter)
+        // has been properly validated with variant validator
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Lys238_Gln239insTer", "ENSP00000404543:p.Lys154_Gln155insTer"));
+
+        // Affects last incomplete codon (i.e. end of the codon goes beyond transcript (ENST00000513223) sequence). Just
+        // one protein HGVS (validated with variant validator) must be returned for the other coding transcript
+        // (ENST00000264930/ENSP00000264930).
+        hgvsList = getVariantHgvs(new Variant("5",
+                1057644,
+                "-",
+                "A"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(2, hgvsList);
+        //validated by VEP
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000264930:p.Lys990IlefsTer70"));
+
         // Duplication of 1 single aa
         hgvsList = getVariantHgvs(new Variant("22",
                 38318124,
@@ -368,6 +369,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // deletion originally falling outside the coding region, if after normalisation falls within the coding region
         // then protein hgvs must be returned. Variant Validator returns things like "p.(Met1?)"; i've been searching
         // for the use of the "?" but couldn't find anything quickly so i'm sticking to this representation
+        // FIXME does not validate
 //        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000357284:p.Met1_Thr3del",
 //                "ENSP00000292304:p.Met1_Thr3del",
 //                "ENSP00000355292:p.Met1_Thr3del",
@@ -377,25 +379,23 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // Made-up variant derived from a ClinVar deletion that used to break the code; affects start of an
         // unconfirmed-start transcript (ENST00000372421) by affecting the start codon that would span out of the
         // transcript sequence boundaries. Therefore, no protein HGVS must be returned fot the corresponding protein.
-        // Rest of protein HGVS (except "ENSP00000396608:p.Asn2fs" for which there's no protein in variant validator)
-        // have been validated using Variant Validator.
+        // validated via VEP
         hgvsList = getVariantHgvs(new Variant("10",
                 79397316,
                 "TATTG",
                 "-"));
-        // two protein hgvs expected
-//        assertNumberProteinHGVS(11, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000396608:p.Asn2fs",
-//                "ENSP00000385717:p.Asn28fs",
-//                "ENSP00000361517:p.Asn28fs",
-//                "ENSP00000361520:p.Asn28fs",
-//                "ENSP00000286628:p.Asn28fs",
-//                "ENSP00000286627:p.Asn28fs",
-//                "ENSP00000385552:p.Asn28fs",
-//                "ENSP00000346321:p.Asn28fs",
-//                "ENSP00000385806:p.Asn28fs",
-//                "ENSP00000475086:p.Asn28fs",
-//                "ENSP00000474686:p.Asn28fs"));
+        assertNumberProteinHGVS(12, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000396608:p.Asn2ProfsTer103",
+                "ENSP00000385717:p.Asn28ProfsTer103",
+                "ENSP00000361517:p.Asn28ProfsTer103",
+                "ENSP00000361520:p.Asn28ProfsTer103",
+                "ENSP00000286628:p.Asn28ProfsTer103",
+                "ENSP00000286627:p.Asn28ProfsTer103",
+                "ENSP00000385552:p.Asn28ProfsTer103",
+                "ENSP00000346321:p.Asn28ProfsTer103",
+                "ENSP00000385806:p.Asn28ProfsTer103",
+                "ENSP00000475086:p.Asn28ProfsTer137",
+                "ENSP00000474686:p.Asn28ProfsTer119"));
 
         // Removes last CODING nts positive strand - will require additional query to genome sequence
         hgvsList = getVariantHgvs(new Variant("5",
@@ -404,23 +404,22 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "-"));
         // two protein hgvs expected
         assertNumberProteinHGVS(2, hgvsList);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000296824:p.Gln68fs", "ENSP00000411206:p.Gln68fs"));
-
+        // FIXME VEP says ENSP00000411206:p.Ter68=
+        // assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000296824:p.Gln68HisfsTer9", "ENSP00000411206:p.Gln68_Asp69del"));
 
         // Removes last CODING nts positive strand - will require additional query to genome sequence
         hgvsList = getVariantHgvs(new Variant("22",
                 38333157,
                 "GCAG",
                 "-"));
-        // two protein hgvs expected
-//        assertNumberProteinHGVS(3, hgvsList);
-//        // I have no good means of checking "ENSP000(00406053:p.Glu369fs" nor "ENSP00000416766:p.Glu107fs" as this
-//        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
-//        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
-//        // test this particular bit of code (raising additional query to genome sequence)
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Glu793fs",
-//                "ENSP00000406053:p.Glu369fs",
-//                "ENSP00000416766:p.Glu107fs"));
+        assertNumberProteinHGVS(2, hgvsList);
+        // I have no good means of checking "ENSP000(00406053:p.Glu369fs" nor "ENSP00000416766:p.Glu107fs" as this
+        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
+        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
+        // test this particular bit of code (raising additional query to genome sequence)
+        // FIXME "ENSP00000406053:p.Glu369_Gln370del", not returned but is in VEP
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Glu793AspfsTer26",
+                "ENSP00000416766:p.Glu107AspfsTer26"));
 
         // Removes last CODING nts negative strand - will require additional query to genome sequence
         hgvsList = getVariantHgvs(new Variant("5",
