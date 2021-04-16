@@ -2003,17 +2003,120 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         initGrch38();
 
-        Variant variant = new Variant("11:68409894:TCCTCCTCACCTGCTGCCAGACCATCAGCCGCGCCTTCATGAACGGGAGCTCGGTGGAGCACGTGGTGGAGTTTGGCCTTGACTACCCCGAGGGCATGGCCGTTGACTGGATGGGCAAGAACCTCTACTGGGCCGACACTGGGACCAACAGAATCGAAGTGGCGCGGCTGGACGGGCAGTTCCGGCAAGTCCTCGTGTGGAGGGACTTGGACAACCCGAGGTCGCTGGCCCTGGATCCCACCAAGG:-");
+        Variant variant = null;
+        QueryResult<VariantAnnotation> queryResult = null;
+        List<VariantAnnotation> results = null;
+        VariantAnnotation variantAnnotation = null;
+
+        List<ConsequenceType> consequenceTypeList = null;
+        ConsequenceType consequenceType = null;
+
+// chr11	68409814	LONG_DEL_START_EXON_REGION	ACCATCAGCCGCGCCTTCATGAACGGGAGCTCGGTGGAGCACGTGGTGGAGTTTGGCCTTGACTACCCCGAGGGCATGGCCGTTGACTGGATGGGCAAGA	<DEL>	"{'feature_truncation', 'intron_variant', 'splice_acceptor_variant'}"	"{'splice_region_variant','frameshift_variant'}"	No
+        variant = new Variant("11:68409814:ACCATCAGCCGCGCCTTCATGAACGGGAGCTCGGTGGAGCACGTGGTGGAGTTTGGCCTTGACTACCCCGAGGGCATGGCCGTTGACTGGATGGGCAAGA:-");
         variant.setStrand("+");
 
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
 
         assertEquals(1, queryResult.getResult().size());
-        List<VariantAnnotation> results = queryResult.getResult();
-        VariantAnnotation variantAnnotation = results.get(0);
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
 
-        List<ConsequenceType> consequenceTypeList = variantAnnotation.getConsequenceTypes();
-        ConsequenceType consequenceType = getConsequenceType(consequenceTypeList, "ENST00000529993");
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000294304");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
+                                "splice_region_variant"),
+                        new SequenceOntologyTerm("SO:0001589",
+                                "frameshift_variant")));
+
+// chr11	68410141	SHORT_INS_END_EXON_ACCEPTOR	N	GN	{'splice_donor_variant'}	"{'splice_region_variant','frameshift_variant'}"	No
+        variant = new Variant("11:68410141:-:G");
+        variant.setStrand("+");
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
+
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000294304");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
+                                "splice_region_variant"),
+                        new SequenceOntologyTerm("SO:0001589",
+                                "frameshift_variant")));
+
+// chr11	68179088	SHORT_ORIGINAL_EXAMPLE	GGG	<DEL>	"{'intron_variant', '2KB_downstream_variant'}"	{'splice_donor_variant'}	No
+        variant = new Variant("11:68179088:GGG:-");
+        variant.setStrand("-");
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
+
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000304363");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
+                                "splice_region_variant"),
+                        new SequenceOntologyTerm("SO:0001589",
+                                "frameshift_variant")));
+
+
+// chr11	68178993	LONG_ORIGINAL_EXAMPLE	TGGGCCGGGCCAACGACCTCACCATTGACTACGCTGACCAGCGCCTCTACTGGACCGACCTGGACACCAACATGATCGAGTCGTCCAACATGCTGGGTGAGGGCCGGGCTGGGGCCTTCTGGTCATGGAGGGCGGGGCAGCCGGGCGTTGGCCACCTCCCAGCCTCGCCGCACA	<DEL>	"{'feature_truncation', 'intron_variant', '2KB_downstream_variant'}"	{'splice_donor_variant'}	No
+        variant = new Variant("11:68178993:TGGGCCGGGCCAACGACCTCACCATTGACTACGCTGACCAGCGCCTCTACTGGACCGACCTGGACACCAACATGATCGAGTCGTCCAACATGCTGGGTGAGGGCCGGGCTGGGGCCTTCTGGTCATGGAGGGCGGGGCAGCCGGGCGTTGGCCACCTCCCAGCCTCGCCGCACA:-");
+        variant.setStrand("-");
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
+
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000304363");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001575",
+                                "splice_donor_variant")));
+
+// chr11	68449069	SHORT_INS_FIRST_EXON_END_LOST	N	GN	{'frameshift_variant'}	"{'frameshift_variant','stop_lost'}"	No
+        variant = new Variant("11:68449069:-:G");
+        variant.setStrand("+");
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
+
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000529993");
+        assertThat(consequenceType.getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001578",
+                                "stop_lost"),
+                        new SequenceOntologyTerm("SO:0001589",
+                                "frameshift_variant")));
+
+
+
+
+
+
+
+        variant = new Variant("11:68409894:TCCTCCTCACCTGCTGCCAGACCATCAGCCGCGCCTTCATGAACGGGAGCTCGGTGGAGCACGTGGTGGAGTTTGGCCTTGACTACCCCGAGGGCATGGCCGTTGACTGGATGGGCAAGAACCTCTACTGGGCCGACACTGGGACCAACAGAATCGAAGTGGCGCGGCTGGACGGGCAGTTCCGGCAAGTCCTCGTGTGGAGGGACTTGGACAACCCGAGGTCGCTGGCCCTGGATCCCACCAAGG:-");
+        variant.setStrand("+");
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, new QueryOptions());
+
+        assertEquals(1, queryResult.getResult().size());
+        results = queryResult.getResult();
+        variantAnnotation = results.get(0);
+
+        consequenceTypeList = variantAnnotation.getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList, "ENST00000529993");
         assertThat(consequenceType.getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001630",
                         "splice_region_variant"),
