@@ -26,11 +26,10 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.validation.VEPVariant;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.utils.FileUtils;
 
@@ -47,7 +46,7 @@ import java.util.concurrent.ExecutionException;
 
 public class ValidationCommandExecutor extends CommandExecutor {
 
-    private MongoDBAdaptorFactory dbAdaptorFactory;
+//    private MongoDBAdaptorFactory dbAdaptorFactory;
     private AdminCliOptionsParser.ValidationCommandOptions validationCommandOptions;
     private ObjectMapper objectMapper;
     private String resultsFile;
@@ -71,12 +70,12 @@ public class ValidationCommandExecutor extends CommandExecutor {
         checkFilesExist();
 
         CellBaseManagerFactory cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
         VariantAnnotationCalculator variantAnnotationCalculator = null;
         try {
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
                     validationCommandOptions.assembly, cellbaseManagerFactory);
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             e.printStackTrace();
             return;
         }

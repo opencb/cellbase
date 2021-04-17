@@ -17,22 +17,29 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 
 public class RegulatoryManager extends AbstractManager implements AggregationApi<RegulationQuery, RegulatoryFeature>  {
 
     private RegulationMongoDBAdaptor regulationDBAdaptor;
 
-    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public RegulatoryManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
+    }
+
+    @Deprecated
+    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
+
         this.init();
     }
 
     private void init() {
-        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor();
     }
 
     @Override

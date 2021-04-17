@@ -21,7 +21,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 public interface AggregationApi<Q extends AbstractQuery, T> extends FeatureApi<Q, T> {
 
-    default CellBaseDataResult<T> count(Q query) {
+    default CellBaseDataResult<Long> count(Q query) {
         query.setCount(Boolean.TRUE);
         return getDBAdaptor().count(query);
     }

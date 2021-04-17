@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
 import org.opencb.commons.monitor.DatastoreStatus;
@@ -25,14 +26,18 @@ import java.util.Map;
 
 public class MetaManager extends AbstractManager {
 
-    public MetaManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
+        super("Homo sapiens", configuration);
     }
 
+    @Deprecated
     public CellBaseDataResult getVersions(String species, String assembly) {
-        logger.error("species " + species);
-        logger.error("assembly " + assembly);
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, assembly);
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        return metaDBAdaptor.getAll();
+    }
+
+    public CellBaseDataResult getVersions() {
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
         return metaDBAdaptor.getAll();
     }
 
@@ -45,6 +50,6 @@ public class MetaManager extends AbstractManager {
     }
 
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
-        return dbAdaptorFactory.getDatabaseStatus(species, assembly);
+        return this.mongoDBManager.getDatabaseStatus(species, assembly);
     }
 }

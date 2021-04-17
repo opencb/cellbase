@@ -20,7 +20,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
@@ -61,12 +61,12 @@ public class CoreDownloadManager extends DownloadManager {
     };
 
     public CoreDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
-            throws IOException, CellbaseException {
+            throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 
     public CoreDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                               SpeciesConfiguration.Assembly assembly) throws IOException, CellbaseException {
+                               SpeciesConfiguration.Assembly assembly) throws IOException, CellBaseException {
         super(configuration, targetDirectory, speciesConfiguration, assembly);
     }
 

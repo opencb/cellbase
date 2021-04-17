@@ -32,10 +32,17 @@ import java.util.List;
  */
 public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
-    public MetaMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("metadata");
+
+    public MetaMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        init();
+    }
+
+
+    private void init() {
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
+        mongoDBCollection = mongoDataStore.getCollection("metadata");
     }
 
     public CellBaseDataResult getAll() {

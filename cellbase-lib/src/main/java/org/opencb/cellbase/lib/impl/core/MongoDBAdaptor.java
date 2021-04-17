@@ -44,41 +44,41 @@ import java.util.*;
 
 public class MongoDBAdaptor {
 
-    enum QueryValueType {INTEGER, STRING}
-
-    protected String species;
-    protected String assembly;
-
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
 
+    protected ObjectMapper objectMapper;
     protected Logger logger;
 
-    protected ObjectMapper objectMapper;
+    enum QueryValueType {INTEGER, STRING}
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
-        this("", "", mongoDataStore);
-    }
-
-    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        this.species = species;
-        this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
 
+        this.init();
+    }
+
+//    @Deprecated
+//    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+////        this.species = species;
+////        this.assembly = assembly;
+//        this.mongoDataStore = mongoDataStore;
+////        initSpeciesAssembly(species, assembly);
+//    }
+
+    private void init() {
         logger = LoggerFactory.getLogger(this.getClass().toString());
         objectMapper = new ObjectMapper();
-
-        initSpeciesAssembly(species, assembly);
     }
 
-    private void initSpeciesAssembly(String species, String assembly) {
-        if (species != null && !species.equals("")) {
-            // if 'version' parameter has not been provided the default version is selected
-            if (this.assembly == null || this.assembly.trim().equals("")) {
-                this.assembly = "default";
-            }
-        }
-    }
+//    private void initSpeciesAssembly(String species, String assembly) {
+//        if (species != null && !species.equals("")) {
+//            // if 'version' parameter has not been provided the default version is selected
+//            if (this.assembly == null || this.assembly.trim().equals("")) {
+//                this.assembly = "default";
+//            }
+//        }
+//    }
 
     protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
         return addPrivateExcludeOptions(options, "_id,_chunkIds");
@@ -703,22 +703,19 @@ public class MongoDBAdaptor {
         return intervalFeatureFrequenciesList;
     }
 
-    public String getSpecies() {
-        return species;
-    }
-
-
-    public void setSpecies(String species) {
-        this.species = species;
-    }
-
-
-    public String getAssembly() {
-        return this.assembly;
-    }
-
-
-    public void setAssembly(String assembly) {
-        this.assembly = assembly;
-    }
+//    public String getSpecies() {
+//        return species;
+//    }
+//
+//    public void setSpecies(String species) {
+//        this.species = species;
+//    }
+//
+//    public String getAssembly() {
+//        return this.assembly;
+//    }
+//
+//    public void setAssembly(String assembly) {
+//        this.assembly = assembly;
+//    }
 }

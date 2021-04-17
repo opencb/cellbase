@@ -23,7 +23,7 @@ import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
@@ -54,7 +54,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                             @QueryParam("assembly") String assembly,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellbaseException {
+            throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
         if (CollectionUtils.isNotEmpty(assemblies)) {

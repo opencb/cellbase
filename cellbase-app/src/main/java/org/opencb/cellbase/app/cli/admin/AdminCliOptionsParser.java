@@ -34,6 +34,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
     private InstallCommandOptions installCommandOptions;
     private ServerCommandOptions serverCommandOptions;
@@ -47,6 +48,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
         installCommandOptions = new InstallCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
@@ -55,6 +57,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("install", installCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
@@ -158,6 +161,34 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--skip-index"}, description = "After loading, add index to the database", arity = 0)
         public boolean skipIndex;
+
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> loaderParams = new HashMap<>();
+
+    }
+
+    @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
+    public class CustomiseCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--tf", "--transcript-flag"}, description = "Transcript flag data", arity = 1)
+        public String transcriptFlag;
+
+        @Parameter(names = {"-i", "--input"}, description = "Input file with the data to be loaded, e.g. "
+                + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
+                + "--fields parameter).", required = true, arity = 1)
+        public String input;
+
+        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        public String database;
+
+        @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
+        public String loader = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
+
+        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", arity = 1)
+        public int numThreads = 2;
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();

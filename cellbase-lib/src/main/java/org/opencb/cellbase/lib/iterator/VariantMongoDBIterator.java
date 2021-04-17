@@ -26,12 +26,12 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 11/02/16.
  */
-public class VariantMongoIterator implements Iterator<Variant> {
+public class VariantMongoDBIterator implements Iterator<Variant> {
 
     private Iterator<Document> mongoCursor;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    public VariantMongoIterator(Iterator<Document> mongoCursor) {
+    public VariantMongoDBIterator(Iterator<Document> mongoCursor) {
         this.mongoCursor = mongoCursor;
     }
 
@@ -44,9 +44,7 @@ public class VariantMongoIterator implements Iterator<Variant> {
     @Override
     public Variant next() {
         Document next = mongoCursor.next();
-        Variant variant = OBJECT_MAPPER.convertValue(next, Variant.class);
-
-        return variant;
+        return OBJECT_MAPPER.convertValue(next, Variant.class);
     }
 
     @Override

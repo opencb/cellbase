@@ -26,6 +26,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
@@ -39,9 +40,18 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
 
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
-    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public GenomeManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
+    }
+
+    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
+
         this.init();
+    }
+
+    private void init() {
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor();
     }
 
     @Override
@@ -49,9 +59,6 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return genomeDBAdaptor;
     }
 
-    private void init() {
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-    }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {
         return genomeDBAdaptor.getGenomeInfo(queryOptions);

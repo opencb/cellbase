@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -78,13 +78,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
             speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, buildCommandOptions.species);
             if (speciesConfiguration == null) {
-                throw new CellbaseException("Invalid species: '" + buildCommandOptions.species + "'");
+                throw new CellBaseException("Invalid species: '" + buildCommandOptions.species + "'");
             }
             SpeciesConfiguration.Assembly assembly = null;
             if (!StringUtils.isEmpty(buildCommandOptions.assembly)) {
                 assembly = SpeciesUtils.getAssembly(speciesConfiguration, buildCommandOptions.assembly);
                 if (assembly == null) {
-                    throw new CellbaseException("Invalid assembly: '" + buildCommandOptions.assembly + "'");
+                    throw new CellBaseException("Invalid assembly: '" + buildCommandOptions.assembly + "'");
                 }
             } else {
                 assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
@@ -96,7 +96,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             // <output>/<species>_<assembly>/download
             downloadFolder = output.resolve(spFolder + "/download");
             if (!Files.exists(downloadFolder)) {
-                throw new CellbaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
+                throw new CellBaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
             // <output>/<species>_<assembly>/generated_json
             buildFolder = output.resolve(spFolder + "/generated_json");
@@ -172,7 +172,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             }
         } catch (ParameterException e) {
             logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
-        } catch (IOException | CellbaseException e) {
+        } catch (IOException | CellBaseException e) {
             logger.error(e.getMessage());
         }
     }
@@ -243,7 +243,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new GenomeSequenceFastaBuilder(fastaFile, serializer);
     }
 
-    private CellBaseBuilder buildGene() throws CellbaseException {
+    private CellBaseBuilder buildGene() throws CellBaseException {
         Path geneFolderPath = downloadFolder.resolve("gene");
         copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),

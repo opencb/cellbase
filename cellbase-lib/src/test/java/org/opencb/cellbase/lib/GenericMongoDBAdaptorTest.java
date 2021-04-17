@@ -18,9 +18,8 @@ package org.opencb.cellbase.lib;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
@@ -44,7 +43,7 @@ public class GenericMongoDBAdaptorTest {
     protected CellBaseManagerFactory cellBaseManagerFactory;
 
     protected final LoadRunner loadRunner;
-    protected MongoDBAdaptorFactory dbAdaptorFactory;
+//    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -52,9 +51,9 @@ public class GenericMongoDBAdaptorTest {
         cellBaseConfiguration = CellBaseConfiguration.load(
                 GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
         cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
     }
 
     protected void clearDB(String dbName) throws Exception {

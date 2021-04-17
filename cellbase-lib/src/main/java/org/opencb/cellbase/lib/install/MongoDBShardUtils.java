@@ -24,7 +24,7 @@ import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.MongoDBDatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.LoggerFactory;
@@ -41,19 +41,19 @@ public class MongoDBShardUtils {
      * @param mongoDataStore Database name
      * @param cellBaseConfiguration config file with database details.
      * @param species the species name and assembly for the database being sharded
-     * @throws CellbaseException if configuration isn't valid
+     * @throws CellBaseException if configuration isn't valid
      */
     public static void shard(MongoDataStore mongoDataStore, CellBaseConfiguration cellBaseConfiguration, Species species)
-            throws CellbaseException {
-        SpeciesConfiguration speciesConfiguration = cellBaseConfiguration.getSpeciesConfig(species.getSpecies());
+            throws CellBaseException {
+        SpeciesConfiguration speciesConfiguration = cellBaseConfiguration.getSpeciesConfig(species.getId());
         if (speciesConfiguration == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getId() + "'");
             return;
         }
 
         List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
         if (shards == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).error("No sharding config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).error("No sharding config found for '" + species.getId() + "'");
             return;
         }
 
@@ -83,7 +83,7 @@ public class MongoDBShardUtils {
             List<MongoDBDatabaseCredentials.ReplicaSet> replicaSets = databaseCredentials.getShards();
 
             if (replicaSets == null || replicaSets.isEmpty()) {
-                LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
+                LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getId() + "'");
                 return;
             }
 
@@ -115,10 +115,10 @@ public class MongoDBShardUtils {
     }
 
     private static String createCollection(MongoDataStore mongoDataStore, SpeciesConfiguration.ShardConfig shardConfig)
-            throws CellbaseException {
+            throws CellBaseException {
         String collectionName = shardConfig.getCollection();
         if (StringUtils.isEmpty(collectionName)) {
-            throw new CellbaseException("Sharding failed: collection name not found in config");
+            throw new CellBaseException("Sharding failed: collection name not found in config");
         }
         if (mongoDataStore.getCollection(collectionName) == null) {
             mongoDataStore.createCollection(collectionName);

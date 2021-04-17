@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class CaddDownloadManager extends AbstractDownloadManager {
 
     private static final String CADD_NAME = "CADD";
     public CaddDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
-            throws IOException, CellbaseException {
+            throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 

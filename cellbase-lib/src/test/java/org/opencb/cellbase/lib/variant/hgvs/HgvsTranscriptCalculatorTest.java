@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInstance;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
@@ -26,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * All test cases are:
@@ -54,8 +55,6 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-
-
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/hgvs/gene_grch38.test.json.gz").toURI());
@@ -75,11 +74,11 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
                 HgvsTranscriptCalculatorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
 
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
 
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37");
+        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
     }
 
     @Test

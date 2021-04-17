@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
@@ -28,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
+    private static MongoDBManager mongoDBManager;
     private static CellBaseConfiguration cellBaseConfiguration;
-    private static MongoDBAdaptorFactory mongoDBAdaptorFactory;
 
 
     public MongoDBAdaptorFactoryTest() throws IOException {
@@ -42,25 +43,25 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
                 MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
 
-        mongoDBAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        mongoDBManager = new MongoDBManager(cellBaseConfiguration);
     }
 
     @Test
     public void testGetDatabaseName() throws Exception {
         // provide assembly
-        String databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "assemblyName");
+        String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName");
         assertEquals("cellbase_speciesname_assemblyname_v4", databaseName);
 
         // don't provide assembly
         InvalidParameterException thrown =
                 assertThrows(InvalidParameterException.class,
-                        () -> mongoDBAdaptorFactory.getDatabaseName("speciesName", null),
+                        () -> mongoDBManager.getDatabaseName("speciesName", null),
                         "Expected getDatabaseName() to throw an exception, but it didn't");
 
         assertTrue(thrown.getMessage().contains("Assembly is required"));
 
         // handle special characters
-        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.assembly--name");
+        databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name");
         assertEquals("cellbase_speciesname_myfunnyassemblyname_v4", databaseName);
     }
 }

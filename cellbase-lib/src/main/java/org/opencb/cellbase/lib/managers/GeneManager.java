@@ -20,11 +20,12 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.TranscriptTfbs;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 
@@ -36,14 +37,19 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
     private GeneMongoDBAdaptor geneDBAdaptor;
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
-    public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public GeneManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
+    }
+
+    public GeneManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
+
         this.init();
     }
 
     private void init() {
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor();
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor();
     }
 
     @Override

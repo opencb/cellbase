@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,53 +38,53 @@ public class Downloader {
         this.configuration = configuration;
     }
 
-    public List<DownloadFile> downloadGenome() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadGenome() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadGene() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadGene() throws IOException, CellBaseException, InterruptedException {
         GeneDownloadManager manager = new GeneDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadRegulation() throws IOException, CellbaseException, InterruptedException,
+    public List<DownloadFile> downloadRegulation() throws IOException, CellBaseException, InterruptedException,
             NoSuchMethodException, FileFormatException {
         RegulationDownloadManager manager = new RegulationDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadProtein() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadProtein() throws IOException, CellBaseException, InterruptedException {
         ProteinDownloadManager manager = new ProteinDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadConservation() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadConservation() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.downloadConservation();
     }
 
-    public List<DownloadFile> downloadClinicalVariants() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadClinicalVariants() throws IOException, CellBaseException, InterruptedException {
         ClinicalDownloadManager manager = new ClinicalDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadRepeats() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadRepeats() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.downloadRepeats();
     }
 
-    public List<DownloadFile> downloadOntologies() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadOntologies() throws IOException, CellBaseException, InterruptedException {
         OntologyDownloadManager manager = new OntologyDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadCaddScores() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadCaddScores() throws IOException, CellBaseException, InterruptedException {
         CaddDownloadManager manager = new CaddDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 
-    public List<DownloadFile> downloadPredictionScores() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadPredictionScores() throws IOException, CellBaseException, InterruptedException {
         MissenseScoresDownloadManager manager = new MissenseScoresDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }

@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
@@ -36,7 +36,7 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
     private static final String UNIPROT_NAME = "UniProt";
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
-            throws IOException, CellbaseException {
+            throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 

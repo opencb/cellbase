@@ -90,6 +90,10 @@ public class GeneQuery extends AbstractQuery {
 
     public GeneQuery(Map<String, String> params) throws QueryException {
         super(params);
+
+        objectMapper.readerForUpdating(this);
+        objectMapper.readerFor(GeneQuery.class);
+        objectWriter = objectMapper.writerFor(GeneQuery.class);
     }
 
     @Override

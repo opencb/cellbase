@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +43,8 @@ public class CellBaseManagerFactory {
     private MetaManager metaManager;
     private Map<String, OntologyManager> ontologyManagers;
     private FileManager fileManager;
-    private Logger logger;
 
+    private Logger logger;
 
     public CellBaseManagerFactory(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -61,26 +61,36 @@ public class CellBaseManagerFactory {
         repeatsManagers = new HashMap<>();
         tfManagers = new HashMap<>();
         ontologyManagers = new HashMap<>();
+
+        System.out.println("In CellBaseManagerFactory");
     }
 
+    @Deprecated
     private String getMultiKey(String species, String assembly) {
         return species + "_" + assembly;
     }
 
-    public GeneManager getGeneManager(String species) throws CellbaseException {
+    private String getMultiKey(String species, String assembly, String resource) {
+        return species + "_" + assembly + "_" + resource;
+    }
+
+    public GeneManager getGeneManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Failed to get GeneManager. Species is required.");
+            throw new CellBaseException("Failed to get GeneManager. Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getGeneManager(species, assembly.getName());
     }
 
-    public GeneManager getGeneManager(String species, String assembly) throws CellbaseException {
+    public GeneManager getGeneManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!geneManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
+            System.out.println("=======================================");
+            System.out.println("configuration Manager Factory = " + configuration);
+            System.out.println("=======================================");
             geneManagers.put(multiKey, new GeneManager(species, assembly, configuration));
         }
         return geneManagers.get(multiKey);
@@ -101,211 +111,211 @@ public class CellBaseManagerFactory {
                 logger.error("Invalid species or assembly");
                 return false;
             }
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             logger.error(e.getMessage());
             return false;
         }
         return true;
     }
 
-    public TranscriptManager getTranscriptManager(String species) throws CellbaseException {
+    public TranscriptManager getTranscriptManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getTranscriptManager(species, assembly.getName());
     }
 
-    public TranscriptManager getTranscriptManager(String species, String assembly) throws CellbaseException {
+    public TranscriptManager getTranscriptManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!transcriptManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             transcriptManagers.put(multiKey, new TranscriptManager(species, assembly, configuration));
         }
         return transcriptManagers.get(multiKey);
     }
 
-    public VariantManager getVariantManager(String species) throws CellbaseException {
+    public VariantManager getVariantManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getVariantManager(species, assembly.getName());
     }
 
-    public VariantManager getVariantManager(String species, String assembly) throws CellbaseException {
+    public VariantManager getVariantManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!variantManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             variantManagers.put(multiKey, new VariantManager(species, assembly, configuration));
         }
         return variantManagers.get(multiKey);
     }
 
-    public ProteinManager getProteinManager(String species) throws CellbaseException {
+    public ProteinManager getProteinManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getProteinManager(species, assembly.getName());
     }
 
-    public ProteinManager getProteinManager(String species, String assembly) throws CellbaseException {
+    public ProteinManager getProteinManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!proteinManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             proteinManagers.put(multiKey, new ProteinManager(species, assembly, configuration));
         }
         return proteinManagers.get(multiKey);
     }
 
-    public GenomeManager getGenomeManager(String species) throws CellbaseException {
+    public GenomeManager getGenomeManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getGenomeManager(species, assembly.getName());
     }
 
-    public GenomeManager getGenomeManager(String species, String assembly) throws CellbaseException {
+    public GenomeManager getGenomeManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!genomeManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             genomeManagers.put(multiKey, new GenomeManager(species, assembly, configuration));
         }
         return genomeManagers.get(multiKey);
     }
 
-    public ClinicalManager getClinicalManager(String species) throws CellbaseException {
+    public ClinicalManager getClinicalManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getClinicalManager(species, assembly.getName());
     }
 
-    public ClinicalManager getClinicalManager(String species, String assembly) throws CellbaseException {
+    public ClinicalManager getClinicalManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!clinicalManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             clinicalManagers.put(multiKey, new ClinicalManager(species, assembly, configuration));
         }
         return clinicalManagers.get(multiKey);
     }
 
-    public RegulatoryManager getRegulatoryManager(String species) throws CellbaseException {
+    public RegulatoryManager getRegulatoryManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getRegulatoryManager(species, assembly.getName());
     }
 
-    public RegulatoryManager getRegulatoryManager(String species, String assembly) throws CellbaseException {
+    public RegulatoryManager getRegulatoryManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!regulatoryManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             regulatoryManagers.put(multiKey, new RegulatoryManager(species, assembly, configuration));
         }
         return regulatoryManagers.get(multiKey);
     }
 
-    public XrefManager getXrefManager(String species) throws CellbaseException {
+    public XrefManager getXrefManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getXrefManager(species, assembly.getName());
     }
 
-    public XrefManager getXrefManager(String species, String assembly) throws CellbaseException {
+    public XrefManager getXrefManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!xrefManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             xrefManagers.put(multiKey, new XrefManager(species, assembly, configuration));
         }
         return xrefManagers.get(multiKey);
     }
 
-    public RepeatsManager getRepeatsManager(String species) throws CellbaseException {
+    public RepeatsManager getRepeatsManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getRepeatsManager(species, assembly.getName());
     }
 
-    public RepeatsManager getRepeatsManager(String species, String assembly) throws CellbaseException {
+    public RepeatsManager getRepeatsManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!repeatsManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             repeatsManagers.put(multiKey, new RepeatsManager(species, assembly, configuration));
         }
         return repeatsManagers.get(multiKey);
     }
 
-    public TfbsManager getTFManager(String species) throws CellbaseException {
+    public TfbsManager getTFManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getTFManager(species, assembly.getName());
     }
 
-    public TfbsManager getTFManager(String species, String assembly) throws CellbaseException {
+    public TfbsManager getTFManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!tfManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             tfManagers.put(multiKey, new TfbsManager(species, assembly, configuration));
         }
         return tfManagers.get(multiKey);
     }
 
-    public MetaManager getMetaManager() {
+    public MetaManager getMetaManager() throws CellBaseException {
         if (metaManager == null) {
             metaManager = new MetaManager(configuration);
         }
         return metaManager;
     }
 
-    public FileManager getFileManager() {
+    public FileManager getFileManager() throws CellBaseException {
         if (fileManager == null) {
             fileManager = new FileManager(configuration);
         }
         return fileManager;
     }
 
-    public OntologyManager getOntologyManager(String species) throws CellbaseException {
+    public OntologyManager getOntologyManager(String species) throws CellBaseException {
         if (species == null) {
-            throw new CellbaseException("Species is required.");
+            throw new CellBaseException("Species is required.");
         }
         SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
         return getOntologyManager(species, assembly.getName());
     }
 
-    public OntologyManager getOntologyManager(String species, String assembly) throws CellbaseException {
+    public OntologyManager getOntologyManager(String species, String assembly) throws CellBaseException {
         String multiKey = getMultiKey(species, assembly);
         if (!ontologyManagers.containsKey(multiKey)) {
             if (!validateSpeciesAssembly(species, assembly)) {
-                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
             ontologyManagers.put(multiKey, new OntologyManager(species, assembly, configuration));
         }

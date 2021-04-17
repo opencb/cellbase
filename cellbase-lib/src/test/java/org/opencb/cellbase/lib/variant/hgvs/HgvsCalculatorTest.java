@@ -3,10 +3,7 @@ package org.opencb.cellbase.lib.variant.hgvs;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -23,6 +20,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -49,7 +49,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
         geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
         hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"));
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+//        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 
 //    @Test

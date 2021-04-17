@@ -38,12 +38,9 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
             T next = iterator.next();
             results.add(next);
         }
-
         // close the database connection
         iterator.close();
-
         time = System.currentTimeMillis() - time;
-
         CellBaseDataResult<T> result = new CellBaseDataResult<>();
         result.setTime((int) time);
         result.setNumMatches(iterator.getNumMatches());
@@ -80,10 +77,11 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     default CellBaseDataResult<Long> count(Q query) {
         query.setCount(true);
+        query.setSkip(0);
         query.setLimit(0);
         CellBaseDataResult<T> queryResults = query(query);
         CellBaseDataResult<Long> countResults = new CellBaseDataResult<>();
-        countResults.setResults(Collections.singletonList((long) queryResults.getNumResults()));
+        countResults.setResults(Collections.singletonList(queryResults.getNumMatches()));
         return countResults;
     }
 

@@ -27,11 +27,11 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.monitor.Monitor;
@@ -68,35 +68,40 @@ public class GenericRestWSServer implements IWSServer {
     protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
-    protected ObjectMapper jsonObjectMapper;
+    protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
-    protected AtomicBoolean initialized;
+    protected static AtomicBoolean initialized;
     protected long startTime;
-    protected Logger logger;
+    protected static Logger logger;
 
     /**
      * Loading properties file just one time to be more efficient. All methods
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected CellBaseConfiguration cellBaseConfiguration;
-    protected CellBaseManagerFactory cellBaseManagerFactory;
+    protected static CellBaseConfiguration cellBaseConfiguration;
+    protected static CellBaseManagerFactory cellBaseManagerFactory;
     protected org.opencb.cellbase.lib.monitor.Monitor monitor;
     private static final String ERROR = "error";
     private static final String OK = "ok";
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
+    static {
+        initialized = new AtomicBoolean(false);
+
+    }
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellbaseException {
+            throws QueryException, IOException, CellBaseException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellbaseException {
+            throws QueryException, IOException, CellBaseException {
 
         this.version = version;
         this.uriInfo = uriInfo;
@@ -107,8 +112,9 @@ public class GenericRestWSServer implements IWSServer {
         initQuery();
     }
 
-    private void init() throws IOException, CellbaseException {
+    private void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
+        System.out.println("initialized = " + initialized);
         if (initialized == null || initialized.compareAndSet(false, true)) {
             initialized = new AtomicBoolean(true);
 
@@ -133,21 +139,24 @@ public class GenericRestWSServer implements IWSServer {
                     cellbaseHome = context.getInitParameter("CELLBASE_HOME");
                 } else {
                     logger.error("No valid configuration directory provided!");
-                    throw new CellbaseException("No CELLBASE_HOME found");
+                    throw new CellBaseException("No CELLBASE_HOME found");
                 }
             }
 
             logger.info("CELLBASE_HOME set to: {}", cellbaseHome);
 
+            System.out.println("***************************************************");
+            System.out.println("cellbaseHome = " + cellbaseHome);
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+            System.out.println("***************************************************");
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         }
     }
 
-    private void initQuery() throws CellbaseException {
+    private void initQuery() throws CellBaseException {
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
@@ -166,27 +175,32 @@ public class GenericRestWSServer implements IWSServer {
     /**
      * If limit is empty, then set to be 10. If limit is set, check that it is less than maximum allowed limit.
      *
-     * @throws CellbaseException if limit is higher than max allowed values
+     * @throws CellBaseException if limit is higher than max allowed values
      */
-    private void checkLimit() throws CellbaseException {
+    private void checkLimit() throws CellBaseException {
         if (uriParams.get("limit") == null) {
             uriParams.put("limit", ParamConstants.DEFAULT_LIMIT);
         } else {
             int limit = Integer.parseInt(uriParams.get("limit"));
             if (limit > MAX_RECORDS) {
-                throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but is : '" + uriParams.get("limit") + "'");
+                throw new CellBaseException("Limit cannot exceed " + MAX_RECORDS + " but is : '" + uriParams.get("limit") + "'");
             }
         }
     }
 
-    private void checkVersion() throws CellbaseException {
+    private void checkVersion() throws CellBaseException {
         if (version == null) {
-            throw new CellbaseException("Version not valid: '" + version + "'");
+            throw new CellBaseException("Version not valid: '" + version + "'");
         }
 
+        System.out.println("*************************************");
+        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration);
+        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
+        System.out.println("version = " + version);
+        System.out.println("*************************************");
         if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-            throw new CellbaseException("Version not valid: '" + version + "'");
+            throw new CellBaseException("Version not valid: '" + version + "'");
         }
     }
 

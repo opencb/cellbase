@@ -21,10 +21,10 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -38,33 +38,43 @@ import java.util.Map;
 
 public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
-    public OntologyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("ontology");
+    private static final GenericDocumentComplexConverter<OntologyTerm> CONVERTER;
+
+    static {
+        CONVERTER = new GenericDocumentComplexConverter<>(OntologyTerm.class);
+    }
+
+    public OntologyMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        this.init();
+    }
+
+    private void init() {
         logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
+
+        mongoDBCollection = mongoDataStore.getCollection("ontology");
     }
 
     @Override
-    public CellBaseIterator iterator(OntologyQuery query) {
+    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) {
         Bson bson = parseQuery(query);
-        QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        GenericDocumentComplexConverter<OntologyTerm> converter = new GenericDocumentComplexConverter<>(OntologyTerm.class);
-        MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        QueryOptions queryOptions = query.toQueryOptions();
+        MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
     public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
         List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
+        Bson projection = getProjection(queryOptions);
         for (String id : ids) {
-            Bson projection = getProjection(queryOptions);
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<OntologyTerm>(mongoDBCollection.find(bson, projection,
-                    OntologyTerm.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, CONVERTER, new QueryOptions())));
         }
         return results;
     }

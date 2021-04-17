@@ -16,9 +16,9 @@
 
 package org.opencb.cellbase.core.exception;
 
-public class CellbaseException extends Exception {
+public class CellBaseException extends Exception {
 
-    public CellbaseException(String msg) {
+    public CellBaseException(String msg) {
         super(msg);
     }
 

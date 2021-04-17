@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class SpeciesUtilsTest {
         SpeciesConfiguration.Assembly assembly = null;
         try {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, "hsapiens");
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             e.printStackTrace();
         }
         assertEquals("GRCh37", assembly.getName());
@@ -80,7 +80,7 @@ public class SpeciesUtilsTest {
         speciesConfiguration.setScientificName("H. sapiens");
         try {
             assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             e.printStackTrace();
         }
         assertEquals("GRCh37", assembly.getName());

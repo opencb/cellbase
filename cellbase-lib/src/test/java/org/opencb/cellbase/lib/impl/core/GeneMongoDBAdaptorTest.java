@@ -19,14 +19,15 @@ package org.opencb.cellbase.lib.impl.core;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.GeneManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -36,32 +37,28 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by fjlopez on 08/10/15.
  */
 public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    private GeneMongoDBAdaptor geneDBAdaptor;
-
-    public GeneMongoDBAdaptorTest() throws IOException { super(); }
+    public GeneMongoDBAdaptorTest() throws IOException {
+        super();
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/gene/gene-test.json.gz").toURI());
+        Path path = Paths.get(getClass().getResource("/gene/gene-test.json.gz").toURI());
         loadRunner.load(path, "gene");
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 
     @Test
     public void testQuery() throws Exception {
-
-
-//        Query query = new Query(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "synovial");
-//        query.put(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), "DOWN");
-//        QueryOptions queryOptions = new QueryOptions("include", "id,name");
+//       GeneMongoDBAdaptor  geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+        GeneManager geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh38");
 
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("annotation.expression.tissue", "brain");
@@ -71,7 +68,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         GeneQuery geneQuery = new GeneQuery(paramMap);
         geneQuery.setCount(Boolean.TRUE);
 
-        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        CellBaseDataResult<Gene> cellBaseDataResult = geneManager.search(geneQuery);
         // WARNING: these values below may slightly change from one data version to another
         assertEquals(6, cellBaseDataResult.getNumMatches());
         assertThat(cellBaseDataResult.getResults().stream().map(gene -> gene.getName()).collect(Collectors.toList()),
@@ -90,8 +87,8 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.put("limit", "10");
 
         geneQuery = new GeneQuery();
-        geneQuery.setAnnotationExpressionTissue(new LogicalList(Arrays.asList("brain")));
-        geneQuery.setAnnotationExpressionValue(new LogicalList(Arrays.asList("UP")));
+        geneQuery.setAnnotationExpressionTissue(new LogicalList(Collections.singletonList("brain")));
+        geneQuery.setAnnotationExpressionValue(new LogicalList(Collections.singletonList("UP")));
         List<String> includes = new ArrayList<>();
         includes.add("id");
         includes.add("name");
@@ -99,7 +96,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         geneQuery.setIncludes(includes);
         geneQuery.setLimit(10);
         geneQuery.setCount(Boolean.TRUE);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        cellBaseDataResult = geneManager.search(geneQuery);
         boolean found = false;
         for (Gene gene : cellBaseDataResult.getResults()) {
             if (gene.getId().equals("ENSG00000223972")) {
@@ -118,7 +115,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 break;
             }
         }
-        assertEquals(true, found);
+        assertTrue(found);
     }
 
 
@@ -130,10 +127,12 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     // exac_oe_lof 0.45091
     @Test
     public void testConstraints() throws Exception {
+        GeneManager geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh38");
+
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_lof<=0.85585");
         GeneQuery geneQuery = new GeneQuery(paramMap);
-        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        CellBaseDataResult<Gene> cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(1, cellBaseDataResult.getNumResults());
         List<Constraint> constraints = cellBaseDataResult.getResults().get(0).getAnnotation().getConstraints();
         assertEquals(5, constraints.size());
@@ -141,27 +140,26 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_mis>0.8");
         geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(1, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_syn=0.91766");
         geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(1, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", " exac_pLI<0.17633");
         geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(0, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", "exac_oe_lof>=0.45091");
         geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(1, cellBaseDataResult.getNumResults());
     }
-
 
 }

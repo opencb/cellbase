@@ -28,7 +28,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.api.query.LogicalList;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -83,7 +83,7 @@ public class VariantAnnotationCalculator {
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
     public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
-            throws CellbaseException {
+            throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);

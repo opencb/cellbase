@@ -19,12 +19,12 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -38,14 +38,18 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
-    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration)
-            throws CellbaseException {
+    public ClinicalManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
+    }
+
+    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
+
         this.init();
     }
 
-    private void init() throws CellbaseException {
-        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+    private void init() throws CellBaseException {
+        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(new GenomeManager(species, assembly, configuration));
     }
 
     @Override

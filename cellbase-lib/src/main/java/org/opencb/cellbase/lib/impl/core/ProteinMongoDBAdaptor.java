@@ -50,9 +50,12 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
-    private static Map<String, String> aaShortNameMap = new HashMap<>();
+    @Deprecated
+    private static Map<String, String> aaShortNameMap;
 
     static {
+        aaShortNameMap = new HashMap<>();
+
         aaShortNameMap.put("ALA", "A");
         aaShortNameMap.put("ARG", "R");
         aaShortNameMap.put("ASN", "N");
@@ -76,13 +79,18 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
 
-    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("protein");
-        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
-        logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
+    public ProteinMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        init();
     }
 
+    private void init() {
+        logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
+
+        mongoDBCollection = mongoDataStore.getCollection("protein");
+        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
+    }
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {
         CellBaseDataResult result = null;
@@ -224,7 +232,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, position, aaAlternate).getResults());
         }
 
-        CellBaseDataResult proteinVariantData = null;
+        CellBaseDataResult proteinVariantData;
         String shortAlternativeAa = aaShortNameMap.get(aaAlternate);
         if (shortAlternativeAa != null) {
             List<Bson> pipeline = new ArrayList<>();

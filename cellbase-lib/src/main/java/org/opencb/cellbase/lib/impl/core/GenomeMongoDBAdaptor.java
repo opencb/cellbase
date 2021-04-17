@@ -62,14 +62,18 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     private static final Object CHROMOSOMES = "chromosomes";
     private Document genomeInfo = null;
 
-    public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public GenomeMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        init();
+    }
+
+    private void init() {
+        logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
 
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
         mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
         conservationMongoDBCollection = mongoDataStore.getCollection("conservation");
-
-        logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
     }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {

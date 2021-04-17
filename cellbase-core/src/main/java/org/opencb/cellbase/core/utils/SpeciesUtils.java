@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 
 import java.util.List;
 
@@ -32,86 +32,33 @@ public class SpeciesUtils {
      * (the first one listed in the config file)
      *
      * @param configuration configuration file listing the valid species and assemblies
-     * @param userProvidedSpecies  name of species, e.g. Homo sapiens or hsapiens
-     * @param userProvidedAssembly assembly version
-     * @throws CellbaseException if the species or assembly is invalid
+     * @param speciesStr  name of species, e.g. Homo sapiens or hsapiens
+     * @param assemblyStr assembly version
+     * @throws CellBaseException if the species or assembly is invalid
      * @return species object
      */
-    public static Species getSpecies(CellBaseConfiguration configuration, String userProvidedSpecies,
-                                     String userProvidedAssembly) throws CellbaseException {
+    public static Species getSpecies(CellBaseConfiguration configuration, String speciesStr, String assemblyStr) throws CellBaseException {
         Species species = null;
         for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-            if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
+            if (speciesStr.equalsIgnoreCase(sp.getScientificName()) || speciesStr.equalsIgnoreCase(sp.getCommonName())
+                    || speciesStr.equalsIgnoreCase(sp.getId())) {
                 SpeciesConfiguration.Assembly assembly;
-                if (StringUtils.isNotEmpty(userProvidedAssembly)) {
-                    assembly = getAssembly(sp, userProvidedAssembly);
+                if (StringUtils.isNotEmpty(assemblyStr)) {
+                    assembly = getAssembly(sp, assemblyStr);
                     if (assembly == null) {
-                        throw new CellbaseException("Assembly '" + userProvidedAssembly + "' not found for species '"
-                                + userProvidedSpecies + "'");
+                        throw new CellBaseException("Assembly '" + assemblyStr + "' not found for species '" + speciesStr + "'");
                     }
                 } else {
                     assembly = getDefaultAssembly(sp);
                 }
                 species = new Species(sp.getId(), sp.getCommonName(), sp.getScientificName(), assembly.getName());
-            }
-        }
-        if (species == null) {
-            throw new CellbaseException("species '" + userProvidedSpecies + "' not found");
-        }
-        return species;
-    }
-
-    public static boolean validateSpeciesAndAssembly(CellBaseConfiguration configuration, String userProvidedSpecies,
-                                     String userProvidedAssembly) {
-        if (userProvidedSpecies == null || userProvidedAssembly == null) {
-            return false;
-        }
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-            // match species
-            if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
-                SpeciesConfiguration.Assembly assembly;
-                if (getAssembly(sp, userProvidedAssembly) == null) {
-                    // invalid assembly
-                    return false;
-                }
-                // species and assembly found
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean validateSpecies(CellBaseConfiguration configuration, String userProvidedSpecies) {
-        if (userProvidedSpecies == null) {
-            return false;
-        }
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-            if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
-                    || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
-                return true;
-            }
-        }
-        // species not found
-        return false;
-    }
-
-
-    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species) {
-        SpeciesConfiguration speciesConfiguration = null;
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-            if (species.equalsIgnoreCase(sp.getScientificName())
-                    || species.equalsIgnoreCase(sp.getCommonName())
-                    || species.equalsIgnoreCase(sp.getId())) {
-                speciesConfiguration = sp;
                 break;
             }
         }
-        return speciesConfiguration;
+        if (species == null) {
+            throw new CellBaseException("Species '" + speciesStr + "' not found");
+        }
+        return species;
     }
 
     /**
@@ -130,17 +77,59 @@ public class SpeciesUtils {
         return null;
     }
 
+    public static boolean validateSpeciesAndAssembly(CellBaseConfiguration configuration, String species, String assembly) {
+        if (StringUtils.isEmpty(species) || StringUtils.isEmpty(assembly)) {
+            return false;
+        }
+
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+            if (species.equalsIgnoreCase(sp.getScientificName()) || species.equalsIgnoreCase(sp.getCommonName())
+                    || species.equalsIgnoreCase(sp.getId())) {
+                return getAssembly(sp, assembly) != null;
+            }
+        }
+        return false;
+    }
+
+    public static boolean validateSpecies(CellBaseConfiguration configuration, String species) {
+        if (StringUtils.isEmpty(species)) {
+            return false;
+        }
+
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+            if (species.equalsIgnoreCase(sp.getScientificName()) || species.equalsIgnoreCase(sp.getCommonName())
+                    || species.equalsIgnoreCase(sp.getId())) {
+                return true;
+            }
+        }
+        // species not found
+        return false;
+    }
+
+    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species) {
+        SpeciesConfiguration speciesConfiguration = null;
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+            if (species.equalsIgnoreCase(sp.getScientificName())
+                    || species.equalsIgnoreCase(sp.getCommonName())
+                    || species.equalsIgnoreCase(sp.getId())) {
+                speciesConfiguration = sp;
+                break;
+            }
+        }
+        return speciesConfiguration;
+    }
+
     /**
      * Get the default assembly for species. Is naive and just gets the first one. Order not guaranteed, don't rely on this at all.
      *
      * @param speciesConfiguration configuration entry for this species
      * @return the default assembly
-     * @throws CellbaseException if the species has no associated assembly
+     * @throws CellBaseException if the species has no associated assembly
      */
-    public static SpeciesConfiguration.Assembly getDefaultAssembly(SpeciesConfiguration speciesConfiguration) throws CellbaseException {
+    public static SpeciesConfiguration.Assembly getDefaultAssembly(SpeciesConfiguration speciesConfiguration) throws CellBaseException {
         List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (assemblies == null || assemblies.isEmpty()) {
-            throw new CellbaseException("Species has no associated assembly: " + speciesConfiguration.getScientificName());
+            throw new CellBaseException("Species has no associated assembly: " + speciesConfiguration.getScientificName());
         }
         return assemblies.get(0);
     }
@@ -151,14 +140,14 @@ public class SpeciesUtils {
      * @param species name of species
      * @param configuration for this database
      * @return the default assembly
-     * @throws CellbaseException if the species has no associated assembly
+     * @throws CellBaseException if the species has no associated assembly
      */
     public static SpeciesConfiguration.Assembly getDefaultAssembly(CellBaseConfiguration configuration, String species)
-        throws CellbaseException {
+        throws CellBaseException {
         SpeciesConfiguration speciesConfiguration = getSpeciesConfiguration(configuration, species);
         List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (assemblies == null || assemblies.isEmpty()) {
-            throw new CellbaseException("Species has no associated assembly " + speciesConfiguration.getScientificName());
+            throw new CellBaseException("Species has no associated assembly " + speciesConfiguration.getScientificName());
         }
         return assemblies.get(0);
     }

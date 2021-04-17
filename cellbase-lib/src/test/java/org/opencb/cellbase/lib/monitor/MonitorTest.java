@@ -4,20 +4,16 @@ package org.opencb.cellbase.lib.monitor;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-
-
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.SpeciesUtilsTest;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.commons.monitor.HealthCheckResponse;
-
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by fjlopez on 12/10/17.
@@ -48,7 +44,8 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
                 SpeciesUtilsTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//        MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
         Monitor monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         HealthCheckResponse health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
@@ -72,7 +69,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
 
         // "Local" monitoring - unknown mongo host
         cellBaseConfiguration.getDatabases().getMongodb().setHost(FAKE);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());

@@ -68,10 +68,6 @@ public abstract class CliOptionsParser {
         @Parameter(names = {"-L", "--log-level"}, description = "Set the logging level, accepted values are: debug, info, warn, error and fatal", required = false, arity = 1)
         public String logLevel = "info";
 
-//        @Deprecated
-//        @Parameter(names = {"-v", "--verbose"}, description = "[Deprecated] Set the level of the logging", required = false, arity = 1)
-//        public boolean verbose;
-
         @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json or configuration.yml file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.yml for an example", required = false, arity = 1)
         public String conf;
 

@@ -28,10 +28,10 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -50,23 +50,32 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
     private MongoDBCollection refseqCollection = null;
 
-    public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    private static final GenericDocumentComplexConverter<Transcript> CONVERTER;
+
+    static {
+        CONVERTER = new GenericDocumentComplexConverter<>(Transcript.class);
+    }
+
+    public TranscriptMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        this.init();
+    }
+
+    private void init() {
         mongoDBCollection = mongoDataStore.getCollection("gene");
         refseqCollection = mongoDataStore.getCollection("refseq");
-        logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
     public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
-        GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-        MongoDBIterator<Transcript> iterator = null;
+        MongoDBIterator<Transcript> iterator;
         if (query.getSource() != null && !query.getSource().isEmpty() && "RefSeq".equalsIgnoreCase(query.getSource().get(0))) {
-            iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
+            iterator = refseqCollection.iterator(pipeline, CONVERTER, queryOptions);
         } else {
-            iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+            iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
         }
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -95,12 +104,11 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 
             // unwind results
             List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
-            GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-            MongoDBIterator<Transcript> iterator = null;
+            MongoDBIterator<Transcript> iterator;
             if (StringUtils.isNotEmpty(source) && ParamConstants.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
-                iterator = refseqCollection.iterator(pipeline, converter, queryOptions);
+                iterator = refseqCollection.iterator(pipeline, CONVERTER, queryOptions);
             } else {
-                iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
+                iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
             }
 
             List<Transcript> transcripts = new ArrayList<>();

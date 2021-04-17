@@ -21,7 +21,7 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 
@@ -52,7 +52,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @DefaultValue("")
                            @QueryParam("assembly") String assembly,
                            @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
+                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }

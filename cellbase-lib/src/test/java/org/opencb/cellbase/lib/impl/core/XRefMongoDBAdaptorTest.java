@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.XrefManager;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,21 +28,23 @@ import java.nio.file.Paths;
  * Created by fjlopez on 09/05/16.
  */
 public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+
     public XRefMongoDBAdaptorTest() throws Exception {
         super();
+
         setUp();
     }
 
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/xref/gene.test.json.gz").toURI());
+        Path path = Paths.get(getClass().getResource("/xref/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
     }
 
     @Test
     public void contains() throws Exception {
-        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37");
+//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37");
+        XrefManager xrefManager = cellBaseManagerFactory.getXrefManager("hsapiens", "GRCh38");
 //        CellBaseDataResult xrefs = xRefDBAdaptor.contains("BRCA2", new QueryOptions());
 //        Set<String> reference = new HashSet<>(Arrays.asList("ENSG00000185515", "ENSG00000139618", "ENSG00000107949",
 //                "ENSG00000083093", "ENSG00000170037"));

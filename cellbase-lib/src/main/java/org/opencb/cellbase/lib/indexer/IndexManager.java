@@ -18,14 +18,14 @@ package org.opencb.cellbase.lib.indexer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -36,7 +36,7 @@ public class IndexManager {
     private Logger logger;
     private String databaseName;
     private MongoDBIndexUtils mongoDBIndexUtils;
-    private MongoDataStore mongoDataStore;
+    private MongoDBManager mongoDBManager;
 
     public IndexManager(CellBaseConfiguration configuration, String databaseName) {
         this.configuration = configuration;
@@ -47,18 +47,12 @@ public class IndexManager {
 
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
+        mongoDBManager =  new MongoDBManager(configuration);
 
         Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
-        if (indexFile == null) {
-            try {
-                throw new CellbaseException("Index file mongodb-indexes.json not found");
-            } catch (CellbaseException e) {
-                e.printStackTrace();
-            }
-        }
-        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        this.mongoDataStore = factory.getMongoDBDatastore(databaseName);
-        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDataStore, indexFile);
+
+        MongoDataStore mongoDBDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
+        mongoDBIndexUtils = new MongoDBIndexUtils(mongoDBDatastore, indexFile);
     }
 
     /**

@@ -24,7 +24,7 @@ import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
@@ -66,7 +66,7 @@ public class MetaWSServer extends GenericRestWSServer {
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellbaseException {
+            throws QueryException, IOException, CellBaseException {
         super(apiVersion, uriInfo, hsr);
         metaManager = cellBaseManagerFactory.getMetaManager();
     }
@@ -93,7 +93,7 @@ public class MetaWSServer extends GenericRestWSServer {
             logger.error("species " + species);
             CellBaseDataResult queryResult = metaManager.getVersions(species, assembly);
             return createOkResponse(queryResult);
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             return createErrorResponse(e);
         }
     }
@@ -217,7 +217,7 @@ public class MetaWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             try {
                 assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            } catch (CellbaseException e) {
+            } catch (CellBaseException e) {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
@@ -281,7 +281,7 @@ public class MetaWSServer extends GenericRestWSServer {
             for (String cat : category.split(",")) {
                 Class clazz = classes.get(cat.toLowerCase());
                 if (clazz == null) {
-                    return createErrorResponse(new CellbaseException("Category not found: " + cat));
+                    return createErrorResponse(new CellBaseException("Category not found: " + cat));
                 }
                 LinkedHashMap<String, Object> help = getHelp(clazz);
                 api.add(help);

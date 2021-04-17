@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class DownloadManager {
     protected Logger logger;
 
     public DownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
-            throws IOException, CellbaseException {
+            throws IOException, CellBaseException {
         this.species = species;
         this.assembly = assembly;
         this.outdir = outdir;
@@ -104,13 +104,13 @@ public class DownloadManager {
         ensemblRelease = "release-" + ensemblVersion.split("_")[0];
     }
 
-    private void init() throws CellbaseException, IOException {
+    private void init() throws CellBaseException, IOException {
         logger = LoggerFactory.getLogger(this.getClass());
 
         // Check Species
         this.speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
         if (speciesConfiguration == null) {
-            throw new CellbaseException("Invalid species: '" + species + "'");
+            throw new CellBaseException("Invalid species: '" + species + "'");
         }
         this.speciesShortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
         this.ensemblHostUrl = getEnsemblURL(speciesConfiguration);
@@ -122,7 +122,7 @@ public class DownloadManager {
             this.assemblyConfiguration = SpeciesUtils.getAssembly(speciesConfiguration, assembly);
         }
         if (assemblyConfiguration == null) {
-            throw new CellbaseException("Invalid assembly: '" + assembly + "'");
+            throw new CellBaseException("Invalid assembly: '" + assembly + "'");
         }
         this.ensemblVersion = assemblyConfiguration.getEnsemblVersion();
         this.ensemblRelease = "release-" + ensemblVersion.split("_")[0];

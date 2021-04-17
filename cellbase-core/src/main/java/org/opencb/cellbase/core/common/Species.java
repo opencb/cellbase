@@ -19,8 +19,8 @@ package org.opencb.cellbase.core.common;
 public class Species {
 
     private String id;
-    private String common;
-    private String scientific;
+    private String commonName;
+    private String scientificName;
     private String assembly;
     private String taxonomy;
 
@@ -31,15 +31,15 @@ public class Species {
 
     public Species(String id, String commonName, String scientificName, String assembly) {
         this.id = id;
-        this.common = commonName;
-        this.scientific = scientificName;
+        this.commonName = commonName;
+        this.scientificName = scientificName;
         this.assembly = assembly;
     }
 
-    public Species(String id, String common, String scientific, String assembly, String taxonomy) {
+    public Species(String id, String commonName, String scientificName, String assembly, String taxonomy) {
         this.id = id;
-        this.common = common;
-        this.scientific = scientific;
+        this.commonName = commonName;
+        this.scientificName = scientificName;
         this.assembly = assembly;
         this.taxonomy = taxonomy;
     }
@@ -48,8 +48,8 @@ public class Species {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Species{");
         sb.append("id='").append(id).append('\'');
-        sb.append(", common='").append(common).append('\'');
-        sb.append(", scientific='").append(scientific).append('\'');
+        sb.append(", commonName='").append(commonName).append('\'');
+        sb.append(", scientificName='").append(scientificName).append('\'');
         sb.append(", assembly='").append(assembly).append('\'');
         sb.append(", taxonomy='").append(taxonomy).append('\'');
         sb.append('}');
@@ -65,21 +65,21 @@ public class Species {
         return this;
     }
 
-    public String getCommon() {
-        return common;
+    public String getCommonName() {
+        return commonName;
     }
 
-    public Species setCommon(String common) {
-        this.common = common;
+    public Species setCommonName(String commonName) {
+        this.commonName = commonName;
         return this;
     }
 
-    public String getScientific() {
-        return scientific;
+    public String getScientificName() {
+        return scientificName;
     }
 
-    public Species setScientific(String scientific) {
-        this.scientific = scientific;
+    public Species setScientificName(String scientificName) {
+        this.scientificName = scientificName;
         return this;
     }
 

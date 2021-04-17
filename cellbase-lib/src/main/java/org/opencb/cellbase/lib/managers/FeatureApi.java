@@ -28,7 +28,7 @@ import java.util.List;
 
 public interface FeatureApi<Q extends AbstractQuery, T> {
 
-    CellBaseCoreDBAdaptor getDBAdaptor();
+    CellBaseCoreDBAdaptor<Q, T> getDBAdaptor();
 
     default CellBaseDataResult<T> search(Q query) throws QueryException, IllegalAccessException {
         query.setDefaults();
@@ -45,8 +45,7 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
     }
 
     default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
-        List<CellBaseDataResult<T>> results = getDBAdaptor().info(ids, queryOptions);
-        return results;
+        return getDBAdaptor().info(ids, queryOptions);
     }
 
     default CellBaseDataResult<String> distinct(Q query) {

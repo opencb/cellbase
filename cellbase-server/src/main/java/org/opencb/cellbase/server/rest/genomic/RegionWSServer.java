@@ -24,7 +24,7 @@ import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -64,7 +64,7 @@ public class RegionWSServer extends GenericRestWSServer {
                           @DefaultValue("")
                           @QueryParam("assembly") String assembly,
                           @Context UriInfo uriInfo,
-                          @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
+                          @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -419,7 +419,7 @@ public class RegionWSServer extends GenericRestWSServer {
 //            parseQueryParams();
 //            CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, regions);
 //            return createOkResponse(queryResult);
-            return createErrorResponse(new CellbaseException("Not refactored, please update"));
+            return createErrorResponse(new CellBaseException("Not refactored, please update"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

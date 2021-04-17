@@ -1,20 +1,18 @@
 package org.opencb.cellbase.lib.indexer;
 
 import org.bson.Document;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
-import static org.junit.jupiter.api.Assertions.*;
 
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
@@ -26,11 +24,11 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testIndexes() throws IOException, CellbaseException {
+    public void testIndexes() throws IOException, CellBaseException {
         indexManager.createMongoDBIndexes("repeats", true);
 
-        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        MongoDataStore mongoDataStore = factory.getMongoDBDatastore("hsapiens", "grch37");
+        MongoDBManager mongoDBManager = new MongoDBManager(cellBaseConfiguration);
+        MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore("hsapiens", "grch37");
         MongoDBCollection mongoDBCollection = mongoDataStore.getCollection("repeats");
         DataResult<Document> index = mongoDBCollection.getIndex();
         assertNotNull(index);

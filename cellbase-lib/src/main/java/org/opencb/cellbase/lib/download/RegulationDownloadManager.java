@@ -23,7 +23,7 @@ import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.RegulatoryPfm;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -47,7 +47,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private static final String MIRTARBASE_NAME = "miRTarBase";
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
-            throws IOException, CellbaseException {
+            throws IOException, CellBaseException {
         super(species, assembly, outdir, configuration);
     }
 

@@ -22,10 +22,12 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.download.*;
+import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.download.AbstractDownloadManager;
+import org.opencb.cellbase.lib.download.DownloadFile;
+import org.opencb.cellbase.lib.download.Downloader;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -105,13 +107,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 }
             }
             AbstractDownloadManager.writeDownloadLogFile(outputDirectory, downloadFiles);
-        } catch (ParameterException | IOException | CellbaseException | InterruptedException | NoSuchMethodException
+        } catch (ParameterException | IOException | CellBaseException | InterruptedException | NoSuchMethodException
                 | FileFormatException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
         }
     }
 
-    private List<String> getDataList(String species) throws CellbaseException {
+    private List<String> getDataList(String species) throws CellBaseException {
         if (StringUtils.isEmpty(downloadCommandOptions.data) || downloadCommandOptions.data.equals("all")) {
             return SpeciesUtils.getSpeciesConfiguration(configuration, species).getData();
         } else {

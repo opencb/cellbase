@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.install.InstallManager;
 
 public class InstallCommandExecutor extends CommandExecutor {
@@ -31,13 +31,13 @@ public class InstallCommandExecutor extends CommandExecutor {
         this.installCommandOptions = installCommandOptions;
     }
 
-    public void execute() throws CellbaseException {
+    public void execute() throws CellBaseException {
         try {
             logger.info("Starting installation ...");
             InstallManager installManager = new InstallManager(configuration);
             installManager.install(installCommandOptions.speciesAndAssemblyOptions.species,
                     installCommandOptions.speciesAndAssemblyOptions.assembly);
-        } catch (CellbaseException e) {
+        } catch (CellBaseException e) {
             logger.error("Error installing:" + e.toString());
         }
     }

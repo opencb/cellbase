@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.rest.utils;
 
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ import java.io.IOException;
 public class UtilsWSServer extends GenericRestWSServer {
 
     public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                         @Context HttpServletRequest hsr) throws QueryException, IOException, CellbaseException {
+                         @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(version, species, uriInfo, hsr);
     }
 

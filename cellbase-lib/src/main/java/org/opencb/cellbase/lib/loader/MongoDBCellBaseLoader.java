@@ -69,13 +69,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String TRAIT = "trait";
     private static final String PRIVATE_FEATURE_XREF_FIELD = "_featureXrefs";
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
-    private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at",
-            "in", "on"));
+    private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at", "in", "on"));
+
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
+    private MongoDBAdaptorFactory dbAdaptorFactory;
+
     private MongoDBCollection mongoDBCollection;
 
-    private MongoDBAdaptorFactory dbAdaptorFactory;
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
@@ -144,7 +145,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+
+//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDataStore);
+
+
         // This is not currently used and should no longer be used. To be soon removed
 //        dbAdaptor = getDBAdaptor(data);
     }
@@ -355,7 +360,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
+                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
 //                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;

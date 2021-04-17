@@ -17,23 +17,28 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.OntologyTerm;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.OntologyMongoDBAdaptor;
 
 public class OntologyManager extends AbstractManager implements AggregationApi<OntologyQuery, OntologyTerm> {
 
     private OntologyMongoDBAdaptor ontologyMongoDBAdaptor;
 
-    public OntologyManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public OntologyManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
+    }
+
+    public OntologyManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();
     }
 
     private void init() {
-        ontologyMongoDBAdaptor = dbAdaptorFactory.getOntologyMongoDBAdaptor(species, assembly);
+        ontologyMongoDBAdaptor = dbAdaptorFactory.getOntologyMongoDBAdaptor();
     }
 
     @Override

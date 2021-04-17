@@ -23,6 +23,7 @@ import org.opencb.biodata.tools.feature.BigWigManager;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.api.FileQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 
@@ -38,8 +39,8 @@ import java.util.List;
 
 public class FileManager extends AbstractManager {
 
-    public FileManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    public FileManager(CellBaseConfiguration configuration) throws CellBaseException {
+        super("Homo sapiens", configuration);
     }
 
     public List<CellBaseDataResult<String>> search(FileQuery query) throws IOException {

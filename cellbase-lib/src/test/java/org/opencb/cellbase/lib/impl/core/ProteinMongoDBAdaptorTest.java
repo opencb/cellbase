@@ -22,11 +22,13 @@ import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.ProteinManager;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -38,20 +40,21 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ProteinMongoDBAdaptorTest() throws Exception {
         super();
+
         setUp();
     }
 
     @BeforeEach
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/protein/protein.test.json.gz").toURI());
+        Path path = Paths.get(getClass().getResource("/protein/protein.test.json.gz").toURI());
         loadRunner.load(path, "protein");
     }
 
     @Test
     public void testQuery() throws Exception {
-        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
+//        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
+        ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager("hsapiens", "GRCh38");
         ProteinQuery query = new ProteinQuery();
         query.setExcludes(new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         query.setLimit(3);
@@ -60,7 +63,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        QueryOptions queryOptions = new QueryOptions(QueryOptions.EXCLUDE, new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
 //        queryOptions.put(QueryOptions.LIMIT, 3);
 //        queryOptions.put(QueryOptions.INCLUDE, "accession,name");
-        CellBaseDataResult<Entry> CellBaseDataResult = proteinDBAdaptor.query(query);
+        CellBaseDataResult<Entry> CellBaseDataResult = proteinManager.search(query);
         assertEquals(3, CellBaseDataResult.getResults().size());
         assertEquals(4, CellBaseDataResult.getNumMatches());
 
@@ -68,36 +71,18 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setAccessions(new ArrayList<>(Arrays.asList("B2R8Q1","Q9UKT9")));
 //        CellBaseDataResult = proteinDBAdaptor.search(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
 //                "B2R8Q1,Q9UKT9"), queryOptions);
-        CellBaseDataResult = proteinDBAdaptor.query(query);
+        CellBaseDataResult = proteinManager.search(query);
         assertEquals("B2R8Q1", CellBaseDataResult.getResults().get(0).getAccession().get(1));
         assertEquals("Q9UKT9", CellBaseDataResult.getResults().get(1).getAccession().get(0));
 //        CellBaseDataResult = proteinDBAdaptor.search(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
 //                "MKS1_HUMAN"), queryOptions);
 
         query = new ProteinQuery();
-        query.setNames(new ArrayList<>(Arrays.asList("MKS1_HUMAN")));
-        CellBaseDataResult = proteinDBAdaptor.query(query);
+        query.setNames(new ArrayList<>(Collections.singletonList("MKS1_HUMAN")));
+        CellBaseDataResult = proteinManager.search(query);
 //        CellBaseDataResult = proteinDBAdaptor.query(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
 //                "MKS1_HUMAN"), queryOptions);
         assertEquals("MKS1_HUMAN", CellBaseDataResult.getResults().get(0).getName().get(0));
     }
-
-//    @Test
-//    public void nativeGet() throws Exception {
-//        ProteinCoreDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
-//        QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 3);
-//        CellBaseDataResult<Document> CellBaseDataResult = proteinDBAdaptor.nativeGet(new Query(), queryOptions);
-//        assertEquals(CellBaseDataResult.getResults().size(), 3);
-//        assertEquals(CellBaseDataResult.getNumResults(), 3);
-//        assertEquals(CellBaseDataResult.getNumMatches(), 4);
-//        CellBaseDataResult = proteinDBAdaptor.nativeGet(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
-//                "B2R8Q1,Q9UKT9"), queryOptions);
-//        assertEquals(((List) CellBaseDataResult.getResults().get(0).get("accession")).get(0), "Q9UL59");
-//        assertEquals(((List) CellBaseDataResult.getResults().get(0).get("accession")).get(1), "B2R8Q1");
-//        assertEquals(((List) CellBaseDataResult.getResults().get(1).get("accession")).get(0), "Q9UKT9");
-//        CellBaseDataResult = proteinDBAdaptor.nativeGet(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
-//                "MKS1_HUMAN"), queryOptions);
-//        assertEquals(((List) CellBaseDataResult.getResults().get(0).get("name")).get(0), "MKS1_HUMAN");
-//    }
 
 }

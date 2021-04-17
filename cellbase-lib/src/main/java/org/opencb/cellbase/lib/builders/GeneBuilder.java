@@ -26,7 +26,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDBException;
 
@@ -75,12 +75,12 @@ public class GeneBuilder extends CellBaseBuilder {
     private Gtf nextGtfToReturn;
 
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile, SpeciesConfiguration speciesConfiguration,
-                      CellBaseSerializer serializer) throws CellbaseException {
+                      CellBaseSerializer serializer) throws CellBaseException {
         this(geneDirectoryPath, genomeSequenceFastaFile, speciesConfiguration, false, serializer);
     }
 
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile, SpeciesConfiguration speciesConfiguration,
-                       boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellbaseException {
+                       boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellBaseException {
         this(null, geneDirectoryPath.resolve("description.txt"),
                 geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("MANE.GRCh38.v0.91.summary.txt.gz"),

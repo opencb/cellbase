@@ -20,12 +20,12 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.RegulationQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -41,11 +41,22 @@ import java.util.Map;
  */
 public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<RegulationQuery, RegulatoryFeature> {
 
-    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
+    private static final GenericDocumentComplexConverter<RegulatoryFeature> CONVERTER;
 
+    static {
+        CONVERTER = new GenericDocumentComplexConverter<>(RegulatoryFeature.class);
+    }
+
+    public RegulationMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        this.init();
+    }
+
+    private void init() {
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
+
+        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
     }
 
     public Bson parseQuery(RegulationQuery query) {
@@ -67,7 +78,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             e.printStackTrace();
         }
 
-        logger.debug("regulation parsed query: " + andBsonList.toString());
+        logger.debug("regulation parsed query: " + andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -80,9 +91,8 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        GenericDocumentComplexConverter<RegulatoryFeature> converter = new GenericDocumentComplexConverter<>(RegulatoryFeature.class);
         MongoDBIterator<RegulatoryFeature> iterator
-                = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+                = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 

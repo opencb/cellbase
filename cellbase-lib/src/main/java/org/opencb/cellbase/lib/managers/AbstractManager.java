@@ -16,9 +16,14 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,25 +32,21 @@ import java.util.List;
 
 public class AbstractManager {
 
-    protected CellBaseConfiguration configuration;
-    protected MongoDBAdaptorFactory dbAdaptorFactory;
-
     protected String species;
     protected String assembly;
+    protected CellBaseConfiguration configuration;
+
+    protected MongoDBManager mongoDBManager;
+    protected MongoDataStore mongoDatastore;
+    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger;
 
-    public AbstractManager(CellBaseConfiguration configuration) {
-        this.configuration = configuration;
-
-        this.init();
-    }
-
-    public AbstractManager(String species, CellBaseConfiguration configuration) {
+    public AbstractManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, configuration);
     }
 
-    public AbstractManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public AbstractManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         this.species = species;
         this.assembly = assembly;
         this.configuration = configuration;
@@ -53,12 +54,20 @@ public class AbstractManager {
         this.init();
     }
 
-    private void init() {
-        dbAdaptorFactory = new MongoDBAdaptorFactory(this.configuration);
-//        dbAdaptorFactory = MongoDBAdaptorFactory.getInstance();
-
+    private void init() throws CellBaseException {
         logger = LoggerFactory.getLogger(this.getClass());
+
+        // If assembly is emtpy we take the default, typically the first and only one.
+        if (StringUtils.isEmpty(assembly)) {
+            assembly = SpeciesUtils.getSpecies(configuration, species, assembly).getAssembly();
+        }
+
+        // We create a MongoDB database connection for each Manager
+        mongoDBManager = new MongoDBManager(configuration);
+        mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
     }
+
 
     @Deprecated
     protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {

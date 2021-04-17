@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -55,7 +55,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     @Override
-    public void parse() throws IOException, CellbaseException {
+    public void parse() throws IOException, CellBaseException {
         System.out.println("conservedRegionPath = " + conservedRegionPath.toString());
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory does not exist, is not a directory or cannot be read");
@@ -109,7 +109,7 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
     }
 
-    private void gerpParser(Path gerpFolderPath) throws IOException, CellbaseException {
+    private void gerpParser(Path gerpFolderPath) throws IOException, CellBaseException {
         Path gerpProcessFilePath = gerpFolderPath.resolve(EtlCommons.GERP_PROCESSED_FILE);
         logger.info("parsing {}", gerpProcessFilePath);
         BufferedReader bufferedReader = FileUtils.newBufferedReader(gerpProcessFilePath);
@@ -220,7 +220,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     private void storeScores(int startOfBatch, String chromosome, List<Float> conservationScores)
-            throws CellbaseException {
+            throws CellBaseException {
 
         // if this is a small batch, fill in the missing coordinates with 0
         while (conservationScores.size() < chunkSize) {
@@ -228,7 +228,7 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
 
         if (conservationScores.size() != chunkSize) {
-            throw new CellbaseException("invalid chunk size " + conservationScores.size() + " for " + chromosome + ":" + startOfBatch);
+            throw new CellBaseException("invalid chunk size " + conservationScores.size() + " for " + chromosome + ":" + startOfBatch);
         }
 
         GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion(chromosome, startOfBatch,

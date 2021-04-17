@@ -23,7 +23,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDBException;
 
@@ -206,7 +206,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     }
 
     private void parseGene(Gtf gtf, String chromosome, RefSeqGeneBuilderIndexer indexer)
-            throws CellbaseException, IOException, RocksDBException {
+            throws CellBaseException, IOException, RocksDBException {
         // If new geneId is different from the current then we must serialize before data new gene
         if (gene != null) {
             store();
@@ -566,7 +566,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         return transcript;
     }
 
-    private String getGeneId(Gtf gtf) throws CellbaseException {
+    private String getGeneId(Gtf gtf) throws CellBaseException {
         // db_xref "GeneID:100287102";
         String xrefString = gtf.getAttributes().get("db_xref");
         String[] xrefs = xrefString.split(",");
@@ -577,7 +577,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
         }
         // didn't find geneId!
-        throw new CellbaseException("Didn't find geneId for db_xref:" + xrefString);
+        throw new CellBaseException("Didn't find geneId for db_xref:" + xrefString);
     }
 
     private String getSequenceName(String fullSequenceName) {

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,14 +34,15 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
-* Helper object used to construct queries consumed by the dbadapters.
-*/
+ * Helper object used to construct queries consumed by the dbadapters.
+ */
 public abstract class AbstractQuery extends CellBaseQueryOptions {
 
-    protected ObjectMapper objectMapper;
+    protected static ObjectMapper objectMapper;
+    protected static ObjectWriter objectWriter;
     protected Logger logger;
 
-//    public static final int DEFAULT_LIMIT = 50;
+    //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
     // list of fields in this class
@@ -64,6 +66,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     private void init() {
         objectMapper = new ObjectMapper();
+
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -146,7 +149,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                             if (value.contains(";")) {
                                 List valuesList = Arrays.asList(value.split(";"));
                                 objectHashMap.put(fieldNameCamelCase, new LogicalList(valuesList, true));
-                            // OR
+                                // OR
                             } else {
                                 List valuesList = Arrays.asList(value.split(","));
                                 objectHashMap.put(fieldNameCamelCase, new LogicalList(valuesList, false));

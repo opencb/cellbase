@@ -18,16 +18,17 @@ package org.opencb.cellbase.lib.iterator;
 
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 
-public class CellBaseMongoDBIterator<E> extends CellBaseIterator {
+public class CellBaseMongoDBIterator<E> extends CellBaseIterator<E> {
 
     public CellBaseMongoDBIterator(MongoDBIterator<E> iterator) {
         super(iterator);
+
         numMatches = iterator.getNumMatches();
     }
 
     @Override
     public void close() {
-        ((MongoDBIterator) iterator).close();
+        ((MongoDBIterator<E>) iterator).close();
     }
 
 }

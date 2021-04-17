@@ -19,12 +19,13 @@ package org.opencb.cellbase.lib.install;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 public class InstallManager {
@@ -34,6 +35,7 @@ public class InstallManager {
 
     public InstallManager(CellBaseConfiguration configuration) {
         this.configuration = configuration;
+
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -42,9 +44,9 @@ public class InstallManager {
      *
      * @param speciesName name of species
      * @param assemblyName name of assembly
-     * @throws CellbaseException if invalid input
+     * @throws CellBaseException if invalid input
      */
-    public void install(String speciesName, String assemblyName) throws CellbaseException {
+    public void install(String speciesName, String assemblyName) throws CellBaseException {
         // TDDO check database credentials
 
         // user API perms
@@ -53,9 +55,9 @@ public class InstallManager {
 
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
 
-        SpeciesConfiguration speciesConfiguration = configuration.getSpeciesConfig(species.getSpecies());
+        SpeciesConfiguration speciesConfiguration = configuration.getSpeciesConfig(species.getId());
         if (speciesConfiguration == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getId() + "'");
             return;
         }
 
@@ -66,9 +68,9 @@ public class InstallManager {
         }
     }
 
-    private void shard(Species species) throws CellbaseException {
-        MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        MongoDataStore mongoDataStore = factory.getMongoDBDatastore(species.getSpecies(), species.getAssembly());
-        MongoDBShardUtils.shard(mongoDataStore, configuration, species);
+    private void shard(Species species) throws CellBaseException {
+        MongoDBManager mongoDBManager = new MongoDBManager(configuration);
+        MongoDataStore mongoDBDatastore = mongoDBManager.createMongoDBDatastore(species.getId(), species.getAssembly());
+        MongoDBShardUtils.shard(mongoDBDatastore, configuration, species);
     }
 }

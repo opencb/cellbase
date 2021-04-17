@@ -29,7 +29,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.api.query.LogicalList;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -67,7 +67,7 @@ public class GeneWSServer extends GenericRestWSServer {
                         @DefaultValue("")
                         @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException,
-            CellbaseException {
+            CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
         if (CollectionUtils.isNotEmpty(assemblies)) {
@@ -77,10 +77,10 @@ public class GeneWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
         geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
-        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
+//        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+//        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+//        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+//        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
     }
 
     @GET
@@ -264,7 +264,7 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getAll(@QueryParam(ParamConstants.SPLIT_RESULT_PARAM) @ApiParam(name = ParamConstants.SPLIT_RESULT_PARAM,
             value = ParamConstants.SPLIT_RESULT_DESCRIPTION,
-            required = false, defaultValue = "false", allowableValues = "false,true") boolean splitResultById) {
+            defaultValue = "false", allowableValues = "false,true") boolean splitResultById) {
         try {
             if (splitResultById) {
                 // if we are splitting, can only have ONE of the three identifier fields populated
@@ -272,7 +272,6 @@ public class GeneWSServer extends GenericRestWSServer {
                     return createErrorResponse(new InvalidParameterException(
                             "When 'splitResultById' is TRUE, you can only have ONE identifier field populated: id, name or xref"));
                 }
-
                 List<GeneQuery> geneQueries = new ArrayList<>();
                 // look in IDs, names and xrefs
                 String[] identifiers = getGeneIdentifiers();

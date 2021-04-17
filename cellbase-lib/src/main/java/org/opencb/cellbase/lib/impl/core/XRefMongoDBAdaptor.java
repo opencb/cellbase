@@ -43,11 +43,15 @@ import java.util.Map;
  */
 public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
-    public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+    public XRefMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
 
+        init();
+    }
+
+    private void init() {
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
     }
 
     @Override

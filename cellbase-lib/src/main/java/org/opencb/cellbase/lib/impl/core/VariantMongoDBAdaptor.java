@@ -30,16 +30,16 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
-import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
-import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.cellbase.lib.iterator.VariantMongoIterator;
 import org.opencb.cellbase.lib.impl.core.converters.VariantConverter;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
+import org.opencb.cellbase.lib.iterator.VariantMongoDBIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -66,12 +66,17 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public VariantMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
+
+        init();
+    }
+
+    private void init() {
+        logger.debug("VariationMongoDBAdaptor: in 'constructor'");
+
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
-
-        logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -91,7 +96,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return null;
     }
 
-//    @Override
+    //    @Override
     public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         CellBaseDataResult<Long> nLoadedObjects = null;
         switch (field) {
@@ -162,7 +167,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options));
+        return new VariantMongoDBIterator(mongoDBCollection.nativeQuery().find(bson, options));
     }
 
     public Iterator nativeIterator(Query query, QueryOptions options) {
@@ -294,7 +299,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DUPLICATION.toString()));
                 orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_GAIN.toString()));
                 andBsonList.add(Filters.or(orBsonList));
-            // Inversion or just CNV (without subtype)
+                // Inversion or just CNV (without subtype)
             } else {
                 andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
             }

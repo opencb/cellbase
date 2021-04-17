@@ -26,15 +26,13 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
-import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
@@ -61,13 +59,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     private GenomeManager genomeManager;
 
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
-                                  CellBaseConfiguration configuration) throws CellbaseException {
-        super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
+    public ClinicalMongoDBAdaptor(MongoDataStore mongoDataStore, GenomeManager genomeManager) throws CellBaseException {
+        super(mongoDataStore);
+
+        this.genomeManager = genomeManager;
+
+        init();
+    }
+
+    private void init() {
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
-        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+
+        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

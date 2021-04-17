@@ -45,6 +45,7 @@ public class DownloadProperties {
     private URLProperties conservation;
     private URLProperties gerp;
     private URLProperties clinvar;
+    private URLProperties clinvarVariation;
     private URLProperties clinvarSummary;
     private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
@@ -220,6 +221,15 @@ public class DownloadProperties {
 
     public DownloadProperties setClinvar(URLProperties clinvar) {
         this.clinvar = clinvar;
+        return this;
+    }
+
+    public URLProperties getClinvarVariation() {
+        return clinvarVariation;
+    }
+
+    public DownloadProperties setClinvarVariation(URLProperties clinvarVariation) {
+        this.clinvarVariation = clinvarVariation;
         return this;
     }
 
