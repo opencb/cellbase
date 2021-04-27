@@ -1586,17 +1586,10 @@ public class VariantAnnotationCalculator {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
-                        variantAnnotationList.get(i)
-                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
-                                        .getTraitAssociation());
+                        variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalQueryResult));
                         // DEPRECATED
                         // TODO: remove in 4.6
-                        variantAnnotationList.get(i)
-                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalQueryResult
-                                        .getResult()
-                                        .get(0)
-                                        .getAnnotation()
-                                        .getTraitAssociation()));
+                        variantAnnotationList.get(i).setVariantTraitAssociation(getAllVariantTraitAssociations(clinicalQueryResult));
                     }
                 }
             }
@@ -1606,9 +1599,27 @@ public class VariantAnnotationCalculator {
 //            }
         }
 
-        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
+        private List<EvidenceEntry> getAllTraitAssociations(QueryResult<Variant> clinicalQueryResult) {
+            List<EvidenceEntry> traitAssociations = new ArrayList<>();
+            for (Variant variant: clinicalQueryResult.getResult()) {
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+            }
+            return traitAssociations;
+        }
+
+        private VariantTraitAssociation getAllVariantTraitAssociations(QueryResult<Variant> clinicalQueryResult) {
+            VariantTraitAssociation variantTraitAssociation = null;
             List<ClinVar> clinvarList = new ArrayList<>();
-            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
+            List<Cosmic> cosmicList = new ArrayList<>();
+            for (Variant variant: clinicalQueryResult.getResult()) {
+                variantTraitAssociation = convertToVariantTraitAssociation(variant.getAnnotation().getTraitAssociation(), clinvarList,
+                        cosmicList);
+            }
+            return variantTraitAssociation;
+        }
+
+        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation, List<ClinVar> clinvarList,
+                                                                         List<Cosmic> cosmicList) {
             for (EvidenceEntry evidenceEntry : traitAssociation) {
                 switch (evidenceEntry.getSource().getName()) {
                     case CLINVAR:

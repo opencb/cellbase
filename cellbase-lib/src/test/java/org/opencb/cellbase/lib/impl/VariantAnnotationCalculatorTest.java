@@ -107,6 +107,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+
+
     @Test
     public void testExonAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
@@ -1945,6 +1947,9 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/grch38/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/clinical_variants.full.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/grch38/variation_chr11.test.json.gz").toURI());
 //        loadRunner.load(path, "variation");
@@ -1952,6 +1957,64 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
     }
 
+    @Test
+    public void testCheckAminoAcidChange() throws Exception {
+
+        initGrch38();
+
+        Variant variant = new Variant("chr19:11105527:C:T");
+        variant.setStrand("+");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "hgvs,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+
+        assertEquals(1, queryResult.getResult().size());
+        List<EvidenceEntry> traitAssociation = queryResult.getResult().get(0).getTraitAssociation();
+
+        assertEquals(traitAssociation.get(0).getId(), "3747");
+
+        //////////////////////////////////////////////
+        // same query but checkAminoAcidChange TRUE //
+        //////////////////////////////////////////////
+        queryOptions.put("checkAminoAcidChange", true);
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+
+        assertEquals(1, queryResult.getResult().size());
+        traitAssociation = queryResult.getResult().get(0).getTraitAssociation();
+        assertTrue(hasClinVarAccession(traitAssociation, "3747"));
+        assertTrue(hasClinVarAccession(traitAssociation, "251327"));
+
+        VariantTraitAssociation variantTraitAssociation = queryResult.getResult().get(0).getVariantTraitAssociation();
+        assertTrue(hasClinVar(variantTraitAssociation, "3747"));
+        assertTrue(hasClinVar(variantTraitAssociation, "251327"));
+    }
+
+
+    private boolean hasClinVarAccession(List<EvidenceEntry> traitAssociation, String accession) {
+        for (EvidenceEntry evidenceEntry : traitAssociation) {
+            if (evidenceEntry.getId().equals(accession)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasClinVar(VariantTraitAssociation variantTraitAssociation, String accession) {
+        for (ClinVar clinVar : variantTraitAssociation.getClinvar()) {
+            if (clinVar.getAccession().equals(accession)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Test
     public void testMnvConsequenceTypes() throws Exception {

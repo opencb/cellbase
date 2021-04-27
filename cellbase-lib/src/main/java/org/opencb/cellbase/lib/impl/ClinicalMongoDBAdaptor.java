@@ -430,11 +430,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                                                    QueryOptions queryOptions) {
         List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions));
+            QueryResult<Variant> clinicalVariants = getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions);
+            results.add(clinicalVariants);
         }
         if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
             results = phasedQueryManager.run(variants, results);
-
         }
         return results;
     }
