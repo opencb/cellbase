@@ -134,13 +134,12 @@ public class RocksDbManager {
         return mapper.readValue(dbContent, MiRnaGene.class);
     }
 
-    public List<CancerGeneAssociation> getMCancerGeneAssociation(RocksDB rdb, String key) throws RocksDBException, IOException {
+    public List<GeneCancerAssociation> getGeneCancerAssociation(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             return null;
         }
-        System.out.println("new String(dbContent) = " + new String(dbContent));
-        return Collections.singletonList(mapper.readValue(dbContent, CancerGeneAssociation.class));
+        return Collections.singletonList(mapper.readValue(dbContent, GeneCancerAssociation.class));
     }
 
     /**

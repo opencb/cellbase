@@ -17,18 +17,22 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.MiRnaMature;
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.biodata.models.variant.avro.CancerGeneAssociation;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.*;
-import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.api.GeneQuery;
+import org.opencb.cellbase.core.api.RegulationQuery;
+import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
@@ -122,8 +126,7 @@ public class VariantAnnotationCalculator {
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true,
-                queryOptions);
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true, queryOptions);
 
         CellBaseDataResult cellBaseDataResult = new CellBaseDataResult();
         cellBaseDataResult.setId(variant.toString());
@@ -299,14 +302,14 @@ public class VariantAnnotationCalculator {
         }
 
         if (annotatorSet.contains("cancerGeneAssociation")) {
-            variantAnnotation.setCancerGeneAssociations(new ArrayList<>());
+            variantAnnotation.setGeneCancerAssociations(new ArrayList<>());
             for (Gene gene : geneList) {
                 if (gene.getAnnotation() != null && gene.getAnnotation().getCancerAssociations() != null) {
-                    List<org.opencb.biodata.models.core.CancerGeneAssociation>
+                    List<org.opencb.biodata.models.core.GeneCancerAssociation>
                             cancerAssociations = gene.getAnnotation().getCancerAssociations();
-                    List<CancerGeneAssociation> cancerGeneAssociations = new ArrayList<>(cancerAssociations.size());
-                    for (org.opencb.biodata.models.core.CancerGeneAssociation cancerAssociation : cancerAssociations) {
-                        CancerGeneAssociation build = CancerGeneAssociation.newBuilder()
+                    List<GeneCancerAssociation> cancerGeneAssociations = new ArrayList<>(cancerAssociations.size());
+                    for (org.opencb.biodata.models.core.GeneCancerAssociation cancerAssociation : cancerAssociations) {
+                        GeneCancerAssociation build = GeneCancerAssociation.newBuilder()
                                 .setId(cancerAssociation.getId())
                                 .setSource(cancerAssociation.getSource())
                                 .setTier(cancerAssociation.getTier())
@@ -325,7 +328,7 @@ public class VariantAnnotationCalculator {
                                 .build();
                         cancerGeneAssociations.add(build);
                     }
-                    variantAnnotation.getCancerGeneAssociations().addAll(cancerGeneAssociations);
+                    variantAnnotation.getGeneCancerAssociations().addAll(cancerGeneAssociations);
                 }
             }
         }
@@ -1062,8 +1065,9 @@ public class VariantAnnotationCalculator {
         if (includeList.size() > 0) {
             annotatorSet = new HashSet<>(includeList);
         } else {
+            // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
+                    "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
                     "cancerGeneAssociation", "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);

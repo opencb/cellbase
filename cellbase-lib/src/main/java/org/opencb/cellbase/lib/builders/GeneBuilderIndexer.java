@@ -21,7 +21,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
-import org.opencb.biodata.models.core.CancerGeneAssociation;
+import org.opencb.biodata.models.core.GeneCancerAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -162,7 +162,7 @@ public class GeneBuilderIndexer {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(cgcFile);
             bufferedReader.readLine();
 
-            CancerGeneAssociation cancerGeneAssociation;
+            GeneCancerAssociation cancerGeneAssociation;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t", -1);
@@ -173,7 +173,7 @@ public class GeneBuilderIndexer {
                         .replaceAll(" ", "")
                         .split(","))
                         .collect(Collectors.toList())
-                        : Collections.EMPTY_LIST;
+                        : Collections.emptyList();
 
                 String ensemblGeneId = null;
                 for (String synonym: synonyms) {
@@ -187,13 +187,13 @@ public class GeneBuilderIndexer {
                     boolean germline = StringUtils.isNotEmpty(fields[8]) && fields[8].equalsIgnoreCase("yes");
                     List<String> somaticTumourTypes = StringUtils.isNotEmpty(fields[9])
                             ? Arrays.asList(fields[9].replaceAll("\"", "").split(", "))
-                            : Collections.EMPTY_LIST;
+                            : new ArrayList<>();
                     List<String> germlineTumourTypes = StringUtils.isNotEmpty(fields[10])
                             ? Arrays.asList(fields[10].replaceAll("\"", "").split(", "))
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<String> syndromes = StringUtils.isNotEmpty(fields[11])
                             ? Arrays.asList(fields[11].replaceAll("\"", "").split("; "))
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<String> tissues = StringUtils.isNotEmpty(fields[12])
                             ? Arrays.stream(fields[12]
                             .replaceAll("\"", "")
@@ -201,12 +201,12 @@ public class GeneBuilderIndexer {
                             .split(","))
                             .map(tissuesMap::get)
                             .collect(Collectors.toList())
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = StringUtils.isNotEmpty(fields[13])
                             ? fields[13].equalsIgnoreCase("Dom/Rec")
                                 ? Arrays.asList(moiMap.get("Dom"), moiMap.get("Rec"))
                                 : Collections.singletonList(moiMap.get(fields[13]))
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<ClinicalProperty.RoleInCancer> roleInCancer = StringUtils.isNotEmpty(fields[14])
                             ? Arrays.stream(fields[14]
                             .replaceAll("\"", "")
@@ -214,7 +214,7 @@ public class GeneBuilderIndexer {
                             .split(","))
                             .map(roleInCancerMap::get)
                             .collect(Collectors.toList())
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<String> mutationTypes = StringUtils.isNotEmpty(fields[15])
                             ? Arrays.stream(fields[15]
                             .replaceAll("\"", "")
@@ -222,22 +222,22 @@ public class GeneBuilderIndexer {
                             .split(","))
                             .map(mutationTypesMap::get)
                             .collect(Collectors.toList())
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<String> translocationPartners = StringUtils.isNotEmpty(fields[16])
                             ? Arrays.stream(fields[16]
                             .replaceAll("\"", "")
                             .replaceAll(" ", "")
                             .split(","))
                             .collect(Collectors.toList())
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
                     List<String> otherSyndromes = StringUtils.isNotEmpty(fields[18])
                             ? Arrays.stream(fields[18]
                             .replaceAll("\"", "")
                             .split("; "))
                             .collect(Collectors.toList())
-                            : Collections.EMPTY_LIST;
+                            : Collections.emptyList();
 
-                    cancerGeneAssociation = new CancerGeneAssociation(ensemblGeneId, fields[0], "Cancer Gene Census",
+                    cancerGeneAssociation = new GeneCancerAssociation(ensemblGeneId, fields[0], "Cancer Gene Census",
                             fields[3], fields[6], fields[4], somatic, germline, somaticTumourTypes, germlineTumourTypes, syndromes, tissues,
                             modeOfInheritance, roleInCancer, mutationTypes, translocationPartners, otherSyndromes, synonyms);
 
@@ -250,9 +250,9 @@ public class GeneBuilderIndexer {
         }
     }
 
-    public List<CancerGeneAssociation> getCancerGeneCesnsus(String geneName) throws RocksDBException, IOException {
+    public List<GeneCancerAssociation> getCancerGeneCensus(String geneName) throws RocksDBException, IOException {
         String key = geneName + CANCER_GENE_CENSUS_SUFFIX;
-        return rocksDbManager.getMCancerGeneAssociation(rocksdb, key);
+        return rocksDbManager.getGeneCancerAssociation(rocksdb, key);
     }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
