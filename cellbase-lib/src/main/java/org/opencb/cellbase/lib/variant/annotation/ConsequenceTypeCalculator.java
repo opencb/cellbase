@@ -191,6 +191,7 @@ public abstract class ConsequenceTypeCalculator {
             // must create the ProteinVariantAnnotation object
             ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
             proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+            proteinVariantAnnotation.setProteinId(transcript.getProteinId());
             consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
         }
         return cdnaCodingStart;

@@ -58,6 +58,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path geneOntologyAnnotationFile;
     private Path miRBaseFile;
     private Path miRTarBaseFile;
+    private Path cancerGeneCensus;
     private boolean flexibleGTFParsing;
 
     // source for genes is either ensembl or refseq
@@ -95,6 +96,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/miRNA.xls"),
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
+                geneDirectoryPath.resolve("cancer-gene-census.tsv"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
 
@@ -105,8 +107,9 @@ public class GeneBuilder extends CellBaseBuilder {
 
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path uniprotIdMappingFile, Path tfbsFile,
                        Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                       Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path genomeSequenceFilePath,
-                       SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing, CellBaseSerializer serializer) {
+                       Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensus,
+                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseSerializer serializer) {
         super(serializer);
 
         this.gtfFile = gtfFile;
@@ -124,6 +127,7 @@ public class GeneBuilder extends CellBaseBuilder {
         this.geneOntologyAnnotationFile = geneOntologyAnnotationFile;
         this.miRBaseFile = miRBaseFile;
         this.miRTarBaseFile = miRTarBaseFile;
+        this.cancerGeneCensus = cancerGeneCensus;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -144,7 +148,7 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, maneFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensus);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -187,7 +191,8 @@ public class GeneBuilder extends CellBaseBuilder {
                     }
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
-                            indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName));
+                            indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName),
+                            indexer.getCancerGeneCesnsus(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),

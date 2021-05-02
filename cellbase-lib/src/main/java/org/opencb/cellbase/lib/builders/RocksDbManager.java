@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class RocksDbManager {
@@ -133,6 +134,14 @@ public class RocksDbManager {
         return mapper.readValue(dbContent, MiRnaGene.class);
     }
 
+    public List<CancerGeneAssociation> getMCancerGeneAssociation(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        System.out.println("new String(dbContent) = " + new String(dbContent));
+        return Collections.singletonList(mapper.readValue(dbContent, CancerGeneAssociation.class));
+    }
 
     /**
      * Add an entry to specified rocksdb. Overwrites any existing entry.

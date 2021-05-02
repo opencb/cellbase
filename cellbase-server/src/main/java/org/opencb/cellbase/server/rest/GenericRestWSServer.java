@@ -339,9 +339,9 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
-            if (CollectionUtils.isNotEmpty(queryResponse.getResponses()) && queryResponse.getResponses().get(0) != null) {
-                System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
-            }
+//            if (CollectionUtils.isNotEmpty(queryResponse.getResponses()) && queryResponse.getResponses().get(0) != null) {
+//                System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
+//            }
             String value = jsonObjectWriter.writeValueAsString(queryResponse);
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
             return buildResponse(ok);

@@ -20,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
+import org.opencb.biodata.models.clinical.ClinicalProperty;
+import org.opencb.biodata.models.core.CancerGeneAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -31,6 +33,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GeneBuilderIndexer {
 
@@ -41,6 +45,7 @@ public class GeneBuilderIndexer {
     protected Options dbOption;
 
     protected final String MANE_SUFFIX = "_mane";
+    protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
     protected final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
     protected final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
     protected final String DRUGS_SUFFIX = "_drug";
@@ -125,6 +130,130 @@ public class GeneBuilderIndexer {
         return getIndexEntry(id, MANE_SUFFIX, field);
     }
 
+    protected void indexCancerGeneCensus(Path cgcFile) throws IOException, RocksDBException {
+        Map<String, String> tissuesMap = new HashMap<>();
+        tissuesMap.put("E", "epithelial");
+        tissuesMap.put("L", "leukaemia/lymphoma");
+        tissuesMap.put("M", "mesenchymal");
+        tissuesMap.put("O", "other");
+        Map<String, ClinicalProperty.ModeOfInheritance> moiMap = new HashMap<>();
+        moiMap.put("Dom", ClinicalProperty.ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        moiMap.put("Rec", ClinicalProperty.ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        moiMap.put("Rec/X", ClinicalProperty.ModeOfInheritance.X_LINKED_RECESSIVE);
+        moiMap.put("O", ClinicalProperty.ModeOfInheritance.UNKNOWN);
+        Map<String, ClinicalProperty.RoleInCancer> roleInCancerMap = new HashMap<>();
+        roleInCancerMap.put("oncogene", ClinicalProperty.RoleInCancer.ONCOGENE);
+        roleInCancerMap.put("TSG", ClinicalProperty.RoleInCancer.TUMOR_SUPPRESSOR_GENE);
+        roleInCancerMap.put("fusion", ClinicalProperty.RoleInCancer.FUSION);
+        Map<String, String> mutationTypesMap = new HashMap<>();
+        mutationTypesMap.put("A", "amplification");
+        mutationTypesMap.put("D", "large deletion");
+        mutationTypesMap.put("F", "frameshift");
+        mutationTypesMap.put("N", "nonsense");
+        mutationTypesMap.put("O", "other");
+        mutationTypesMap.put("S", "splice site");
+        mutationTypesMap.put("T", "translocation");
+        mutationTypesMap.put("Mis", "missense");
+        mutationTypesMap.put("PromoterMis", "missense");
+
+        logger.info("Indexing CANCER GENE CENSUS data ...");
+        if (cgcFile != null && Files.exists(cgcFile) && Files.size(cgcFile) > 0) {
+            // Skip the first header line
+            BufferedReader bufferedReader = FileUtils.newBufferedReader(cgcFile);
+            bufferedReader.readLine();
+
+            CancerGeneAssociation cancerGeneAssociation;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+                // Find Ensembl Gene Id in the last comma-separated column
+                List<String> synonyms = StringUtils.isNotEmpty(fields[19])
+                        ? Arrays.stream(fields[19]
+                        .replaceAll("\"", "")
+                        .replaceAll(" ", "")
+                        .split(","))
+                        .collect(Collectors.toList())
+                        : Collections.EMPTY_LIST;
+
+                String ensemblGeneId = null;
+                for (String synonym: synonyms) {
+                    if (synonym.startsWith("ENSG")) {
+                        ensemblGeneId = synonym;
+                        break;
+                    }
+                }
+                if (StringUtils.isNotEmpty(ensemblGeneId)) {
+                    boolean somatic = StringUtils.isNotEmpty(fields[7]) && fields[7].equalsIgnoreCase("yes");
+                    boolean germline = StringUtils.isNotEmpty(fields[8]) && fields[8].equalsIgnoreCase("yes");
+                    List<String> somaticTumourTypes = StringUtils.isNotEmpty(fields[9])
+                            ? Arrays.asList(fields[9].replaceAll("\"", "").split(", "))
+                            : Collections.EMPTY_LIST;
+                    List<String> germlineTumourTypes = StringUtils.isNotEmpty(fields[10])
+                            ? Arrays.asList(fields[10].replaceAll("\"", "").split(", "))
+                            : Collections.EMPTY_LIST;
+                    List<String> syndromes = StringUtils.isNotEmpty(fields[11])
+                            ? Arrays.asList(fields[11].replaceAll("\"", "").split("; "))
+                            : Collections.EMPTY_LIST;
+                    List<String> tissues = StringUtils.isNotEmpty(fields[12])
+                            ? Arrays.stream(fields[12]
+                            .replaceAll("\"", "")
+                            .replaceAll(" ", "")
+                            .split(","))
+                            .map(tissuesMap::get)
+                            .collect(Collectors.toList())
+                            : Collections.EMPTY_LIST;
+                    List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = StringUtils.isNotEmpty(fields[13])
+                            ? fields[13].equalsIgnoreCase("Dom/Rec")
+                                ? Arrays.asList(moiMap.get("Dom"), moiMap.get("Rec"))
+                                : Collections.singletonList(moiMap.get(fields[13]))
+                            : Collections.EMPTY_LIST;
+                    List<ClinicalProperty.RoleInCancer> roleInCancer = StringUtils.isNotEmpty(fields[14])
+                            ? Arrays.stream(fields[14]
+                            .replaceAll("\"", "")
+                            .replaceAll(" ", "")
+                            .split(","))
+                            .map(roleInCancerMap::get)
+                            .collect(Collectors.toList())
+                            : Collections.EMPTY_LIST;
+                    List<String> mutationTypes = StringUtils.isNotEmpty(fields[15])
+                            ? Arrays.stream(fields[15]
+                            .replaceAll("\"", "")
+                            .replaceAll(" ", "")
+                            .split(","))
+                            .map(mutationTypesMap::get)
+                            .collect(Collectors.toList())
+                            : Collections.EMPTY_LIST;
+                    List<String> translocationPartners = StringUtils.isNotEmpty(fields[16])
+                            ? Arrays.stream(fields[16]
+                            .replaceAll("\"", "")
+                            .replaceAll(" ", "")
+                            .split(","))
+                            .collect(Collectors.toList())
+                            : Collections.EMPTY_LIST;
+                    List<String> otherSyndromes = StringUtils.isNotEmpty(fields[18])
+                            ? Arrays.stream(fields[18]
+                            .replaceAll("\"", "")
+                            .split("; "))
+                            .collect(Collectors.toList())
+                            : Collections.EMPTY_LIST;
+
+                    cancerGeneAssociation = new CancerGeneAssociation(ensemblGeneId, fields[0], "Cancer Gene Census",
+                            fields[3], fields[6], fields[4], somatic, germline, somaticTumourTypes, germlineTumourTypes, syndromes, tissues,
+                            modeOfInheritance, roleInCancer, mutationTypes, translocationPartners, otherSyndromes, synonyms);
+
+                    rocksDbManager.update(rocksdb, fields[0] + CANCER_GENE_CENSUS_SUFFIX, cancerGeneAssociation);
+                }
+            }
+            bufferedReader.close();
+        } else {
+            logger.warn("CANCER GENE CENSUS file " + cgcFile + " not found");
+        }
+    }
+
+    public List<CancerGeneAssociation> getCancerGeneCesnsus(String geneName) throws RocksDBException, IOException {
+        String key = geneName + CANCER_GENE_CENSUS_SUFFIX;
+        return rocksDbManager.getMCancerGeneAssociation(rocksdb, key);
+    }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
         return getIndexEntry(id, suffix, "");

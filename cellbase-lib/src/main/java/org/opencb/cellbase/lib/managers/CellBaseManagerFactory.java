@@ -151,6 +151,9 @@ public class CellBaseManagerFactory {
             if (!validateSpeciesAssembly(species, assembly)) {
                 throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
+            System.out.println("=======================================");
+            System.out.println("configuration VariantManager Factory = " + configuration);
+            System.out.println("=======================================");
             variantManagers.put(multiKey, new VariantManager(species, assembly, configuration));
         }
         return variantManagers.get(multiKey);

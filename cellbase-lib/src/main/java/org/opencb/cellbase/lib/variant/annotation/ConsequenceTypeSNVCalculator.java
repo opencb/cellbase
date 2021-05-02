@@ -36,25 +36,24 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     public ConsequenceTypeSNVCalculator() {
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
-
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> genes, boolean[] overlapsRegulatoryRegion, QueryOptions options) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         boolean isIntergenic = true;
-        for (Gene currentGene : geneList) {
+        for (Gene currentGene : genes) {
             gene = currentGene;
-            String source = getSource(gene.getId());
-            if (gene.getTranscripts() == null) {
+            if (gene.getTranscripts() == null || gene.getTranscripts().size() == 0) {
                 continue;
             }
+
+            String source = getSource(gene.getId());
             for (Transcript currentTranscript : gene.getTranscripts()) {
                 isIntergenic = isIntergenic && (variant.getStart() < currentTranscript.getStart()
                         || variant.getStart() > currentTranscript.getEnd());
                 transcript = currentTranscript;
                 consequenceType = new ConsequenceType();
-                consequenceType.setGeneName(gene.getName());
                 consequenceType.setGeneId(gene.getId());
+                consequenceType.setGeneName(gene.getName());
                 consequenceType.setTranscriptId(transcript.getId());
                 if (ParamConstants.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
                     consequenceType.setEnsemblGeneId(gene.getId());
@@ -63,7 +62,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 consequenceType.setStrand(transcript.getStrand());
                 consequenceType.setBiotype(transcript.getBiotype());
                 consequenceType.setSource(source);
-                // deprecated, replaced with transcriptFlags
+                // FIXME, replaced by transcriptFlags
                 consequenceType.setTranscriptAnnotationFlags(transcript.getFlags() != null
                         ? new ArrayList<>(transcript.getFlags())
                         : null);
@@ -85,7 +84,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             consequenceTypeList.add(consequenceType);
                         }
                     }
-
                 } else {
                     // Check overlaps transcript start/end coordinates
                     if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
@@ -107,11 +105,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
 
         return consequenceTypeList;
-
     }
 
     protected void solveNonCodingNegativeTranscript() {
-
         Exon exon = transcript.getExons().get(0);
         int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
@@ -164,7 +160,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     }
 
     protected void solveCodingNegativeTranscript() {
-
         Exon exon = transcript.getExons().get(0);
         int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
@@ -438,7 +433,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     }
 
     protected void solveCodingPositiveTranscript() {
-
         Exon exon = transcript.getExons().get(0);
         int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
@@ -644,8 +638,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 }
             }
         }
-
     }
-
 
 }

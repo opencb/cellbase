@@ -22,6 +22,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.CancerGeneAssociation;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
@@ -54,6 +55,7 @@ import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class VariantAnnotationCalculator {
+
     private static final String EMPTY_STRING = "";
     private static final String ALTERNATE = "1";
     private GenomeManager genomeManager;
@@ -76,11 +78,12 @@ public class VariantAnnotationCalculator {
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
 
-    private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
+
+    private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
     public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
             throws CellBaseException {
@@ -96,7 +99,7 @@ public class VariantAnnotationCalculator {
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-         hgvsCalculator = new HgvsCalculator(genomeManager);
+        hgvsCalculator = new HgvsCalculator(genomeManager);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -294,6 +297,39 @@ public class VariantAnnotationCalculator {
                 }
             }
         }
+
+        if (annotatorSet.contains("cancerGeneAssociation")) {
+            variantAnnotation.setCancerGeneAssociations(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getCancerAssociations() != null) {
+                    List<org.opencb.biodata.models.core.CancerGeneAssociation>
+                            cancerAssociations = gene.getAnnotation().getCancerAssociations();
+                    List<CancerGeneAssociation> cancerGeneAssociations = new ArrayList<>(cancerAssociations.size());
+                    for (org.opencb.biodata.models.core.CancerGeneAssociation cancerAssociation : cancerAssociations) {
+                        CancerGeneAssociation build = CancerGeneAssociation.newBuilder()
+                                .setId(cancerAssociation.getId())
+                                .setSource(cancerAssociation.getSource())
+                                .setTier(cancerAssociation.getTier())
+                                .setSomatic(cancerAssociation.isSomatic())
+                                .setGermline(cancerAssociation.isGermline())
+                                .setSomaticTumourTypes(cancerAssociation.getSomaticTumourTypes())
+                                .setGermlineTumourTypes(cancerAssociation.getGermlineTumourTypes())
+                                .setSyndromes(cancerAssociation.getSyndromes())
+                                .setTissues(cancerAssociation.getTissues())
+                                .setModeOfInheritance(cancerAssociation.getModeOfInheritance()
+                                        .stream().map(Enum::name).collect(Collectors.toList()))
+                                .setRoleInCancer(cancerAssociation.getRoleInCancer()
+                                        .stream().map(Enum::name).collect(Collectors.toList()))
+                                .setMutationTypes(cancerAssociation.getMutationTypes())
+                                .setTranslocationPartners(cancerAssociation.getTranslocationPartners())
+                                .build();
+                        cancerGeneAssociations.add(build);
+                    }
+                    variantAnnotation.getCancerGeneAssociations().addAll(cancerGeneAssociations);
+                }
+            }
+        }
+
         return geneList;
     }
 
@@ -1028,7 +1064,7 @@ public class VariantAnnotationCalculator {
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "expression", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
-                    "populationFrequencies", "repeats", "cytoband", "hgvs"));
+                    "cancerGeneAssociation", "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1037,7 +1073,7 @@ public class VariantAnnotationCalculator {
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
             List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
-                "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cDnaSequence", "transcripts.proteinSequence",
+                "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence", "transcripts.proteinSequence",
                 "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
@@ -1061,6 +1097,9 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("mirnaTargets")) {
             includeGeneFields.add("annotation.targets");
             includeGeneFields.add("mirna.matures.id");
+        }
+        if (annotatorSet.contains("cancerGeneAssociation")) {
+            includeGeneFields.add("annotation.cancerAssociations");
         }
         return includeGeneFields;
     }
@@ -1105,13 +1144,14 @@ public class VariantAnnotationCalculator {
             if (transcriptId != null && transcriptId.contains(".")) {
                 transcriptId = transcriptId.split("\\.")[0];
             }
-
             CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(variant,
                     transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
                     consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
 
+            // Set proteinId
+            results.getResults().get(0).setProteinId(consequenceType.getProteinVariantAnnotation().getProteinId());
             if (results.getNumResults() > 0) {
                 proteinVariantAnnotation = results.getResults().get(0);
             }
