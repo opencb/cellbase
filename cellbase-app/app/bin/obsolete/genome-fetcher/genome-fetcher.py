@@ -101,7 +101,7 @@ for sp in species:
         logging.debug(sp_obj['assembly'])
         outfile = sequence_folder+"/"+sp_short.capitalize() + ".{0}".format(sp_obj['assembly'])+".fa.gz"
         logging.debug(outfile)
-        command = "wget --tries=10 " + url_seq +" -O '"+outfile+"' -o "+outfile+".log"
+        command = "wget -N --tries=10 " + url_seq +" -O '"+outfile+"' -o "+outfile+".log"
         logging.debug(command)
         os.system(command)
         cmd = "./genome_info.pl --species '{0}' -o {1}/genome_info.json".format(sp, sequence_folder)
@@ -109,7 +109,7 @@ for sp in species:
         os.system(cmd)
         # for i in sp_obj['chromosomes']:
         #     outfile = seq_folder+"/chrom_"+i+".fa.gz"
-        #     command = "wget --tries=10 " + url_seq+"/*.dna.chromosome."+i+".fa.gz -O '"+outfile+"' -o "+outfile+".log"
+        #     command = "wget -N --tries=10 " + url_seq+"/*.dna.chromosome."+i+".fa.gz -O '"+outfile+"' -o "+outfile+".log"
         #     logging.debug(command)
         #     os.system(command)
 
@@ -121,7 +121,7 @@ for sp in species:
         url_gtf = sp_obj['sequence_url'].replace("fasta", "gtf")+"{0}".format(sp_short)
         logging.debug(url_gtf)
         outfile = gene_folder+"/"+sp_short+".gtf.gz"
-        command = "wget --tries=10 " + url_gtf+"/*.gtf.gz -O '"+outfile+"' -o "+outfile+".log"
+        command = "wget -N --tries=10 " + url_gtf+"/*.gtf.gz -O '"+outfile+"' -o "+outfile+".log"
         logging.debug(command)
         os.system(command)
         if sp_obj['phylo'] is not 'Bacteria':
@@ -159,7 +159,7 @@ for sp in species:
             variation_url = sp_obj['variation_url']
             for file in variation_files:
                 outfile = variation_folder+"/"+file
-                command = "wget --tries=10 " + variation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
+                command = "wget -N --tries=10 " + variation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
                 logging.debug(command)
                 os.system(command)
 
@@ -172,7 +172,7 @@ for sp in species:
             regulation_url = sp_obj['regulation_url']+sp_short
             for file in regulation_files:
                 outfile = regulation_folder+"/"+file
-                command = "wget --tries=10 " + regulation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
+                command = "wget -N --tries=10 " + regulation_url+"/"+file+" -O '"+outfile+"' -o "+outfile+".log"
                 logging.debug(command)
                 os.system(command)
 

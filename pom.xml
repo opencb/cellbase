@@ -25,7 +25,12 @@
         <cellbase.version>4.8.1</cellbase.version>
         <compileSource>1.8</compileSource>
         <java-common-libs.version>3.7.0</java-common-libs.version>
+<<<<<<< HEAD
+        <commons-net.version>3.6</commons-net.version>
+        <biodata.version>1.4.3</biodata.version>
+=======
         <biodata.version>1.5.3</biodata.version>
+>>>>>>> a06ad91c3ea228e658c3495fc957d56b2572a9be
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.9.8</jackson.version>
         <protobuf.version>3.1.0</protobuf.version>

@@ -30,7 +30,7 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String DISEASE = "disease";
     private static final String SOURCE_PUBMED_ID = "source_pubmed_id";
     private static final String PMID = "PMID:";
-    private static final String URL_PREFIX = "http://docm.genome.wustl.edu/variants/";
+    private static final String URL_PREFIX = "http://docm.info/variants/";
     private static final String HGVS = "hgvs";
     private static final String GENE = "gene";
     private static final String TRANSCRIPT = "transcript";
