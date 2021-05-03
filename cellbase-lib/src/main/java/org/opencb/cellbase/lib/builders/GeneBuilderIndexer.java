@@ -110,17 +110,20 @@ public class GeneBuilderIndexer {
 
         if (maneMappingFile != null && Files.exists(maneMappingFile) && Files.size(maneMappingFile) > 0) {
             int idColumn = referenceId.equalsIgnoreCase("ensembl") ? 7 : 5;
-            String line;
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile);
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t", -1);
-                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq", fields[5]);
-                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq_protein", fields[6]);
-                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl", fields[7]);
-                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl_protein", fields[8]);
-                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_flag", fields[9]);
+//            BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile);
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    String[] fields = line.split("\t", -1);
+                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq", fields[5]);
+                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq_protein", fields[6]);
+                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl", fields[7]);
+                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl_protein", fields[8]);
+                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_flag", fields[9]);
+
+                    line = bufferedReader.readLine();
+                }
             }
-            bufferedReader.close();
         } else {
             logger.warn("MANE mapping file " + maneMappingFile + " not found");
         }

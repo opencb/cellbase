@@ -1,4 +1,5 @@
 ﻿version: v5
+version: v5
 apiVersion: "${cellbase.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
@@ -56,15 +57,15 @@ download:
     url:
       host: ftp://ftp.ensemblgenomes.org/pub
   refSeq:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
   refSeqFasta:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
+    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
   refSeqProteinFasta:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
+    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
   refSeqCdna:
-    host: ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
+    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   maneSelect:
-    host: ftp://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.91/MANE.GRCh38.v0.91.summary.txt.gz
+    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.91/MANE.GRCh38.v0.91.summary.txt.gz
     version: 0.91
   geneUniprotXref:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
@@ -151,7 +152,7 @@ species:
       assemblies:
         #     - ensemblVersion: '82_37'
         #       name: GRCh37
-        - ensemblVersion: '99_38'
+        - ensemblVersion: '102_38'
           name: GRCh38
       data:
         - clinical_variants
