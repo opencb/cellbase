@@ -1,5 +1,4 @@
 ﻿version: v5
-version: v5
 apiVersion: "${cellbase.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
@@ -67,6 +66,8 @@ download:
   maneSelect:
     host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.91/MANE.GRCh38.v0.91.summary.txt.gz
     version: 0.91
+  lrg:
+    host: http://ftp.ebi.ac.uk/pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
   geneUniprotXref:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
   geneExpressionAtlas:
@@ -90,9 +91,9 @@ download:
   interproRelNotes:
     host: ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/release_notes.txt
   conservation:
-    host: ftp://hgdownload.cse.ucsc.edu/goldenPath/
+    host: https://hgdownload.cse.ucsc.edu/goldenPath/
   gerp:
-    host: ftp://ftp.ensembl.org/pub/current_compara/conservation_scores/103_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+    host: http://ftp.ensembl.org/pub/release-102/compara/conservation_scores/111_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
   clinvar:
     host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-03.xml.gz
   clinvarVariation:
@@ -120,16 +121,16 @@ download:
   gwasCatalog:
     host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv
   hpo:
-    host: http://compbio.charite.de/hudson/job/hpo.annotations/lastStableBuild/artifact/util/annotation/phenotype_to_genes.txt
+    host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
   disgenet:
     host: https://www.disgenet.org/static/disgenet_ap1/files/downloads
     files:
       - all_gene_disease_associations.tsv.gz
       - readme.txt
   dgidb:
-    host: http://dgidb.org/data/interactions.tsv
+    host: https://dgidb.org/data/monthly_tsvs/2021-Jan/interactions.tsv
   cadd:
-    host: http://krishna.gs.washington.edu/download/CADD/v1.3/whole_genome_SNVs.tsv.gz
+    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
