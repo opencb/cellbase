@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
@@ -1165,6 +1167,25 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
 
+        File file = new File(outputFileName);
+        if (file.exists()) {
+            FTPClient ftpClient = new FTPClient();
+            // code to connect and login....
+
+            FTPFile remotefile = ftpClient.mlistFile(outputFileName);
+            long remotesize = remotefile.getSize();
+            long localsize = file.length();
+            long locallastmodified = file.lastModified();
+            logger.info("File " + outputFileName + " exists, with size " + localsize + " vs "
+                + remotesize + " in remote and will not be downloaded again");
+            if (remotesize == localsize) {
+                logger.info("Download avoided because the files have the same size");
+                return;
+            }
+            //If the filestamps differ, regardless of the timestamps downloads the file
+            Calendar remotets = remotefile.getTimestamp();
+            logger.info("local ts " + locallastmodified + "wheras remote ts is " + remotets.toString());
+        }
         List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
                 outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
