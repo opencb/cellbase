@@ -81,6 +81,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadEnsemblData(geneFolder));
         downloadFiles.addAll(downloadRefSeq(refseqFolder));
         downloadFiles.add(downloadMane(geneFolder));
+        downloadFiles.add(downloadLrg(geneFolder));
         downloadFiles.add(downloadDrugData(geneFolder));
         downloadFiles.addAll(downloadGeneUniprotXref(geneFolder));
         downloadFiles.add(downloadGeneExpressionAtlas(geneFolder));
@@ -189,6 +190,18 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             String url = configuration.getDownload().getManeSelect().getHost();
             saveVersionData(EtlCommons.GENE_DATA, "MANE Select", configuration.getDownload().getManeSelect().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("maneSelectVersion.json"));
+            String[] array = url.split("/");
+            return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
+        }
+        return null;
+    }
+
+    private DownloadFile downloadLrg(Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading LRG ...");
+            String url = configuration.getDownload().getLrg().getHost();
+            saveVersionData(EtlCommons.GENE_DATA, "LRG", configuration.getDownload().getLrg().getVersion(),
+                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("lrgVersion.json"));
             String[] array = url.split("/");
             return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
         }
