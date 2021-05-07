@@ -45,6 +45,7 @@ public class GeneBuilderIndexer {
     protected Options dbOption;
 
     protected final String MANE_SUFFIX = "_mane";
+    protected final String LRG_SUFFIX = "_lrg";
     protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
     protected final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
     protected final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
@@ -131,6 +132,37 @@ public class GeneBuilderIndexer {
 
     public String getMane(String id, String field) throws RocksDBException {
         return getIndexEntry(id, MANE_SUFFIX, field);
+    }
+
+    protected void indexLrgMapping(Path lrgMappingFile, String referenceId) throws IOException, RocksDBException {
+        // # Last modified: 30-03-2021@22:00:06
+        // # LRG HGNC_SYMBOL REFSEQ_GENOMIC LRG_TRANSCRIPT REFSEQ_TRANSCRIPT ENSEMBL_TRANSCRIPT CCDS
+        // LRG_1 COL1A1 NG_007400.1 t1 NM_000088.3 ENST00000225964.10 CCDS11561.1
+        logger.info("Indexing LRG mapping data ...");
+
+        if (lrgMappingFile != null && Files.exists(lrgMappingFile) && Files.size(lrgMappingFile) > 0) {
+            int idColumn = referenceId.equalsIgnoreCase("ensembl") ? 5 : 4;
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(lrgMappingFile)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    if (!line.startsWith("#")) {
+                        String[] fields = line.split("\t", -1);
+                        String id = fields[idColumn];
+                        if (StringUtils.isNotEmpty(id) && !id.equals("-")) {
+                            rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_refseq", fields[4]);
+                            rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_ensembl", fields[5]);
+                        }
+                    }
+                    line = bufferedReader.readLine();
+                }
+            }
+        } else {
+            logger.warn("LRG mapping file " + lrgMappingFile + " not found");
+        }
+    }
+
+    public String getLrg(String id, String field) throws RocksDBException {
+        return getIndexEntry(id, LRG_SUFFIX, field);
     }
 
     protected void indexCancerGeneCensus(Path cgcFile) throws IOException, RocksDBException {

@@ -30,6 +30,7 @@ public class DownloadProperties {
     private URLProperties refSeqProteinFasta;
     private URLProperties refSeqCdna;
     private URLProperties maneSelect;
+    private URLProperties lrg;
 
     private URLProperties geneUniprotXref;
     private URLProperties geneExpressionAtlas;
@@ -474,6 +475,15 @@ public class DownloadProperties {
 
     public DownloadProperties setRefSeqCdna(URLProperties refSeqCdna) {
         this.refSeqCdna = refSeqCdna;
+        return this;
+    }
+
+    public URLProperties getLrg() {
+        return lrg;
+    }
+
+    public DownloadProperties setLrg(URLProperties lrg) {
+        this.lrg = lrg;
         return this;
     }
 

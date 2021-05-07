@@ -38,7 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
-    private Path maneFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
+    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -69,6 +69,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private void setAnnotationFiles(Path refSeqDirectoryPath) {
         Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
         maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v0.91.summary.txt.gz");
+        lrgFile = geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt");
         geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
         disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
         hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
@@ -104,7 +105,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void getCdnaFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
         for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith("cdna.fna") || fileName.endsWith("cdna.fna.gz")) {
+            if (fileName.endsWith("rna.fna") || fileName.endsWith("rna.fna.gz")) {
                 cdnaFastaFile = refSeqDirectoryPath.resolve(fileName);
                 break;
             }
@@ -120,7 +121,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
-        indexer.index(maneFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
+        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -246,10 +247,15 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript = transcriptDict.get(transcriptId);
         }
 
+        System.out.println("=======================================");
         String exonSequence = null;
         if (fastaIndex != null) {
             exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         }
+        System.out.println("gtf.getSequenceName() = " + gtf.getSequenceName());
+        System.out.println("fastaIndex.getSequenceDictionary() = " + fastaIndex.getSequenceDictionary());
+//        System.out.println("exonSequence = " + exonSequence);
+
         String exonNumber = gtf.getAttributes().get("exon_number");
         // RefSeq does not provode Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;
@@ -547,6 +553,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 indexer.getCdnaFasta(transcriptId), "", "", "", version, SOURCE,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), new TranscriptAnnotation());
 
+        // Add MANE Select mappings, with this we can know which Ensembl and Refseq transcripts match according to MANE
         for (String suffix: Arrays.asList("ensembl", "ensembl_protein")) {
             String maneRefSeq = indexer.getMane(transcriptId, suffix);
             if (StringUtils.isNotEmpty(maneRefSeq)) {
@@ -555,9 +562,22 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
         }
 
+        // Add LRG mappings, with this we can know which Ensembl and Refseq transcripts match according to LRG
+        String lrgRefSeq = indexer.getLrg(transcriptId, "ensembl");
+        if (StringUtils.isNotEmpty(lrgRefSeq)) {
+            transcript.getXrefs().add(new Xref(lrgRefSeq, "lrg_ensembl", "LRG Ensembl"));
+        }
+
+        // Add Flags
+        // 1. MANE Flag
         String maneFlag = indexer.getMane(transcriptId, "flag");
         if (StringUtils.isNotEmpty(maneFlag)) {
             transcript.getFlags().add(maneFlag);
+        }
+        // 2. LRG Flag
+        String lrg = indexer.getLrg(transcriptId, "refseq");
+        if (StringUtils.isNotEmpty(lrg)) {
+            transcript.getFlags().add("LRG");
         }
 
         gene.getTranscripts().add(transcript);

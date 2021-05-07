@@ -40,9 +40,10 @@ public class RefSeqGeneBuilderIndexer extends GeneBuilderIndexer{
         super(refSeqDirectoryPath);
     }
 
-    public void index(Path maneFile, Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath, Path disgenetFile,
-                      Path miRTarBaseFile) throws IOException, RocksDBException, FileFormatException {
+    public void index(Path maneFile, Path lrgFile, Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath,
+                      Path disgenetFile, Path miRTarBaseFile) throws IOException, RocksDBException, FileFormatException {
         indexManeMapping(maneFile, "refseq");
+        indexLrgMapping(lrgFile, "refseq");
         indexProteinSequences(proteinFastaFile);
         indexCdnaSequences(cDnaFastaFile);
         indexDrugs(geneDrugFile);
