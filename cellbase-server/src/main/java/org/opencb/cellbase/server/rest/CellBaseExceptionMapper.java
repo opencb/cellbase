@@ -26,8 +26,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,9 @@ import java.util.List;
 @Provider
 public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
 
-    private final UriInfo uriInfo;
+    @Context
+    private UriInfo uriInfo;
+
     private static Logger logger;
     private static ObjectMapper jsonObjectMapper;
     private static ObjectWriter jsonObjectWriter;
@@ -61,10 +61,6 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
 
-    }
-
-    public CellBaseExceptionMapper(@Context UriInfo uriInfo) {
-        this.uriInfo = uriInfo;
     }
 
     @Override

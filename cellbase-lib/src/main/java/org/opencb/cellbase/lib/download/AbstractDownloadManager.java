@@ -104,14 +104,16 @@ public class AbstractDownloadManager {
         // Prepare outdir
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
+        logger.info("Creating download dir " + downloadFolder.toString());
         Files.createDirectories(downloadFolder);
 
         downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
-        logger.error("creating download dir " + downloadLogFolder.toString());
+        logger.info("Creating download log dir " + downloadLogFolder.toString());
         Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
         buildFolder = outdir.resolve(speciesFolder + "/generated_json");
+        logger.info("Creating build dir " + buildFolder.toString());
         Files.createDirectories(buildFolder);
 
         logger.info("Processing species " + speciesConfiguration.getScientificName());

@@ -1,0 +1,80 @@
+{{- if .Values.load.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.load.name }}
+  labels:
+    {{- include "cellbase.labels" . | nindent 4 }}
+spec:
+  {{/*
+  selector:
+    matchLabels:
+      app: {{ .Values.load.name }}
+      {{- include "cellbase.selectorLabels" . | nindent 6 }}
+  */}}
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.load.name }}
+        {{- include "cellbase.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.load.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      securityContext:
+        {{- toYaml .Values.load.podSecurityContext | nindent 8 }}
+      restartPolicy: OnFailure
+      containers:
+        - name: {{ .Values.load.name }}
+          securityContext:
+            {{- toYaml .Values.load.securityContext | nindent 12 }}
+          image: {{ tpl .Values.load.image.repository . | quote }}
+          imagePullPolicy: {{ .Values.load.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: 
+          - "-c"
+          - "cd /data && /opt/cellbase/bin/cellbase-admin.sh --version"
+        #  - "cd /data && /opt/cellbase/bin/cellbase-admin.sh download --species hsapiens --assembly GRCh38 --data all --outdir /data/"
+          env:
+            - name: "CELLBASE_HOME"
+              value: "/opt/cellbase"
+            - name: "CELLBASE_DATABASES_MONGODB_HOST"
+              value: {{ include "mongodbHosts" . | toString | quote}}
+            - name: "CELLBASE_DATABASES_MONGODB_USER"
+              value: {{ .Values.mongodb.user | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_PASSWORD"
+              value: {{ .Values.mongodb.password | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_SSL"
+              value: {{ .Values.mongodb.ssl | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE"
+              value: {{ .Values.mongodb.authenticationDatabase | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
+              value: {{ .Values.mongodb.authenticationMechanism | quote }}
+          resources:
+            {{- toYaml .Values.load.resources | nindent 12 }}
+          volumeMounts:
+          - name : conf
+            mountPath: /opt/cellbase/conf
+          - name : data
+            mountPath: /data
+      volumes:
+      - name: conf
+        configMap:
+          name: {{ include "configMap.name" . }}
+      - name: data
+        emptyDir: {}
+    {{- with .Values.load.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.load.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.load.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end -}}

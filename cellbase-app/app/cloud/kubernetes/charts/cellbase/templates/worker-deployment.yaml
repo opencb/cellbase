@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.worker.name }}
+  labels:
+    app: {{  .Values.worker.name  }}
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{  .Values.worker.name  }}
+      {{- include "cellbase.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.worker.name  }}
+        {{- include "cellbase.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.worker.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ .Values.worker.name }}
+      securityContext:
+        {{- toYaml .Values.worker.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.worker.securityContext | nindent 12 }}
+          image: {{ tpl .Values.worker.image.repository . | quote }}
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          command: ["sleep", "31536000"]
+          env:
+            - name: "CELLBASE_HOME"
+              value: "/opt/cellbase"
+            - name: "CELLBASE_DATABASES_MONGODB_HOST"
+              value: {{ include "mongodbHosts" . | toString | quote}}
+            - name: "CELLBASE_DATABASES_MONGODB_USER"
+              value: {{ .Values.mongodb.user | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cellbase.secretName" . }}
+                  key: password
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_SSL"
+              value: {{ .Values.mongodb.ssl | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE"
+              value: {{ .Values.mongodb.authenticationDatabase | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
+              value: {{ .Values.mongodb.authenticationMechanism | quote }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          volumeMounts:
+          - name : conf
+            mountPath: /opt/cellbase/conf
+          - name : resources
+            mountPath: /data/resources/
+      volumes:
+      - name: conf
+        configMap:
+          name: {{ include "configMap.name" . }}
+      - name: resources
+        persistentVolumeClaim:
+          claimName: {{ include "pvcResources" . | quote}}
+      {{- with .Values.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
