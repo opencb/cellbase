@@ -12,8 +12,8 @@ ENV CELLBASE_BUILD_DOCKER true
 
 RUN apt-get update --fix-missing && \
     apt-get install -y git mysql-client libjson-perl libdbi-perl libdbd-mysql-perl libdbd-mysql-perl libtry-tiny-perl wget openjdk-8-jdk htop
-RUN addgroup $CELLBASE_USER
-RUN adduser --disabled-password --ingroup $CELLBASE_USER --uid 1001  $CELLBASE_USER
+# RUN addgroup $CELLBASE_USER
+RUN adduser --disabled-password --uid 1001  $CELLBASE_USER
 
 ## Ensembl Perl lib installation
 RUN mkdir /opt/ensembl && cd /opt/ensembl && \
@@ -27,7 +27,7 @@ RUN mkdir /opt/ensembl && cd /opt/ensembl && \
 
 ENV PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase
 
-COPY scripts/ensembl-scripts/* /opt/cellbase/
 COPY . /opt/cellbase/
+COPY scripts/ensembl-scripts/* /opt/cellbase/
 
 WORKDIR /opt/cellbase
