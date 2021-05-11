@@ -315,18 +315,21 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return downloadFiles;
     }
 
-    private void runGeneExtraInfo(Path geneFolder) throws IOException {
+    private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {
         // TODO skip if we already have these data
         logger.info("Downloading gene extra info ...");
 
-        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
-                "/ensembl-data");
-        String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --outdir /ensembl-data";
+        if ("true".equals(System.getenv("CELLBASE_BUILD_DOCKER"))) {
+            final String outputLog = downloadLogFolder + "/gene_extra_info.log";
+            EtlCommons.runCommandLineProcess(null, "/opt/cellbase/gene_extra_info.pl",
+                    Arrays.asList("--outdir", geneFolder.toAbsolutePath().toString()),
+                    outputLog);
+        } else {
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
+                    "/ensembl-data");
+            String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --outdir /ensembl-data";
 
-        try {
             DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
-        } catch (IOException e) {
-            throw new IOException(e);
         }
     }
 }

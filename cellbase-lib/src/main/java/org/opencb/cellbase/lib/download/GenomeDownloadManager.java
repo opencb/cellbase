@@ -26,10 +26,7 @@ import org.opencb.commons.utils.DockerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GenomeDownloadManager extends AbstractDownloadManager {
 
@@ -216,20 +213,25 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         return null;
     }
 
-    public void runGenomeInfo() throws IOException {
+    public void runGenomeInfo() throws IOException, InterruptedException {
         logger.info("Downloading genome info ...");
 
         // TODO don't run this if file already exists
-        String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
+
         String outputFolder = downloadFolder.getParent().toAbsolutePath().toString() + "/generated_json/";
 
-        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(outputFolder, "/ensembl-data");
-        String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
+        if ("true".equals(System.getenv("CELLBASE_BUILD_DOCKER"))) {
+            String outputLog = downloadLogFolder + "/genome_info.log";
+            EtlCommons.runCommandLineProcess(null, "/opt/cellbase/genome_info.pl",
+                    Arrays.asList("--outdir", outputFolder),
+                    outputLog);
+        } else {
+            String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
 
-        try {
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(outputFolder, "/ensembl-data");
+            String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
+
             DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
-        } catch (IOException e) {
-            throw new IOException(e);
         }
     }
 }

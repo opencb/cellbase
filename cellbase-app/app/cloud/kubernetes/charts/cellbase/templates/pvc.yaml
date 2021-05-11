@@ -1,0 +1,12 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "pvcResources" . | quote }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: {{ include "pvResources" . | quote }}
+  storageClassName: {{ include "pvcStorageClassName" . }}

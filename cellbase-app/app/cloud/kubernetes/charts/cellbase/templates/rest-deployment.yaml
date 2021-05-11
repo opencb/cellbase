@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.rest.name }}
+  labels:
+    app: {{  .Values.rest.name  }}
+spec:
+  replicas: {{ .Values.rest.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{  .Values.rest.name  }}
+      {{- include "cellbase.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.rest.name  }}
+        {{- include "cellbase.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.rest.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ .Values.rest.name }}
+      securityContext:
+        {{- toYaml .Values.rest.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.rest.securityContext | nindent 12 }}
+          image: {{ tpl .Values.rest.image.repository . | quote }}
+          imagePullPolicy: {{ .Values.rest.image.pullPolicy }}
+#          command: ["./bin/cellbase-admin.sh", "server", "--start"]
+          env:
+            - name: "CELLBASE_HOME"
+              value: "/opt/cellbase"
+            - name: "CELLBASE_DATABASES_MONGODB_HOST"
+              value: {{ include "mongodbHosts" . | toString | quote}}
+            - name: "CELLBASE_DATABASES_MONGODB_USER"
+              value: {{ .Values.mongodb.user | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cellbase.secretName" . }}
+                  key: password
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_SSL"
+              value: {{ .Values.mongodb.ssl | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE"
+              value: {{ .Values.mongodb.authenticationDatabase | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
+              value: {{ .Values.mongodb.authenticationMechanism | quote }}
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 20
+            httpGet:
+              path: /cellbase/webservices/rest/v5/meta/about
+              port: 9090
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 20
+            httpGet:
+              path: /cellbase/webservices/rest/v5/meta/about
+              port: 9090
+          resources:
+            {{- toYaml .Values.rest.resources | nindent 12 }}
+          volumeMounts:
+          - name : conf
+            mountPath: /opt/cellbase/conf
+      volumes:
+      - name: conf
+        configMap:
+          name: {{ include "configMap.name" . }}
+      {{- with .Values.rest.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.rest.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.rest.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

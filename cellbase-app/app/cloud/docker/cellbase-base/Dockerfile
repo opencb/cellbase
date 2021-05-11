@@ -8,8 +8,9 @@ LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.schema-version="1.0"
 
 ENV CELLBASE_USER cellbase
+ENV CELLBASE_HOME /opt/cellbase/
 
-RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER
+RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER -u 1001
 USER $CELLBASE_USER
 
 VOLUME /opt/cellbase/conf

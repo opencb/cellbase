@@ -1,0 +1,227 @@
+# Default values for opencga.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+mongodb:
+  user: "FILL_ME"
+  password: "FILL_ME"
+  ssl: true
+  authenticationDatabase : "admin"
+  authenticationMechanism : "SCRAM-SHA-256"
+
+  # MongoDB can either be deployed in the same Kubernetes instance, or be provided externally.
+
+  external:
+    hosts: "FILL_ME"
+
+  # https://docs.mongodb.com/kubernetes-operator/stable/tutorial/resize-pv-storage/
+  deploy:
+    enabled: true
+    name: "cellbase-rs0"
+    version: "4.2.6"
+    replicas: 1
+
+    volume:
+      size: "2048Gi"
+
+    resources:
+      limits:
+        cpu: "3"
+        memory: "20G"
+      requests:
+        cpu: "2"
+        memory: "10G"
+
+    nodeSelector:
+      agentpool: mongodb
+
+## https://docs.microsoft.com/en-gb/azure/aks/azure-files-volume
+azureStorageAccount:
+  enabled: false
+  secretName: azure-files-secret
+  name: "FILL_ME"
+  key: "FILL_ME"
+  volumes:
+    resources:
+      shareName: resources
+
+blobfuse:
+  enabled: false
+
+nameOverride: ""
+fullnameOverride: ""
+
+cellbase: {}
+
+rest:
+  name: cellbase-rest
+  replicaCount: 1
+
+  image:
+    repository: "opencb/cellbase-rest:5.0.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name:
+
+  podSecurityContext:
+  #    runAsNonRoot: true
+  # fsGroup: 2000
+
+  securityContext:
+    readOnlyRootFilesystem: false
+    runAsUser: 1001
+    # capabilities:
+    #   drop:
+    #   - ALL
+
+  service:
+    type: ClusterIP
+    #type: LoadBalancer
+    port: 80
+
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - "cellbase.local" # This host name should be added to the internal DNS zone pointing to the nginx service external IP
+      - ""              # Accept access by IP .Testing purposes only.
+    # Accepts /cellbase and /cellbase/....
+    paths:
+      - /cellbase(/|$)
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 100m
+      memory: 2048Mi
+
+  nodeSelector:
+    agentpool: agentpool
+    beta.kubernetes.io/os: linux
+    kubernetes.io/role: agent
+
+  tolerations: []
+
+  affinity: {}
+
+
+worker:
+  name: cellbase-worker
+  replicaCount: 1
+
+  image:
+    repository: "opencb/cellbase-builder:5.0.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name:
+
+  podSecurityContext:
+  #    runAsNonRoot: true
+  # fsGroup: 2000
+
+  securityContext:
+    readOnlyRootFilesystem: false
+    runAsUser: 1001
+    # capabilities:
+    #   drop:
+    #   - ALL
+
+#  service:
+#    type: ClusterIP
+#    #type: LoadBalancer
+#    port: 80
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 4
+      memory: 24Gi
+    requests:
+      cpu: 1
+      memory: 24Gi
+
+  nodeSelector:
+    agentpool: agentpool
+    beta.kubernetes.io/os: linux
+    kubernetes.io/role: agent
+
+  tolerations: []
+
+  affinity: {}
+
+
+load:
+  enabled: false
+  name: cellbase-load-job
+
+#  configuration:
+#    # Overwrite configuration from image.
+#    overwrite: false
+
+  image:
+    repository: "opencb/cellbase-builder:5.0.0-SNAPSHOT"
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+
+  podSecurityContext:
+#    runAsNonRoot: true
+    # fsGroup: 2000
+
+  securityContext:
+    readOnlyRootFilesystem: false
+    runAsUser: 1001
+    # capabilities:
+    #   drop:
+    #   - ALL
+
+  resources: 
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+  nodeSelector: 
+    agentpool: agentpool
+    beta.kubernetes.io/os: linux
+    kubernetes.io/role: agent
+
+  tolerations: []
+
+  affinity: {}
