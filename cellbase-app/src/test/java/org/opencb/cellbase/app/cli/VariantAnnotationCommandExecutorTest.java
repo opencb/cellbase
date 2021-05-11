@@ -447,6 +447,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.01937046,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -479,6 +484,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.0151,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -492,6 +502,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.0043,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -503,6 +518,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "TG",
                         (float) 0.999,
                         (float) 0.001,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -556,6 +576,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.1,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -569,6 +594,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.1,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -580,6 +610,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "--nngg",
                         (float) 0.8,
                         (float) 0.1,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -605,6 +640,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.1,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -618,6 +658,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.1,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -629,6 +674,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "--nnGG",
                         (float) 0.8,
                         (float) 0.1,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -662,6 +712,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.0151,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -675,6 +730,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.0043,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -686,6 +746,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "Tg",
                         (float) 0.999,
                         (float) 0.001,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -713,6 +778,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.01937046,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -724,6 +794,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "tG",
                         (float) 0.9849,
                         (float) 0.0151,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -739,6 +814,11 @@ public class VariantAnnotationCommandExecutorTest {
                         (float) 0.0043,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -750,6 +830,11 @@ public class VariantAnnotationCommandExecutorTest {
                         "tG",
                         (float) 0.999,
                         (float) 0.001,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));

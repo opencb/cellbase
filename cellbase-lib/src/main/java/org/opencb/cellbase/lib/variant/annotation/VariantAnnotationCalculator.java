@@ -250,6 +250,9 @@ public class VariantAnnotationCalculator {
     private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) throws QueryException, IllegalAccessException {
         // Fetch overlapping genes for this variant
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
+        for (Gene gene : geneList) {
+            System.out.println("gene.getId() = " + gene.getId());
+        }
         VariantAnnotation variantAnnotation = variant.getAnnotation();
 
         /*

@@ -59,7 +59,8 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path geneOntologyAnnotationFile;
     private Path miRBaseFile;
     private Path miRTarBaseFile;
-    private Path cancerGeneCensus;
+    private Path cancerGeneCensusFile;
+    private Path canonicalFile;
     private boolean flexibleGTFParsing;
 
     // source for genes is either ensembl or refseq
@@ -99,6 +100,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.getParent().resolve("regulation/miRNA.xls"),
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 geneDirectoryPath.resolve("cancer-gene-census.tsv"),
+                geneDirectoryPath.resolve("ensembl_canonical.txt"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
 
@@ -109,9 +111,9 @@ public class GeneBuilder extends CellBaseBuilder {
 
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                        Path tfbsFile, Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
-                       Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensus,
-                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                       CellBaseSerializer serializer) {
+                       Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
+                       Path canonicalFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
+                       boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
 
         this.gtfFile = gtfFile;
@@ -130,7 +132,8 @@ public class GeneBuilder extends CellBaseBuilder {
         this.geneOntologyAnnotationFile = geneOntologyAnnotationFile;
         this.miRBaseFile = miRBaseFile;
         this.miRTarBaseFile = miRTarBaseFile;
-        this.cancerGeneCensus = cancerGeneCensus;
+        this.cancerGeneCensusFile = cancerGeneCensusFile;
+        this.canonicalFile = canonicalFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -151,7 +154,7 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensus);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, canonicalFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -161,7 +164,7 @@ public class GeneBuilder extends CellBaseBuilder {
             }
 
             // Preparing the fasta file for fast accessing
-            System.out.println("genomeSequenceFilePath.toString() = " + genomeSequenceFilePath.toString());
+//            System.out.println("genomeSequenceFilePath.toString() = " + genomeSequenceFilePath.toString());
             FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
             // Empty transcript and exon dictionaries
@@ -422,6 +425,11 @@ public class GeneBuilder extends CellBaseBuilder {
                     transcript.getFlags().add("LRG");
                 }
             }
+        }
+        // 5. Ensembl Canonical
+        String canonicalFlag = indexer.getCanonical(transcriptIdWithVersion);
+        if (StringUtils.isNotEmpty(canonicalFlag)) {
+            transcript.getFlags().add(canonicalFlag);
         }
 
         gene.getTranscripts().add(transcript);

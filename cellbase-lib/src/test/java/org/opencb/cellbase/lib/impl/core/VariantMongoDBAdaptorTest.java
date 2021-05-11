@@ -127,6 +127,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         (float) 0.0151,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -140,6 +145,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         (float) 0.0043,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -151,6 +161,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "1:62165739:A:T,1:62165740:T:G",
                         (float) 0.999,
                         (float) 0.001,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -173,6 +188,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         (float) 0.01937046,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -184,6 +204,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "1:62165739:A:T,1:62165740:T:G",
                         (float) 0.9849,
                         (float) 0.0151,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));
@@ -199,6 +224,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         (float) 0.0043,
                         null,
                         null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null));
         assertNotNull(populationFrequencyList);
         assertEquals(1, populationFrequencyList.size());
@@ -210,6 +240,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "1:62165739:A:T,1:62165740:T:G",
                         (float) 0.999,
                         (float) 0.001,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
                         null,
                         null,
                         null));

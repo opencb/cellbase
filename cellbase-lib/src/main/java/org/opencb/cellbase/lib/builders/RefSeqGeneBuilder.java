@@ -38,7 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
-    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
+    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile, cancerGeneCensus;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -73,6 +73,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
         disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
         hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
+        cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
         miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
     }
 
@@ -105,7 +106,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void getCdnaFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
         for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith("rna.fna") || fileName.endsWith("rna.fna.gz")) {
+            if (fileName.endsWith("cdna.fna") || fileName.endsWith("cdna.fna.gz")) {
                 cdnaFastaFile = refSeqDirectoryPath.resolve(fileName);
                 break;
             }
@@ -121,7 +122,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
-        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile);
+        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
+                cancerGeneCensus);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -134,6 +136,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                     // we've finished the previous transcript, store xrefs
                     addXrefs(transcript, geneDbxrefs, exonDbxrefs);
                     parseGene(gtf, chromosome, indexer);
+                    break;
+                case "transcript":
                     break;
                 case "exon":
                     parseExon(gtf, chromosome, fastaIndex, indexer);
@@ -219,7 +223,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
 
         GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
-                null, indexer.getMirnaTargets(geneName));
+                null, indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
                 status, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);
@@ -247,15 +251,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript = transcriptDict.get(transcriptId);
         }
 
-        System.out.println("=======================================");
         String exonSequence = null;
         if (fastaIndex != null) {
             exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         }
-        System.out.println("gtf.getSequenceName() = " + gtf.getSequenceName());
-        System.out.println("fastaIndex.getSequenceDictionary() = " + fastaIndex.getSequenceDictionary());
-//        System.out.println("exonSequence = " + exonSequence);
-
         String exonNumber = gtf.getAttributes().get("exon_number");
         // RefSeq does not provode Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;
@@ -544,7 +543,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         Map<String, String> gtfAttributes = gtf.getAttributes();
 
         String name = gene.getName();
-        String biotype = gtfAttributes.get("gbkey");
+//        String biotype = gtfAttributes.get("gbkey");
+        String biotype = gtfAttributes.get("transcript_biotype");
         if ("mRNA".equals(biotype)) {
             biotype = "protein_coding";
         }

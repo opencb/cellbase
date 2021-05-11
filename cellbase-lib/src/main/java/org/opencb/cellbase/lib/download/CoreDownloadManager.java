@@ -307,7 +307,7 @@ public class CoreDownloadManager extends DownloadManager {
     }
 
     /**
-     * This method downloads bith PhastCons and PhyloP data from UCSC for Human and Mouse species.
+     * This method downloads Gerp, PhastCons and PhyloP data from UCSC for Human and Mouse species.
 
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
@@ -316,9 +316,9 @@ public class CoreDownloadManager extends DownloadManager {
         if (!speciesHasInfoToDownload(speciesConfiguration, "conservation")) {
             return;
         }
+
         logger.info("Downloading conservation information ...");
         Path conservationFolder = downloadFolder.resolve("conservation");
-
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             Files.createDirectories(conservationFolder);
             Files.createDirectories(conservationFolder.resolve("phastCons"));
@@ -328,47 +328,26 @@ public class CoreDownloadManager extends DownloadManager {
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                     "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
 
-            if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh37")) {
-                logger.debug("Downloading GERP++ ...");
+            if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh38")) {
+                logger.info("Downloading GERP++ ...");
                 downloadFile(configuration.getDownload().getGerp().getHost(),
                         conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY + "/" + EtlCommons.GERP_FILE).toAbsolutePath().toString());
                 saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
                         Collections.singletonList(configuration.getDownload().getGerp().getHost()),
                         buildFolder.resolve("gerpVersion.json"));
 
-                String url = configuration.getDownload().getConservation().getHost() + "/hg19";
-                List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
-                List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-                for (int i = 0; i < chromosomes.length; i++) {
-                    String phastConsUrl = url + "/phastCons46way/primates/chr" + chromosomes[i] + ".phastCons46way.primates.wigFix.gz";
-                    downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i]
-                            + ".phastCons46way.primates.wigFix.gz").toString());
-                    phastconsUrls.add(phastConsUrl);
-
-                    String phyloPUrl = url + "/phyloP46way/primates/chr" + chromosomes[i] + ".phyloP46way.primate.wigFix.gz";
-                    downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i]
-                            + ".phyloP46way.primate.wigFix.gz").toString());
-                    phyloPUrls.add(phyloPUrl);
-                }
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                        buildFolder.resolve("phastConsVersion.json"));
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        buildFolder.resolve("phyloPVersion.json"));
-            }
-
-            if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh38")) {
+                logger.info("Downloading phastCons and PhyloP ...");
                 String url = configuration.getDownload().getConservation().getHost() + "/hg38";
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
                 List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-                for (int i = 0; i < chromosomes.length; i++) {
-                    String phastConsUrl = url + "/phastCons100way/hg38.100way.phastCons/chr" + chromosomes[i]
-                            + ".phastCons100way.wigFix.gz";
-                    downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i]
+                for (String chromosome : chromosomes) {
+                    String phastConsUrl = url + "/phastCons100way/hg38.100way.phastCons/chr" + chromosome + ".phastCons100way.wigFix.gz";
+                    downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosome
                             + ".phastCons100way.wigFix.gz").toString());
                     phastconsUrls.add(phastConsUrl);
 
-                    String phyloPUrl = url + "/phyloP100way/hg38.100way.phyloP100way/chr" + chromosomes[i] + ".phyloP100way.wigFix.gz";
-                    downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i]
+                    String phyloPUrl = url + "/phyloP100way/hg38.100way.phyloP100way/chr" + chromosome + ".phyloP100way.wigFix.gz";
+                    downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosome
                             + ".phyloP100way.wigFix.gz").toString());
                     phyloPUrls.add(phyloPUrl);
                 }
@@ -389,13 +368,13 @@ public class CoreDownloadManager extends DownloadManager {
                     "15", "16", "17", "18", "19", "X", "Y", "M", };
             List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
             List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-            for (int i = 0; i < chromosomes.length; i++) {
-                String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosomes[i] + ".phastCons60way.wigFix.gz";
-                downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosomes[i]
+            for (String chromosome : chromosomes) {
+                String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosome + ".phastCons60way.wigFix.gz";
+                downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosome
                         + ".phastCons60way.wigFix.gz").toString());
                 phastconsUrls.add(phastConsUrl);
-                String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosomes[i] + ".phyloP60way.wigFix.gz";
-                downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosomes[i]
+                String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosome + ".phyloP60way.wigFix.gz";
+                downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosome
                         + ".phyloP60way.wigFix.gz").toString());
                 phyloPUrls.add(phyloPUrl);
             }

@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -46,6 +46,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
     private static final String ONTOLOGY_SUFFIX = "_ontology";
     private static final String OBO_SUFFIX = "_obo";
     private static final String MIRBASE_SUFFIX = "_mirbase";
+    private static final String CANONICAL_SUFFIX = "_canonical";
 
     public EnsemblGeneBuilderIndexer(Path geneDirectoryPath) {
         super(geneDirectoryPath);
@@ -54,7 +55,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
     public void index(Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
-                      Path cancerGeneGensus)
+                      Path cancerGeneGensusFile, Path canonicalFile)
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
@@ -69,7 +70,8 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
-        indexCancerGeneCensus(cancerGeneGensus);
+        indexCancerGeneCensus(cancerGeneGensusFile);
+        indexCanonical(canonicalFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
@@ -301,42 +303,43 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
 
     private void indexDiseases(Path hpoFilePath, Path disgenetFilePath) throws IOException, RocksDBException {
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
-
         String line;
+
         if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
-            // skip first header line
-            bufferedReader.readLine();
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String omimId = fields[6];
-                String geneSymbol = fields[3];
-                String hpoId = fields[0];
-                String diseaseName = fields[1];
-                GeneTraitAssociation disease =
-                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
-                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
+                // skip first header line
+                bufferedReader.readLine();
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] fields = line.split("\t");
+                    String omimId = fields[6];
+                    String geneSymbol = fields[3];
+                    String hpoId = fields[0];
+                    String diseaseName = fields[1];
+                    GeneTraitAssociation disease =
+                            new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
+                    addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
+                }
             }
-            bufferedReader.close();
         }
 
         if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
-            // skip first header line
-            bufferedReader.readLine();
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String diseaseId = fields[4];
-                String diseaseName = fields[5];
-                String score = fields[9];
-                String numberOfPubmeds = fields[13].trim();
-                String numberOfSNPs = fields[14];
-                String source = fields[15];
-                GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
-                        Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), "disgenet");
-                addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath)) {
+                // skip first header line
+                bufferedReader.readLine();
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] fields = line.split("\t");
+                    String diseaseId = fields[4];
+                    String diseaseName = fields[5];
+                    String score = fields[9];
+                    String numberOfPubmeds = fields[13].trim();
+                    String numberOfSNPs = fields[14];
+                    String source = fields[15];
+                    GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
+                            Integer.parseInt(numberOfPubmeds), Collections.singletonList(numberOfSNPs), Collections.singletonList(source),
+                            "disgenet");
+                    addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
+                }
             }
-            bufferedReader.close();
         }
 
         for (Map.Entry<String, List<GeneTraitAssociation>> entry : geneDiseaseAssociationMap.entrySet()) {
@@ -512,14 +515,15 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
             String currentMiRTarBaseId = null;
             String currentMiRNA = null;
             String currentGene = null;
-            List<TargetGene> targetGenes = new ArrayList();
-            Map<String, List<MirnaTarget>> geneToMirna = new HashMap();
+            List<TargetGene> targetGenes = new ArrayList<>();
+            Map<String, List<MirnaTarget>> geneToMirna = new HashMap<>();
             while (iterator.hasNext()) {
-
                 Row currentRow = iterator.next();
-                Iterator<Cell> cellIterator = currentRow.iterator();
 
+                Iterator<Cell> cellIterator = currentRow.iterator();
                 Cell cell = cellIterator.next();
+
+                // Iterate columns
                 String miRTarBaseId = cell.getStringCellValue();
 
                 // skip header
@@ -537,26 +541,26 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
                     currentMiRNA = miRNA;
                 }
 
-                // species
+                // Skip species
                 cellIterator.next();
 
+                // Read target gene
                 cell = cellIterator.next();
                 String geneName = cell.getStringCellValue();
                 if (currentGene == null) {
                     currentGene = geneName;
                 }
 
-                // entrez
+                // Skip entrez gene
                 cellIterator.next();
-                // species
+                // Skip species
                 cellIterator.next();
 
                 if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
                     // new entry, store current one
-                    MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
-                            targetGenes);
+                    MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA, targetGenes);
                     addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
-                    targetGenes = new ArrayList();
+                    targetGenes = new ArrayList<>();
                     currentGene = geneName;
                     currentMiRTarBaseId = miRTarBaseId;
                     currentMiRNA = miRNA;
@@ -570,12 +574,13 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
                 cell = cellIterator.next();
                 String supportType = cell.getStringCellValue();
 
-                // pubmeds
+                // pubmed
                 cell = cellIterator.next();
-                String pubmed = null;
+                String pubmed;
                 // seems to vary, so check both
                 if (cell.getCellType().equals(CellType.NUMERIC)) {
-                    pubmed = String.valueOf(cell.getNumericCellValue());
+//                    pubmed = String.valueOf(cell.getNumericCellValue());
+                    pubmed = Integer.toString(Double.valueOf(cell.getNumericCellValue()).intValue());
                 } else {
                     pubmed = cell.getStringCellValue();
                 }
@@ -611,4 +616,36 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
         }
     }
 
+    protected void indexCanonical(Path canonocalFile) throws IOException, RocksDBException {
+        // Gene  Transcript  Canonical
+        // ENSG00000210049.1  ENST00000387314.1  1
+        logger.info("Indexing Ensembl Canonical mapping data ...");
+
+        if (canonocalFile != null && Files.exists(canonocalFile) && Files.size(canonocalFile) > 0) {
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(canonocalFile)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    if (!line.startsWith("#")) {
+                        String[] fields = line.split("\t", -1);
+                        String transcriptId = fields[1];
+                        if (StringUtils.isNotEmpty(transcriptId) && fields.length > 2 && fields[2].equals("1")) {
+                            rocksDbManager.update(rocksdb, transcriptId + CANONICAL_SUFFIX, "canonical");
+                        }
+                    }
+                    line = bufferedReader.readLine();
+                }
+            }
+        } else {
+            logger.warn("Ensembl Canonical mapping file " + canonocalFile + " not found");
+        }
+    }
+
+    public String getCanonical(String transcriptId) throws RocksDBException, IOException {
+        String key = transcriptId + CANONICAL_SUFFIX;
+        byte[] bytes = rocksdb.get(key.getBytes());
+        if (bytes == null) {
+            return null;
+        }
+        return new String(bytes);
+    }
 }

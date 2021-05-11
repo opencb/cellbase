@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.hamcrest.CoreMatchers;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -39,6 +38,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -791,33 +792,25 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("MT", 1438,
                                 "A", "G"), queryOptions);
         assertThat(cellBaseDataResult.getResults().get(0).getPopulationFrequencies(),
-                CoreMatchers.hasItems(new PopulationFrequency("1kG_phase3_chrMT", "ASW", "A",
-                        "G", 0.16666667f, 0.8333333f, 0.16666667f,
-                        0f, 0.8333333f),
+                CoreMatchers.hasItems(
+                        new PopulationFrequency("1kG_phase3_chrMT", "ASW", "A",
+                                "G", 0.16666667f, 0.8333333f, null, null, 0.16666667f, 0f, 0.8333333f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "CHB", "A", "G",
-                                0.067961164f, 0.93203884f, 0.067961164f,
-                                0f, 0.93203884f),
+                                0.067961164f, 0.93203884f, null, null, 0.067961164f, 0f, 0.93203884f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "GIH", "A", "G",
-                                0.018867925f, 0.9811321f, 0.018867925f,
-                                0f, 0.9811321f),
+                                0.018867925f, 0.9811321f, null, null, 0.018867925f, 0f, 0.9811321f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "LWK", "A", "G",
-                                0.03960396f, 0.96039605f, 0.03960396f,
-                                0f, 0.96039605f),
+                                0.03960396f, 0.96039605f, null, null, 0.03960396f, 0f, 0.96039605f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "MXL", "A", "G",
-                                0.014925373f, 0.98507464f, 0.014925373f,
-                                0f, 0.98507464f),
+                                0.014925373f, 0.98507464f, null, null, 0.014925373f, 0f, 0.98507464f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "TSI", "A", "G",
-                                0.018518519f, 0.9814815f, 0.018518519f,
-                                0f, 0.9814815f),
+                                0.018518519f, 0.9814815f, null, null, 0.018518519f, 0f, 0.9814815f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "CEU", "A", "G",
-                                0.030303031f, 0.969697f, 0.030303031f,
-                                0f, 0.969697f),
+                                0.030303031f, 0.969697f, null, null, 0.030303031f, 0f, 0.969697f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "JPT", "A", "G",
-                                0.01923077f, 0.9807692f, 0.01923077f,
-                                0f, 0.9807692f),
+                                0.01923077f, 0.9807692f, null, null, 0.01923077f, 0f, 0.9807692f, null, null, null),
                         new PopulationFrequency("1kG_phase3_chrMT", "YRI", "A", "G",
-                                0.14814815f, 0.8518519f, 0.14814815f,
-                                0f, 0.8518519f)));
+                                0.14814815f, 0.8518519f, null, null, 0.14814815f, 0f, 0.8518519f, null, null, null)));
 
         cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("1", 55505283,

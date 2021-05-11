@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.name="cellbase-builder" \

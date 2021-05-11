@@ -90,6 +90,7 @@ public abstract class ConsequenceTypeCalculator {
     }
 
     protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) {
+        System.out.println("transcript = " + transcript);
         switch (transcript.getBiotype()) {
             /**
              * Coding biotypes

@@ -107,7 +107,7 @@ public class AbstractDownloadManager {
         Files.createDirectories(downloadFolder);
 
         downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
-        logger.error("creating download dir " + downloadLogFolder.toString());
+        logger.debug("creating download dir " + downloadLogFolder.toString());
         Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
