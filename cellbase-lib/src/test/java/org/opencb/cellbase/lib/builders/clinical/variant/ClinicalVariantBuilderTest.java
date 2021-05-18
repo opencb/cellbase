@@ -197,8 +197,7 @@ public class ClinicalVariantBuilderTest {
     private void assertEvidenceEntriesHaplotype(String expectedHaplotype, Variant variant) {
         for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
             assertNotNull(evidenceEntry.getAdditionalProperties());
-            Property clinicalHaplotypeProperty = getProperty(evidenceEntry.getAdditionalProperties(),
-                    ClinicalIndexer.HAPLOTYPE_FIELD_NAME);
+            Property clinicalHaplotypeProperty = getProperty(evidenceEntry.getAdditionalProperties(), "Haplotype");
             assertNotNull(clinicalHaplotypeProperty);
             assertEquals(expectedHaplotype, clinicalHaplotypeProperty.getValue());
         }

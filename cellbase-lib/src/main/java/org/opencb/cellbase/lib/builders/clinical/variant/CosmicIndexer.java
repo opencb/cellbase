@@ -33,31 +33,38 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by fjlopez on 04/10/16.
- */
+
 public class CosmicIndexer extends ClinicalIndexer {
 
+    private final Path cosmicFile;
+    private final String assembly;
+    private Pattern mutationGRCh37GenomePositionPattern;
+    private Pattern snvPattern;
+
+    private static final String COSMIC_VERSION = "v92";
+
+    private static final int GENE_NAMES_COLUMN = 0;
+    private static final int HGNC_COLUMN = 3;
     private static final int PRIMARY_SITE_COLUMN = 7;
     private static final int SITE_SUBTYPE_COLUMN = 8;
     private static final int PRIMARY_HISTOLOGY_COLUMN = 11;
     private static final int HISTOLOGY_SUBTYPE_COLUMN = 12;
     private static final int ID_COLUMN = 16;
-    private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
-    private static final int GENE_NAMES_COLUMN = 0;
-    private static final int HGNC_COLUMN = 3;
-    private static final int HGVS_COLUMN = 17;
+    private static final int COSM_ID_COLUMN = 17;
+    private static final int HGVS_COLUMN = 19;
+    private static final int MUTATION_DESCRIPTION_COLUMN = 21;
+    private static final int MUTATION_ZYGOSITY_COLUMN = 22;
+    private static final int FATHMM_PREDICTION_COLUMN = 29;
+    private static final int FATHMM_SCORE_COLUMN = 30;
+    private static final int MUTATION_SOMATIC_STATUS_COLUMN = 31;
+    private static final int PUBMED_PMID_COLUMN = 32;
+    private static final int SAMPLE_SOURCE_COLUMN = 34;
+    private static final int TUMOUR_ORIGIN_COLUMN = 35;
+
     private static final String HGVS_INSERTION_TAG = "ins";
     private static final String HGVS_SNV_CHANGE_SYMBOL = ">";
     private static final String HGVS_DELETION_TAG = "del";
     private static final String HGVS_DUPLICATION_TAG = "dup";
-    private final Path cosmicFile;
-    private final int mutationSomaticStatusColumn;
-    private final int pubmedPMIDColumn;
-    private final int sampleSourceColumn;
-    private final int tumourOriginColumn;
-    private Pattern mutationGRCh37GenomePositionPattern;
-    private Pattern snvPattern;
     private static final String CHROMOSOME = "CHR";
     private static final String START = "START";
     private static final String END = "END";
@@ -71,64 +78,95 @@ public class CosmicIndexer extends ClinicalIndexer {
     private int invalidMutationCDSOtherReason = 0;
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+
     private int ignoredCosmicLines = 0;
+    private long normaliseTime = 0;
+    private int rocksDBNewVariants = 0;
+    private int rocksDBUpdateVariants = 0;
 
-    public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
-            throws IOException {
+    public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
-        this.rdb = rdb;
-        this.cosmicFile = cosmicFile;
-        this.compileRegularExpressionPatterns();
-        this.normalize = normalize;
 
-        // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
-        // provided in the GRCh37 file
-        if (assembly.equalsIgnoreCase("grch37")) {
-            this.mutationSomaticStatusColumn = 29;
-            this.pubmedPMIDColumn = 30;
-            this.sampleSourceColumn = 32;
-            this.tumourOriginColumn = 33;
-        } else {
-            this.mutationSomaticStatusColumn = 29;
-            this.pubmedPMIDColumn = 30;
-            this.sampleSourceColumn = 32;
-            this.tumourOriginColumn = 33;
-        }
+        this.cosmicFile = cosmicFile;
+        this.normalize = normalize;
+        this.assembly = assembly;
+        this.rdb = rdb;
+
+        this.init();
     }
 
-    private void compileRegularExpressionPatterns() {
+    private void init() {
         mutationGRCh37GenomePositionPattern = Pattern.compile("(?<" + CHROMOSOME + ">\\S+):(?<" + START + ">\\d+)-(?<" + END + ">\\d+)");
         snvPattern = Pattern.compile("c\\.\\d+((\\+|\\-|_)\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
     }
 
     public void index() throws RocksDBException {
-
         logger.info("Parsing cosmic file ...");
 
         try {
             ProgressLogger progressLogger = new ProgressLogger("Parsed COSMIC lines:",
                     () -> EtlCommons.countFileLines(cosmicFile), 200).setBatchSize(10000);
 
+            long t0, t1 = 0, t2 = 0;
+            List<EvidenceEntry> evidenceEntries = new ArrayList<>();
+            SequenceLocation old = null;
+
             BufferedReader cosmicReader = FileUtils.newBufferedReader(cosmicFile);
-            String line;
             cosmicReader.readLine(); // First line is the header -> ignore it
+            String line;
             while ((line = cosmicReader.readLine()) != null) {
-                logger.debug(line);
-                EvidenceEntry evidenceEntry = buildCosmic(line);
-                SequenceLocation sequenceLocation = new SequenceLocation();
-                if (parsePosition(sequenceLocation, line) && parseVariant(sequenceLocation, line)) {
-                    boolean success = updateRocksDB(sequenceLocation, evidenceEntry);
-                    // updateRocksDB may fail (false) if normalisation process fails
-                    if (success) {
-                        numberIndexedRecords++;
+                String[] fields = line.split("\t", -1);
+
+                t0 = System.currentTimeMillis();
+                EvidenceEntry evidenceEntry = buildCosmic(fields);
+                t1 += System.currentTimeMillis() - t0;
+
+                SequenceLocation sequenceLocation = parseLocation(fields);
+                if (old == null) {
+                    old = sequenceLocation;
+                }
+
+                if (sequenceLocation != null && parseVariant(sequenceLocation, fields)) {
+                    if (sequenceLocation.getStart() == old.getStart() && sequenceLocation.getAlternate().equals(old.getAlternate())) {
+                        evidenceEntries.add(evidenceEntry);
                     } else {
-                        ignoredCosmicLines++;
+                        boolean success = updateRocksDB(old, evidenceEntries);
+                        t2 += System.currentTimeMillis() - t0;
+                        // updateRocksDB may fail (false) if normalisation process fails
+                        if (success) {
+                            numberIndexedRecords += evidenceEntries.size();
+                        } else {
+                            ignoredCosmicLines += evidenceEntries.size();
+                        }
+                        old = sequenceLocation;
+                        evidenceEntries.clear();
+                        evidenceEntries.add(evidenceEntry);
                     }
                 } else {
                     ignoredCosmicLines++;
                 }
                 totalNumberRecords++;
                 progressLogger.increment(1);
+
+                if (totalNumberRecords % 10000 == 0) {
+                    System.out.println("totalNumberRecords = " + totalNumberRecords);
+                    System.out.println("numberIndexedRecords = " + numberIndexedRecords + " ("
+                            + (numberIndexedRecords * 100 / totalNumberRecords) + "%)");
+                    System.out.println("ignoredCosmicLines = " + ignoredCosmicLines);
+                    System.out.println("buildCosmic = " + t1);
+
+                    System.out.println("updateRocksDB = " + t2);
+                    System.out.println("\tnormaliseTime = " + normaliseTime);
+                    System.out.println("\trocksDBNewVariants = " + (numberNewVariants - rocksDBNewVariants));
+                    System.out.println("\trocksDBUpdateVariants = " + (numberVariantUpdates - rocksDBUpdateVariants));
+                    System.out.println("");
+
+                    t1 = 0;
+                    t2 = 0;
+                    normaliseTime = 0;
+                    rocksDBNewVariants = numberNewVariants;
+                    rocksDBUpdateVariants = numberVariantUpdates;
+                }
             }
         } catch (RocksDBException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
@@ -139,7 +177,6 @@ public class CosmicIndexer extends ClinicalIndexer {
             logger.info("Done");
             this.printSummary();
         }
-
     }
 
     private void printSummary() {
@@ -171,19 +208,17 @@ public class CosmicIndexer extends ClinicalIndexer {
         }
     }
 
-    private boolean updateRocksDB(SequenceLocation sequenceLocation, EvidenceEntry evidenceEntry) throws RocksDBException, IOException {
-
-        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
-        // decomposed
+    private boolean updateRocksDB(SequenceLocation sequenceLocation, List<EvidenceEntry> evidenceEntries)
+            throws RocksDBException, IOException {
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been decomposed
         List<String> normalisedVariantStringList = getNormalisedVariantString(sequenceLocation.getChromosome(),
-                sequenceLocation.getStart(), sequenceLocation.getReference(),
-                sequenceLocation.getAlternate());
-
+                sequenceLocation.getStart(), sequenceLocation.getReference(), sequenceLocation.getAlternate());
         if (normalisedVariantStringList != null) {
             for (String normalisedVariantString : normalisedVariantStringList) {
                 VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
-                addHaplotypeProperty(evidenceEntry, normalisedVariantStringList);
-                addNewEntry(variantAnnotation, evidenceEntry);
+                List<EvidenceEntry> mergedEvidenceEntries = mergeEvidenceEntries(evidenceEntries);
+                addHaplotypeProperty(mergedEvidenceEntries, normalisedVariantStringList);
+                variantAnnotation.setTraitAssociation(mergedEvidenceEntries);
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
             return true;
@@ -191,46 +226,65 @@ public class CosmicIndexer extends ClinicalIndexer {
         return false;
     }
 
-    private void addHaplotypeProperty(EvidenceEntry evidenceEntry, List<String> normalisedVariantStringList) {
-        // If more than one variant in the MNV (haplotype), create haplotype property in additionalProperties
-        if (normalisedVariantStringList.size() > 1) {
-            // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
-            // Assuming additionalProperties has already been created as per the upstream code
-            evidenceEntry.getAdditionalProperties().add(new Property(null,
-                    HAPLOTYPE_FIELD_NAME,
-                    StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR)));
-        }
-    }
+    private List<EvidenceEntry> mergeEvidenceEntries(List<EvidenceEntry> evidenceEntries) {
+        List<EvidenceEntry> mergedEvidenceEntries = new ArrayList<>();
+        if (evidenceEntries.size() > 0) {
+            mergedEvidenceEntries.add(evidenceEntries.get(0));
+            // For each evidence entry ...
+            for (int i = 1; i < evidenceEntries.size(); i++) {
+                boolean merged = false;
+                // ... check if it matches a existing evidence entry
+                for (EvidenceEntry mergedEvidenceEntry : mergedEvidenceEntries) {
+                    if (sameSomaticDocument(evidenceEntries.get(i), mergedEvidenceEntry)) {
+                        // Merge Transcripts
+                        if (mergedEvidenceEntry.getGenomicFeatures() != null) {
+                            if (evidenceEntries.get(i).getGenomicFeatures() != null) {
+                                for (GenomicFeature newGenomicFeature : evidenceEntries.get(i).getGenomicFeatures()) {
+                                    if (newGenomicFeature.getFeatureType().equals(FeatureTypes.transcript)) {
+                                        boolean found = false;
+                                        for (GenomicFeature feature : mergedEvidenceEntry.getGenomicFeatures()) {
+                                            if (feature.getXrefs().get(SYMBOL).equals(newGenomicFeature.getXrefs().get(SYMBOL))) {
+                                                found = true;
+                                            }
+                                        }
+                                        if (!found) {
+                                            mergedEvidenceEntry.getGenomicFeatures().add(newGenomicFeature);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            mergedEvidenceEntry.setGenomicFeatures(evidenceEntries.get(i).getGenomicFeatures());
+                        }
 
-    private void addNewEntry(VariantAnnotation variantAnnotation, EvidenceEntry evidenceEntry) {
-        List<EvidenceEntry> evidenceEntryList = variantAnnotation.getTraitAssociation();
-        // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
-        // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
-        // This merge reduces redundancy.
-        int i = 0;
-        boolean merged = false;
-        while (i < evidenceEntryList.size() && !merged) {
-            if (sameSomaticDocument(evidenceEntryList.get(i), evidenceEntry)) {
-                if (evidenceEntryList.get(i).getBibliography() != null) {
-                    if (evidenceEntry.getBibliography() != null) {
-                        Set<String> bibliographySet = new HashSet<>(evidenceEntryList.get(i).getBibliography());
-                        bibliographySet.addAll(new HashSet<>(evidenceEntry.getBibliography()));
-                        evidenceEntryList.get(i).setBibliography(new ArrayList<>(bibliographySet));
+                        // Merge Bibliography
+                        // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
+                        // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
+                        // This merge reduces redundancy.
+                        if (mergedEvidenceEntry.getBibliography() != null) {
+                            if (evidenceEntries.get(i).getBibliography() != null) {
+                                Set<String> bibliographySet = new HashSet<>(mergedEvidenceEntry.getBibliography());
+                                bibliographySet.addAll(new HashSet<>(evidenceEntries.get(i).getBibliography()));
+                                mergedEvidenceEntry.setBibliography(new ArrayList<>(bibliographySet));
+                            }
+                        } else {
+                            mergedEvidenceEntry.setBibliography(evidenceEntries.get(i).getBibliography());
+                        }
+
+                        merged = true;
+                        break;
                     }
-                } else {
-                    evidenceEntryList.get(i).setBibliography(evidenceEntry.getBibliography());
                 }
-                merged = true;
+                if (!merged) {
+                    mergedEvidenceEntries.add(evidenceEntries.get(i));
+                }
             }
-            i++;
         }
-        if (!merged) {
-            evidenceEntryList.add(evidenceEntry);
-        }
+
+        return mergedEvidenceEntries;
     }
 
     public boolean sameSomaticDocument(EvidenceEntry evidenceEntry1, EvidenceEntry evidenceEntry2) {
-
         if (evidenceEntry1 == evidenceEntry2) {
             return true;
         }
@@ -275,12 +329,10 @@ public class CosmicIndexer extends ClinicalIndexer {
      *
      * @return true if valid mutation, false otherwise
      */
-    private boolean parseVariant(SequenceLocation sequenceLocation, String line) {
+    private boolean parseVariant(SequenceLocation sequenceLocation, String[] fields) {
         boolean validVariant = false;
-        String[] fields = line.split("\t", -1);
         String mutationCds = fields[HGVS_COLUMN];
         VariantType variantType = getVariantType(mutationCds);
-
         if (variantType != null) {
             switch (variantType) {
                 case SNV:
@@ -308,6 +360,7 @@ public class CosmicIndexer extends ClinicalIndexer {
                     }
                     break;
                 default:
+                    System.out.println("variantType = " + variantType);
                     validVariant = false;
                     invalidMutationCDSOtherReason++;
             }
@@ -411,28 +464,32 @@ public class CosmicIndexer extends ClinicalIndexer {
         return String.valueOf(reverseAlleleString);
     }
 
-    private EvidenceEntry buildCosmic(String line) {
-        String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
+    private EvidenceEntry buildCosmic(String[] fields) {
+        String id = fields[ID_COLUMN];
+        String url = "https://cancer.sanger.ac.uk/cosmic/search?q=" + id;
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, null, null);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, COSMIC_VERSION, null);
         SomaticInformation somaticInformation = getSomaticInformation(fields);
-
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
-        List<Property> additionalProperties = new ArrayList<>(1);
-        additionalProperties.add(new Property(null,
-                MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE, fields[mutationSomaticStatusColumn]));
+        List<Property> additionalProperties = new ArrayList<>();
+        additionalProperties.add(new Property("COSM_ID", "Legacy COSM ID", fields[COSM_ID_COLUMN]));
+        additionalProperties.add(new Property("MUTATION_DESCRIPTION", "Description", fields[MUTATION_DESCRIPTION_COLUMN]));
+        if (StringUtils.isNotEmpty(fields[MUTATION_ZYGOSITY_COLUMN])) {
+            additionalProperties.add(new Property("MUTATION_ZYGOSITY", "Mutation Zygosity", fields[MUTATION_ZYGOSITY_COLUMN]));
+        }
+        additionalProperties.add(new Property("FATHMM_PREDICTION", "FATHMM Prediction", fields[FATHMM_PREDICTION_COLUMN]));
+        additionalProperties.add(new Property("FATHMM_SCORE", "FATHMM Score", "0" + fields[FATHMM_SCORE_COLUMN]));
+        additionalProperties.add(new Property("MUTATION_SOMATIC_STATUS", "Mutation Somatic Status",
+                fields[MUTATION_SOMATIC_STATUS_COLUMN]));
 
-        List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);
+        List<String> bibliography = getBibliography(fields[PUBMED_PMID_COLUMN]);
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), somaticInformation,
-                null, fields[ID_COLUMN], null,
-                getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])),
+        return new EvidenceEntry(evidenceSource, Collections.emptyList(), somaticInformation,
+                url, id, assembly,
+                getAlleleOriginList(Collections.singletonList(fields[MUTATION_SOMATIC_STATUS_COLUMN])),
                 Collections.emptyList(), genomicFeatureList, null, null, null, null,
-                EthnicCategory.Z, null, null, null, additionalProperties,
-                bibliography);
-
-        return evidenceEntry;
+                EthnicCategory.Z, null, null, null, additionalProperties, bibliography);
     }
 
     private SomaticInformation getSomaticInformation(String[] fields) {
@@ -453,16 +510,15 @@ public class CosmicIndexer extends ClinicalIndexer {
             histologySubtype = fields[HISTOLOGY_SUBTYPE_COLUMN].replace("_", " ");
         }
         String tumourOrigin = null;
-        if (!EtlCommons.isMissing(fields[tumourOriginColumn])) {
-            tumourOrigin = fields[tumourOriginColumn].replace("_", " ");
+        if (!EtlCommons.isMissing(fields[TUMOUR_ORIGIN_COLUMN])) {
+            tumourOrigin = fields[TUMOUR_ORIGIN_COLUMN].replace("_", " ");
         }
         String sampleSource = null;
-        if (!EtlCommons.isMissing(fields[sampleSourceColumn])) {
-            sampleSource = fields[sampleSourceColumn].replace("_", " ");
+        if (!EtlCommons.isMissing(fields[SAMPLE_SOURCE_COLUMN])) {
+            sampleSource = fields[SAMPLE_SOURCE_COLUMN].replace("_", " ");
         }
 
-        return new SomaticInformation(primarySite, siteSubtype, primaryHistology, histologySubtype, tumourOrigin,
-                sampleSource);
+        return new SomaticInformation(primarySite, siteSubtype, primaryHistology, histologySubtype, tumourOrigin, sampleSource);
     }
 
     private List<String> getBibliography(String bibliographyString) {
@@ -474,26 +530,31 @@ public class CosmicIndexer extends ClinicalIndexer {
     }
 
     private List<GenomicFeature> getGenomicFeature(String[] fields) {
-        List<GenomicFeature> genomicFeatureList = new ArrayList<>(2);
-        genomicFeatureList.add(createGeneGenomicFeature(fields[GENE_NAMES_COLUMN]));
-        if (!fields[HGNC_COLUMN].equalsIgnoreCase(fields[GENE_NAMES_COLUMN])
-                && !EtlCommons.isMissing(fields[HGNC_COLUMN])) {
+        List<GenomicFeature> genomicFeatureList = new ArrayList<>(5);
+        if (fields[GENE_NAMES_COLUMN].contains("_")) {
+            genomicFeatureList.add(createGeneGenomicFeature(fields[GENE_NAMES_COLUMN].split("_")[0]));
+        }
+        // Add transcript ID
+        if (StringUtils.isNotEmpty(fields[1])) {
+            genomicFeatureList.add(createGeneGenomicFeature(fields[1], FeatureTypes.transcript));
+        }
+        if (!fields[HGNC_COLUMN].equalsIgnoreCase(fields[GENE_NAMES_COLUMN]) && !EtlCommons.isMissing(fields[HGNC_COLUMN])) {
             genomicFeatureList.add(createGeneGenomicFeature(fields[HGNC_COLUMN]));
         }
 
         return genomicFeatureList;
     }
 
-    public boolean parsePosition(SequenceLocation sequenceLocation, String line) {
-        boolean success = false;
-
-        String[] fields = line.split("\t", -1);
-        String positionString = fields[23];
-        sequenceLocation.setStrand(fields[24]);
-        if (positionString != null && !positionString.isEmpty()) {
-            Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(positionString);
+    public SequenceLocation parseLocation(String[] fields) {
+        SequenceLocation sequenceLocation = null;
+        String locationString = fields[25];
+        if (StringUtils.isNotEmpty(locationString)) {
+            Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(locationString);
             if (matcher.matches()) {
-                setCosmicChromosome(matcher.group(CHROMOSOME), sequenceLocation);
+                sequenceLocation = new SequenceLocation();
+                sequenceLocation.setChromosome(getCosmicChromosome(matcher.group(CHROMOSOME)));
+                sequenceLocation.setStrand(fields[26]);
+
                 String mutationCds = fields[HGVS_COLUMN];
                 VariantType variantType = getVariantType(mutationCds);
                 if (VariantType.INSERTION.equals(variantType)) {
@@ -503,28 +564,24 @@ public class CosmicIndexer extends ClinicalIndexer {
                     sequenceLocation.setStart(Integer.parseInt(matcher.group(START)));
                     sequenceLocation.setEnd(Integer.parseInt(matcher.group(END)));
                 }
-                success = true;
             }
         }
-        if (!success) {
+        if (sequenceLocation == null) {
             this.invalidPositionLines++;
         }
-        return success;
+        return sequenceLocation;
     }
 
-    private void setCosmicChromosome(String chromosome, SequenceLocation sequenceLocation) {
+    private String getCosmicChromosome(String chromosome) {
         switch (chromosome) {
             case "23":
-                sequenceLocation.setChromosome("X");
-                break;
+                return "X";
             case "24":
-                sequenceLocation.setChromosome("Y");
-                break;
+                return "Y";
             case "25":
-                sequenceLocation.setChromosome("MT");
-                break;
+                return "MT";
             default:
-                sequenceLocation.setChromosome(chromosome);
+                return chromosome;
         }
     }
 

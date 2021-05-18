@@ -241,10 +241,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return false;
     }
 
-    private boolean updateRocksDB(AlleleLocationData alleleLocationData, PublicSetType publicSet,
-                               String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
-            throws RocksDBException, IOException {
-
+    private boolean updateRocksDB(AlleleLocationData alleleLocationData, PublicSetType publicSet, String mateVariantString,
+                                  Map<String, EFO> traitsToEfoTermsMap) throws RocksDBException, IOException {
         // More than one variant being returned from the normalisatio process would mean it's and MNV which has been
         // decomposed
         List<String> normalisedVariantStringList = getNormalisedVariantString(
@@ -358,7 +356,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
         if (clinicalHaplotypeString != null) {
-            additionalProperties.add(new Property(null, HAPLOTYPE_FIELD_NAME, clinicalHaplotypeString));
+            additionalProperties.add(new Property("HAPLOTYPE", "Haplotype", clinicalHaplotypeString));
         }
 
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), null,
@@ -408,7 +406,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
         if (clinicalHaplotypeString != null) {
-            additionalProperties.add(new Property(null, HAPLOTYPE_FIELD_NAME, clinicalHaplotypeString));
+            additionalProperties.add(new Property("HAPLOTYPE", "Haplotype", clinicalHaplotypeString));
         }
 
         // Compose heterozygous, for example, may provide more than one allele for a single RCV

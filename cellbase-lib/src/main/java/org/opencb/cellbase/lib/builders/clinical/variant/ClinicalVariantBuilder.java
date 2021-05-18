@@ -22,10 +22,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
+import org.rocksdb.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,22 +106,22 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
-            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
-                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
-                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
-                clinvarIndexer.index();
-            } else {
-                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
-                        + "Please, ensure that these two files exist:\n"
-                        + "{}\n"
-                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
-            }
+
+//            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
+//                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
+//                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
+//              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
+//                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
+//                clinvarIndexer.index();
+//            } else {
+//                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
+//                        + "Please, ensure that these two files exist:\n"
+//                        + "{}\n"
+//                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
+//            }
 
             if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath,
-                        assembly, rdb);
+                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 cosmicIndexer.index();
             } else {
                 logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
@@ -168,14 +165,11 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         RocksIterator rocksIterator = rdb.newIterator();
 
         ObjectMapper mapper = new ObjectMapper();
-        logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
-                serializer.getOutdir().resolve(serializer.getFileName()));
+        logger.info("Reading from RocksDB index and serializing to {}.json.gz", serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            VariantAnnotation variantAnnotation
-                    = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
-//            List<EvidenceEntry> evidenceEntryList
-//                    = mapper.readValue(rocksIterator.value(), List.class);
+            VariantAnnotation variantAnnotation = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
+//            List<EvidenceEntry> evidenceEntryList = mapper.readValue(rocksIterator.value(), List.class);
             Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
 //            VariantAnnotation variantAnnotation = new VariantAnnotation();
 //            variantAnnotation.setTraitAssociation(evidenceEntryList);
@@ -192,7 +186,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
 
     private Variant parseVariantFromVariantId(String variantId) {
         String[] parts = variantId.split(":", -1); // -1 to include empty fields
-        return new Variant(parts[0].trim(), Integer.valueOf(parts[1].trim()), parts[2], parts[3]);
+        return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {
@@ -214,6 +208,15 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         // the Options class contains a set of configurable DB options
         // that determines the behavior of a database.
         Options options = new Options().setCreateIfMissing(true);
+
+//        options.setMaxBackgroundCompactions(4);
+//        options.setMaxBackgroundFlushes(1);
+//        options.setCompressionType(CompressionType.NO_COMPRESSION);
+//        options.setMaxOpenFiles(-1);
+//        options.setIncreaseParallelism(4);
+//        options.setCompactionStyle(CompactionStyle.LEVEL);
+//        options.setLevelCompactionDynamicLevelBytes(true);
+
         RocksDB db = null;
         try {
             // a factory method that returns a RocksDB instance

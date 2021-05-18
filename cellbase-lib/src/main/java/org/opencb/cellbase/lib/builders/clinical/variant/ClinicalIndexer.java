@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 public abstract class ClinicalIndexer {
 
     protected static final char HAPLOTYPE_STRING_SEPARATOR = ',';
-    protected static final String HAPLOTYPE_FIELD_NAME = "haplotype";
     protected static Logger logger
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
     private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
@@ -52,15 +52,17 @@ public abstract class ClinicalIndexer {
     protected RocksDB rdb;
 
 
-    private static final String SYMBOL = "symbol";
+    protected static final String SYMBOL = "symbol";
 
     protected static ObjectMapper mapper;
+    protected static ObjectReader objectReader;
     protected static ObjectWriter jsonObjectWriter;
 
     static {
         mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        jsonObjectWriter = mapper.writer();
+        objectReader = mapper.readerFor(VariantAnnotation.class);
+        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
     }
 
     protected Path genomeSequenceFilePath;
@@ -96,10 +98,9 @@ public abstract class ClinicalIndexer {
             variantAnnotation.setTraitAssociation(evidenceEntryList);
             numberNewVariants++;
         } else {
-            variantAnnotation = mapper.readValue(dbContent, VariantAnnotation.class);
+            variantAnnotation = objectReader.readValue(dbContent);
 //            List<EvidenceEntry> evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory()
 // .constructParametrizedType(List.class, List.class, EvidenceEntry.class));
-
             numberVariantUpdates++;
         }
         return variantAnnotation;
@@ -110,6 +111,12 @@ public abstract class ClinicalIndexer {
         map.put(SYMBOL, gene);
 
         return new GenomicFeature(FeatureTypes.gene, null, map);
+    }
+
+    protected GenomicFeature createGeneGenomicFeature(String featureId, FeatureTypes featureTypes) {
+        Map<String, String> map = new HashMap<>(1);
+        map.put(SYMBOL, featureId);
+        return new GenomicFeature(featureTypes, null, map);
     }
 
     protected List<AlleleOrigin> getAlleleOriginList(List<String> sourceOriginList) {
@@ -193,15 +200,21 @@ public abstract class ClinicalIndexer {
                 && !variant.getAlternate().equals(variant.getReference())));
     }
 
+    protected void addHaplotypeProperty(EvidenceEntry evidenceEntry, List<String> normalisedVariantStringList) {
+        // If more than one variant in the MNV (haplotype), create haplotype property in additionalProperties
+        if (normalisedVariantStringList.size() > 1) {
+            // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
+            // Assuming additionalProperties has already been created as per the upstream code
+            evidenceEntry.getAdditionalProperties().add(new Property("HAPLOTYPE", "Haplotype",
+                    StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR)));
+        }
+    }
+
     protected void addHaplotypeProperty(List<EvidenceEntry> evidenceEntryList, List<String> normalisedVariantStringList) {
         // If more than one variant in the MNV (haplotype), create haplotype property in additionalProperties
-        if (normalisedVariantStringList.size() > 1 && evidenceEntryList != null) {
+        if (evidenceEntryList != null && normalisedVariantStringList.size() > 1) {
             for (EvidenceEntry evidenceEntry : evidenceEntryList) {
-                // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
-                // Assuming additionalProperties has already been created as per the upstream code
-                evidenceEntry.getAdditionalProperties().add(new Property(null,
-                        HAPLOTYPE_FIELD_NAME,
-                        StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR)));
+                addHaplotypeProperty(evidenceEntry, normalisedVariantStringList);
             }
         }
     }
@@ -228,6 +241,19 @@ public abstract class ClinicalIndexer {
             this.reference = reference;
             this.alternate = alternate;
             this.strand = strand;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("SequenceLocation{");
+            sb.append("chromosome='").append(chromosome).append('\'');
+            sb.append(", start=").append(start);
+            sb.append(", end=").append(end);
+            sb.append(", reference='").append(reference).append('\'');
+            sb.append(", alternate='").append(alternate).append('\'');
+            sb.append(", strand='").append(strand).append('\'');
+            sb.append('}');
+            return sb.toString();
         }
 
         public String getChromosome() {
