@@ -45,6 +45,7 @@ public class VariantAnnotationCommandExecutorTest {
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
+
     @Test
     public void proteinChangeMatchTest() throws IOException, URISyntaxException {
         // Remove database content
@@ -123,7 +124,7 @@ public class VariantAnnotationCommandExecutorTest {
                 "FAKEATTRIBUTE",
                 null,
                 null,
-                -1
+                -1, null
         ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
         variantAnnotationCommandExecutor.execute();
@@ -156,7 +157,7 @@ public class VariantAnnotationCommandExecutorTest {
                 "GN,AF,AC,AN,MAF,HWE,AN_Cancer,AN_SRv3,AN_RD,AN_SRv4,AC_Cancer,AC_SRv3,AC_RD,AC_SRv4,AF_Cancer,AF_SRv3,AF_RD,AF_SRv4,MAF_Cancer,MAF_SRv3,MAF_RD,MAF_SRv4,HWE_Cancer,HWE_SRv3,HWE_RD,HWE_SRv4:GN,AF,AC,AN,MAF,HWE,AN_Cancer,AN_SRv3,AN_RD,AN_SRv4,AC_Cancer,AC_SRv3,AC_RD,AC_SRv4,AF_Cancer,AF_SRv3,AF_RD,AF_SRv4,MAF_Cancer,MAF_SRv3,MAF_RD,MAF_SRv4,HWE_Cancer,HWE_SRv3,HWE_RD,HWE_SRv4",
                 null,
                 null,
-                100
+                100, null
         ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
 
@@ -201,7 +202,7 @@ public class VariantAnnotationCommandExecutorTest {
                 "GN,AF,AC,AN,MAF,HWE,AN_Cancer,AN_SRv3,AN_RD,AN_SRv4,AC_Cancer,AC_SRv3,AC_RD,AC_SRv4,AF_Cancer,AF_SRv3,AF_RD,AF_SRv4,MAF_Cancer,MAF_SRv3,MAF_RD,MAF_SRv4,HWE_Cancer,HWE_SRv3,HWE_RD,HWE_SRv4",
                 null,
                 null,
-                100
+                100, null
         ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
 
@@ -244,7 +245,7 @@ public class VariantAnnotationCommandExecutorTest {
                 "GN,AF,AC,AN,MAF,HWE,AN_Cancer,AN_SRv3,AN_RD,AN_SRv4,AC_Cancer,AC_SRv3,AC_RD,AC_SRv4,AF_Cancer,AF_SRv3,AF_RD,AF_SRv4,MAF_Cancer,MAF_SRv3,MAF_RD,MAF_SRv4,HWE_Cancer,HWE_SRv3,HWE_RD,HWE_SRv4",
                 null,
                 null,
-                100
+                100, null
                 ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
         variantAnnotationCommandExecutor.execute();
@@ -323,7 +324,7 @@ public class VariantAnnotationCommandExecutorTest {
                 "GN,AF,AC,AN,MAF,HWE,AN_Cancer,AN_SRv3,AN_RD,AN_SRv4,AC_Cancer,AC_SRv3,AC_RD,AC_SRv4,AF_Cancer,AF_SRv3,AF_RD,AF_SRv4,MAF_Cancer,MAF_SRv3,MAF_RD,MAF_SRv4,HWE_Cancer,HWE_SRv3,HWE_RD,HWE_SRv4",
                 null,
                 null,
-                -1
+                -1, null
                 ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
         variantAnnotationCommandExecutor.execute();
@@ -383,7 +384,7 @@ public class VariantAnnotationCommandExecutorTest {
                         .resolve("commandExecutor/additionalPopulationFrequency/chr1.2017-12-27_01_12.hgva.freq.cellbase.test.json.gz")
                         .toString(),
                 true,
-                -1
+                -1, null
                 ));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
         variantAnnotationCommandExecutor.execute();
@@ -481,6 +482,9 @@ public class VariantAnnotationCommandExecutorTest {
 
     }
 
+
+
+
     @Test
     public void additionalPopulationFrequencyPhasedAnnotationTest() throws Exception {
         cleanUp();
@@ -495,7 +499,7 @@ public class VariantAnnotationCommandExecutorTest {
                         .resolve("commandExecutor/additionalPopulationFrequency/chr1.2017-12-27_01_12.hgva.freq.cellbase.test.json.gz")
                         .toString(),
                 true,
-                -1));
+                -1, null));
         variantAnnotationCommandExecutor.loadCellBaseConfiguration();
         variantAnnotationCommandExecutor.execute();
         List<Variant> variantList = loadResult();
@@ -725,6 +729,52 @@ public class VariantAnnotationCommandExecutorTest {
 
     }
 
+
+    @Test
+    public void testFilter() throws Exception {
+        cleanUp();
+
+        // Set up annotation CLI options: NOTE checkAminoAcidChange is NOT enabled
+        CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
+                = new CliOptionsParser().getVariantAnnotationCommandOptions();
+        variantAnnotationCommandOptions.assembly = "GRCh37";
+        variantAnnotationCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+        variantAnnotationCommandOptions.input
+                = resourcesFolder.resolve("commandExecutor/proteinChangeMatch/proband.duprem.atomic.left.split.vcf.gz").toString();
+        variantAnnotationCommandOptions.output = OUTPUT_FILENAME;
+        variantAnnotationCommandOptions.local = true;
+        variantAnnotationCommandOptions.species = "hsapiens";
+        variantAnnotationCommandOptions.filter = "PASS";
+        // Annotate
+        VariantAnnotationCommandExecutor variantAnnotationCommandExecutor
+                = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        // Load annotated variants
+        List<Variant> variantList = loadResult();
+
+        // one variant has the PASS filter
+        assertEquals(1, variantList.size());
+
+        variantAnnotationCommandOptions.filter = "BAD FILTER";
+        variantAnnotationCommandExecutor = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        variantList = loadResult();
+
+        // one variant has the PASS filter. there should be no results!
+        assertEquals(0, variantList.size());
+
+        variantAnnotationCommandOptions.filter = null;
+        variantAnnotationCommandExecutor = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        variantList = loadResult();
+
+        // no filter 1 results
+        assertEquals(1, variantList.size());
+    }
+
     private List<PopulationFrequency> getPopulationFrequency(List<PopulationFrequency> populationFrequencyList,
                                                              PopulationFrequency populationFrequency) {
         List<PopulationFrequency> populationFrequencyList1 = new ArrayList<>(1);
@@ -800,7 +850,8 @@ public class VariantAnnotationCommandExecutorTest {
                                        String customFileFields,
                                        String populationFrequencyFilename,
                                        Boolean completeInputPopulation,
-                                       int maxOpenFiles) {
+                                       int maxOpenFiles,
+                                       String filter) {
 
         CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
                 = new CliOptionsParser().getVariantAnnotationCommandOptions();
@@ -828,6 +879,7 @@ public class VariantAnnotationCommandExecutorTest {
         variantAnnotationCommandOptions.maxOpenFiles = maxOpenFiles;
         variantAnnotationCommandOptions.noImprecision = true;
         variantAnnotationCommandOptions.buildParams = (new HashMap<>(1));
+        variantAnnotationCommandOptions.filter = filter;
 
         if (populationFrequencyFilename != null) {
             variantAnnotationCommandOptions.buildParams.put("population-frequencies", populationFrequencyFilename);
