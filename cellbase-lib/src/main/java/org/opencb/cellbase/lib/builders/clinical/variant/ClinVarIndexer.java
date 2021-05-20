@@ -54,8 +54,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
     private static final int VARIANT_SUMMARY_START_COLUMN = 19;
     private static final int VARIANT_SUMMARY_END_COLUMN = 20;
-    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 21;
-    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 22;
+    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 32;
+    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 33;
     private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
     private static final int VARIANT_SUMMARY_GENE_COLUMN = 4;
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
@@ -134,7 +134,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                     List<AlleleLocationData> alleleLocationDataList =
                             rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
-
                     if (alleleLocationDataList != null) {
                         boolean success = false;
                         // Actually this list is currently not allowed to be > 2
@@ -159,8 +158,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
             throw e;
         } catch (JAXBException e) {
             logger.error("Error unmarshalling clinvar Xml file: " + e.getMessage());
+            e.printStackTrace();
         } catch (IOException e) {
             logger.error("Error indexing clinvar Xml file: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -243,7 +244,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     private boolean updateRocksDB(AlleleLocationData alleleLocationData, PublicSetType publicSet, String mateVariantString,
                                   Map<String, EFO> traitsToEfoTermsMap) throws RocksDBException, IOException {
-        // More than one variant being returned from the normalisatio process would mean it's and MNV which has been
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
         // decomposed
         List<String> normalisedVariantStringList = getNormalisedVariantString(
                 alleleLocationData.getSequenceLocation().getChromosome(),
@@ -255,7 +256,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
             for (String normalisedVariantString : normalisedVariantStringList) {
                 VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
                 //        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
-
                 // If more than one variant in the MNV (haplotype), create clinicalHaplotypeString
                 String clinicalHaplotypeString = null;
                 if (normalisedVariantStringList.size() > 1) {
@@ -287,7 +287,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
                             clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
                             reviewStatusName, getObservedIn);
                 }
-
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
             return true;
@@ -402,6 +401,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // Multiple vars within the same RCV. Maximum of two vars permitted so far
         if (mateVariantString != null) {
             additionalProperties.add(new Property(null, GENOTYPESET, mateVariantString));
+        }
+
+        String vcvId= publicSet.getReferenceClinVarAssertion().getMeasureSet().getAcc();
+        if (StringUtils.isNotEmpty(vcvId)) {
+            additionalProperties.add(new Property("VCV_ID", "VCV ID", vcvId));
         }
 
         // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV

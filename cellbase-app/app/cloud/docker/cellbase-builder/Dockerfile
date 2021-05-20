@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.name="cellbase-builder" \
@@ -11,7 +11,7 @@ ENV CELLBASE_USER cellbase
 ENV CELLBASE_BUILD_DOCKER true
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y git mysql-client libjson-perl libdbi-perl libdbd-mysql-perl libdbd-mysql-perl libtry-tiny-perl wget openjdk-8-jre htop
+    apt-get install -y git mysql-client libjson-perl libdbi-perl libdbd-mysql-perl libdbd-mysql-perl libtry-tiny-perl wget openjdk-8-jdk htop
 # RUN addgroup $CELLBASE_USER
 RUN adduser --disabled-password --uid 1001  $CELLBASE_USER
 

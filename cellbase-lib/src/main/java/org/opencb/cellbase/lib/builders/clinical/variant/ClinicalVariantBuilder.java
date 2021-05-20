@@ -107,18 +107,18 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             dbLocation = (String) dbConnection[2];
 
 
-//            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
-//                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
-//                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-//              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-//                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
-//                clinvarIndexer.index();
-//            } else {
-//                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
-//                        + "Please, ensure that these two files exist:\n"
-//                        + "{}\n"
-//                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
-//            }
+            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
+                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
+                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
+              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
+                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
+                clinvarIndexer.index();
+            } else {
+                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
+                        + "Please, ensure that these two files exist:\n"
+                        + "{}\n"
+                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
+            }
 
             if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
                 CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);

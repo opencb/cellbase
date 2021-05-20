@@ -62,7 +62,8 @@ public abstract class ClinicalIndexer {
         mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         objectReader = mapper.readerFor(VariantAnnotation.class);
-        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
+        jsonObjectWriter = mapper.writer();
+//        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
     }
 
     protected Path genomeSequenceFilePath;
