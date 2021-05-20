@@ -447,6 +447,10 @@ public class CliOptionsParser {
                 arity = 0)
         public boolean checkAminoAcidChange;
 
+        @Parameter(names = {"--filter"}, description = "string indicating the FILTER label that variants must have to be annotated. "
+                + "Only variants with this label will be written in the output.", required = false, arity = 1)
+        public String filter = null;
+
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "
