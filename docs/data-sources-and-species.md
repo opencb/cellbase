@@ -10,9 +10,9 @@ A Web Service is available to query currently available data sources:
 
 Please, find below a summary of all data sources information:
 
-| Category | Data source | Version/Date |  |  |
+|  | | Category | Data source | Version/Date |  
 | :--- | :--- | :--- | :--- | :--- |
-| CellBase v3 \(_March 2015_\) | CellBase v4 \(_June 2016_\) | CellBase v5 \(_Autumn 2020_\) |  |  |
+|  | | CellBase v3 \(_March 2015_\) | CellBase v4 \(_June 2016_\) | CellBase v5 \(_Autumn 2020_\) |  |  |
 | Core | [Ensembl Core](http://www.ensembl.org/) | v79 | v82 | v99 |
 | Protein | [UniProt](http://www.uniprot.org/) | March 2015 | Release 2015\_10 | Release 2020\_02 |
 | [InterPro](http://www.ebi.ac.uk/interpro/) | v50 | v54 | -- |  |
