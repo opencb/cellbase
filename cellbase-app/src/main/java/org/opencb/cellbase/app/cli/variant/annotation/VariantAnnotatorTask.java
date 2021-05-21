@@ -2,6 +2,7 @@ package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.FileEntry;
+import org.opencb.biodata.models.variant.avro.StudyEntry;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -49,32 +51,33 @@ public class VariantAnnotatorTask implements
 
     private List<Variant> filter(List<Variant> variantList) {
         List<Variant> filteredVariantList = new ArrayList<>(variantList.size());
-        String filterValue = null;
+        String queryOptionsFilterValue = null;
         if (serverQueryOptions != null && serverQueryOptions.containsKey(FILTER_PARAM)) {
-            filterValue = (String) serverQueryOptions.get(FILTER_PARAM);
+            queryOptionsFilterValue = (String) serverQueryOptions.get(FILTER_PARAM);
         }
         for (Variant variant : variantList) {
-            // if filter set, VCF line must match or skip
-            if (filterValue != null) {
-                boolean filterMatch = true;
-                List<org.opencb.biodata.models.variant.avro.StudyEntry> studyEntryList = variant.getImpl().getStudies();
-                for (org.opencb.biodata.models.variant.avro.StudyEntry studyEntry : studyEntryList) {
-                    FileEntry fileEntry = studyEntry.getFiles().get(0);
-                    Map<String, String> attributes = fileEntry.getAttributes();
-                    String filterVcfValue = attributes.get("FILTER");
-                    if (!filterVcfValue.equalsIgnoreCase(filterValue)) {
-                        // filter is set but there is no match. skip.
-                        filterMatch = false;
-                    }
-                }
-                if (!filterMatch) {
-                    // filter is set but there is no match. skip.
-                    continue;
-                }
-            }
+            // true when we find a FILTER match. to prevent variant being added twice.
+            boolean variantFound = false;
             // filter out reference blocks
             if (!VariantType.NO_VARIATION.equals(variant.getType())) {
-                filteredVariantList.add(variant);
+                // if FILTER param set, VCF line must match or it's skipped
+                if (queryOptionsFilterValue != null) {
+                    Iterator<StudyEntry> studyIterator = variant.getImpl().getStudies().listIterator();
+                    while (studyIterator.hasNext() && !variantFound) {
+                        for (FileEntry fileEntry : studyIterator.next().getFiles()) {
+                            Map<String, String> attributes = fileEntry.getAttributes();
+                            String vcfFilterValue = attributes.get("FILTER");
+                            if (vcfFilterValue != null && vcfFilterValue.equalsIgnoreCase(queryOptionsFilterValue)) {
+                                // matched, variant added. we are done here.
+                                filteredVariantList.add(variant);
+                                variantFound = true;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    filteredVariantList.add(variant);
+                }
             }
         }
 
