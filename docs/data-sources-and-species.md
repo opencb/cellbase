@@ -6,7 +6,7 @@
 
 A Web Service is available to query currently available data sources:
 
-[http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/\#!/Meta/getVersion](http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Meta/getVersion)
+[https://ws.opencb.org/cellbase/webservices/#!/Meta/getVersion](https://ws.opencb.org/cellbase/webservices/#!/Meta/getVersion)
 
 Please, find below a summary of all data sources information:
 
