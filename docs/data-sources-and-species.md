@@ -15,16 +15,16 @@ Please, find below a summary of all data sources information:
 |  | | CellBase v3 \(_March 2015_\) | CellBase v4 \(_June 2016_\) | CellBase v5 \(_Autumn 2020_\) |  |  |
 | Core | [Ensembl Core](http://www.ensembl.org/) | v79 | v82 | v99 |
 | Protein | [UniProt](http://www.uniprot.org/) | March 2015 | Release 2015\_10 | Release 2020\_02 |
-| [InterPro](http://www.ebi.ac.uk/interpro/) | v50 | v54 | -- |  |
-| Polyphen2/Sift | Ensembl 79 | Ensembl v82 | Ensembl v99 |  |
+|  || [InterPro](http://www.ebi.ac.uk/interpro/) | v50 | v54 | -- |  |
+|  || Polyphen2/Sift | Ensembl 79 | Ensembl v82 | Ensembl v99 |  |
 | Variation | [Ensembl Variation](http://www.ensembl.org/) | v79 | v82 | -- |
-| 1000 genomes project |  | Phase 3 2016-05 | Phase 3 2016-05 |  |
-| ExAC |  | 0.3.1 | -- |  |
-| GoNL |  | Release 5 | -- |  |
-| UK10K |  | 2016-05 | 2016-05 |  |
-| ESP |  | 2016-05 | -- |  |
-| gnomAD Genomes |  |  | v3 |  |
-| TOPMed |  |  | 2020-04 |  |
+||  | 1000 genomes project |  | Phase 3 2016-05 | Phase 3 2016-05 |  |
+|  || ExAC |  | 0.3.1 | -- |  |
+|  || GoNL |  | Release 5 | -- |  |
+||  | UK10K |  | 2016-05 | 2016-05 |  |
+|  || ESP |  | 2016-05 | -- |  |
+|  || gnomAD Genomes |  |  | v3 |  |
+|  || TOPMed |  |  | 2020-04 |  |
 |  |  |  | 2020-04 |  |
 | GenomeAsia 100K |  |  | 2020-04 |  |
 | Regulatory | [Ensembl Regulatory](http://www.ensembl.org/) | v79 | v82 | v99 |
