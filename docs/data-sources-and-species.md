@@ -18,27 +18,27 @@ Please, find below a summary of all data sources information:
 |  | [InterPro](http://www.ebi.ac.uk/interpro/) | v50 | v54 | -- |  |
 |  | Polyphen2/Sift | Ensembl 79 | Ensembl v82 | Ensembl v99 |  |
 | Variation | [Ensembl Variation](http://www.ensembl.org/) | v79 | v82 | -- |
-||  | 1000 genomes project |  | Phase 3 2016-05 | Phase 3 2016-05 |  |
+|  | 1000 genomes project |  | Phase 3 2016-05 | Phase 3 2016-05 |  |
 |  | ExAC |  | 0.3.1 | -- |  |
 |  | GoNL |  | Release 5 | -- |  |
 |  | UK10K |  | 2016-05 | 2016-05 |  |
 |  | ESP |  | 2016-05 | -- |  |
 |  | gnomAD Genomes |  |  | v3 |  |
-|  | TOPMed |  |  | 2020-04 |  |
-|  | DiscovEHR |  | 2020-04 |  |
+|  | TOPMed    |  |  | 2020-04 |  
+|  | DiscovEHR |  |  | 2020-04 |  
 |  | GenomeAsia 100K |  |  | 2020-04 |  |
 | Regulatory | [Ensembl Regulatory](http://www.ensembl.org/) | v79 | v82 | v99 |
 |  | [Ensembl Motif features](http://www.ensembl.info/2018/10/15/new-ensembl-motif-features/) |  |  | v99 |
 |  | [mirBase](http://www.mirbase.org/) |  |  | 22.1 |
 |  | [mirTarBase](http://mirtarbase.mbc.nctu.edu.tw/php/index.php) |  |  | 7.0 |
 | Conservation | PhastCons |  | June 2016 | June 2016 |
-| PhyloP |  | June 2016 | June 2016 |  |
-| GERP |  | June 2016 | Ensembl v99 |  |
+|  | PhyloP |  | June 2016 | June 2016 |  |
+|  | GERP |  | June 2016 | Ensembl v99 |  |
 | Clinical   | ClinVar | March 2015 | 2016-12 | 2020-02 |
-| COSMIC | v71 | v79 | v91 |  |
-| HPO |  | 2015-11 | 2020-04 |  |
-| DisGeNET |  | Version 3.0 | 7.0 |  |
-| Disease ontology |  |  | 2020-05 |  |
+|  | COSMIC | v71 | v79 | v91 |  |
+|  | HPO |  | 2015-11 | 2020-04 |  |
+|  | DisGeNET |  | Version 3.0 | 7.0 |  |
+|  | Disease ontology |  |  | 2020-05 |  |
 | Biological Networks | Reactome | v51 | June 2016 | -- |
 |  | IntAct | March 2015 | June 2016 | -- |
 | Ontologies | Gene Annotation |  |  | 2020-05 |
