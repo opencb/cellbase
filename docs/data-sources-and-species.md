@@ -12,28 +12,28 @@ Please, find below a summary of all data sources information:
 
 | Category | Data source | Version/Date |  |  | 
 | :--- | :--- | :--- | :--- | :--- |
-|  | | CellBase v3 \(_March 2015_\) | CellBase v4 \(_June 2016_\) | CellBase v5 \(_Autumn 2020_\) |  |  |
-| Core | [Ensembl Core](http://www.ensembl.org/) | v79 | v82 | v99 |
+|  | | CellBase v3 \(_March 2015_\) | CellBase v4 \(_June 2016_\) | CellBase v5 \(_2021_\) |  |  |
+| Core | [Ensembl Core](http://www.ensembl.org/) | v79 | v82 | v102 |
 | Protein | [UniProt](http://www.uniprot.org/) | March 2015 | Release 2015\_10 | Release 2020\_02 |
 |  | [InterPro](http://www.ebi.ac.uk/interpro/) | v50 | v54 | -- |  |
-|  | Polyphen2/Sift | Ensembl 79 | Ensembl v82 | Ensembl v99 |  |
+|  | Polyphen2/Sift | Ensembl 79 | Ensembl v82 | Ensembl v102 |  |
 | Variation | [Ensembl Variation](http://www.ensembl.org/) | v79 | v82 | -- |
 |  | 1000 genomes project |  | Phase 3 2016-05 | Phase 3 2016-05 |  |
 |  | ExAC |  | 0.3.1 | -- |  |
 |  | GoNL |  | Release 5 | -- |  |
 |  | UK10K |  | 2016-05 | 2016-05 |  |
 |  | ESP |  | 2016-05 | -- |  |
-|  | gnomAD Genomes |  |  | v3 |  |
+|  | gnomAD Genomes |  |  | v2.1.1 |  |
 |  | TOPMed    |  |  | 2020-04 |  
 |  | DiscovEHR |  |  | 2020-04 |  
 |  | GenomeAsia 100K |  |  | 2020-04 |  |
-| Regulatory | [Ensembl Regulatory](http://www.ensembl.org/) | v79 | v82 | v99 |
-|  | [Ensembl Motif features](http://www.ensembl.info/2018/10/15/new-ensembl-motif-features/) |  |  | v99 |
+| Regulatory | [Ensembl Regulatory](http://www.ensembl.org/) | v79 | v82 | v102 |
+|  | [Ensembl Motif features](http://www.ensembl.info/2018/10/15/new-ensembl-motif-features/) |  |  | v102 |
 |  | [mirBase](http://www.mirbase.org/) |  |  | 22.1 |
 |  | [mirTarBase](http://mirtarbase.mbc.nctu.edu.tw/php/index.php) |  |  | 7.0 |
 | Conservation | PhastCons |  | June 2016 | June 2016 |
 |  | PhyloP |  | June 2016 | June 2016 |  |
-|  | GERP |  | June 2016 | Ensembl v99 |  |
+|  | GERP |  | June 2016 | Ensembl v102 |  |
 | Clinical   | ClinVar | March 2015 | 2016-12 | 2020-02 |
 |  | COSMIC | v71 | v79 | v91 |  |
 |  | HPO |  | 2015-11 | 2020-04 |  |
