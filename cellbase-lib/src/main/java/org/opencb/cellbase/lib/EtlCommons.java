@@ -89,7 +89,7 @@ public class EtlCommons {
     // binary bigwig file
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
     // bigwig file manually transformed to bedGraph file
-    public static final String GERP_PROCESSED_FILE = "gerp.bedGraph.gz";
+    public static final String GERP_PROCESSED_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
     public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
     public static final String CLINICAL_VARIANTS_ANNOTATED_JSON_FILE = "clinical_variants.full.json.gz";
     public static final String DOCM_FILE = "docm.json.gz";
