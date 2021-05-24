@@ -211,7 +211,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 //        try {
 //            String outputFileName = downloadFolder.resolve("genome_info.json").toAbsolutePath().toString();
 //            List<String> args = new ArrayList<>();
-//            args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(),
+//            args.addAll(Arrays.asList("--species", speciesConfigurathtion.getScientificName(),
 //                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
 //                    "-o", outputFileName,
 //                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));

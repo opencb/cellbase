@@ -20,11 +20,12 @@ databases:
         nodes: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
     options:
       authenticationDatabase: "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}"
+      authenticationMechanism: "${CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM}"
       readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
       replicaSet: "${CELLBASE.DB.MONGODB.REPLICASET}"
       connectionsPerHost: 20
       sslEnabled: false
-      enableSharding: true
+      enableSharding: false
   neo4j:
     hsapiens:
       host: "${CELLBASE.DB.NEO4J.HOST}"
