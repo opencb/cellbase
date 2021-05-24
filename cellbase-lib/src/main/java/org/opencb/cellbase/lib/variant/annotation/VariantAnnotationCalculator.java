@@ -1641,9 +1641,7 @@ public class VariantAnnotationCalculator {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
                     if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
-                        variantAnnotationList.get(i)
-                                .setTraitAssociation(clinicalCellBaseDataResult.getResults().get(0).getAnnotation()
-                                        .getTraitAssociation());
+                        variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalCellBaseDataResult));
 //                        // DEPRECATED
 //                        // TODO: remove in 4.6
 //                        variantAnnotationList.get(i)
@@ -1655,6 +1653,14 @@ public class VariantAnnotationCalculator {
                     }
                 }
             }
+        }
+
+        private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
+            List<EvidenceEntry> traitAssociations = new ArrayList<>();
+            for (Variant variant: clinicalQueryResult.getResults()) {
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+            }
+            return traitAssociations;
         }
 
 //        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
