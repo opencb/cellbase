@@ -296,10 +296,17 @@ public class HgvsProteinCalculator {
 
                 // Get the reference codon and the new sequence inserted
                 String refCodon = transcriptUtils.getCodon(codonPosition);
+                String afterRefCodon = transcriptUtils.getCodon(codonPosition);
                 String refAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), refCodon);
 
                 // Build the new inserted sequence = split codon + alternate allele
                 String insSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
+
+                // need inserted sequence to be divisible by 3 to predict AAs later
+                if (insSequence.length() % 3 > 0) {
+                    // append NTs until sequence has enough codons
+                    insSequence = insSequence + afterRefCodon.substring(0, (3 - insSequence.length() % 3));
+                }
 
                 // Insertion or Duplication need the reference codon to be the same.
                 // Check if the reference codon is at any end of the new inserted sequence.
