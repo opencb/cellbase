@@ -300,6 +300,9 @@ public class HgvsProteinCalculator {
                 String refAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), refCodon);
 
                 // Build the new inserted sequence = split codon + alternate allele
+                if (refCodon.length() < positionAtCodon) {
+                    return null;
+                }
                 String insSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
 
                 // need inserted sequence to be divisible by 3 to predict AAs later
@@ -442,6 +445,9 @@ public class HgvsProteinCalculator {
 
             // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion,
             // Example: check 11:6390701:-:CTGGCGCTGGCG
+            if (transcript.getProteinSequence().length() < aminoacidPosition) {
+                return null;
+            }
             String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
             while (codedAminoacids.get(0).equals(aaAfterInsertion)) {
                 aminoacidPosition++;
@@ -449,11 +455,17 @@ public class HgvsProteinCalculator {
                 codedAminoacids.remove(0);
                 aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
                 codedAminoacids.add(aaAfterInsertion);
+                if (aminoacidPosition <= 0 || transcript.getProteinSequence().length() < aminoacidPosition) {
+                    return null;
+                }
                 aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
             }
 
             // Get position and flanking amino acids
             int codonIndex = aminoacidPosition - 1;
+            if (codonIndex <= 0 || transcript.getProteinSequence().length() < codonIndex) {
+                return null;
+            }
             String leftCodedAa = transcript.getProteinSequence().substring(codonIndex - 1, codonIndex);
             String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
 
@@ -584,7 +596,7 @@ public class HgvsProteinCalculator {
         if (referenceAllele.length() % 3 == 0) {
             if (positionAtCodon == 1) {
                 // TODO Check is the aminoposition is the STOP codon, this is a HGVS extension, is this a frameshift?
-                if (aminoacidPosition + deletionAaLength > transcript.getProteinSequence().length()) {
+                if (transcript.getProteinSequence().length() <= aminoacidPosition + deletionAaLength) {
                     // Deletion includes STOP codon
                     return null;
                 }
@@ -667,8 +679,15 @@ public class HgvsProteinCalculator {
                 // Get the new codon created after the deletion
                 String firstAffectedCodon = transcriptUtils.getCodon(aminoacidPosition);    // GAC
                 String lastAffectedCodon = transcriptUtils.getCodon(aminoacidPosition + deletionAaLength);  // CGC
-                String newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon - 1)
-                        + lastAffectedCodon.substring(positionAtCodon - 1); // GA + C = GAC
+                String newAlternateCodon = null;
+                if (positionAtCodon > 0 && StringUtils.isNotEmpty(firstAffectedCodon) && StringUtils.isNotEmpty(lastAffectedCodon)
+                        && firstAffectedCodon.length() >= positionAtCodon && lastAffectedCodon.length() >= positionAtCodon) {
+                    newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon - 1)
+                            + lastAffectedCodon.substring(positionAtCodon - 1); // GA + C = GAC
+                } else {
+                    logger.info("Couldn't calculate HGVSp for " + variant.getId());
+                    return null;
+                }
 
                 String firstAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), firstAffectedCodon);
                 String lastAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), lastAffectedCodon);
@@ -802,6 +821,11 @@ public class HgvsProteinCalculator {
         }
 
         // Get position and flanking amino acids
+        if (leftAminoAcidPosition < 1 || rightAminoAcidPosition < 1 || transcript.getProteinSequence() == null
+                || transcript.getProteinSequence().length() < leftAminoAcidPosition
+                || transcript.getProteinSequence().length() < rightAminoAcidPosition) {
+            return null;
+        }
         String leftCodedAa = transcript.getProteinSequence().substring(leftAminoAcidPosition - 1, leftAminoAcidPosition);
         String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
         String rightCodedAa = transcript.getProteinSequence().substring(rightAminoAcidPosition - 1, rightAminoAcidPosition);
@@ -944,7 +968,12 @@ public class HgvsProteinCalculator {
                 if (!alternateCodedAa.equals(referenceCodedAa)) {
                     // Keep the first amino acid changed, including a premature STOP codon
                     if (firstDiffIndex == -1) {
-                        firstReferencedAa = StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
+                        String longAA = VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa);
+                        if (StringUtils.isEmpty(longAA)) {
+                            logger.info("Invalid AA found: " + referenceCodedAa + " for variant " + variant.getId());
+                            return null;
+                        }
+                        firstReferencedAa = StringUtils.capitalize(longAA.toLowerCase());
                         firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
                         firstDiffIndex = currentAaIndex;
 
