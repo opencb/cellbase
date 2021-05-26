@@ -392,7 +392,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-            variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
+            variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList, serverQueryOptions));
         }
         return variantAnnotatorTaskList;
     }
@@ -573,7 +573,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
         // Update serverQueryOptions
         serverQueryOptions.put("checkAminoAcidChange", variantAnnotationCommandOptions.checkAminoAcidChange);
-
+        serverQueryOptions.put("filter", variantAnnotationCommandOptions.filter);
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
