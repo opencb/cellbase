@@ -89,7 +89,8 @@ public class LoadCommandExecutor extends CommandExecutor {
             }
             loadRunner = new LoadRunner(loader, database, numThreads, configuration);
             if (createIndexes) {
-                indexManager = new IndexManager(configuration, database);
+                Path indexFile = Paths.get(this.appHome).resolve("conf").resolve("mongodb-indexes.json");
+                indexManager = new IndexManager(database, indexFile, configuration);
             }
 
             String[] loadOptions;

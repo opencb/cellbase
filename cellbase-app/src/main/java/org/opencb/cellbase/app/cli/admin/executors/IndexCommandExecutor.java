@@ -21,6 +21,8 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 public class IndexCommandExecutor extends CommandExecutor {
@@ -35,7 +37,8 @@ public class IndexCommandExecutor extends CommandExecutor {
 
     public void execute() {
         try {
-            IndexManager indexManager = new IndexManager(configuration, indexCommandOptions.database);
+            Path indexFile = Paths.get(this.appHome).resolve("conf").resolve("mongodb-indexes.json");
+            IndexManager indexManager = new IndexManager(indexCommandOptions.database, indexFile, configuration);
             if (indexCommandOptions.validate) {
                 indexManager.validateMongoDBIndexes(indexCommandOptions.data);
             } else {
@@ -44,6 +47,7 @@ public class IndexCommandExecutor extends CommandExecutor {
 
         } catch (IOException e) {
             logger.error("Error creating indexes:" + e.toString());
+            e.printStackTrace();
         }
     }
 }

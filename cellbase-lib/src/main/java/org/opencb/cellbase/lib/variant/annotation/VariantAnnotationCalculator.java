@@ -270,9 +270,14 @@ public class VariantAnnotationCalculator {
 
         if (annotatorSet.contains("geneDisease")) {
             variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
+            Set<String> visited = new HashSet<>();
             for (Gene gene : geneList) {
-                if (gene.getAnnotation() != null && gene.getAnnotation().getDiseases() != null) {
-                    variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
+                // Genes can be repeated in Ensembl and RefSeq
+                if (!visited.contains(gene.getName())) {
+                    if (gene.getAnnotation() != null && gene.getAnnotation().getDiseases() != null) {
+                        variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
+                    }
+                    visited.add(gene.getName());
                 }
             }
         }

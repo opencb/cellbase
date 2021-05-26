@@ -20,7 +20,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
     private String databaseName = "cellbase_hsapiens_grch37_v4";
 
     public IndexManagerTest() throws IOException {
-        indexManager = new IndexManager(cellBaseConfiguration, databaseName);
+        indexManager = new IndexManager(databaseName, null, cellBaseConfiguration);
     }
 
     @Test

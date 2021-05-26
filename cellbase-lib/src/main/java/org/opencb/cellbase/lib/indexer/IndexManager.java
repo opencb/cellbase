@@ -25,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 public class IndexManager {
@@ -35,12 +33,14 @@ public class IndexManager {
     private CellBaseConfiguration configuration;
     private Logger logger;
     private String databaseName;
+    private Path indexFile;
     private MongoDBIndexUtils mongoDBIndexUtils;
     private MongoDBManager mongoDBManager;
 
-    public IndexManager(CellBaseConfiguration configuration, String databaseName) {
-        this.configuration = configuration;
+    public IndexManager(String databaseName, Path indexFile, CellBaseConfiguration configuration) {
         this.databaseName = databaseName;
+        this.indexFile = indexFile;
+        this.configuration = configuration;
 
         init();
     }
@@ -49,7 +49,7 @@ public class IndexManager {
         logger = LoggerFactory.getLogger(this.getClass());
         mongoDBManager =  new MongoDBManager(configuration);
 
-        Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
+//        Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
 
         MongoDataStore mongoDBDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         mongoDBIndexUtils = new MongoDBIndexUtils(mongoDBDatastore, indexFile);
@@ -65,7 +65,7 @@ public class IndexManager {
      * @throws IOException if configuration file can't be read
      */
     public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
-        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
+//        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
         if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
             mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
 //            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
