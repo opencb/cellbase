@@ -869,7 +869,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testHgvsAnnotation() throws Exception {
+    public void testHgvsAnnotationGrch37() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "hgvs");
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
@@ -1955,6 +1955,30 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "variation");
 
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+    }
+
+    // threw an exception
+    @Test
+    public void testHgvsAnnotationGrch38() throws Exception {
+        initGrch38();
+
+        //https://bio-uat-cellbase.gel.zone/cellbase/webservices/rest/v4/hsapiens/genomic/variant/19:34684171:T:TAAAAAAAAA/annotation
+        // ?assembly=GRCh38&limit=-1&skip=-1&skipCount=false&count=false&Output%20format=json&normalize=true&skipDecompose=false&
+        // imprecise=true&svExtraPadding=0&cnvExtraPadding=0&checkAminoAcidChange=true&include=clinical,chromosome,start,end,reference,
+        // alternate
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("normalize", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("include", "clinical,chromosome,start,end,reference,alternate");
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("19:34684171:T:TAAAAAAAAA"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getHgvs());
+
     }
 
     @Test
