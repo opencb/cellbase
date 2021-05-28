@@ -144,6 +144,8 @@ public class MongoDBManager {
         logger.debug("MongoDataStore configuration parameters: ");
         logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
                 mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+        logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_MECHANISM,
+                mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_MECHANISM));
         logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
                 mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
         logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,

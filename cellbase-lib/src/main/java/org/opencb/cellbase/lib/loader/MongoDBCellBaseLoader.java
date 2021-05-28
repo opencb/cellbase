@@ -32,15 +32,13 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.commons.datastore.core.DataResult;
-import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
-import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -71,10 +69,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at", "in", "on"));
 
-    private MongoDataStoreManager mongoDataStoreManager;
-    private MongoDataStore mongoDataStore;
     private MongoDBAdaptorFactory dbAdaptorFactory;
 
+    private MongoDBManager mongoDBManager;
     private MongoDBCollection mongoDBCollection;
 
 
@@ -104,37 +101,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          * 3. finally a connection to the collection is stored in 'mongoDBCollection'
          */
 
-//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
-        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
-
-        String[] hosts = mongodbCredentials.getHost().split(",");
-        List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
-        for (String host : hosts) {
-            String[] hostAndPort = host.split(":");
-            dataStoreServerAddressList.add(new DataStoreServerAddress(hostAndPort[0], (hostAndPort.length == 2)
-                    ? Integer.parseInt(hostAndPort[1]) : 27017));
-        }
-        mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddressList);
-
-        MongoDBConfiguration mongoDBConfiguration;
-        if (cellBaseConfiguration != null
-                && mongodbCredentials.getOptions().get("authenticationDatabase") != null
-                && !mongodbCredentials.getOptions().get("authenticationDatabase").isEmpty()) {
-            mongoDBConfiguration = MongoDBConfiguration.builder()
-                    .add("username", mongodbCredentials.getUser())
-                    .add("password", mongodbCredentials.getPassword())
-                    .add("authenticationDatabase", mongodbCredentials.getOptions().get("authenticationDatabase")).build();
-            logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
-                    mongodbCredentials.getOptions().get("authenticationDatabase"));
-        } else {
-            mongoDBConfiguration = MongoDBConfiguration.builder()
-                    .add("username", mongodbCredentials.getUser())
-                    .add("password", mongodbCredentials.getPassword()).build();
-        }
-        logger.debug("MongoDB credentials are user: '{}', password: '{}'",
-                mongodbCredentials.getUser(), mongodbCredentials.getPassword());
-
-        mongoDataStore = mongoDataStoreManager.get(database, mongoDBConfiguration);
+        mongoDBManager = new MongoDBManager(cellBaseConfiguration);
+        MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore(database);
 
         collectionName = getCollectionName(data);
         mongoDBCollection = mongoDataStore.getCollection(collectionName);
@@ -756,7 +724,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public void close() {
-        mongoDataStoreManager.close(database);
+        mongoDBManager.close();
     }
 
     private Path getIndexFilePath(String data) throws LoaderException {
