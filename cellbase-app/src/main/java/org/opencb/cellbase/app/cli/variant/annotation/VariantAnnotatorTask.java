@@ -1,11 +1,6 @@
 package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
-<<<<<<< HEAD
-import org.opencb.biodata.models.variant.avro.FileEntry;
-import org.opencb.biodata.models.variant.avro.StudyEntry;
-=======
->>>>>>> parent of eecbfcfe0... add filter to variant annotaton
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
@@ -47,24 +42,7 @@ public class VariantAnnotatorTask implements
         List<Variant> filteredVariantList = new ArrayList<>(variantList.size());
         for (Variant variant : variantList) {
             if (!VariantType.NO_VARIATION.equals(variant.getType())) {
-                // if FILTER param set, VCF line must match or it's skipped
-                if (queryOptionsFilterValue != null) {
-                    Iterator<StudyEntry> studyIterator = variant.getImpl().getStudies().listIterator();
-                    while (studyIterator.hasNext() && !variantFound) {
-                        for (FileEntry fileEntry : studyIterator.next().getFiles()) {
-                            Map<String, String> attributes = fileEntry.getAttributes();
-                            String vcfFilterValue = attributes.get("FILTER");
-                            if (vcfFilterValue != null && vcfFilterValue.equalsIgnoreCase(queryOptionsFilterValue)) {
-                                // matched, variant added. we are done here.
-                                filteredVariantList.add(variant);
-                                variantFound = true;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    filteredVariantList.add(variant);
-                }
+                filteredVariantList.add(variant);
             }
         }
 
