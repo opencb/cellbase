@@ -97,7 +97,7 @@ rest:
       - ""              # Accept access by IP .Testing purposes only.
     # Accepts /cellbase and /cellbase/....
     paths:
-      - /cellbase(/|$)
+      - /cellbase
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
