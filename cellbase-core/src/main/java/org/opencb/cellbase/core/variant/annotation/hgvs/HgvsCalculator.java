@@ -79,7 +79,8 @@ public class HgvsCalculator {
         List<String> hgvsStrings = new ArrayList<>();
 
         // Check variant falls within transcript coords
-        if (variant.getStart() <= transcript.getEnd() && variant.getEnd() >= transcript.getStart()) {
+        if (variant.getChromosome() == transcript.getChromosome() && variant.getStart() <= transcript.getEnd()
+                && variant.getEnd() >= transcript.getStart()) {
             // We cannot know the type of variant before normalization has been carried out
             Variant normalizedVariant = normalize(variant, normalize);
 //            HgvsCalculator hgvsCalculator = getHgvsCalculator(normalizedVariant);

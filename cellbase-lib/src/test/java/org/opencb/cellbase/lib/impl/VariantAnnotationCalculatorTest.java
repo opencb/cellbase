@@ -869,7 +869,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testHgvsAnnotation() throws Exception {
+    public void testHgvsAnnotationGrch37() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "hgvs");
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
@@ -1950,12 +1950,68 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/grch38/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
-//        path = Paths.get(getClass()
-//                .getResource("/variant-annotation/grch38/variation_chr11.test.json.gz").toURI());
-//        loadRunner.load(path, "variation");
+
 
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
     }
+
+
+    @Test
+    public void testClinicalVariantsGrch38() throws Exception {
+
+        initGrch38();
+
+        Variant variant1 = new Variant("chr10:43074337:A:AT");
+        Variant variant2 = new Variant("chr17:43087248-43098506:<CNV>");
+        List<Variant> variantList = new ArrayList<>();
+        variantList.add(variant1);
+        variantList.add(variant2);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate ,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
+
+        assertEquals(2, queryResult.size());
+        // neither should have clinvar records!
+        List<EvidenceEntry> traitAssociation = queryResult.get(0).getResult().get(0).getTraitAssociation();
+        assertNull(traitAssociation);
+        traitAssociation = queryResult.get(1).getResult().get(0).getTraitAssociation();
+        assertNull(traitAssociation);
+
+    }
+
+
+    // threw an exception
+    @Test
+    public void testHgvsAnnotationGrch38() throws Exception {
+        initGrch38();
+
+        //https://bio-uat-cellbase.gel.zone/cellbase/webservices/rest/v4/hsapiens/genomic/variant/19:34684171:T:TAAAAAAAAA/annotation
+        // ?assembly=GRCh38&limit=-1&skip=-1&skipCount=false&count=false&Output%20format=json&normalize=true&skipDecompose=false&
+        // imprecise=true&svExtraPadding=0&cnvExtraPadding=0&checkAminoAcidChange=true&include=clinical,chromosome,start,end,reference,
+        // alternate
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("normalize", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("include", "clinical,chromosome,start,end,reference,alternate");
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("19:34684171:T:TAAAAAAAAA"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getHgvs());
+
+    }
+
 
     @Test
     public void testCheckAminoAcidChange() throws Exception {
