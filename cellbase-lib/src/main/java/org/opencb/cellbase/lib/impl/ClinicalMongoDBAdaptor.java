@@ -404,7 +404,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             }
 
         }
-
         QueryResult<Variant> queryResult = get(query, options);
         queryResult.setId(variant.toString());
 
@@ -430,8 +429,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                                                    QueryOptions queryOptions) {
         List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            QueryResult<Variant> clinicalVariants = getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions);
-            results.add(clinicalVariants);
+            results.add(getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions));
         }
         if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
             results = phasedQueryManager.run(variants, results);

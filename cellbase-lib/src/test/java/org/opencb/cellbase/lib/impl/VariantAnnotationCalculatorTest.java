@@ -1950,12 +1950,43 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/grch38/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
-//        path = Paths.get(getClass()
-//                .getResource("/variant-annotation/grch38/variation_chr11.test.json.gz").toURI());
-//        loadRunner.load(path, "variation");
+
 
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
     }
+
+
+    @Test
+    public void testClinicalVariantsGrch38() throws Exception {
+
+        initGrch38();
+
+        Variant variant1 = new Variant("chr10:43074337:A:AT");
+        Variant variant2 = new Variant("chr17:43087248-43098506:<CNV>");
+        List<Variant> variantList = new ArrayList<>();
+        variantList.add(variant1);
+        variantList.add(variant2);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate ,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
+
+        assertEquals(2, queryResult.size());
+        // neither should have clinvar records!
+        List<EvidenceEntry> traitAssociation = queryResult.get(0).getResult().get(0).getTraitAssociation();
+        assertNull(traitAssociation);
+        traitAssociation = queryResult.get(1).getResult().get(0).getTraitAssociation();
+        assertNull(traitAssociation);
+
+    }
+
 
     // threw an exception
     @Test
@@ -1980,6 +2011,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertNull(queryResult.getResult().get(0).getHgvs());
 
     }
+
 
     @Test
     public void testCheckAminoAcidChange() throws Exception {
