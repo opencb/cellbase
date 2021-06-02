@@ -72,7 +72,7 @@ public class GenericRestWSServer implements IWSServer {
     protected static ObjectWriter jsonObjectWriter;
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
-    protected final static AtomicBoolean initialized = new AtomicBoolean(false);
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
     protected long startTime;
     protected static Logger logger;
 
@@ -109,7 +109,7 @@ public class GenericRestWSServer implements IWSServer {
 
     private void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
-        if (initialized.compareAndSet(false, true)) {
+        if (INITIALIZED.compareAndSet(false, true)) {
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();
             WATCH.start();
