@@ -768,7 +768,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                         + "transcripts.proteinID,"
                         + "transcripts.proteinSequence,"
                         + "transcripts.annotationFlags,"
-                        + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
+                        + "transcripts.strand,transcripts.name,transcripts.chromosome,transcripts.start,transcripts.end,"
                         + "transcripts.cDnaSequence,"
                         + "transcripts.cdsLength,"
                         + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
