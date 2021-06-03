@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.server.rest.AdminRestWebService;
@@ -88,7 +89,16 @@ public class RestServer  {
         webapp.setContextPath("/" + cellbaseVersion);
         webapp.setWar(warPath.get().toString());
         webapp.setInitParameter("CELLBASE_HOME", cellbaseHome.toFile().toString());
-        server.setHandler(webapp);
+
+        // This enables the compression of the response
+        final GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.addIncludedMimeTypes("text/html", "text/xml", "text/css", "text/plain", "text/javascript", "application/javascript",
+                "application/json", "application/xml");
+        gzipHandler.setIncludedMethods("GET", "POST");
+        gzipHandler.setCompressionLevel(1);
+        gzipHandler.setHandler(webapp);
+
+        server.setHandler(gzipHandler);
 
         server.start();
         logger.info("REST server started, listening on port: " + port + " at " + server.getURI());

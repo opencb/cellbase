@@ -551,14 +551,11 @@ public class VariantAnnotationUtils {
     }
 
     public static Boolean isSynonymousCodon(Boolean mitochondrialCode, String codon1, String codon2) {
-        System.out.println("mitochondrialCode = " + mitochondrialCode);
-        System.out.println("codon1 = " + codon1);
-        System.out.println("codon2 = " + codon2);
-        Map<String, String> geneticCode = null;
+//        Map<String, String> geneticCode = null;
         if (mitochondrialCode) {
-            return MT_IS_SYNONYMOUS_CODON.get(codon1).get(codon2);
+            return MT_IS_SYNONYMOUS_CODON.get(codon1.toUpperCase()).get(codon2.toUpperCase());
         } else {
-            return IS_SYNONYMOUS_CODON.get(codon1).get(codon2);
+            return IS_SYNONYMOUS_CODON.get(codon1.toUpperCase()).get(codon2.toUpperCase());
         }
     }
 

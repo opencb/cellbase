@@ -263,7 +263,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     String reverseCodon =
                             new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
                                     // Rigth limit of the substring sums +1 because substring does not include that position
-                                    transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString();
+                                    transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString().toUpperCase();
                     char[] referenceCodon = reverseCodon.toCharArray();
                     referenceCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon[0]);
                     referenceCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon[1]);
@@ -535,11 +535,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
-                    String referenceA =
-                            VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);
-                    String alternativeA =
-                            VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
-                                    String.valueOf(modifiedCodonArray));
+                    String referenceA = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);
+                    String alternativeA = VariantAnnotationUtils
+                            .getAminoacid(MT.equals(variant.getChromosome()), String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
                     if (VariantAnnotationUtils.isSynonymousCodon(MT.equals(variant.getChromosome()),
                             referenceCodon, String.valueOf(modifiedCodonArray))) {

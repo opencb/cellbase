@@ -902,10 +902,17 @@ public class HgvsProteinCalculator {
                 if (!alternateCodedAa.equals(referenceCodedAa)) {
                     // Keep the first amino acid changed, including a premature STOP codon
                     if (firstDiffIndex == -1) {
-                        firstReferencedAa = StringUtils.capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
-                        firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
-                        firstDiffIndex = currentAaIndex;
-
+                        if (!referenceCodedAa.equals("*")) {
+                            firstReferencedAa = StringUtils
+                                    .capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
+                            firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
+                            firstDiffIndex = currentAaIndex;
+                        } else {
+                            // Some pseudogenes are polymorphic and contains several STOp codon, these sre marked as * by ensembl
+                            stopAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
+                            originalStopIndex = currentAaIndex;
+                            break;
+                        }
                     }
 
                     if (alternateAa.equalsIgnoreCase(STOP_STRING)) {
