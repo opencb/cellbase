@@ -568,7 +568,7 @@ public class HgvsProteinCalculator {
                 }
 
                 String nextAminoAcidAfterDeletion = transcript.getProteinSequence()
-                        .substring(aminoacidPosition + deletionAaLength, aminoacidPosition + deletionAaLength + 1);
+                        .substring(aminoacidPosition + deletionAaLength - 1, aminoacidPosition + deletionAaLength);
                 if (nextAminoAcidAfterDeletion.equalsIgnoreCase("STOP")) {
                     // HGVS Substitution: in theory, a nonsense variant can be considered as a deletion removing the C-terminal end of
                     // the protein (e.g. p.Trp26_Arg1623del). However, in HGVS nomenclature, nonsense variants are described as an
