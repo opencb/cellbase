@@ -420,14 +420,16 @@ public class HgvsProteinCalculator {
 
             // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion,
             // Example: check 11:6390701:-:CTGGCGCTGGCG
-            String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
-            while (codedAminoacids.get(0).equals(aaAfterInsertion)) {
-                aminoacidPosition++;
-                aminoacids.remove(0);
-                codedAminoacids.remove(0);
-                aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
-                codedAminoacids.add(aaAfterInsertion);
-                aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+            if (aminoacidPosition - 1 < transcript.getProteinSequence().length()) {
+                String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+                while (codedAminoacids.get(0).equals(aaAfterInsertion)) {
+                    aminoacidPosition++;
+                    aminoacids.remove(0);
+                    codedAminoacids.remove(0);
+                    aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
+                    codedAminoacids.add(aaAfterInsertion);
+                    aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
+                }
             }
 
             // Get position and flanking amino acids
