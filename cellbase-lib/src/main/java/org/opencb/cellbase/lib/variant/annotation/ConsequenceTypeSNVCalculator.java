@@ -532,7 +532,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     int variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
                     int modifiedCodonStart = cdnaVariantPosition - variantPhaseShift;
                     // -1 and +2 because of base 0 String indexing
-                    String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
+                    String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2).toUpperCase();
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
                     String referenceA = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);

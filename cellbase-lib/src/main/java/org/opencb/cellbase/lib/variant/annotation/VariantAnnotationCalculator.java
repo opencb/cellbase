@@ -1153,7 +1153,6 @@ public class VariantAnnotationCalculator {
             if (transcriptId != null && transcriptId.contains(".")) {
                 transcriptId = transcriptId.split("\\.")[0];
             }
-            System.out.println("consequenceType = " + consequenceType);
             CellBaseDataResult<ProteinVariantAnnotation> results = proteinManager.getVariantAnnotation(variant,
                     transcriptId,
                     consequenceType.getProteinVariantAnnotation().getPosition(),
@@ -1314,7 +1313,6 @@ public class VariantAnnotationCalculator {
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
                 overlapsRegulatoryRegion, queryOptions);
-        System.out.println("consequenceTypeList = " + consequenceTypeList);
         if (variant.getType() == VariantType.SNV
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
