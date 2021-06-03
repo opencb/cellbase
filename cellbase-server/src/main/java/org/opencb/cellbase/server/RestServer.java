@@ -66,7 +66,7 @@ public class RestServer  {
             logger.info("|  * Port: '{}'", port);
 
         } catch (IOException e) {
-            throw new RuntimeException("Invalid CellBase home: " + cellbaseHome.toString());
+            throw new RuntimeException("Invalid CellBase home: " + cellbaseHome.toString(), e);
         }
 
         logger.info("========================================================================\n");
@@ -88,6 +88,8 @@ public class RestServer  {
         String cellbaseVersion = warPath.get().toFile().getName().replace(".war", "");
         webapp.setContextPath("/" + cellbaseVersion);
         webapp.setWar(warPath.get().toString());
+        // fix classNotFound issues when running server with Jetty
+        webapp.setClassLoader(this.getClass().getClassLoader());
         webapp.setInitParameter("CELLBASE_HOME", cellbaseHome.toFile().toString());
 
         // This enables the compression of the response

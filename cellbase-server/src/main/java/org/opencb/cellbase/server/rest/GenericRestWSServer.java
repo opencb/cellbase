@@ -72,7 +72,7 @@ public class GenericRestWSServer implements IWSServer {
     protected static ObjectWriter jsonObjectWriter;
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
-    protected static AtomicBoolean initialized;
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
     protected long startTime;
     protected static Logger logger;
 
@@ -88,11 +88,6 @@ public class GenericRestWSServer implements IWSServer {
     private static final String OK = "ok";
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
-
-    static {
-        initialized = new AtomicBoolean(false);
-
-    }
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
@@ -114,10 +109,7 @@ public class GenericRestWSServer implements IWSServer {
 
     private void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
-        System.out.println("initialized = " + initialized);
-        if (initialized == null || initialized.compareAndSet(false, true)) {
-            initialized = new AtomicBoolean(true);
-
+        if (INITIALIZED.compareAndSet(false, true)) {
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();
             WATCH.start();
@@ -145,11 +137,11 @@ public class GenericRestWSServer implements IWSServer {
 
             logger.info("CELLBASE_HOME set to: {}", cellbaseHome);
 
-            System.out.println("***************************************************");
-            System.out.println("cellbaseHome = " + cellbaseHome);
+            logger.info("***************************************************");
+            logger.info("cellbaseHome = " + cellbaseHome);
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-            System.out.println("***************************************************");
+            logger.info("***************************************************");
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
@@ -193,11 +185,11 @@ public class GenericRestWSServer implements IWSServer {
             throw new CellBaseException("Version not valid: '" + version + "'");
         }
 
-        System.out.println("*************************************");
-        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration);
-        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
-        System.out.println("version = " + version);
-        System.out.println("*************************************");
+//        System.out.println("*************************************");
+//        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration);
+//        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
+//        System.out.println("version = " + version);
+//        System.out.println("*************************************");
         if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("Version not valid: '" + version + "'");
@@ -346,8 +338,7 @@ public class GenericRestWSServer implements IWSServer {
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
             return buildResponse(ok);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error parsing queryResponse object");
+            logger.error("Error parsing queryResponse object", e);
             return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
         }
     }
@@ -357,8 +348,7 @@ public class GenericRestWSServer implements IWSServer {
             return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(obj),
                     MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8")));
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            logger.error("Error parsing object");
+            logger.error("Error parsing object", e);
             return createErrorResponse("", "Error parsing object:\n" + Arrays.toString(e.getStackTrace()));
         }
     }
