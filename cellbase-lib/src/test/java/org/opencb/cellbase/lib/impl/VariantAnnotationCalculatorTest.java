@@ -868,6 +868,16 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+
+    @Test
+    public void testAnnotationGrch37() throws Exception {
+        // threw a NULL pointer exception
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("9:34648830:A:N"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+    }
+
     @Test
     public void testHgvsAnnotationGrch37() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
