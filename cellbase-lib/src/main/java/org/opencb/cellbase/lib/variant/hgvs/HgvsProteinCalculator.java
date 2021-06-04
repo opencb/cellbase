@@ -54,7 +54,7 @@ public class HgvsProteinCalculator {
     private static final String UNIPROT_LABEL = "uniprotkb/swissprot";
     protected BuildingComponents buildingComponents = null;
 
-    public static final int MAX_NUMBER_AMINOACIDS_DISPLAYED = 10;
+    public static final int MAX_NUMBER_AMINOACIDS_DISPLAYED = 20;
 
     /**
      * Constructor.
@@ -422,7 +422,8 @@ public class HgvsProteinCalculator {
             // Example: check 11:6390701:-:CTGGCGCTGGCG
             if (aminoacidPosition - 1 < transcript.getProteinSequence().length()) {
                 String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
-                while (codedAminoacids.get(0).equals(aaAfterInsertion)) {
+                while (codedAminoacids.get(0).equals(aaAfterInsertion)
+                        && aminoacidPosition + 1 < transcript.getProteinSequence().length()) {
                     aminoacidPosition++;
                     aminoacids.remove(0);
                     codedAminoacids.remove(0);

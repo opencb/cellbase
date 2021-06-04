@@ -409,12 +409,12 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                                     : 0,  // Be careful reaching the end of the transcript sequence
                             // Rigth limit of the substring -2 because substring does not include that position
                             transcriptSequence.length() - cdnaVariantEnd)).reverse().toString();
-            char[] referenceCodon1Array = reverseCodon1.toCharArray();
+            char[] referenceCodon1Array = reverseCodon1.toUpperCase().toCharArray();
             referenceCodon1Array[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[0]);
             referenceCodon1Array[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[1]);
             referenceCodon1Array[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[2]);
             String referenceCodon1 = String.valueOf(referenceCodon1Array);
-            char[] referenceCodon2Array = reverseCodon2.toCharArray();
+            char[] referenceCodon2Array = reverseCodon2.toUpperCase().toCharArray();
             referenceCodon2Array[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[0]);
             referenceCodon2Array[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[1]);
             referenceCodon2Array[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[2]);

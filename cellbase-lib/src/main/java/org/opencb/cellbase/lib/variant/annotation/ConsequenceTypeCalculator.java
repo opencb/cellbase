@@ -168,7 +168,7 @@ public abstract class ConsequenceTypeCalculator {
     protected char[] getReverseComplementaryCodon(String transcriptSequence, int modifiedCodonStart) {
         char[] reverseCodon = (new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
                 // Rigth limit of the substring sums +1 because substring does not include that position
-                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString()).toCharArray();
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString().toUpperCase()).toCharArray();
         reverseCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[0]);
         reverseCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[1]);
         reverseCodon[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[2]);
@@ -341,7 +341,7 @@ public abstract class ConsequenceTypeCalculator {
                                 .getResults().get(0).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-                        reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
+                        reverseTranscriptSequence.toUpperCase().charAt(reverseTranscriptSequencePosition));
             }
             reverseTranscriptSequencePosition++;
 
