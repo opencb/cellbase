@@ -1094,8 +1094,8 @@ public class VariantAnnotationCalculator {
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
             List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
-                "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence", "transcripts.proteinSequence",
-                "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
+                "transcripts.proteinId", "transcripts.chromosome", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence",
+                "transcripts.proteinSequence", "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
                 "transcripts.exons.cdsEnd", "transcripts.exons.sequence", "transcripts.exons.phase",
