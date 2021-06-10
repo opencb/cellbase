@@ -129,8 +129,8 @@ public class TranscriptUtils {
             // Adjust for manipulating strings, set to be zero base
             cdnaCodonStart = cdnaCodonStart - 1;
 
-            int cdnaCodonEnd = Math.min(cdnaCodonStart + 3, transcript.getCdnaCodingEnd());
-            if (cdnaCodonStart >= 0 && transcript.getCdnaSequence().length() > cdnaCodonEnd) {
+            int cdnaCodonEnd = cdnaCodonStart + 3;
+            if (cdnaCodonStart >= 0 && transcript.getCdnaSequence().length() >= cdnaCodonEnd) {
                 return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
             }
         }
