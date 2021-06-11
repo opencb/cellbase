@@ -258,10 +258,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
         aggregateList.add(match);
         aggregateList.add(unwind);
+        aggregateList.add(sort);
         aggregateList.add(match2);
         aggregateList.add(excludeAndInclude);
         aggregateList.add(project);
-        aggregateList.add(sort);
 
         return aggregateList;
     }
