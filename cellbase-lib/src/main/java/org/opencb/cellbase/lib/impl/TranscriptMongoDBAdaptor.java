@@ -14,6 +14,7 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -252,11 +253,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
         Bson match2 = Aggregates.match(bson);
 
+        Bson sort = MongoDBQueryUtils.getSort(options);
+        options.remove(QueryOptions.SORT);
+
         aggregateList.add(match);
         aggregateList.add(unwind);
         aggregateList.add(match2);
         aggregateList.add(excludeAndInclude);
         aggregateList.add(project);
+        aggregateList.add(sort);
 
         return aggregateList;
     }
