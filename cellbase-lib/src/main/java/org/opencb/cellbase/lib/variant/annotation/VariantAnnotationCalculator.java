@@ -322,6 +322,8 @@ public class VariantAnnotationCalculator {
                                 .setGermline(cancerAssociation.isGermline())
                                 .setSomaticTumourTypes(cancerAssociation.getSomaticTumourTypes())
                                 .setGermlineTumourTypes(cancerAssociation.getGermlineTumourTypes())
+                                .setRoleInCancer(new ArrayList<>())
+                                .setModeOfInheritance(new ArrayList<>())
                                 .setSyndromes(cancerAssociation.getSyndromes())
                                 .setTissues(cancerAssociation.getTissues())
                                 .setMutationTypes(cancerAssociation.getMutationTypes())
