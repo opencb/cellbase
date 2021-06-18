@@ -226,8 +226,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         proteinVariantAnnotation.setAlternate(aaAlternate);
 //        Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
         // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
-        System.out.println("aaReference = " + aaReference);
-        System.out.println("aaAlternate = " + aaAlternate);
+//        System.out.println("aaReference = " + aaReference);
+//        System.out.println("aaAlternate = " + aaAlternate);
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
             TranscriptQuery query = new TranscriptQuery();
             query.setTranscriptsId(Collections.singletonList(ensemblTranscriptId));

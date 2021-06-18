@@ -284,7 +284,6 @@ public class ParentRestClient<T> {
         boolean queryError = false;
         CellBaseDataResponse<U> queryResponse;
         try {
-            System.out.println("configuration.toString() = " + configuration.toString());
             queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
                     ids, resource, queryOptions, clazz, post);
             if (queryResponse == null) {
