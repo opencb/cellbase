@@ -324,13 +324,17 @@ public class VariantAnnotationCalculator {
                                 .setGermlineTumourTypes(cancerAssociation.getGermlineTumourTypes())
                                 .setSyndromes(cancerAssociation.getSyndromes())
                                 .setTissues(cancerAssociation.getTissues())
-                                .setModeOfInheritance(cancerAssociation.getModeOfInheritance()
-                                        .stream().map(Enum::name).collect(Collectors.toList()))
-                                .setRoleInCancer(cancerAssociation.getRoleInCancer()
-                                        .stream().map(Enum::name).collect(Collectors.toList()))
                                 .setMutationTypes(cancerAssociation.getMutationTypes())
                                 .setTranslocationPartners(cancerAssociation.getTranslocationPartners())
                                 .build();
+                        if (cancerAssociation.getRoleInCancer() != null) {
+                            build.setRoleInCancer(cancerAssociation.getRoleInCancer().stream().map(Enum::name)
+                                    .collect(Collectors.toList()));
+                        }
+                        if (cancerAssociation.getModeOfInheritance() != null) {
+                            build.setModeOfInheritance(cancerAssociation.getModeOfInheritance().stream().map(Enum::name)
+                                    .collect(Collectors.toList()));
+                        }
                         cancerGeneAssociations.add(build);
                     }
                     variantAnnotation.getGeneCancerAssociations().addAll(cancerGeneAssociations);
