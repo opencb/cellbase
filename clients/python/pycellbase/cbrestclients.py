@@ -11,13 +11,12 @@ class _ParentRestClient(object):
         self._configuration = configuration
         self._subcategory = subcategory
         self._category = category
-        retries=5
+        retries = 5
 
         # decorates the REST verbs with retries
         self._get = wrapper(self._get, retries)
         self._post = wrapper(self._post, retries)
-        self._delete = wrapper(self._delete, retries)
-
+        
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
         response = get(session=self._session,
