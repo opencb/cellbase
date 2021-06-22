@@ -3,7 +3,7 @@ import sys
 import time
 import warnings
 import random
-import urllib
+import urllib2
 
 import requests
 import threading
@@ -296,7 +296,7 @@ def wrapper(func, retries):
             try:
                 results = func(*args, **kwargs)
                 success = True
-            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError, urllib.URLError) as ex:
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError, urllib2.URLError) as ex:
                 logging.error(str(ex))
                 # retries a fixed number of times
                 if retries != -1 and retries_count >= retries:
