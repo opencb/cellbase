@@ -21,8 +21,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.DrugResponseClassification;
+import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
@@ -98,6 +103,9 @@ public class ParentRestClient<T> {
         jsonObjectMapper.addMixIn(DrugResponseClassification.class, DrugResponseClassificationMixIn.class);
         jsonObjectMapper.addMixIn(CellBaseDataResponse.class, CellBaseDataResponseMixIn.class);
         jsonObjectMapper.addMixIn(CellBaseDataResult.class, CellBaseDataResultMixIn.class);
+        jsonObjectMapper.addMixIn(VariantAnnotation.class, VariantAnnotationMixin.class);
+        jsonObjectMapper.addMixIn(ConsequenceType.class, ConsequenceTypeMixin.class);
+
     }
 
     // These methods keep backwark compatability with CellBase 4.x
@@ -109,6 +117,30 @@ public class ParentRestClient<T> {
     public interface CellBaseDataResultMixIn<T> {
         @JsonAlias("result")
         List<T> getResults();
+    }
+
+    public interface VariantAnnotationMixin {
+
+        @JsonAlias("cancerGeneAssociations")
+        List<GeneCancerAssociation> getGeneCancerAssociations();
+    }
+
+    @JsonDeserialize(converter = ConsequenceTypeMixin.ConsequenceTypeConverter.class)
+    public interface ConsequenceTypeMixin {
+        class ConsequenceTypeConverter extends StdConverter<ConsequenceType, ConsequenceType> {
+            @Override
+            public ConsequenceType convert(ConsequenceType consequenceType) {
+                if (consequenceType != null) {
+                    if (consequenceType.getGeneId() == null) {
+                        consequenceType.setGeneId(consequenceType.getEnsemblGeneId());
+                    }
+                    if (consequenceType.getTranscriptId() == null) {
+                        consequenceType.setTranscriptId(consequenceType.getEnsemblTranscriptId());
+                    }
+                }
+                return consequenceType;
+            }
+        }
     }
 
 // end points have been removed
@@ -305,6 +337,7 @@ public class ParentRestClient<T> {
                 Response.Status status = Response.Status.fromStatusCode(((WebApplicationException) e).getResponse().getStatus());
                 switch (status) {
                     case GATEWAY_TIMEOUT:
+                    case BAD_GATEWAY:
                     case INTERNAL_SERVER_ERROR:
                         // Do not propagate this error
                         // TODO: Add a counter?
