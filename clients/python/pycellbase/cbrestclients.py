@@ -1,6 +1,7 @@
 import sys
+import subprocess
 
-from pycellbase.commons import get, deprecated
+from pycellbase.commons import get, deprecated, retry
 
 
 class _ParentRestClient(object):
@@ -11,6 +12,7 @@ class _ParentRestClient(object):
         self._subcategory = subcategory
         self._category = category
 
+    @retry(subprocess.TimeoutExpired)
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
         response = get(session=self._session,
