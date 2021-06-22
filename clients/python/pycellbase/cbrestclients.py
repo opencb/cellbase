@@ -12,7 +12,7 @@ class _ParentRestClient(object):
         self._subcategory = subcategory
         self._category = category
 
-    @retry(subprocess.TimeoutExpired)
+    @retry(IndexError)
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
         response = get(session=self._session,
