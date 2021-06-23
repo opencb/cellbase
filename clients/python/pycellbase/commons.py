@@ -295,7 +295,7 @@ def wrapper(func, retries):
             try:
                 results = func(*args, **kwargs)
                 success = True
-            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError) as ex:
+            except (requests.exceptions.RequestException, requests.exceptions.ConnectionError, ValueError) as ex:
                 logging.error(str(ex))
                 # retries a fixed number of times
                 if retries != -1 and retries_count >= retries:
