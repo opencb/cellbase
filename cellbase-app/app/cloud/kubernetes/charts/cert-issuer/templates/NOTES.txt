@@ -1,0 +1,18 @@
+
+See : https://artifacthub.io/packages/helm/cert-manager/cert-manager
+
+Next steps:
+ - NGINX:
+       - Don't use internal load balancer (i.e. use public IP)
+       ```
+         controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-internal": false
+       ```
+ - Network:
+       - Obtain a DOMAIN and make it point to the nginx service public IP
+ - Cellbase:
+       - Configure rest.ingress tls
+       ```
+         rest.ingress.tls[0].hosts[0] : DOMAIN
+         rest.ingress.tls[0].secretName : cellbase-cert # (or any cert name)
+         rest.ingress.annotation."cert-manager.io/cluster-issuer:" : {{ .Values.clusterIssuer.name }}
+       ```
