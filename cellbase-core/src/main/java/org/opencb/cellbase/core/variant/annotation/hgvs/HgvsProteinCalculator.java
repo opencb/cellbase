@@ -275,19 +275,22 @@ public class HgvsProteinCalculator {
 
                 // Get the reference codon and the new sequence inserted
                 String refCodon = transcriptUtils.getCodon(codonPosition);
-                String afterRefCodon = transcriptUtils.getCodon(codonPosition);
                 String refAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), refCodon);
 
                 // Build the new inserted sequence = split codon + alternate allele
                 if (refCodon.length() < positionAtCodon) {
+                    logger.error("INVALID VARIANT 3: positionAtCodon:" + positionAtCodon + " refCodon:" + refCodon + " variantId:"
+                            + getVariantId(variant));
                     return null;
                 }
                 String insSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
 
                 // need inserted sequence to be divisible by 3 to predict AAs later
                 if (insSequence.length() % 3 > 0) {
+                    logger.error("INVALID VARIANT 1: insSequence:" + insSequence + " refCodon:" + refCodon + " variantId:"
+                            + getVariantId(variant));
                     // append NTs until sequence has enough codons
-                    insSequence = insSequence + afterRefCodon.substring(0, (3 - insSequence.length() % 3));
+                    insSequence = insSequence + refCodon.substring(0, (3 - insSequence.length() % 3));
                 }
 
                 // Insertion or Duplication need the reference codon to be the same.
@@ -315,6 +318,10 @@ public class HgvsProteinCalculator {
                     //  deletion of amino acids Pro578 and Lys579 replaced with LeuTer
                     // One single amino acid at codonPosition is deleted
                     return this.hgvsDeletionInsertionFormatter(codonPosition, codonPosition, alternate);
+                }
+
+                if (StringUtils.isEmpty(refAa)) {
+                    logger.error("INVALID VARAINT 2: empty refAa :: " + getVariantId(variant));
                 }
 
                 // Check if the the original amino acid is kept
@@ -425,6 +432,8 @@ public class HgvsProteinCalculator {
             // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion,
             // Example: check 11:6390701:-:CTGGCGCTGGCG
             if (transcript.getProteinSequence().length() < aminoacidPosition) {
+                logger.error("INVALID VARIANT 4: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
+                        + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
                 return null;
             }
             String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
@@ -435,6 +444,8 @@ public class HgvsProteinCalculator {
                 aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
                 codedAminoacids.add(aaAfterInsertion);
                 if (aminoacidPosition <= 0 || transcript.getProteinSequence().length() < aminoacidPosition) {
+                    logger.error("INVALID VARIANT 5: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
+                            + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
                     return null;
                 }
                 aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
@@ -803,6 +814,9 @@ public class HgvsProteinCalculator {
         if (leftAminoAcidPosition < 1 || rightAminoAcidPosition < 1 || transcript.getProteinSequence() == null
                 || transcript.getProteinSequence().length() < leftAminoAcidPosition
                 || transcript.getProteinSequence().length() < rightAminoAcidPosition) {
+            logger.error("INVALID VARIANT 6: leftAminoAcidPosition:" + leftAminoAcidPosition + " rightAminoAcidPosition "
+                    + rightAminoAcidPosition + " transcript" + ".getProteinSequence().length():"
+                    + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
             return null;
         }
         String leftCodedAa = transcript.getProteinSequence().substring(leftAminoAcidPosition - 1, leftAminoAcidPosition);
@@ -886,6 +900,7 @@ public class HgvsProteinCalculator {
         String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
 
         if (alternateCdnaSeq == null) {
+            logger.error("INVALID VARIANT 7: variantId:" + getVariantId(variant));
             return null;
         }
         int codonIndex = transcript.getCdnaCodingStart() - 1;
@@ -897,7 +912,8 @@ public class HgvsProteinCalculator {
                 alternateProteinSeq.append("X");
                 currentAaIndex++;
             }
-        } else if (transcript.getProteinSequence().startsWith("M") && !"ATG".equals(alternateCdnaSeq.substring(0, 3))) {
+        } else if (transcript.getProteinSequence().startsWith("M")
+                && !"ATG".equals(alternateCdnaSeq.substring(transcript.getCdnaCodingStart(), 3))) {
             /*
             First codon is NOT ATG but protein sequence starts with M. This is due to Ensembl curation. From Ensembl:
 
@@ -914,6 +930,8 @@ public class HgvsProteinCalculator {
             alternateProteinSeq.append("M");
             currentAaIndex++;
             codonIndex += 3;
+
+            logger.info("NON-ATG START: " + getVariantId(variant));
         }
 
 
@@ -1058,4 +1076,10 @@ public class HgvsProteinCalculator {
         }
         return proteinIds;
     }
+
+    private String getVariantId(Variant variant) {
+        return  variant.getChromosome() + ":" + variant.getStart() + "-" + variant.getEnd() + ":" + variant.getReference() + ":"
+                + variant.getAlternate();
+    }
+
 }
