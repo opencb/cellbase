@@ -80,7 +80,7 @@ download:
   targetScan:
     host: http://hgdownload.cse.ucsc.edu/goldenPath/
   miRTarBase:
-    host: http://mirtarbase.cuhk.edu.cn/cache/download/8.0/hsa_MTI.xlsx
+    host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2019/cache/download/8.0/miRTarBase_MTI.xlsx
   uniprot:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   uniprotRelNotes:
