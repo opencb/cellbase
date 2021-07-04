@@ -6,7 +6,10 @@ function printUsage() {
   echo ""
   echo "Deploy required Helm charts for a fully working Cellbase installation"
   echo " - mongodb-operator"
-  echo " - cellbase-nginx"
+  echo " - nginx"
+  echo " - mongodb-operator"
+  echo " - cert-manager"
+  echo " - cert-issuer"
   echo " - cellbase"
   echo ""
   echo "Usage:   $(basename $0) --context <context> [options]"
@@ -17,7 +20,7 @@ function printUsage() {
   echo "   * -f     --values              FILE       Helm values file"
   echo "     -o     --outdir              DIRECTORY  Output directory where to write the generated manifests. Default: \$PWD"
   echo "            --name-suffix         STRING     Helm deployment name suffix. e.g. '-test' : cellbase-nginx-test, cellbase-test..."
-  echo "            --what                STRING     What to deploy. [cellbase-nginx, cellbase, all]. Default: all"
+  echo "            --what                STRING     What to deploy. [nginx, mongodb-operator, cert-manager, cert-issuer, cellbase, all]. Default: all"
   echo "            --cellbase-conf-dir   DIRECTORY  Cellbase configuration folder. Default: build/conf/ "
   echo "            --keep-tmp-files      FLAG       Do not remove any temporary file generated in the outdir"
   echo "            --dry-run             FLAG       Simulate an installation."
@@ -97,6 +100,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   --what)
     WHAT="${value^^}" # Upper case
+    WHAT=$(echo "$WHAT" | tr -d "_-") # remove '-' '_'
     shift             # past argument
     shift             # past value
     ;;
@@ -169,6 +173,37 @@ function configureContext() {
   kubectl config set-context "${K8S_CONTEXT}" --namespace="${K8S_NAMESPACE}"
 }
 
+function deployCertManager() {
+  # Add the Jetstack Helm repository
+  helm repo add jetstack https://charts.jetstack.io
+
+  # Update your local Helm chart repository cache
+  helm repo update
+
+  # Install the cert-manager Helm chart
+  helm upgrade cert-manager jetstack/cert-manager \
+    --install \
+    --version 1.4.0 \
+    --kube-context "${K8S_CONTEXT}" --namespace "${K8S_NAMESPACE}"  \
+    --set installCRDs=true \
+    --set nodeSelector."kubernetes\.io/os"=linux \
+    --set webhook.nodeSelector."kubernetes\.io/os"=linux \
+    --set cainjector.nodeSelector."kubernetes\.io/os"=linux \
+    --values "${HELM_VALUES_FILE}"
+}
+
+
+function deployCertIssuer() {
+  NAME="cert-issuer${NAME_SUFFIX}"
+  DATE=$(date "+%Y%m%d%H%M%S")
+  helm upgrade "${NAME}" "charts/cert-issuer/" \
+  --values "${HELM_VALUES_FILE}" \
+  --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
+  if [ $DRY_RUN == "false" ]; then
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest-${DATE}.yaml"
+  fi
+}
+
 function deployNginx() {
   # Use Helm to deploy an NGINX ingress controller
   ## Deploy in the same namespace
@@ -232,6 +267,19 @@ function deployCellbase() {
 echo "# Deploy kubernetes"
 echo "# Configuring context $K8S_CONTEXT"
 configureContext
+
+if [[ "$WHAT" == "CERT" ]]; then
+  deployCertManager
+  deployCertIssuer
+fi
+
+if [[ "$WHAT" == "CERTMANAGER" || "$WHAT" == "ALL" ]]; then
+  deployCertManager
+fi
+
+if [[ "$WHAT" == "CERTISSUER" || "$WHAT" == "ALL" ]]; then
+  deployCertIssuer
+fi
 
 if [[ "$WHAT" == "NGINX" || "$WHAT" == "ALL" ]]; then
   deployNginx
