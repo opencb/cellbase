@@ -38,7 +38,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
-    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile, cancerGeneCensus;
+    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile, cancerGeneCensus, cancerHotspot;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -74,6 +74,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
         hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
         cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
+        cancerHotspot = geneDirectoryPath.resolve("hotspots_v2.xls");
         miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
     }
 
@@ -123,7 +124,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
-                cancerGeneCensus);
+                cancerGeneCensus, cancerHotspot);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -223,7 +224,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
 
         GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
-                null, indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName));
+                null, indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
                 status, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);

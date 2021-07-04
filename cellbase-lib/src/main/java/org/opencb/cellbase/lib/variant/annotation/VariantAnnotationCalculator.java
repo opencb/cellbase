@@ -17,14 +17,12 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRnaMature;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
@@ -247,14 +245,11 @@ public class VariantAnnotationCalculator {
         return variantCellBaseDataResult.first();
     }
 
-    private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) throws QueryException, IllegalAccessException {
+    private List<Gene> setGeneAnnotation(List<Gene> geneList, Variant variant) throws QueryException, IllegalAccessException {
         // Fetch overlapping genes for this variant
-        List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
         VariantAnnotation variantAnnotation = variant.getAnnotation();
 
-        /*
-         * Gene Annotation
-         */
+        // TODO Remove expression data since is deprecated
         if (annotatorSet.contains("expression")) {
             variantAnnotation.setGeneExpression(new ArrayList<>());
             for (Gene gene : geneList) {
@@ -308,11 +303,17 @@ public class VariantAnnotationCalculator {
 
         if (annotatorSet.contains("cancerGeneAssociation")) {
             variantAnnotation.setGeneCancerAssociations(new ArrayList<>());
+            Set<String> visited = new HashSet<>();
             for (Gene gene : geneList) {
-                if (gene.getAnnotation() != null && gene.getAnnotation().getCancerAssociations() != null) {
+                if (gene.getAnnotation() != null
+                        && gene.getAnnotation().getCancerAssociations() != null
+                        && !visited.contains(gene.getName())) {
+
+                    // Make sure we do not process the same gene twice
+                    visited.add(gene.getName());
+
                     List<org.opencb.biodata.models.core.GeneCancerAssociation>
                             cancerAssociations = gene.getAnnotation().getCancerAssociations();
-                    List<GeneCancerAssociation> cancerGeneAssociations = new ArrayList<>(cancerAssociations.size());
                     for (org.opencb.biodata.models.core.GeneCancerAssociation cancerAssociation : cancerAssociations) {
                         GeneCancerAssociation build = GeneCancerAssociation.newBuilder()
                                 .setId(cancerAssociation.getId())
@@ -337,9 +338,57 @@ public class VariantAnnotationCalculator {
                             build.setModeOfInheritance(cancerAssociation.getModeOfInheritance().stream().map(Enum::name)
                                     .collect(Collectors.toList()));
                         }
-                        cancerGeneAssociations.add(build);
+                        variantAnnotation.getGeneCancerAssociations().add(build);
                     }
-                    variantAnnotation.getGeneCancerAssociations().addAll(cancerGeneAssociations);
+                }
+            }
+        }
+
+        if (annotatorSet.contains("cancerHotspot")) {
+            variantAnnotation.setCancerHotspots(new ArrayList<>());
+            Set<String> visited = new HashSet<>();
+            for (Gene gene : geneList) {
+                // Check if this gene contains cancer hotspots
+                if (gene.getAnnotation() != null && gene.getAnnotation().getCancerHotspots() != null) {
+                    List<CancerHotspot> cancerHotspots = gene.getAnnotation().getCancerHotspots();
+                    for (CancerHotspot cancerHotspot : cancerHotspots) {
+                        // Check that the gene and position matches
+                        for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+                            if (cancerHotspot.getGeneName() != null
+                                    && cancerHotspot.getGeneName().equalsIgnoreCase(consequenceType.getGeneName())
+                                    && consequenceType.getProteinVariantAnnotation() != null
+                                    && cancerHotspot.getAminoacidPosition() == consequenceType.getProteinVariantAnnotation().getPosition()
+                                    && !visited.contains(cancerHotspot.getGeneName() + "_" + cancerHotspot.getAminoacidPosition())) {
+
+                                // Avoid to report dame hotspot twice for Ensembl and RefSeq annotation
+                                visited.add(cancerHotspot.getGeneName() + "_" + cancerHotspot.getAminoacidPosition());
+
+                                CancerHotspotVariantAnnotation cancerHotspotVariantAnnotation = CancerHotspotVariantAnnotation.newBuilder()
+                                        .setGeneName(cancerHotspot.getGeneName())
+                                        .setProteinId(cancerHotspot.getProteinId())
+                                        .setAminoacidPosition(cancerHotspot.getAminoacidPosition())
+                                        .setAminoacidReference(cancerHotspot.getAminoacidReference())
+                                        .setCancerType(cancerHotspot.getCancerType())
+                                        .setScores(cancerHotspot.getScores())
+                                        .setCancerTypeCount(cancerHotspot.getCancerTypeCount())
+                                        .setOrganCount(cancerHotspot.getOrganCount())
+                                        .setSource(cancerHotspot.getSource())
+                                        .build();
+                                if (cancerHotspot.getVariants() != null) {
+                                    cancerHotspotVariantAnnotation.setVariants(cancerHotspot
+                                            .getVariants()
+                                            .stream()
+                                            .map(cancerHotspotVariant -> CancerHotspotAlternateAnnotation.newBuilder()
+                                                    .setAminoacidAlternate(cancerHotspotVariant.getAminoacidAlternate())
+                                                    .setCount(cancerHotspotVariant.getCount())
+                                                    .setSampleCount(cancerHotspotVariant.getSampleCount())
+                                                    .build())
+                                            .collect(Collectors.toList()));
+                                }
+                                variantAnnotation.getCancerHotspots().add(cancerHotspotVariantAnnotation);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -398,7 +447,6 @@ public class VariantAnnotationCalculator {
     private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
         long globalStartTime = System.currentTimeMillis();
-        long startTime;
 
         // Object to be returned
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>(normalizedVariantList.size());
@@ -407,7 +455,7 @@ public class VariantAnnotationCalculator {
          * Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
          * Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
          */
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(6);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
         List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
@@ -435,7 +483,7 @@ public class VariantAnnotationCalculator {
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
-        // "clinical" is deprecated, replaced with traitAssociation
+        // FIXME "clinical" is deprecated, replaced with traitAssociation
         if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
@@ -458,36 +506,36 @@ public class VariantAnnotationCalculator {
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
         }
 
-        /*
-         * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
-         */
+         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
-        startTime = System.currentTimeMillis();
-        for (int i = 0; i < normalizedVariantList.size(); i++) {
+        long startTime = System.currentTimeMillis();
+        for (Variant variant : normalizedVariantList) {
             // normalizedVariantList is the passed by reference argument - modifying normalizedVariantList will
             // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
             // object already created, let's only overwrite those fields created by the annotator
             VariantAnnotation variantAnnotation;
-            if (normalizedVariantList.get(i).getAnnotation() == null) {
+            if (variant.getAnnotation() == null) {
                 variantAnnotation = new VariantAnnotation();
-                normalizedVariantList.get(i).setAnnotation(variantAnnotation);
+                variant.setAnnotation(variantAnnotation);
             } else {
-                variantAnnotation = normalizedVariantList.get(i).getAnnotation();
+                variantAnnotation = variant.getAnnotation();
             }
 
-            variantAnnotation.setChromosome(normalizedVariantList.get(i).getChromosome());
-            variantAnnotation.setStart(normalizedVariantList.get(i).getStart());
-            variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
-            variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
+            // Set Variant info
+            variantAnnotation.setChromosome(variant.getChromosome());
+            variantAnnotation.setStart(variant.getStart());
+            variantAnnotation.setReference(variant.getReference());
+            variantAnnotation.setAlternate(variant.getAlternate());
 
-            List<Gene> variantGeneList = setGeneAnnotation(batchGeneList, normalizedVariantList.get(i));
+            // Get variant overlapping genes
+            List<Gene> affectedGenes = getAffectedGenes(batchGeneList, variant);
 
-            // Better not run hgvs calculation with a Future for the following reasons:
-            //   * geneList is needed in order to calculate the hgvs for ALL VARIANTS
+            // Better not run HGVS calculation with a Future for the following reasons:
+            //   * affectedGenes is needed in order to calculate the hgvs for ALL VARIANTS
             //   * hgvsCalculator will raise an additional database query to get the genome sequence JUST FOR INDELS
             //   * If a Future is used and a list of variants is provided to the hgvsCalculator, then the hgvsCalculator
             //   will require to raise an additional query to the database (that would be performed asynchronously)
-            //   in order to get the geneList FOR ALL VARIANTS
+            //   in order to get the affectedGenes FOR ALL VARIANTS
             //   * If no future is used, then the genome sequence query will be performed synchronously but JUST
             //   FOR INDELS
             // Given that the number of indels is expected to be negligible if compared to the number of SNVs, the
@@ -510,38 +558,37 @@ public class VariantAnnotationCalculator {
                     //     a typical user would expect for the deletion of the T (which is what it is). Thus, we don't
                     //     really care that much at this point if the hgvs is not perfectly normalized. Knowing that
                     //     variants are not normalized the user should always select normalize=true.
-                    variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), variantGeneList, false));
+                    variantAnnotation.setHgvs(hgvsCalculator.run(variant, affectedGenes, false));
                 } catch (VariantNormalizerException e) {
-                    logger.error("Unable to normalize variant {}. Leaving empty HGVS.",
-                            normalizedVariantList.get(i).toString());
+                    logger.error("Unable to normalize variant {}. Leaving empty HGVS.", variant.toString());
                 }
             }
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
-                        variantGeneList, true, QueryOptions.empty());
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true, QueryOptions.empty());
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
-                        checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                        checkAndAdjustPhasedConsequenceTypes(variant, variantBuffer);
                     }
                     variantAnnotation
-                            .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
-                                    .getAnnotation().getConsequenceTypes()));
+                            .setDisplayConsequenceType(getMostSevereConsequenceType(variant.getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
-                            + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
+                            + " Leaving an empty consequence type list.", variant);
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
-                            + " consequence type list.", normalizedVariantList.get(i).toString());
+                            + " consequence type list.", variant);
                     e.printStackTrace();
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 }
             }
 
-            variantAnnotationList.add(variantAnnotation);
+            // Get the gene annotation info
+            setGeneAnnotation(affectedGenes, variant);
 
+            variantAnnotationList.add(variantAnnotation);
         }
 
         // Adjust phase of two last variants - if still anything remaining to adjust. This can happen if the two last
@@ -576,7 +623,6 @@ public class VariantAnnotationCalculator {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
         fixedThreadPool.shutdown();
-
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());

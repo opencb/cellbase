@@ -60,6 +60,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path miRBaseFile;
     private Path miRTarBaseFile;
     private Path cancerGeneCensusFile;
+    private Path cancerHostpotFile;
     private Path canonicalFile;
     private boolean flexibleGTFParsing;
 
@@ -100,6 +101,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.getParent().resolve("regulation/miRNA.xls"),
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 geneDirectoryPath.resolve("cancer-gene-census.tsv"),
+                geneDirectoryPath.resolve("hotspots_v2.xls"),
                 geneDirectoryPath.resolve("ensembl_canonical.txt"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
@@ -112,7 +114,7 @@ public class GeneBuilder extends CellBaseBuilder {
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                        Path tfbsFile, Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
                        Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
-                       Path canonicalFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
+                       Path cancerHostpotFile, Path canonicalFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
                        boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
 
@@ -133,6 +135,7 @@ public class GeneBuilder extends CellBaseBuilder {
         this.miRBaseFile = miRBaseFile;
         this.miRTarBaseFile = miRTarBaseFile;
         this.cancerGeneCensusFile = cancerGeneCensusFile;
+        this.cancerHostpotFile = cancerHostpotFile;
         this.canonicalFile = canonicalFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
@@ -154,7 +157,7 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, canonicalFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, canonicalFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -199,7 +202,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName),
-                            indexer.getCancerGeneCensus(geneName));
+                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),

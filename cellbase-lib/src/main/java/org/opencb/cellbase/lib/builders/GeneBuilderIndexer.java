@@ -17,10 +17,15 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
+import org.opencb.biodata.models.core.CancerHotspot;
+import org.opencb.biodata.models.core.CancerHotspotVariant;
 import org.opencb.biodata.models.core.GeneCancerAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
@@ -30,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +53,7 @@ public class GeneBuilderIndexer {
     protected final String MANE_SUFFIX = "_mane";
     protected final String LRG_SUFFIX = "_lrg";
     protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
+    protected final String CANCER_HOTSPOT_SUFFIX = "_chs";
     protected final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
     protected final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
     protected final String DRUGS_SUFFIX = "_drug";
@@ -288,6 +295,105 @@ public class GeneBuilderIndexer {
     public List<GeneCancerAssociation> getCancerGeneCensus(String geneName) throws RocksDBException, IOException {
         String key = geneName + CANCER_GENE_CENSUS_SUFFIX;
         return rocksDbManager.getGeneCancerAssociation(rocksdb, key);
+    }
+
+    public void indexCancerHotspot(Path cancerHotspot) throws IOException, RocksDBException {
+        // Store all cancer hotspot (different gene and aminoacid position) for each gene in the same key
+        Map<String, List<CancerHotspot>> visited = new HashMap<>();
+        FileInputStream fileInputStream = new FileInputStream(cancerHotspot.toFile());
+        HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
+        HSSFSheet sheet = workbook.getSheetAt(0);
+        Iterator<org.apache.poi.ss.usermodel.Row> iterator = sheet.iterator();
+        iterator.next();
+        while (iterator.hasNext()) {
+            Row currentRow = iterator.next();
+            String geneName = currentRow.getCell(0).toString();
+
+            if (currentRow.getCell(1).toString().contains("splice")) {
+                continue;
+            }
+            int aminoAcidPosition = Integer.parseInt(currentRow.getCell(1).toString());
+
+            CancerHotspot ch = null;
+            // Check if ch object already exist
+            if (visited.containsKey(geneName)) {
+                for (CancerHotspot hotspot : visited.get(geneName)) {
+                    if (hotspot.getAminoacidPosition() == aminoAcidPosition) {
+                        ch = hotspot;
+                        break;
+                    }
+                }
+            }
+
+            // If not exist we create new ch
+            if (ch == null) {
+                ch = new CancerHotspot();
+                ch.setScores(new HashMap<>());
+                ch.setCancerTypeCount(new HashMap<>());
+                ch.setOrganCount(new HashMap<>());
+                ch.setVariants(new ArrayList<>());
+
+                // Parse new row
+                ch.setGeneName(geneName);
+                ch.setAminoacidPosition(aminoAcidPosition);
+                ch.getScores().put("log10Pvalue", Double.parseDouble(currentRow.getCell(2).toString()));
+                ch.setNumMutations(Integer.parseInt(currentRow.getCell(3).toString()));
+
+                String[] cancerCountSplit = currentRow.getCell(11).toString().split("\\|");
+                for (String cancerCount : cancerCountSplit) {
+                    String[] split = cancerCount.split(":");
+                    ch.getCancerTypeCount().put(split[0], Integer.parseInt(split[2]));
+                }
+
+                String[] organCountSplit = currentRow.getCell(12).toString().split("\\|");
+                for (String organCount : organCountSplit) {
+                    String[] split = organCount.split(":");
+                    ch.getOrganCount().put(split[0], Integer.parseInt(split[2]));
+                }
+
+                ch.getScores().put("mutability", Double.parseDouble(currentRow.getCell(14).toString()));
+                ch.getScores().put("muProtein", Double.parseDouble(currentRow.getCell(15).toString()));
+                ch.setAnalysis(Arrays.asList(currentRow.getCell(17).toString().split(",")));
+                ch.getScores().put("qvalue", Double.parseDouble(currentRow.getCell(18).toString()));
+                ch.getScores().put("qvaluePancan", Double.parseDouble(currentRow.getCell(20).toString()));
+                ch.setAminoacidReference(currentRow.getCell(35).toString());
+                ch.getScores().put("qvalueCancerType", Double.parseDouble(currentRow.getCell(36).toString()));
+                ch.setCancerType(currentRow.getCell(37).toString());
+
+                if (visited.containsKey(geneName)) {
+                    // Gene exists but no this aminoacid position
+                    visited.get(geneName).add(ch);
+                } else {
+                    // New gene found
+                    visited.put(geneName, new ArrayList<>(Collections.singletonList(ch)));
+                }
+            }
+
+            // Add cancer hotspot variant information
+            CancerHotspotVariant cancerHotspotVariant = new CancerHotspotVariant();
+            cancerHotspotVariant.setSampleCount(new HashMap<>());
+
+            String[] alternateCountSplit = currentRow.getCell(8).toString().split(":");
+            cancerHotspotVariant.setAminoacidAlternate(alternateCountSplit[0]);
+            cancerHotspotVariant.setCount(Integer.parseInt(alternateCountSplit[1]));
+
+            String[] sampleSplit = currentRow.getCell(38).toString().split("\\|");
+            for (String sampleCount : sampleSplit) {
+                String[] sampleCountSplit = sampleCount.split(":");
+                cancerHotspotVariant.getSampleCount().put(sampleCountSplit[0], Integer.parseInt(sampleCountSplit[1]));
+            }
+            ch.getVariants().add(cancerHotspotVariant);
+        }
+        fileInputStream.close();
+
+        for (String geneName : visited.keySet()) {
+            rocksDbManager.update(rocksdb, geneName + CANCER_HOTSPOT_SUFFIX, visited.get(geneName));
+        }
+    }
+
+    public List<CancerHotspot> getCancerHotspot(String geneName) throws RocksDBException, IOException {
+        String key = geneName + CANCER_HOTSPOT_SUFFIX;
+        return rocksDbManager.getCancerHotspot(rocksdb, key);
     }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
