@@ -1,3 +1,4 @@
+
 import requests
 import json
 import yaml
@@ -142,3 +143,4 @@ def _check_host(host):
             return False
     except requests.ConnectionError:
         return False
+

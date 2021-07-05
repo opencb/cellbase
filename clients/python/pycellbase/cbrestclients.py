@@ -1,6 +1,7 @@
 import sys
+import subprocess
 
-from pycellbase.commons import get, deprecated
+from pycellbase.commons import get, deprecated, wrapper
 
 
 class _ParentRestClient(object):
@@ -10,7 +11,12 @@ class _ParentRestClient(object):
         self._configuration = configuration
         self._subcategory = subcategory
         self._category = category
+        retries = 5
 
+        # decorates the REST verbs with retries
+        self._get = wrapper(self._get, retries)
+        self._post = wrapper(self._post, retries)
+        
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
         response = get(session=self._session,
