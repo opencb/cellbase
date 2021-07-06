@@ -1,6 +1,8 @@
+import logging
 import sys
 import time
 import warnings
+from functools import wraps
 import requests
 import threading
 import itertools
@@ -265,3 +267,42 @@ def deprecated(func):
         warnings.simplefilter('default', DeprecationWarning)  # reset filter
         return func(*args, **kwargs)
     return new_func
+
+def retry(exception_type, total_tries=2, wait_period=2, backoff=2):
+    """
+    Definition of a spicy little decorator-wrapper class
+    This will wrap methods (e.g. samtools reads), catching only specific error types, and replaying the command
+    This uses exponential backoff-retrier logical timing, and a set number of retries/adjustable wait period
+    """
+
+    def retry_decorator(f):
+        @wraps(f)
+        def func_with_retries(*args, **kwargs):
+            _tries, _delay = total_tries + 1, wait_period
+            while _tries > 1:
+
+                try:
+                    return f(*args, **kwargs)
+                except exception_type as e:
+                    _tries -= 1
+                    if _tries == 1:
+                        logging.error(
+                            "Attempted command {} times, without success".format(
+                                total_tries
+                            ),
+                            exc_info=True,
+                        )
+                        raise
+
+                    logging.warning(
+                        "Timeout detected, retrying in {} seconds. Args {}, Kwargs {}".format(
+                            _delay, args, kwargs
+                        )
+                    )
+                    time.sleep(_delay)
+                    # for each failure, extend the wait
+                    _delay *= backoff
+
+        return func_with_retries
+
+    return retry_decorator
