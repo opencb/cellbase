@@ -914,7 +914,7 @@ public class HgvsProteinCalculator {
         int stopIndex = -1;
         String stopAlternateAa = "";
         int originalStopIndex = -1;
-        String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
+
         // We ned to include the STOP codon in the loop to check if there is a variant braking the STOP codon
         while (codonIndex + 3 <= alternateCdnaSeq.length()) {
             // Build the new amino acid sequence
