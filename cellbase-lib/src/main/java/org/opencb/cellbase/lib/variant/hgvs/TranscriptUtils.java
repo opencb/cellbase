@@ -129,8 +129,13 @@ public class TranscriptUtils {
             // Adjust for manipulating strings, set to be zero base
             cdnaCodonStart = cdnaCodonStart - 1;
 
-            int cdnaCodonEnd = Math.min(cdnaCodonStart + 3, transcript.getCdnaCodingEnd());
-            return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
+            // See ac289d2fcd10c8a0af3163b0fca6ffc149ba915a
+            // Can't use transcript.getCdnaCodingEnd() for the test as sometimes this is shorter than cdnaCodonStart + 3, e.g. when the
+            // variant is the penultimate variant in the sequence
+            int cdnaCodonEnd = cdnaCodonStart + 3;
+            if (cdnaCodonStart >= 0 && transcript.getCdnaSequence().length() >= cdnaCodonEnd) {
+                return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
+            }
         }
         return "";
     }
