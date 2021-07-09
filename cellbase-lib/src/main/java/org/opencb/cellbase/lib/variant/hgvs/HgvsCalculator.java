@@ -51,6 +51,7 @@ public class HgvsCalculator {
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeManager genomeManager;
     protected BuildingComponents buildingComponents;
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
     public HgvsCalculator(GenomeManager genomeManager) {
         this.genomeManager = genomeManager;
@@ -121,29 +122,20 @@ public class HgvsCalculator {
         return hgvsStrings;
     }
 
-//    private HgvsCalculator getHgvsCalculator(Variant normalizedVariant) {
-////        switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
-//        switch (normalizedVariant.getType()) {
-//            case SNV:
-//                return new HgvsSNVCalculator(genomeManager);
-//            case INSERTION:
-//            case DELETION:
-//            case INDEL:
-//                if (StringUtils.isBlank(normalizedVariant.getReference())) {
-//                    return new HgvsInsertionCalculator(genomeManager);
-//                } else if (StringUtils.isBlank(normalizedVariant.getAlternate())) {
-//                    return new HgvsDeletionCalculator(genomeManager);
-//                } else {
-//                    logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
-//                            + "identifiers.");
-//                    return null;
-//                }
-//            default:
-//                 logger.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
-//                        + "  of HGVS identifiers.", normalizedVariant.getType());
-//                return null;
-//        }
-//    }
+    /**
+     * Checks whether a variant is valid.
+     *
+     * @param variant Variant object to be checked.
+     * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
+     * reference/alternate attributes being strings of [A,C,G,T] of length >= 0 is performed to detect cases such as
+     * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Ref and alt alleles must be different
+     * as well for the variant to be valid. Functionality of the method may be improved in the future.
+     */
+    protected static boolean isValid(Variant variant) {
+        return (variant.getReference().matches(VARIANT_STRING_PATTERN)
+                && variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                && !variant.getAlternate().equals(variant.getReference()));
+    }
 
     protected Variant normalize(Variant variant, boolean normalize) {
         Variant normalizedVariant;
