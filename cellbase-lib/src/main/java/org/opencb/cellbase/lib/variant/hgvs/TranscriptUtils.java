@@ -130,8 +130,9 @@ public class TranscriptUtils {
             cdnaCodonStart = cdnaCodonStart - 1;
 
             // See ac289d2fcd10c8a0af3163b0fca6ffc149ba915a
-            // Can't use transcript.getCdnaCodingEnd() for the test as sometimes this is shorter than cdnaCodonStart + 3, e.g. when the
-            // variant is the penultimate variant in the sequence
+            // Use cdnaCodonStart + 3, not transcript.getCdnaCodingEnd()
+            // if the variant is the penultimate NT in the sequence, then transcript.cdnaCodingEnd can be too short and product a codon
+            // of size = 2, generating an exception. 
             int cdnaCodonEnd = cdnaCodonStart + 3;
             if (cdnaCodonStart >= 0 && transcript.getCdnaSequence().length() >= cdnaCodonEnd) {
                 return transcript.getCdnaSequence().substring(cdnaCodonStart, cdnaCodonEnd);
