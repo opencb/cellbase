@@ -155,6 +155,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.OBO_DATA:
                             parser = buildObo();
                             break;
+                        case EtlCommons.SPLICE_DATA:
+                            parser = buildSplice();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -370,5 +373,13 @@ public class BuildCommandExecutor extends CommandExecutor {
             e.printStackTrace();
         }
         return fastaFile;
+    }
+
+    private CellBaseBuilder buildSplice() {
+        Path genePath = buildFolder.resolve("gene.json.gz");
+        Path genomeInfoPath = buildFolder.resolve("genome_info.json");
+        Path fastaPath = getFastaReferenceGenome();
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "splice");
+        return new SpliceBuilder(genePath, genomeInfoPath, fastaPath, serializer);
     }
 }
