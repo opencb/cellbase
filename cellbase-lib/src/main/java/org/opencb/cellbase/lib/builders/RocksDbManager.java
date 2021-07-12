@@ -142,6 +142,14 @@ public class RocksDbManager {
         return Collections.singletonList(mapper.readValue(dbContent, GeneCancerAssociation.class));
     }
 
+    public List<CancerHotspot> getCancerHotspot(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, CancerHotspot[].class));
+    }
+
     /**
      * Add an entry to specified rocksdb. Overwrites any existing entry.
      *

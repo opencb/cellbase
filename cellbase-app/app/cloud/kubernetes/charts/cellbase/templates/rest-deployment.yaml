@@ -57,14 +57,14 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 20
             httpGet:
-              path: /cellbase/webservices/rest/v5/meta/about
+              path: /cellbase/webservices/rest/v5/meta/health
               port: 9090
           livenessProbe:
             initialDelaySeconds: 15
             periodSeconds: 20
             timeoutSeconds: 20
             httpGet:
-              path: /cellbase/webservices/rest/v5/meta/about
+              path: /cellbase/webservices/rest/v5/meta/health
               port: 9090
           resources:
             {{- toYaml .Values.rest.resources | nindent 12 }}

@@ -66,7 +66,7 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
     @Override
     public Response toResponse(Exception e) {
         // First we print the exception in Server logs
-        e.printStackTrace();
+        logger.error("Catch error: " + e.getMessage(), e);
 
         // Now we prepare the response to client
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();

@@ -83,7 +83,7 @@ public class GenericRestWSServer implements IWSServer {
      */
     protected static CellBaseConfiguration cellBaseConfiguration;
     protected static CellBaseManagerFactory cellBaseManagerFactory;
-    protected org.opencb.cellbase.lib.monitor.Monitor monitor;
+    protected static org.opencb.cellbase.lib.monitor.Monitor monitor;
     private static final String ERROR = "error";
     private static final String OK = "ok";
     // this webservice has no species, do not validate
@@ -255,7 +255,7 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createErrorResponse(Exception e) {
         // First we print the exception in Server logs
-        e.printStackTrace();
+        logger.error("Catch error: " + e.getMessage(), e);
 
         // Now we prepare the response to client
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
