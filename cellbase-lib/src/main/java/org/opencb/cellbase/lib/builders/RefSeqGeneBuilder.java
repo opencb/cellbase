@@ -39,6 +39,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
     private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile, cancerGeneCensus, cancerHotspot;
+    private Path tso500File, eglhHaemOncFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private final String status = "KNOWN";
@@ -75,6 +76,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
         cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
         cancerHotspot = geneDirectoryPath.resolve("hotspots_v2.xls");
+        tso500File = geneDirectoryPath.resolve("TSO500_transcripts.txt");
+        eglhHaemOncFile = geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt");
         miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
     }
 
@@ -117,14 +120,14 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     public void parse() throws Exception {
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
-        if (fastaFile != null) {
-            fastaIndex = new FastaIndex(fastaFile);
-        }
+//        if (fastaFile != null) {
+//            fastaIndex = new FastaIndex(fastaFile);
+//        }
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
-                cancerGeneCensus, cancerHotspot);
+                cancerGeneCensus, cancerHotspot, tso500File, eglhHaemOncFile);
 
         logger.info("Parsing RefSeq gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
@@ -579,6 +582,17 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         String lrg = indexer.getLrg(transcriptId, "refseq");
         if (StringUtils.isNotEmpty(lrg)) {
             transcript.getFlags().add("LRG");
+        }
+        // 3. TSO500 and EGLH HaemOnc
+        String tso500Flag = indexer.getTSO500(transcriptId.split("\\.")[0]);
+        if (StringUtils.isNotEmpty(tso500Flag)) {
+            System.out.println("tso500Flag = " + tso500Flag);
+            transcript.getFlags().add(tso500Flag);
+        }
+        String eglhHaemOncFlag = indexer.getEGLHHaemOnc(transcriptId.split("\\.")[0]);
+        if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+            System.out.println("eglhHaemOncFlag = " + eglhHaemOncFlag);
+            transcript.getFlags().add(eglhHaemOncFlag);
         }
 
         gene.getTranscripts().add(transcript);

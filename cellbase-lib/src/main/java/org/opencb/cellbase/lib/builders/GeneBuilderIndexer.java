@@ -59,6 +59,8 @@ public class GeneBuilderIndexer {
     protected final String DRUGS_SUFFIX = "_drug";
     protected final String DISEASE_SUFFIX = "_disease";
     protected final String MIRTARBASE_SUFFIX = "_mirtarbase";
+    protected final String TSO500_SUFFIX = "_tso500";
+    protected final String EGLH_HAEMONC_SUFFIX = "_eglh_haemonc";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -394,6 +396,74 @@ public class GeneBuilderIndexer {
     public List<CancerHotspot> getCancerHotspot(String geneName) throws RocksDBException, IOException {
         String key = geneName + CANCER_HOTSPOT_SUFFIX;
         return rocksDbManager.getCancerHotspot(rocksdb, key);
+    }
+
+
+    protected void indexTSO500(Path tso500Path) throws IOException, RocksDBException {
+        // Gene Ref Seq
+        // FAS  NM_000043
+        // AR   NM_000044
+        logger.info("Indexing TSO500 data ...");
+
+        if (tso500Path != null && Files.exists(tso500Path) && Files.size(tso500Path) > 0) {
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(tso500Path)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    if (!line.startsWith("#")) {
+                        String[] fields = line.split("\t", -1);
+                        if (fields.length == 2) {
+                            rocksDbManager.update(rocksdb, fields[1] + TSO500_SUFFIX, "TSO500");
+                        }
+                    }
+                    line = bufferedReader.readLine();
+                }
+            }
+        } else {
+            logger.warn("Ensembl TSO500 mapping file " + tso500Path + " not found");
+        }
+    }
+
+    public String getTSO500(String transcriptId) throws RocksDBException {
+        String key = transcriptId + TSO500_SUFFIX;
+        byte[] bytes = rocksdb.get(key.getBytes());
+        if (bytes == null) {
+            return null;
+        }
+        return new String(bytes);
+    }
+
+
+    protected void indexEGLHHaemOnc(Path eglhHaemOncPath) throws IOException, RocksDBException {
+        // Gene Ref Seq
+        // GNB1   NM_002074.4
+        // CSF3R  NM_000760.3
+        logger.info("Indexing EGLH HaemOnc data ...");
+
+        if (eglhHaemOncPath != null && Files.exists(eglhHaemOncPath) && Files.size(eglhHaemOncPath) > 0) {
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(eglhHaemOncPath)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    if (!line.startsWith("#")) {
+                        String[] fields = line.split("\t", -1);
+                        if (fields.length == 2) {
+                            rocksDbManager.update(rocksdb, fields[1].split("\\.")[0] + EGLH_HAEMONC_SUFFIX, "EGLH_HaemOnc");
+                        }
+                    }
+                    line = bufferedReader.readLine();
+                }
+            }
+        } else {
+            logger.warn("Ensembl EGLH HaemOnc mapping file " + eglhHaemOncPath + " not found");
+        }
+    }
+
+    public String getEGLHHaemOnc(String transcriptId) throws RocksDBException {
+        String key = transcriptId + EGLH_HAEMONC_SUFFIX;
+        byte[] bytes = rocksdb.get(key.getBytes());
+        if (bytes == null) {
+            return null;
+        }
+        return new String(bytes);
     }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
