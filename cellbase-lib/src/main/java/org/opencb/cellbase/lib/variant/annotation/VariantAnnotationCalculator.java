@@ -816,8 +816,14 @@ public class VariantAnnotationCalculator {
                     if (consequenceType3 != null) {
                         String referenceCodon = consequenceType1.getCodon().split("/")[0].toUpperCase();
                         // WARNING: assumes variants are sorted according to their coordinates
-                        String alternateCodon = variant0.getAlternate() + variant1.getAlternate()
-                                + variant2.getAlternate();
+                        String alternateCodon = null;
+                        if ("-".equals(variant0.getStrand())) {
+                            alternateCodon = "" + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate())
+                                    + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate())
+                                    + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate());
+                        } else {
+                            alternateCodon = variant0.getAlternate() + variant1.getAlternate() + variant2.getAlternate();
+                        }
                         codon = referenceCodon + "/" + alternateCodon;
                         alternateAA = VariantAnnotationUtils.CODON_TO_A.get(alternateCodon);
                         soTerms = updatePhasedSoTerms(consequenceType1.getSequenceOntologyTerms(),
@@ -849,8 +855,16 @@ public class VariantAnnotationCalculator {
                         referenceCodonArray[codonIdx1] = Character.toUpperCase(referenceCodonArray[codonIdx1]);
                         referenceCodonArray[codonIdx2] = Character.toUpperCase(referenceCodonArray[codonIdx2]);
                         char[] alternateCodonArray = referenceCodonArray.clone();
-                        alternateCodonArray[codonIdx1] = variant0.getAlternate().toUpperCase().toCharArray()[0];
-                        alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
+                        // negative strand
+                        if ("-".equals(variant0.getStrand())) {
+                            alternateCodonArray[codonIdx1] =
+                                    VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
+                            alternateCodonArray[codonIdx2] =
+                                    VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0]);
+                        } else {
+                            alternateCodonArray[codonIdx1] = variant0.getAlternate().toUpperCase().toCharArray()[0];
+                            alternateCodonArray[codonIdx2] = variant1.getAlternate().toUpperCase().toCharArray()[0];
+                        }
 
                         codon = String.valueOf(referenceCodonArray) + "/" + String.valueOf(alternateCodonArray);
                         alternateAA = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(alternateCodonArray).toUpperCase());
@@ -1134,8 +1148,8 @@ public class VariantAnnotationCalculator {
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
             List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
-                "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence", "transcripts.proteinSequence",
-                "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
+                "transcripts.proteinId", "transcripts.chromosome", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence",
+                "transcripts.proteinSequence", "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
                 "transcripts.exons.cdsEnd", "transcripts.exons.sequence", "transcripts.exons.phase",
@@ -1695,103 +1709,20 @@ public class VariantAnnotationCalculator {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
                     if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
-                        variantAnnotationList.get(i)
-                                .setTraitAssociation(clinicalCellBaseDataResult.getResults().get(0).getAnnotation()
-                                        .getTraitAssociation());
-//                        // DEPRECATED
-//                        // TODO: remove in 4.6
-//                        variantAnnotationList.get(i)
-//                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalCellBaseDataResult
-//                                        .getResults()
-//                                        .get(0)
-//                                        .getAnnotation()
-//                                        .getTraitAssociation()));
+                        variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalCellBaseDataResult));
                     }
                 }
             }
         }
 
-//        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
-//            List<ClinVar> clinvarList = new ArrayList<>();
-//            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
-//            for (EvidenceEntry evidenceEntry : traitAssociation) {
-//                switch (evidenceEntry.getSource().getName()) {
-//                    case CLINVAR:
-//                        clinvarList.add(parseClinvar(evidenceEntry));
-//                        break;
-//                    case COSMIC:
-//                        cosmicList.add(parseCosmic(evidenceEntry));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//            }
-//            return new VariantTraitAssociation(clinvarList, null, cosmicList);
-//        }
 
-//        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
-//            String primarySite = null;
-//            String siteSubtype = null;
-//            String primaryHistology = null;
-//            String histologySubtype = null;
-//            String sampleSource = null;
-//            String tumourOrigin = null;
-//            if (evidenceEntry.getSomaticInformation() != null) {
-//                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
-//                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
-//                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
-//                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
-//                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
-//                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
-//            }
-//            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
-//                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
-//                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
-//        }
-
-//        private String parseGeneName(EvidenceEntry evidenceEntry) {
-//            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
-//                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
-//                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
-//                // is expected to be found at index 0.
-//                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
-//            }
-//            return null;
-//        }
-
-//        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
-//            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
-//            List<String> traitList = null;
-//            if (evidenceEntry.getHeritableTraits() != null) {
-//                traitList = evidenceEntry
-//                        .getHeritableTraits()
-//                        .stream()
-//                        .map((heritableTrait) -> heritableTrait.getTrait())
-//                        .collect(Collectors.toList());
-//            }
-//            List<String> geneNameList = null;
-//            if (evidenceEntry.getGenomicFeatures() != null) {
-//                geneNameList = evidenceEntry
-//                        .getGenomicFeatures()
-//                        .stream()
-//                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
-//                        .collect(Collectors.toList());
-//            }
-//            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
-//            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
-//                    reviewStatus);
-//        }
-
-//        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
-//            if (evidenceEntry.getAdditionalProperties() != null) {
-//                for (Property property : evidenceEntry.getAdditionalProperties()) {
-//                    if (name.equals(property.getName())) {
-//                        return property.getValue();
-//                    }
-//                }
-//            }
-//            return null;
-//        }
+        private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
+            List<EvidenceEntry> traitAssociations = new ArrayList<>();
+            for (Variant variant: clinicalQueryResult.getResults()) {
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+            }
+            return traitAssociations;
+        }
     }
 
     class FutureRepeatsAnnotator implements Callable<List<CellBaseDataResult<Repeat>>> {
