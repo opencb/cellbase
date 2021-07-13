@@ -6,6 +6,8 @@ metadata:
     app: {{  .Values.worker.name  }}
 spec:
   replicas: {{ .Values.worker.replicaCount }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: {{  .Values.worker.name  }}

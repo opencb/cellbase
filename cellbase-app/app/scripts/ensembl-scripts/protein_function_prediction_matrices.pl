@@ -19,6 +19,8 @@ my $help = '0';
 ## Parsing command line options ####################################
 ####################################################################
 # USAGE: ./protein_function_prediction.pl --outdir ../../appl_db/ird_v1/hsa ...
+# Docker: docker run -it --mount type=bind,source=/home/imedina/cellbase/v5/homo_sapiens_grch38/,target=/output
+#           opencb/cellbase-builder:5.0.0-SNAPSHOT /opt/cellbase/protein_function_prediction_matrices.pl --chrom all --outdir /output
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly,  'chrom|chromosome=s' => \$chrom, 'outdir=s' => \$outdir,

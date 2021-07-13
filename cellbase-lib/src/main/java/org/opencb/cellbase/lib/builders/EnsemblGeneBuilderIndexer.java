@@ -55,24 +55,26 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
     public void index(Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
-                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile)
+                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile, Path tso500File, Path eglhHaemOncFile)
             throws IOException, RocksDBException, FileFormatException {
-//        indexDescriptions(geneDescriptionFile);
-//        indexXrefs(xrefsFile, uniprotIdMappingFile);
-//        indexManeMapping(maneFile, "ensembl");
-//        indexLrgMapping(lrgFile, "ensembl");
-//        indexProteinSequences(proteinFastaFile);
-//        indexCdnaSequences(cDnaFastaFile);
-//        indexExpression(species, geneExpressionFile);
-//        indexDrugs(geneDrugFile);
-//        indexDiseases(hpoFile, disgenetFile);
-//        indexConstraints(gnomadFile);
-//        indexOntologyAnnotations(geneOntologyAnnotationFile);
-//        indexMiRBase(miRBaseFile);
-//        indexMiRTarBase(miRTarBaseFile);
+        indexDescriptions(geneDescriptionFile);
+        indexXrefs(xrefsFile, uniprotIdMappingFile);
+        indexManeMapping(maneFile, "ensembl");
+        indexLrgMapping(lrgFile, "ensembl");
+        indexProteinSequences(proteinFastaFile);
+        indexCdnaSequences(cDnaFastaFile);
+        indexExpression(species, geneExpressionFile);
+        indexDrugs(geneDrugFile);
+        indexDiseases(hpoFile, disgenetFile);
+        indexConstraints(gnomadFile);
+        indexOntologyAnnotations(geneOntologyAnnotationFile);
+        indexMiRBase(miRBaseFile);
+        indexMiRTarBase(miRTarBaseFile);
         indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
+        indexTSO500(tso500File);
+        indexEGLHHaemOnc(eglhHaemOncFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

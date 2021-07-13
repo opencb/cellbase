@@ -61,7 +61,9 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path miRTarBaseFile;
     private Path cancerGeneCensusFile;
     private Path cancerHostpotFile;
-    private Path canonicalFile;
+    private Path ensemblCanonicalFile;
+    private Path tso500File;
+    private Path eglhHaemOncFile;
     private boolean flexibleGTFParsing;
 
     // source for genes is either ensembl or refseq
@@ -103,6 +105,8 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("cancer-gene-census.tsv"),
                 geneDirectoryPath.resolve("hotspots_v2.xls"),
                 geneDirectoryPath.resolve("ensembl_canonical.txt"),
+                geneDirectoryPath.resolve("TSO500_transcripts.txt"),
+                geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
 
@@ -114,8 +118,9 @@ public class GeneBuilder extends CellBaseBuilder {
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                        Path tfbsFile, Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
                        Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
-                       Path cancerHostpotFile, Path canonicalFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
-                       boolean flexibleGTFParsing, CellBaseSerializer serializer) {
+                       Path cancerHostpotFile, Path ensemblCanonicalFile, Path tso500File, Path eglhHaemOncFile,
+                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseSerializer serializer) {
         super(serializer);
 
         this.gtfFile = gtfFile;
@@ -136,7 +141,9 @@ public class GeneBuilder extends CellBaseBuilder {
         this.miRTarBaseFile = miRTarBaseFile;
         this.cancerGeneCensusFile = cancerGeneCensusFile;
         this.cancerHostpotFile = cancerHostpotFile;
-        this.canonicalFile = canonicalFile;
+        this.ensemblCanonicalFile = ensemblCanonicalFile;
+        this.tso500File = tso500File;
+        this.eglhHaemOncFile = eglhHaemOncFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -157,7 +164,8 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, canonicalFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
+                    tso500File, eglhHaemOncFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -433,6 +441,22 @@ public class GeneBuilder extends CellBaseBuilder {
         String canonicalFlag = indexer.getCanonical(transcriptIdWithVersion);
         if (StringUtils.isNotEmpty(canonicalFlag)) {
             transcript.getFlags().add(canonicalFlag);
+        }
+
+        // 6. TSO500 and EGLH HaemOnc
+        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
+        if (StringUtils.isNotEmpty(maneRefSeq)) {
+            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
+            if (StringUtils.isNotEmpty(tso500Flag)) {
+                System.out.println("tso500Flag = " + tso500Flag);
+                transcript.getFlags().add(tso500Flag);
+            }
+
+            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
+            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+                System.out.println("eglhHaemOncFlag = " + eglhHaemOncFlag);
+                transcript.getFlags().add(eglhHaemOncFlag);
+            }
         }
 
         gene.getTranscripts().add(transcript);
