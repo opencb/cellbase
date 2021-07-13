@@ -151,10 +151,19 @@
                                     <arg value="${build.dir}"/>
                                 </exec>
 
-                                <echo>Copying to ${build.dir}/clients</echo>
+                                <echo>Copying Python and R to ${build.dir}/clients</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/../cellbase-client/src/main/python"/>
+                                    <arg value="${build.dir}/clients"/>
+                                </exec>
+                                <exec executable="sed">
+                                    <arg value="-i"/>
+                                    <arg value="s/PYCELLBASE_VERSION/${cellbase.version}/"/>
+                                    <arg value="${build.dir}/clients/python/setup.py"/>
+                                </exec>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
                                     <arg value="${project.basedir}/../cellbase-client/src/main/R"/>
                                     <arg value="${build.dir}/clients"/>
                                 </exec>
