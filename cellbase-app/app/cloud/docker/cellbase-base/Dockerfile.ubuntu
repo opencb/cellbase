@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM ubuntu:20.04
 
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.name="cellbase-base" \
@@ -10,10 +10,9 @@ LABEL org.label-schema.vendor="OpenCB" \
 ENV CELLBASE_USER cellbase
 ENV CELLBASE_HOME /opt/cellbase/
 
-RUN apk update && apk upgrade && apk add ca-certificates openssl wget bash \
-    && update-ca-certificates \
-    && addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER -u 1001
-
+RUN apt-get update && apt-get install -y openjdk-8-jre wget htop vim \
+    && adduser --uid 1001 $CELLBASE_USER
+#&& addgroup --gid 1001 $CELLBASE_USER &&
 USER $CELLBASE_USER
 
 VOLUME /opt/cellbase/conf

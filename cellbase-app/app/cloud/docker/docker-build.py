@@ -12,7 +12,7 @@ from pathlib import Path
 ## Configure command-line options
 parser = argparse.ArgumentParser()
 parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
-parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python,builder", default="base,rest,python")
+parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python,builder", default="base,rest")
 parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
 parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
 parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
@@ -64,9 +64,9 @@ def build():
         print()
         print(shell_colors['blue'] + "Building opencb/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
         if image == "base":
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
+            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile.ubuntu " + build_folder)
         else:
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile --build-arg TAG=" + tag + " " + build_folder)
+            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile.ubuntu --build-arg TAG=" + tag + " " + build_folder)
 
 
 def tag_latest(image):
@@ -139,7 +139,8 @@ if not os.path.isdir(build_folder):
 
 # 4. init images: get a list with all images
 if args.images is None:
-    images = ["base", "rest", "python"]
+    # TODO think about "python"
+    images = ["base", "rest"]
 else:
     images = args.images.split(",")
 
