@@ -528,10 +528,15 @@ public class GeneBuilder extends CellBaseBuilder {
         if (transcript.getXrefs() == null) {
             transcript.setXrefs(new ArrayList<>());
         }
+
         transcript.getXrefs().add(new Xref(gene.getId(), "ensembl_gene", "Ensembl Gene"));
-        transcript.getXrefs().add(new Xref(gene.getName(), "hgnc_symbol", "HGNC Symbol"));
         transcript.getXrefs().add(new Xref(transcript.getId(), "ensembl_transcript", "Ensembl Transcript"));
-        transcript.getXrefs().add(new Xref(transcript.getName(), "ensembl_transcript_name", "Ensembl Transcript Name"));
+
+        // Some non-coding genes do not have Gene names
+        if (StringUtils.isNotEmpty(gene.getName())) {
+            transcript.getXrefs().add(new Xref(gene.getName(), "hgnc_symbol", "HGNC Symbol"));
+            transcript.getXrefs().add(new Xref(transcript.getName(), "ensembl_transcript_name", "Ensembl Transcript Name"));
+        }
 
         if (gtfAttributes.get("ccds_id") != null) {
             transcript.getXrefs().add(new Xref(gtfAttributes.get("ccds_id"), "ccds_id", "CCDS"));
