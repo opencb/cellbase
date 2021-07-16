@@ -55,6 +55,7 @@ public class HgvsProteinCalculator {
     protected BuildingComponents buildingComponents = null;
 
     public static final int MAX_NUMBER_AMINOACIDS_DISPLAYED = 20;
+    private static final Integer MAXIMUM_HGVS_DELETION_LENGTH = 1000;
 
     /**
      * Constructor.
@@ -74,6 +75,10 @@ public class HgvsProteinCalculator {
      * @return HGVSp string for variant and transcript
      */
     public HgvsProtein calculate() {
+        if (!HgvsCalculator.isValid(this.variant)) {
+            return null;
+        }
+
         // FIXME  restore !onlySpansCodingSequence(variant, transcript) check
         if (!transcriptUtils.isCoding() || StringUtils.isEmpty(transcript.getProteinSequence())) {
             return null;
@@ -91,7 +96,12 @@ public class HgvsProteinCalculator {
                 } else {
                     // deletion
                     if (StringUtils.isBlank(variant.getAlternate())) {
-                        return calculateDeletionHgvs();
+                        // Only for deletions shorter than a threshold
+                        if (variant.getLength() < MAXIMUM_HGVS_DELETION_LENGTH) {
+                            return calculateDeletionHgvs();
+                        } else {
+                            return null;
+                        }
                     } else {
                         logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS identifiers.");
                         return null;
@@ -252,6 +262,11 @@ public class HgvsProteinCalculator {
 
         int codonPosition = transcriptUtils.getCodonPosition(cdsVariantStartPosition);
         int positionAtCodon = transcriptUtils.getPositionAtCodon(cdsVariantStartPosition);
+
+        // No prediction to be made if the variant falls on the first codon and this codon is incomplete
+        if (positionAtCodon == 0) {
+            return null;
+        }
 
         // Check if this is an in an insertion, duplication or frameshift.
         // Alternate length for Insertions and Duplications must be multiple of 3, otherwise it is a frameshift.
@@ -857,28 +872,49 @@ public class HgvsProteinCalculator {
         }
 
         String hgvsString;
-
         int phaseOffset = 0;
         int currentAaIndex = 0;
+
         StringBuilder alternateProteinSeq = new StringBuilder();
+        String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
+        if (alternateCdnaSeq == null) {
+            return null;
+        }
+        int codonIndex = transcript.getCdnaCodingStart() + phaseOffset  - 1;
         if (transcriptUtils.hasUnconfirmedStart()) {
             phaseOffset = transcriptUtils.getFirstCodonPhase();
+
+            codonIndex += phaseOffset;
 
             // if reference protein sequence start with X, prepend X to our new alternate sequence also
             if (transcript.getProteinSequence().startsWith(HgvsCalculator.UNKNOWN_AMINOACID)) {
                 alternateProteinSeq.append("X");
                 currentAaIndex++;
             }
+        } else if (transcript.getProteinSequence().startsWith("M") && !"ATG".equals(alternateCdnaSeq.substring(transcript.getCdnaCodingStart(), 3))) {
+
+               /*
+            First codon is NOT ATG but protein sequence starts with M. This is due to Ensembl curation. From Ensembl:
+            "We have some information about non-ATG start codons in our blog post from release 102:
+            https://www.ensembl.info/2020/11/30/ensembl-102-has-been-released/
+            Quite simply, there is not a rule. This is a situation of exceptional biology which we are only able to annotate correctly
+            because of our expert manual gene annotators analysing the data in detail."
+            Only relevant for frameshifts, and transcripts with confirmed starts.
+            */
+            // fast forward past first
+            alternateProteinSeq.append("M");
+            currentAaIndex++;
+            codonIndex += 3;
         }
 
-        int codonIndex = transcript.getCdnaCodingStart() + phaseOffset  - 1;
+
         int firstDiffIndex = -1;
         String firstReferencedAa = "";
         String firstAlternateAa = "";
         int stopIndex = -1;
         String stopAlternateAa = "";
         int originalStopIndex = -1;
-        String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
+
         // We ned to include the STOP codon in the loop to check if there is a variant braking the STOP codon
         while (codonIndex + 3 <= alternateCdnaSeq.length()) {
             // Build the new amino acid sequence
