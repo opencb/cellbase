@@ -60,7 +60,10 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path miRBaseFile;
     private Path miRTarBaseFile;
     private Path cancerGeneCensusFile;
-    private Path canonicalFile;
+    private Path cancerHostpotFile;
+    private Path ensemblCanonicalFile;
+    private Path tso500File;
+    private Path eglhHaemOncFile;
     private boolean flexibleGTFParsing;
 
     // source for genes is either ensembl or refseq
@@ -100,7 +103,10 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.getParent().resolve("regulation/miRNA.xls"),
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 geneDirectoryPath.resolve("cancer-gene-census.tsv"),
+                geneDirectoryPath.resolve("hotspots_v2.xls"),
                 geneDirectoryPath.resolve("ensembl_canonical.txt"),
+                geneDirectoryPath.resolve("TSO500_transcripts.txt"),
+                geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
 
@@ -112,8 +118,9 @@ public class GeneBuilder extends CellBaseBuilder {
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                        Path tfbsFile, Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
                        Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
-                       Path canonicalFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
-                       boolean flexibleGTFParsing, CellBaseSerializer serializer) {
+                       Path cancerHostpotFile, Path ensemblCanonicalFile, Path tso500File, Path eglhHaemOncFile,
+                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseSerializer serializer) {
         super(serializer);
 
         this.gtfFile = gtfFile;
@@ -133,7 +140,10 @@ public class GeneBuilder extends CellBaseBuilder {
         this.miRBaseFile = miRBaseFile;
         this.miRTarBaseFile = miRTarBaseFile;
         this.cancerGeneCensusFile = cancerGeneCensusFile;
-        this.canonicalFile = canonicalFile;
+        this.cancerHostpotFile = cancerHostpotFile;
+        this.ensemblCanonicalFile = ensemblCanonicalFile;
+        this.tso500File = tso500File;
+        this.eglhHaemOncFile = eglhHaemOncFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -154,7 +164,8 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, canonicalFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
+                    tso500File, eglhHaemOncFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -199,7 +210,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName),
-                            indexer.getCancerGeneCensus(geneName));
+                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),
@@ -432,6 +443,22 @@ public class GeneBuilder extends CellBaseBuilder {
             transcript.getFlags().add(canonicalFlag);
         }
 
+        // 6. TSO500 and EGLH HaemOnc
+        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
+        if (StringUtils.isNotEmpty(maneRefSeq)) {
+            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
+            if (StringUtils.isNotEmpty(tso500Flag)) {
+                System.out.println("tso500Flag = " + tso500Flag);
+                transcript.getFlags().add(tso500Flag);
+            }
+
+            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
+            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+                System.out.println("eglhHaemOncFlag = " + eglhHaemOncFlag);
+                transcript.getFlags().add(eglhHaemOncFlag);
+            }
+        }
+
         gene.getTranscripts().add(transcript);
 
         // Do not change order!! size()-1 is the index of the transcript ID
@@ -501,10 +528,15 @@ public class GeneBuilder extends CellBaseBuilder {
         if (transcript.getXrefs() == null) {
             transcript.setXrefs(new ArrayList<>());
         }
+
         transcript.getXrefs().add(new Xref(gene.getId(), "ensembl_gene", "Ensembl Gene"));
-        transcript.getXrefs().add(new Xref(gene.getName(), "hgnc_symbol", "HGNC Symbol"));
         transcript.getXrefs().add(new Xref(transcript.getId(), "ensembl_transcript", "Ensembl Transcript"));
-        transcript.getXrefs().add(new Xref(transcript.getName(), "ensembl_transcript_name", "Ensembl Transcript Name"));
+
+        // Some non-coding genes do not have Gene names
+        if (StringUtils.isNotEmpty(gene.getName())) {
+            transcript.getXrefs().add(new Xref(gene.getName(), "hgnc_symbol", "HGNC Symbol"));
+            transcript.getXrefs().add(new Xref(transcript.getName(), "ensembl_transcript_name", "Ensembl Transcript Name"));
+        }
 
         if (gtfAttributes.get("ccds_id") != null) {
             transcript.getXrefs().add(new Xref(gtfAttributes.get("ccds_id"), "ccds_id", "CCDS"));

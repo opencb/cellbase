@@ -1,0 +1,21 @@
+FROM ubuntu:20.04
+
+LABEL org.label-schema.vendor="OpenCB" \
+      org.label-schema.name="cellbase-base" \
+      org.label-schema.url="http://docs.opencb.org/display/cellbase" \
+      org.label-schema.description="An Open Computational Genomics Analysis platform for big data processing and analysis in genomics" \
+      maintainer="Julie Sullivan <julie.sullivan@gmail.com>" \
+      org.label-schema.schema-version="1.0"
+
+ENV CELLBASE_USER cellbase
+ENV CELLBASE_HOME /opt/cellbase/
+
+RUN apt-get update && apt-get install -y openjdk-8-jre wget htop vim \
+    && adduser --uid 1001 $CELLBASE_USER
+#&& addgroup --gid 1001 $CELLBASE_USER &&
+USER $CELLBASE_USER
+
+VOLUME /opt/cellbase/conf
+
+COPY . /opt/cellbase
+WORKDIR /opt/cellbase

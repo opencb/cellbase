@@ -10,7 +10,10 @@ LABEL org.label-schema.vendor="OpenCB" \
 ENV CELLBASE_USER cellbase
 ENV CELLBASE_HOME /opt/cellbase/
 
-RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER -u 1001
+RUN apk update && apk upgrade && apk add ca-certificates openssl wget bash \
+    && update-ca-certificates \
+    && addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER -u 1001
+
 USER $CELLBASE_USER
 
 VOLUME /opt/cellbase/conf
