@@ -24,7 +24,7 @@ import java.util.List;
 public class RestConfig {
 
     private List<String> hosts;
-    private int timeout;
+    private int timeout = 60000;
 
     public RestConfig() {
     }
