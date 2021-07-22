@@ -93,11 +93,13 @@ public class ParentRestClient<T> {
         this.species = species;
         this.assembly = assembly;
         this.configuration = configuration;
+        logger = LoggerFactory.getLogger(this.getClass().toString());
 
         this.client = ClientBuilder.newClient();
         client.property(ClientProperties.CONNECT_TIMEOUT, 1000);
         client.property(ClientProperties.READ_TIMEOUT, configuration.getRest().getTimeout());
-        logger = LoggerFactory.getLogger(this.getClass().toString());
+
+        logger.debug("Configure read timeout : " + configuration.getRest().getTimeout() + "ms");
     }
 
     static {
@@ -255,10 +257,9 @@ public class ParentRestClient<T> {
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
-        CellBaseDataResponse<U> queryResponse = null;
         CellBaseDataResponse<U> finalDataResponse = null;
         while (call) {
-            queryResponse = robustRestCall(idList, resource, options, clazz, post);
+            CellBaseDataResponse<U> queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
             // Create id -> finalDataResponse-position map, so that we can know in forthcoming iterations where to
@@ -303,8 +304,12 @@ public class ParentRestClient<T> {
                 options.put("skip", skip);
             }
         }
+        logger.debug("queryResponse: {"
+                + "time: " + finalDataResponse.getTime() + ", "
+                + "apiVersion: " + finalDataResponse.getApiVersion() + ", "
+                + "responses: " + finalDataResponse.getResponses().size() + ", "
+                + "events: " + finalDataResponse.getEvents() + "}");
 
-        logger.debug("queryResponse = " + queryResponse);
         return finalDataResponse;
     }
 
