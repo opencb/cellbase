@@ -64,9 +64,9 @@ def build():
         print()
         print(shell_colors['blue'] + "Building opencb/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
         if image == "base":
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile.ubuntu " + build_folder)
+            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
         else:
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile.ubuntu --build-arg TAG=" + tag + " " + build_folder)
+            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile --build-arg TAG=" + tag + " " + build_folder)
 
 
 def tag_latest(image):
