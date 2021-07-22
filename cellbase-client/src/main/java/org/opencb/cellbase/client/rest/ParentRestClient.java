@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.client.ClientProperties;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.DrugResponseClassification;
 import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
@@ -94,6 +95,8 @@ public class ParentRestClient<T> {
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
+        client.property(ClientProperties.CONNECT_TIMEOUT, 1000);
+        client.property(ClientProperties.READ_TIMEOUT, configuration.getRest().getTimeout());
         logger = LoggerFactory.getLogger(this.getClass().toString());
     }
 
@@ -204,6 +207,7 @@ public class ParentRestClient<T> {
                 ? options.getInt("numThreads", DEFAULT_NUM_THREADS)
                 : DEFAULT_NUM_THREADS;
 
+        // TODO: Use cached thread pool
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
         List<Future<CellBaseDataResponse<U>>> futureList = new ArrayList<>((idList.size() / REST_CALL_BATCH_SIZE) + 1);
         for (int i = 0; i < idList.size(); i += REST_CALL_BATCH_SIZE) {
@@ -223,8 +227,11 @@ public class ParentRestClient<T> {
                     Thread.sleep(5);
                 }
                 cellBaseDataResults.addAll(responseFuture.get().getResponses());
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException(e);
+            } catch (ExecutionException e) {
+                throw new IOException(e);
             }
         }
 
