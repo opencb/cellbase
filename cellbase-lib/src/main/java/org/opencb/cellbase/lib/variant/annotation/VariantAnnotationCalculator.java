@@ -85,6 +85,7 @@ public class VariantAnnotationCalculator {
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
+    private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
     public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
@@ -455,7 +456,6 @@ public class VariantAnnotationCalculator {
          * Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
          * Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
          */
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(6);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
         List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
@@ -464,21 +464,21 @@ public class VariantAnnotationCalculator {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
                     "id,annotation.populationFrequencies,annotation.additionalAttributes.dgvSpecificAttributes")
                     .append("imprecise", imprecise));
-            variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
+            variationFuture = CACHED_THREAD_POOL.submit(futureVariationAnnotator);
         }
 
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
             futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty());
-            conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
+            conservationFuture = CACHED_THREAD_POOL.submit(futureConservationAnnotator);
         }
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty());
-            variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
+            variantFunctionalScoreFuture = CACHED_THREAD_POOL.submit(futureVariantFunctionalScoreAnnotator);
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
@@ -489,21 +489,21 @@ public class VariantAnnotationCalculator {
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
-            clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
+            clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
 
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
         Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
         if (annotatorSet.contains("repeats")) {
             futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList);
-            repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
+            repeatsFuture = CACHED_THREAD_POOL.submit(futureRepeatsAnnotator);
         }
 
         FutureCytobandAnnotator futureCytobandAnnotator = null;
         Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains("cytoband")) {
             futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty());
-            cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
+            cytobandFuture = CACHED_THREAD_POOL.submit(futureCytobandAnnotator);
         }
 
          // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
@@ -622,7 +622,9 @@ public class VariantAnnotationCalculator {
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
-        fixedThreadPool.shutdown();
+
+        // Not needed with newCachedThreadPool
+        // fixedThreadPool.shutdown();
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
