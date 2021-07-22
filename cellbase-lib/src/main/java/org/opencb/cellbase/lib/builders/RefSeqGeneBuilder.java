@@ -120,9 +120,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     public void parse() throws Exception {
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
-//        if (fastaFile != null) {
-//            fastaIndex = new FastaIndex(fastaFile);
-//        }
+        if (fastaFile != null) {
+            fastaIndex = new FastaIndex(fastaFile);
+        }
 
         // index protein sequences for later
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());

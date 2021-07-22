@@ -89,7 +89,7 @@ public class GeneBuilder extends CellBaseBuilder {
                        boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellBaseException {
         this(null, geneDirectoryPath.resolve("description.txt"),
                 geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("MANE.GRCh38.v0.91.summary.txt.gz"),
+                geneDirectoryPath.resolve("MANE.GRCh38.v0.93.summary.txt.gz"),
                 geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
@@ -448,13 +448,11 @@ public class GeneBuilder extends CellBaseBuilder {
         if (StringUtils.isNotEmpty(maneRefSeq)) {
             String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
             if (StringUtils.isNotEmpty(tso500Flag)) {
-                System.out.println("tso500Flag = " + tso500Flag);
                 transcript.getFlags().add(tso500Flag);
             }
 
             String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
             if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-                System.out.println("eglhHaemOncFlag = " + eglhHaemOncFlag);
                 transcript.getFlags().add(eglhHaemOncFlag);
             }
         }
