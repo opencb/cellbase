@@ -28,8 +28,11 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.builders.formats.Genome;
 import org.opencb.commons.exec.Command;
 import org.opencb.commons.utils.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,6 +55,7 @@ public class SpliceAIBuildExecutor {
     private Path inputAnnotPath;
 
     private ObjectMapper jsonObjectMapper;
+    private Logger logger;
 
     public SpliceAIBuildExecutor(Path genePath, Path genomeInfoPath, Path fastaPath, int distance, int chunkSize,
                                  CellBaseSerializer serializer) {
@@ -62,17 +66,22 @@ public class SpliceAIBuildExecutor {
         this.chunkSize = chunkSize;
         this.serializer = serializer;
 
-        tempPath = serializer.getOutdir();
+        tempPath = serializer.getOutdir().resolve("tmp.splice");
         inputAnnotPath = tempPath.resolve(INPUT_ANNOT_FILENAME);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        logger = LoggerFactory.getLogger(SpliceAIBuildExecutor.class);
     }
 
     public void prepareInput() throws IOException {
         // Create annotation file (-A parameter)
         try {
+            if (!tempPath.toFile().exists()) {
+                Files.createDirectory(tempPath);
+            }
             createInputAnnotationFile(inputAnnotPath);
         } catch (IOException e) {
             if (inputAnnotPath.toFile().exists()) {
@@ -91,16 +100,17 @@ public class SpliceAIBuildExecutor {
         //outputVcfPath = tempPath.resolve(OUTPUT_VCF_FILENAME);
 
         // Populates the array with names of files and directories
-        String[] pathnames = serializer.getOutdir().toFile().list();
+        String[] pathnames = tempPath.toFile().list();
 
         // For each pathname in the pathnames array
         for (String pathname : pathnames) {
             if (pathname.startsWith(INPUT_VCF_FILENAME_PREFIX)) {
                 String outPathname = pathname.replace(INPUT_VCF_FILENAME_PREFIX, OUTPUT_VCF_FILENAME_PREFIX);
-                String cmdline = "spliceai -I " + serializer.getOutdir() + "/" + pathname
-                        + " -O " + serializer.getOutdir() + "/" + outPathname
+                String cmdline = "spliceai -I " + tempPath + "/" + pathname
+                        + " -O " + tempPath + "/" + outPathname
                         + " -R " + fastaPath
                         + " -A " + inputAnnotPath;
+                logger.debug(cmdline);
                 System.out.println(cmdline);
 
                 Command command = new Command(cmdline);
@@ -108,7 +118,7 @@ public class SpliceAIBuildExecutor {
 //                new DataOutputStream(new FileOutputStream(getOutDir().resolve(STDOUT_FILENAME).toFile())))
 //                .setErrorOutputStream(
 //                        new DataOutputStream(new FileOutputStream(getOutDir().resolve(STDERR_FILENAME).toFile())))
-                command.run();
+//                command.run();
             }
         }
     }
@@ -116,14 +126,12 @@ public class SpliceAIBuildExecutor {
     public void parseOutput() throws IOException, CellBaseException {
         // Parse output vcf (-O output)
         // Populates the array with names of files and directories
-        String[] pathnames = serializer.getOutdir().toFile().list();
+        String[] pathnames = tempPath.toFile().list();
 
         // For each pathname in the pathnames array
         for (String pathname : pathnames) {
             if (pathname.startsWith(OUTPUT_VCF_FILENAME_PREFIX)) {
-                System.out.println(">>>>> output vcf file = " + pathname);
-
-                BufferedReader bufferedReader = FileUtils.newBufferedReader(serializer.getOutdir().resolve(pathname));
+                BufferedReader bufferedReader = FileUtils.newBufferedReader(tempPath.resolve(pathname));
 
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
@@ -244,9 +252,12 @@ public class SpliceAIBuildExecutor {
         serializer.close();
     }
 
-    private void createInputAnnotationFile(Path inputAnnotPath) throws IOException {
-        System.out.println(">>>>> input annotation file = " + inputAnnotPath);
+    public void clean() throws IOException {
+        logger.debug("Delete temporary directory " + tempPath.toFile());
+        org.apache.commons.io.FileUtils.deleteDirectory(tempPath.toFile());
+    }
 
+    private void createInputAnnotationFile(Path inputAnnotPath) throws IOException {
         PrintWriter pw = new PrintWriter(inputAnnotPath.toFile());
 
         pw.println("#NAME\tCHROM\tSTRAND\tTX_START\tTX_END\tEXON_START\tEXON_END");
@@ -257,10 +268,6 @@ public class SpliceAIBuildExecutor {
                 continue;
             }
             Gene gene = jsonObjectMapper.readValue(line, Gene.class);
-
-            if (gene.getChromosome().equals("2")) {
-                break;
-            }
 
             if ("ensembl".equals(gene.getSource())) {
                 Transcript maneSelectTranscript = null;
@@ -303,9 +310,7 @@ public class SpliceAIBuildExecutor {
         int fileIndex = 0;
         String prevChromosome = "";
 
-        String basePrefix = serializer.getOutdir() + "/" + INPUT_VCF_FILENAME_PREFIX;
-
-        System.out.println(">>>>> input vcf file prefix= " + basePrefix);
+        String basePrefix = tempPath + "/" + INPUT_VCF_FILENAME_PREFIX;
 
         List<String> bases = new ArrayList<>(Arrays.asList("A", "C", "G", "T"));
 
@@ -384,7 +389,6 @@ public class SpliceAIBuildExecutor {
         FileWriter fw;
         File vcfFile = new File(basePrefix + "chr" + chromosome + "_chunk" + fileIndex + ".vcf");
         if (!vcfFile.exists()) {
-            System.out.println(">>>>> VCF input filename = " + vcfFile.getAbsolutePath());
             fw = new FileWriter(vcfFile, true);
             writeVcfHeader(fw);
         } else {
