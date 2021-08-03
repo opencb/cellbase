@@ -1,7 +1,6 @@
 name: CellBase Release workflow
 
 on:
-  workflow_dispatch: {}
   push:
     tags:
       - '*'
