@@ -1,6 +1,7 @@
 name: CellBase Release workflow
 
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - '*'
@@ -22,33 +23,33 @@ jobs:
         run: mvn clean install -DskipTests
       - name: Maven Validate
         run: mvn validate
-  test:
-    name: CellBase Test
-    runs-on: ubuntu-18.04
-    needs: build
-    strategy:
-      matrix:
-        java: ["1.8"]
-        mongodb: ["4.0", "4.2"]
-    services:
-      mongodb:
-        image: mongo:${{ matrix.mongodb }}
-        ports:
-          - 27017:27017
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: '10'
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ matrix.java }}
-      - name: Build with Maven
-        run: mvn clean install -Dcheckstyle.skip
+#  test:
+#    name: CellBase Test
+#    runs-on: ubuntu-18.04
+#    needs: build
+#    strategy:
+#      matrix:
+#        java: ["1.8"]
+#        mongodb: ["4.0", "4.2"]
+#    services:
+#      mongodb:
+#        image: mongo:${{ matrix.mongodb }}
+#        ports:
+#          - 27017:27017
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: '10'
+#      - name: Set up JDK ${{ matrix.java }}
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: ${{ matrix.java }}
+#      - name: Build with Maven
+#        run: mvn clean install -Dcheckstyle.skip
   deploy:
     name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
     runs-on: ubuntu-18.04
-    needs: test
+#    needs: test
     steps:
       - uses: actions/checkout@v2
         with:
