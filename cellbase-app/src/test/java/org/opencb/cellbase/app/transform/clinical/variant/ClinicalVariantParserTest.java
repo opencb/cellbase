@@ -178,7 +178,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(23, parsedVariantList.size());
+        assertEquals(24, parsedVariantList.size());
 
         // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
         // Genome sequence context for that position is TGTCCCTGCTGAA
@@ -227,7 +227,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(29, parsedVariantList.size());
+        assertEquals(30, parsedVariantList.size());
 
         // DOCM MNV (from docm.json.gz):
         // "chromosome":"1","start":115256528,"stop":115256529,"reference":"TT","variant":"CA"
@@ -306,7 +306,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(29, parsedVariantList.size());
+        assertEquals(30, parsedVariantList.size());
 
         // ClinVar variant with invalid alternate allele string ("TTBS") must NOT be parsed
         List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000820150");
