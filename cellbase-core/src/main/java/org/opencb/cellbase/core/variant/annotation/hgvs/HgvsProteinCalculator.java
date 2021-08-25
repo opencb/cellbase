@@ -913,7 +913,7 @@ public class HgvsProteinCalculator {
                 currentAaIndex++;
             }
         } else if (transcript.getProteinSequence().startsWith("M")
-                && !"ATG".equals(alternateCdnaSeq.substring(transcript.getCdnaCodingStart(), 3))) {
+                && !"ATG".equals(alternateCdnaSeq.substring(transcript.getCdnaCodingStart(), transcript.getCdnaCodingStart() + 3))) {
             /*
             First codon is NOT ATG but protein sequence starts with M. This is due to Ensembl curation. From Ensembl:
 
