@@ -63,6 +63,24 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
     }
 
+    @Test
+    public void testUnexpectedAccession() throws Exception {
+        cleanUp();
+
+        initGrch38();
+
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(6, parsedVariantList.size());
+
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "209047");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("7", variant.getChromosome());
+        assertEquals(Integer.valueOf(117530975), variant.getStart());
+        assertEquals("G", variant.getReference());
+        assertEquals("A", variant.getAlternate());
+
+    }
 
     @Test
     public void testReallyLongVariant() throws Exception {
@@ -71,7 +89,7 @@ public class ClinicalVariantParserTest {
         initGrch38();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(5, parsedVariantList.size());
+        assertEquals(6, parsedVariantList.size());
 
         List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV001064159");
         assertEquals(1, variantList.size());
@@ -114,7 +132,7 @@ public class ClinicalVariantParserTest {
 
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(5, parsedVariantList.size());
+        assertEquals(6, parsedVariantList.size());
 
 
 //        variantList = getVariantByAccession(parsedVariantList, "RCV000507387");
@@ -272,7 +290,6 @@ public class ClinicalVariantParserTest {
             assertEquals(expectedHaplotype, clinicalHaplotypeProperty.getValue());
         }
     }
-
 
     @Test
     public void parse() throws Exception {
@@ -663,6 +680,7 @@ public class ClinicalVariantParserTest {
         org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant2/").toFile());
         org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant3/").toFile());
         org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant4/").toFile());
+        org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant5/").toFile());
         Paths.get("/tmp/clinical_variants.json.gz").toFile().delete();
     }
 
