@@ -29,7 +29,7 @@ public class SpliceBuilder extends CellBaseBuilder {
     private Path fastaPath;
 
     private static final int DISTANCE = 50;
-    private static final int CHUNK_SIZE = 50000;
+    private static final int CHUNK_SIZE = 5000;
 
     public SpliceBuilder(Path genePath, Path genomeInfoPath, Path fastaPath, CellBaseFileSerializer serializer) {
         super(serializer);
