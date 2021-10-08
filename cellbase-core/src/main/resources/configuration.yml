@@ -65,12 +65,12 @@ download:
   refSeqCdna:
     host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   maneSelect:
-    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.91/MANE.GRCh38.v0.91.summary.txt.gz
-    version: 0.91
+    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.93/MANE.GRCh38.v0.93.summary.txt.gz
+    version: 0.93
   lrg:
     host: http://ftp.ebi.ac.uk/pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
   geneUniprotXref:
-    host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
+    host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
   geneExpressionAtlas:
     host: ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
   mirbase:
@@ -80,7 +80,7 @@ download:
   targetScan:
     host: http://hgdownload.cse.ucsc.edu/goldenPath/
   miRTarBase:
-    host: http://mirtarbase.cuhk.edu.cn/cache/download/8.0/hsa_MTI.xlsx
+    host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2019/cache/download/8.0/miRTarBase_MTI.xlsx
   uniprot:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   uniprotRelNotes:
@@ -94,11 +94,11 @@ download:
   conservation:
     host: https://hgdownload.cse.ucsc.edu/goldenPath/
   gerp:
-    host: http://ftp.ensembl.org/pub/release-102/compara/conservation_scores/111_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+    host: http://ftp.ensembl.org/pub/release-104/compara/conservation_scores/90_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
   clinvar:
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-03.xml.gz
+    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-07.xml.gz
   clinvarVariation:
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-03.xml.gz
+    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-07.xml.gz
   clinvarSummary:
     host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
   clinvarVariationAllele:
@@ -135,7 +135,7 @@ download:
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
-    host: https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
+    host: https://storage.googleapis.com/gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
     version: 2.1.1
   hpoObo:
     host: http://purl.obolibrary.org/obo/hp.obo
@@ -154,7 +154,7 @@ species:
       assemblies:
         #     - ensemblVersion: '82_37'
         #       name: GRCh37
-        - ensemblVersion: '102_38'
+        - ensemblVersion: '104_38'
           name: GRCh38
       data:
         - clinical_variants
