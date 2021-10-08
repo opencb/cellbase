@@ -168,6 +168,7 @@ species:
         - regulation
         - repeats
         - variation_functional_score
+        - splice
       shards:
         - collection: "variation"
           key:

@@ -46,6 +46,7 @@ public class EtlCommons {
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
+    public static final String SPLICE_DATA = "splice";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
     public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2021-07.xml.gz";

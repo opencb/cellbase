@@ -94,7 +94,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, genome_info, "
                 + "gene, variation, variation_functional_score, regulation, protein, ppi, conservation, drug, "
-                + "clinical_variants, repeats, svs. 'all' builds everything.", required = true, arity = 1)
+                + "clinical_variants, repeats, svs, splice. 'all' builds everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -128,7 +128,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm. 'all' loads everything",
+                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice. 'all' loads everything",
                 required = true, arity = 1)
         public String data;
 
