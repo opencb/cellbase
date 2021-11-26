@@ -71,7 +71,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
 
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh38");
+        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37");
     }
 
     // TODO: to be finished - properly implemented
@@ -81,6 +81,8 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
                 new QueryOptions());
+
+        System.out.println("Num. of results: " + functionalScoreVariant.getNumResults());
     }
 
     @Test

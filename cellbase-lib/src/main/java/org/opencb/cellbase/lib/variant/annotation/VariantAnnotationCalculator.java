@@ -21,8 +21,8 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
-import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
@@ -145,7 +145,7 @@ public class VariantAnnotationCalculator {
     }
 
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
-                                                                           QueryOptions queryOptions)
+                                                                                  QueryOptions queryOptions)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
 
         logger.debug("Annotating  batch");
@@ -171,8 +171,8 @@ public class VariantAnnotationCalculator {
     }
 
     private List<CellBaseDataResult<VariantAnnotation>> generateCellBaseDataResultList(List<Variant> variantList,
-                                                                         List<Variant> normalizedVariantList,
-                                                                         long startTime) {
+                                                                                       List<Variant> normalizedVariantList,
+                                                                                       long startTime) {
 
         List<CellBaseDataResult<VariantAnnotation>> annotationResultList = new ArrayList<>(variantList.size());
 
@@ -506,7 +506,14 @@ public class VariantAnnotationCalculator {
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
         }
 
-         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
+        FutureSpliceAnnotator futureSpliceAnnotator = null;
+        Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture = null;
+        if (annotatorSet.contains("splice")) {
+            futureSpliceAnnotator = new FutureSpliceAnnotator(normalizedVariantList, QueryOptions.empty());
+            spliceFuture = fixedThreadPool.submit(futureSpliceAnnotator);
+        }
+
+        // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
         long startTime = System.currentTimeMillis();
         for (Variant variant : normalizedVariantList) {
@@ -622,6 +629,9 @@ public class VariantAnnotationCalculator {
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
+        if (futureSpliceAnnotator != null) {
+            futureSpliceAnnotator.processResults(spliceFuture, variantAnnotationList);
+        }
         fixedThreadPool.shutdown();
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
@@ -686,11 +696,11 @@ public class VariantAnnotationCalculator {
         // New parameter "ignorePhase" present overrides presence of old "phased" parameter
         if (queryOptions.get("ignorePhase") != null) {
             phased = !queryOptions.getBoolean("ignorePhase");
-        // Old parameter "phased" present but new one ("ignorePhase") absent - use old one. Probably someone who has not
-        // yet moved to using the new one.
+            // Old parameter "phased" present but new one ("ignorePhase") absent - use old one. Probably someone who has not
+            // yet moved to using the new one.
         } else if (queryOptions.get("phased") != null) {
             phased = queryOptions.getBoolean("phased");
-        // Default behaviour - calculate phased annotation
+            // Default behaviour - calculate phased annotation
         } else {
             phased = true;
         }
@@ -924,7 +934,7 @@ public class VariantAnnotationCalculator {
         if (variant.getAnnotation().getAdditionalAttributes() != null
                 && variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts") != null
                 && variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts")
-                    .getAttribute().containsKey(ensemblTranscriptId)) {
+                .getAttribute().containsKey(ensemblTranscriptId)) {
             return true;
         }
         return false;
@@ -1041,8 +1051,8 @@ public class VariantAnnotationCalculator {
                         && variant1.getStudies().get(0).getFiles().get(0).getCall()
                         .equals(variant2.getStudies().get(0).getFiles().get(0).getCall());
 
-            // Checks that in both genotypes there's something different than a reference allele, i.e. that none of
-            // them is 0/0 (or 0 for haploid)
+                // Checks that in both genotypes there's something different than a reference allele, i.e. that none of
+                // them is 0/0 (or 0 for haploid)
             } else if (alternatePresent(genotype1) && alternatePresent(genotype2)) {
 
                 if (genotype1.contains(UNPHASED_GENOTYPE_SEPARATOR)) {
@@ -1062,24 +1072,24 @@ public class VariantAnnotationCalculator {
                 // First genotype alternate hemizygous
                 if (genotypeParts.length == 1) {
                     return genotypeParts1.length == 1;
-                // Second genotype alternate hemizygous
+                    // Second genotype alternate hemizygous
                 } else if (genotypeParts1.length == 1) {
                     // First genotype diploid, second genotype alternate hemizygous
                     return false;
 
-                // Both genotypes diploid
+                    // Both genotypes diploid
                 } else {
                     return genotypeParts[0].equals(genotypeParts1[0])
                             && genotypeParts[2].equals(genotypeParts1[2]);
                 }
 
-            // At least one of the genotypes contains just reference alleles. Clearly, alleles cannot be in phase since
-            // one of them is not even present!
+                // At least one of the genotypes contains just reference alleles. Clearly, alleles cannot be in phase since
+                // one of them is not even present!
             } else {
                 return false;
             }
 
-        // If PS is different both variants might not be in phase
+            // If PS is different both variants might not be in phase
         } else {
             return false;
         }
@@ -1133,7 +1143,7 @@ public class VariantAnnotationCalculator {
     }
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
-            List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
+        List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
                 "transcripts.proteinId", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence", "transcripts.proteinSequence",
                 "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
@@ -1262,19 +1272,19 @@ public class VariantAnnotationCalculator {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart());
         } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
-        // Short deletions and symbolic variants except breakends
+            // Short deletions and symbolic variants except breakends
         } else if (!VariantType.BREAKEND.equals(variant.getType())) {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd());
-        // Breakend "variants" only annotate features overlapping the exact positions
+            // Breakend "variants" only annotate features overlapping the exact positions
         } else  {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant.getChromosome(), Math.max(1, variant.getStart()));
             // If already found one overlapping regulatory region there's no need to keep checking
             if (overlapsRegulatoryRegion[0]) {
                 return overlapsRegulatoryRegion;
-            // Otherwise check the other breakend in case exists
+                // Otherwise check the other breakend in case exists
             } else {
                 if (variant.getSv() != null && variant.getSv().getBreakend() != null
-                    && variant.getSv().getBreakend().getMate() != null) {
+                        && variant.getSv().getBreakend().getMate() != null) {
                     return getRegulatoryRegionOverlaps(variant.getSv().getBreakend().getMate().getChromosome(),
                             Math.max(1, variant.getSv().getBreakend().getMate().getPosition()));
                 } else {
@@ -1302,7 +1312,7 @@ public class VariantAnnotationCalculator {
                 tfbsFound = regulatoryRegionType != null
                         && (regulatoryRegionType.equals(ParamConstants.FeatureType.TF_binding_site.name())
                         || cellBaseDataResult.getResults().get(i).getFeatureType()
-                            .equals(ParamConstants.FeatureType.TF_binding_site_motif.name()));
+                        .equals(ParamConstants.FeatureType.TF_binding_site_motif.name()));
             }
             overlapsRegulatoryRegion[1] = tfbsFound;
         }
@@ -1329,7 +1339,7 @@ public class VariantAnnotationCalculator {
         if (cellBaseDataResult.getNumResults() == 1) {
             overlapsRegulatoryRegion[0] = true;
             overlapsRegulatoryRegion[1] = true;
-        // Does not overlap transcription factor binding site - check any other regulatory region type
+            // Does not overlap transcription factor binding site - check any other regulatory region type
         } else {
             query.setFeatureTypes(null);
             cellBaseDataResult = regulationManager.search(query);
@@ -1395,11 +1405,11 @@ public class VariantAnnotationCalculator {
         // SNV
         if (VariantType.SNV.equals(variant.getType())) {
             return Collections.singletonList(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
-        // Short insertion
+            // Short insertion
         } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
             return Collections.singletonList(new Region(variant.getChromosome(), variant.getStart() - 1,
                     variant.getEnd()));
-        // CNV
+            // CNV
         } else if (VariantType.CNV.equals(variant.getType())) {
             if (imprecise) {
                 return Collections.singletonList(new Region(variant.getChromosome(),
@@ -1408,7 +1418,7 @@ public class VariantAnnotationCalculator {
                 return Collections.singletonList(new Region(variant.getChromosome(), variant.getStart(),
                         variant.getEnd()));
             }
-        // BREAKEND
+            // BREAKEND
         } else if (VariantType.BREAKEND.equals(variant.getType())) {
             List<Region> regionList = new ArrayList<>(2);
             regionList.add(startBreakpointToRegion(variant));
@@ -1417,12 +1427,12 @@ public class VariantAnnotationCalculator {
                 regionList.add(startBreakpointToRegion(breakendMate));
             }
             return regionList;
-        // Short deletions and symbolic variants (no BREAKENDS expected althought not checked either)
+            // Short deletions and symbolic variants (no BREAKENDS expected althought not checked either)
         } else {
             if (imprecise && variant.getSv() != null) {
                 return Collections.singletonList(new Region(variant.getChromosome(),
                         variant.getSv().getCiStartLeft() != null
-                            ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                                ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
                         variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding
                                 : variant.getEnd()));
             } else {
@@ -1462,7 +1472,7 @@ public class VariantAnnotationCalculator {
             default:
                 if (imprecise && variant.getSv() != null) {
                     regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
-                                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                            ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
                             variant.getSv().getCiStartRight() != null
                                     ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(),
@@ -1656,7 +1666,7 @@ public class VariantAnnotationCalculator {
     }
 
     class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
-//        private static final String CLINVAR = "clinvar";
+        //        private static final String CLINVAR = "clinvar";
 //        private static final String COSMIC = "cosmic";
 //        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
 //        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
@@ -1925,6 +1935,63 @@ public class VariantAnnotationCalculator {
                             variantAnnotationList.get(i).setCytoband(cellBaseDataResult.getResults());
                         }
                     }
+                }
+            }
+        }
+    }
+
+    class FutureSpliceAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureSpliceAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        @Override
+        public List<CellBaseDataResult<SpliceScore>> call() throws Exception {
+            long startTime = System.currentTimeMillis();
+
+            List<CellBaseDataResult<SpliceScore>> cellBaseDataResultList = new ArrayList<>(variantList.size());
+
+            logger.debug("Query splice");
+            // Want to return only one CellBaseDataResult object per Variant
+            for (Variant variant : variantList) {
+                // Truncate region size of SVs to avoid server collapse
+                List<Region> regionList = variantToRegionList(variant).stream().map(region -> region.size() > 50
+                                ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
+                                : region).collect(Collectors.toList());
+
+                List<CellBaseDataResult<SpliceScore>> tmpCellBaseDataResultList = genomeManager.getSplice(regionList, queryOptions);
+
+                // There may be more than one CellBaseDataResult per variant for breakends
+                // Reuse one of the CellBaseDataResult objects returned by the adaptor
+                CellBaseDataResult<SpliceScore> newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
+                if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
+                    // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
+                    // to the two breakpoints
+                    newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
+                    newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
+                    newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());
+                }
+                cellBaseDataResultList.add(newCellBaseDataResult);
+            }
+            logger.debug("Splice query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+            return cellBaseDataResultList;
+        }
+
+        public void processResults(Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture,
+                                   List<VariantAnnotation> variantAnnotationList)
+                throws InterruptedException, ExecutionException {
+            while (!spliceFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults = spliceFuture.get();
+            if (spliceCellBaseDataResults != null) {
+                for (int i = 0; i < variantAnnotationList.size(); i++) {
+                    variantAnnotationList.get(i).setSplice(spliceCellBaseDataResults.get(i).getResults());
                 }
             }
         }

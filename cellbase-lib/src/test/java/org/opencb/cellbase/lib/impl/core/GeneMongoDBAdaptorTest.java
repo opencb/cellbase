@@ -58,7 +58,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testQuery() throws Exception {
 //       GeneMongoDBAdaptor  geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
-        GeneManager geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh38");
+        GeneManager geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
 
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("annotation.expression.tissue", "brain");

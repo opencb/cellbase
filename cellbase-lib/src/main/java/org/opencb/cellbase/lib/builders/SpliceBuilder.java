@@ -16,47 +16,161 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.avro.AlternateSpliceScore;
+import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SpliceBuilder extends CellBaseBuilder {
 
-    private Path genePath;
-    private Path genomeInfoPath;
-    private Path fastaPath;
+    private CellBaseFileSerializer fileSerializer;
+    private Path spliceDir;
 
-    private static final int DISTANCE = 50;
-    private static final int CHUNK_SIZE = 5000;
-
-    public SpliceBuilder(Path genePath, Path genomeInfoPath, Path fastaPath, CellBaseFileSerializer serializer) {
+    public SpliceBuilder(Path spliceDir, CellBaseFileSerializer serializer) {
         super(serializer);
 
-        this.genePath = genePath;
-        this.genomeInfoPath = genomeInfoPath;
-        this.fastaPath = fastaPath;
+        this.fileSerializer = serializer;
+        this.spliceDir = spliceDir;
 
         logger = LoggerFactory.getLogger(SpliceBuilder.class);
     }
 
     @Override
     public void parse() throws Exception {
-        FileUtils.checkPath(genePath);
-        FileUtils.checkPath(genomeInfoPath);
-        FileUtils.checkPath(fastaPath);
+        // Check input folder
+        FileUtils.checkPath(spliceDir);
 
-        logger.info("Computing splice scores...");
+        logger.info("Parsing splice files...");
 
-        SpliceAIBuildExecutor executor = new SpliceAIBuildExecutor(genePath, genomeInfoPath, fastaPath, DISTANCE, CHUNK_SIZE, serializer);
+        Path mmsplicePath = spliceDir.resolve(EtlCommons.MMSPLICE_SUBDIRECTORY);
+        if (mmsplicePath.toFile().exists()) {
+            logger.info("Parsing MMSplice data...");
+            mmspliceParser(mmsplicePath);
+        } else {
+            logger.debug("MMSplice data not found: " + mmsplicePath.toString());
+        }
 
-        executor.prepareInput();
-//        executor.runSpliceAI();
-//        executor.parseOutput();
-//        executor.clean();
-
-        logger.info("Computing splice scores finished.");
+        logger.info("Parsing splice scores finished.");
     }
 
+    private void mmspliceParser(Path mmsplicePath) throws IOException {
+        // Check output folder: MMSplice
+        Path mmspliceOutFolder = fileSerializer.getOutdir().resolve(EtlCommons.MMSPLICE_SUBDIRECTORY);
+        if (!mmspliceOutFolder.toFile().exists()) {
+            mmspliceOutFolder.toFile().mkdirs();
+        }
+
+        // RocksDB to avoid duplicated data
+        File rocksDBFile = new File("/tmp/mmsplice.rocksdb");
+        if (rocksDBFile.exists()) {
+            org.apache.commons.io.FileUtils.deleteDirectory(rocksDBFile);
+        }
+        RocksDbManager rocksDbManager = new RocksDbManager();
+        RocksDB rocksDB = rocksDbManager.getDBConnection(rocksDBFile.getAbsolutePath());
+
+        for (File file : mmsplicePath.toFile().listFiles()) {
+            logger.info("Parsing MMSplice file {} ...", file.getName());
+            try (BufferedReader in = FileUtils.newBufferedReader(file.toPath())) {
+                String line = in.readLine();
+                if (line != null) {
+                    String[] labels = line.split(",");
+
+                    SpliceScore spliceScore = null;
+
+                    // Main loop
+                    while ((line = in.readLine()) != null) {
+                        String[] fields = line.split(",");
+                        String[] idFields = fields[0].split(":");
+
+                        String chrom = idFields[0];
+                        int start = Integer.parseInt(idFields[1]);
+                        String ref = idFields[2];
+                        String alt = idFields[3].replace("'", "").replace("[", "").replace("]", "");
+
+                        // Transcript
+                        String transcript = fields[5];
+
+                        // Check for duplicated lines
+                        String uid = chrom + ":" + start + ":" + ref + ":" + alt + ":" + transcript;
+                        if (rocksDB.get(uid.getBytes()) != null) {
+                            continue;
+                        }
+                        rocksDB.put(uid.getBytes(), "1".getBytes());
+
+                        // Create alternate splice score to be added further
+                        AlternateSpliceScore alternateSpliceScore = new AlternateSpliceScore(alt, new HashMap<>());
+                        for (int i = 6; i < labels.length; i++) {
+                            alternateSpliceScore.getScores().put(labels[i], Double.parseDouble(fields[i]));
+                        }
+
+                        // Create splice score
+                        if (spliceScore != null
+                                && spliceScore.getChromosome().equals(chrom)
+                                && spliceScore.getStart() == start
+                                && spliceScore.getRefAllele().equals(ref)
+                                && spliceScore.getTranscriptId().equals(transcript)) {
+                            spliceScore.getAlternates().add(alternateSpliceScore);
+                        } else {
+                            if (spliceScore != null) {
+                                // Write the currant splice score
+                                setEndPosition(spliceScore);
+                                fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
+                                        + spliceScore.getChromosome());
+                            }
+
+                            // And prepare the new splice score
+                            spliceScore = new SpliceScore();
+                            spliceScore.setChromosome(chrom);
+                            spliceScore.setStart(start);
+                            spliceScore.setRefAllele(ref);
+                            spliceScore.setGeneId(fields[3]);
+                            spliceScore.setGeneName(fields[4]);
+                            spliceScore.setTranscriptId(transcript);
+                            spliceScore.setExonId(fields[2]);
+                            spliceScore.setSource("mmsplice");
+                            spliceScore.setAlternates(new ArrayList<>());
+
+                            spliceScore.getAlternates().add(alternateSpliceScore);
+                        }
+                    }
+
+                    if (spliceScore != null) {
+                        // Write the last splice score
+                        setEndPosition(spliceScore);
+                        fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
+                                + spliceScore.getChromosome());
+                    }
+                }
+            } catch (IOException | RocksDBException e) {
+                logger.error(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        rocksDB.close();
+    }
+
+    private void setEndPosition(SpliceScore spliceScore) {
+        // Manage end position
+        int end = spliceScore.getStart();
+        for (AlternateSpliceScore alternate : spliceScore.getAlternates()) {
+            if (StringUtils.isNotEmpty(alternate.getAltAllele())) {
+                if (spliceScore.getStart() + alternate.getAltAllele().length() - 1 > end) {
+                    end = spliceScore.getStart() + alternate.getAltAllele().length() - 1;
+                }
+            }
+        }
+        spliceScore.setEnd(end);
+    }
 }

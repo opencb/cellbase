@@ -265,6 +265,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "ontology":
                 collection = "ontology";
                 break;
+            case "splice":
+                collection = "splice";
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -295,8 +298,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "repeats":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
-                case "conservation":
-                    chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
+                case "splice":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.SPLICE_CHUNK_SIZE};
                     break;
                 default:
                     break;
@@ -777,6 +780,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "repeats":
                 indexFileName = "repeat-indexes.js";
+                break;
+            case "splice":
+                indexFileName = "splice-indexes.js";
                 break;
             default:
                 break;

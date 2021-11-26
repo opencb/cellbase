@@ -189,7 +189,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("ontology");
                             break;
                         case EtlCommons.SPLICE_DATA:
-                            loadIfExists(input.resolve("splice.json.gz"), "splice");
+                            loadSplice();
                             createIndex("splice");
                             break;
                         default:
@@ -348,6 +348,25 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.warn("Repeats file {} not found", path.toString());
             logger.warn("No repeats data will be loaded");
         }
+    }
+
+    private void loadSplice() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException {
+
+        logger.info("Loading splice scores from '{}'", input);
+
+        // MMSplice scores
+        Path mmspliceFolder = input.resolve(EtlCommons.SPLICE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY);
+        DirectoryStream<Path> stream = Files.newDirectoryStream(mmspliceFolder, entry -> {
+            return entry.getFileName().toString().startsWith("mmsplice_");
+        });
+
+        for (Path entry : stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(mmspliceFolder.resolve(entry.getFileName()), "splice");
+        }
+        loadIfExists(input.resolve(EtlCommons.SPLICE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME), METADATA);
     }
 
     private void createIndex(String collectionName) {

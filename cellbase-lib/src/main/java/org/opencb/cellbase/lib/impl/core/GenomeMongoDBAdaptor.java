@@ -23,12 +23,10 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
@@ -54,6 +52,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 
     private MongoDBCollection genomeInfoMongoDBCollection;
     private MongoDBCollection conservationMongoDBCollection;
+    private MongoDBCollection spliceMongoDBCollection;
     private static final Object CYTOBANDS = "cytobands";
     private static final Object START = "start";
     private static final String END = "end";
@@ -74,6 +73,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
         mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
         conservationMongoDBCollection = mongoDataStore.getCollection("conservation");
+        spliceMongoDBCollection = mongoDataStore.getCollection("splice");
     }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {
@@ -300,6 +300,103 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         }
 
         return conservationCellBaseDataResults;
+    }
+
+    public List<CellBaseDataResult<SpliceScore>> getSplice(List<Region> regionList, QueryOptions options) {
+        //TODO not finished yet
+        List<Document> queries = new ArrayList<>();
+        List<String> ids = new ArrayList<>(regionList.size());
+        List<String> integerChunkIds;
+
+        List<Region> regions = regionList;
+        for (Region region : regions) {
+            integerChunkIds = new ArrayList<>();
+            // positions below 1 are not allowed
+            if (region.getStart() < 1) {
+                region.setStart(1);
+            }
+            if (region.getEnd() < 1) {
+                region.setEnd(1);
+            }
+
+            // Max region size is 10000bp
+            if (region.getEnd() - region.getStart() > 10000) {
+                region.setEnd(region.getStart() + 10000);
+            }
+
+            QueryBuilder builder;
+            int regionChunkStart = getChunkId(region.getStart(), MongoDBCollectionConfiguration.SPLICE_CHUNK_SIZE);
+            int regionChunkEnd = getChunkId(region.getEnd(), MongoDBCollectionConfiguration.SPLICE_CHUNK_SIZE);
+            if (regionChunkStart == regionChunkEnd) {
+                builder = QueryBuilder.start("_chunkIds")
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
+                                MongoDBCollectionConfiguration.SPLICE_CHUNK_SIZE));
+            } else {
+                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+            }
+            queries.add(new Document(builder.get().toMap()));
+            ids.add(region.toString());
+        }
+
+        List<CellBaseDataResult> cellBaseDataResults = executeQueryList2(ids, queries, options, spliceMongoDBCollection);
+        List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults = new ArrayList<>();
+
+        for (int i = 0; i < regions.size(); i++) {
+            CellBaseDataResult cellBaseDataResult = cellBaseDataResults.get(i);
+            CellBaseDataResult<SpliceScore> spliceCellBaseDataResult = new CellBaseDataResult<>();
+            spliceCellBaseDataResult.setResults(cellBaseDataResult.getResults());
+            spliceCellBaseDataResult.setNumResults(cellBaseDataResult.getResults().size());
+            spliceCellBaseDataResult.setNumMatches(-1);
+            spliceCellBaseDataResults.add(spliceCellBaseDataResult);
+        }
+
+//        for (int i = 0; i < regions.size(); i++) {
+//            Region region = regions.get(i);
+//            CellBaseDataResult cellBaseDataResult = cellBaseDataResults.get(i);
+//            CellBaseDataResult<SpliceScore> spliceCellBaseDataResult = new CellBaseDataResult<>();
+//            List list = cellBaseDataResult.getResults();
+//
+//            Map<String, List<SpliceScore>> typeMap = new HashMap<>();
+//            for (int j = 0; j < list.size(); j++) {
+//                Document chunk = (Document) list.get(j);
+//                String source = chunk.getString("source");
+//                List<SpliceScore> valuesList;
+//                if (!typeMap.containsKey(source)) {
+//                    valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+//                    for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+//                        valuesList.add(null);
+//                    }
+//                    typeMap.put(source, valuesList);
+//                } else {
+//                    valuesList = typeMap.get(source);
+//                }
+//
+//                ArrayList valuesChunk = chunk.get("values", ArrayList.class);
+//
+//                int pos = 0;
+//                if (region.getStart() > chunk.getInteger("start")) {
+//                    pos = region.getStart() - chunk.getInteger("start");
+//                }
+//
+//                for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
+//                    valuesList.set(pos + chunk.getInteger("start") - region.getStart(), (SpliceScore) valuesChunk.get(pos));
+//                }
+//            }
+//            List<SpliceScore> resultList = new ArrayList<>();
+////            GenomicScoreRegion<SpliceScore> spliceRegionChunk;
+////            for (Map.Entry<String, List<SpliceScore>> elem : typeMap.entrySet()) {
+////                spliceRegionChunk = new GenomicScoreRegion<>(region.getChromosome(), region.getStart(), region.getEnd(),
+////                        elem.getKey(), elem.getValue());
+////                resultList.add(spliceRegionChunk);
+////            }
+//            spliceCellBaseDataResult.setResults(resultList);
+//            spliceCellBaseDataResult.setNumResults(resultList.size());
+//            spliceCellBaseDataResult.setNumMatches(-1);
+//            spliceCellBaseDataResults.add(spliceCellBaseDataResult);
+//        }
+
+        return spliceCellBaseDataResults;
     }
 
     public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options) {

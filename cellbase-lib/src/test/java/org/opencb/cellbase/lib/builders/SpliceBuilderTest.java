@@ -5,15 +5,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.biodata.tools.sequence.FastaIndex;
-import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.lib.builders.formats.Genome;
 import org.opencb.commons.utils.FileUtils;
 
@@ -23,6 +24,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SpliceBuilderTest {
 
@@ -117,13 +120,13 @@ class SpliceBuilderTest {
 
         Genome genome = mapper.readValue(genomeInfoPath.toFile(), Genome.class);
 
-        int chunkSize = 10000000;
+        int chunkSize = 5000000;
         int distance = 50;
         int counter = 0;
         int fileIndex = 0;
-        String prevChromosome = "";
 
-        String basePrefix = tempPath + "/input_";
+        String basePrefix = tempPath + "/";
+        FileWriter fw = getVcfFileWriter(basePrefix, fileIndex, genome);
 
         List<String> bases = new ArrayList<>(Arrays.asList("A", "C", "G", "T"));
 
@@ -142,20 +145,8 @@ class SpliceBuilderTest {
 //            }
 //            System.out.println(gene.getId() + ", " + gene.getName() + ", counter = " + counter);
 
-            if (!gene.getChromosome().equals(prevChromosome)) {
-                prevChromosome = gene.getChromosome();
-                fileIndex = 0;
-                counter = 0;
-            }
-
 //            Variant variant;
 //            VariantNormalizer normalizer = new VariantNormalizer();
-
-            FileWriter fw = getVcfFileWriter(basePrefix, gene.getChromosome(), fileIndex, genome);
-            if (counter >= chunkSize) {
-                counter = 0;
-                fileIndex++;
-            }
 
             Set<String> uniqPos = new HashSet<>();
             for (Transcript transcript : gene.getTranscripts()) {
@@ -197,14 +188,14 @@ class SpliceBuilderTest {
 
                                 // 1-nt INS
                                 for (String base : bases) {
-                                    fw.write(sb.toString() + ref + "\t"  + ref + base + "\t.\t.\t\n");
+                                    fw.write(sb.toString() + ref + "\t" + ref + base + "\t.\t.\t\n");
                                     ++counter;
                                 }
 
                                 // 2-nt INS
                                 for (String base1 : bases) {
                                     for (String base2 : bases) {
-                                        fw.write(sb.toString() + ref + "\t"  + ref + base1 + base2 + "\t.\t.\t\n");
+                                        fw.write(sb.toString() + ref + "\t" + ref + base1 + base2 + "\t.\t.\t\n");
                                         ++counter;
                                     }
                                 }
@@ -230,20 +221,30 @@ class SpliceBuilderTest {
                                 }
 
                                 sb.setLength(0);
+
+                                if (counter >= chunkSize) {
+                                    counter = 0;
+                                    fileIndex++;
+
+                                    // Close and get the new file writer
+                                    fw.close();
+                                    fw = getVcfFileWriter(basePrefix, fileIndex, genome);
+                                }
                             }
                         }
                     }
-                    break;
                 }
             }
+        }
+        if (fw != null) {
             fw.close();
         }
-        System.out.println("counter = " + counter);
+//        System.out.println("counter = " + counter);
     }
 
-    private FileWriter getVcfFileWriter(String basePrefix, String chromosome, int fileIndex, Genome genome) throws IOException {
+    private FileWriter getVcfFileWriter(String basePrefix, int fileIndex, Genome genome) throws IOException {
         FileWriter fw;
-        File vcfFile = new File(basePrefix + "chr" + chromosome + "_chunk" + fileIndex + ".vcf");
+        File vcfFile = new File(basePrefix + "input.chunk" + fileIndex + ".vcf");
         if (!vcfFile.exists()) {
             fw = new FileWriter(vcfFile, true);
             writeVcfHeader(fw, genome);
@@ -279,5 +280,46 @@ class SpliceBuilderTest {
 
         // Last header line
         fw.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n");
+    }
+
+    @Test
+    public void parseMMSpliceFile() throws Exception {
+        Path spliceDir = Paths.get(SpliceBuilderTest.class.getResource("/splice").toURI());
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"));
+        SpliceBuilder spliceBuilder = new SpliceBuilder(spliceDir, serializer);
+        spliceBuilder.parse();
+        serializer.close();
+
+        List<SpliceScore> actual = loadSpliceScores(Paths.get("/tmp/splice_1.json.gz"));
+        List<SpliceScore> expected = loadSpliceScores(Paths.get(SpliceBuilderTest.class.getResource("/splice/build/splice_1.json.gz")
+                .getFile()));
+
+        assertEquals(expected.size(), actual.size());
+    }
+
+    private List<SpliceScore> loadSpliceScores(Path path) throws IOException {
+        List<SpliceScore> spliceScores = new ArrayList<>(10);
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(path)) {
+            String line = bufferedReader.readLine();
+            while (line != null) {
+                spliceScores.add(jsonObjectMapper.convertValue(JSON.parse(line), SpliceScore.class));
+                line = bufferedReader.readLine();
+            }
+        }
+
+        return spliceScores;
+    }
+
+    @Test
+    public void buildMMSpliceFile() throws Exception {
+        Path spliceDir = Paths.get("/home/jtarraga/data150/cellbase/homo_sapiens_grch38/download/splice");
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/home/jtarraga/data150/cellbase/homo_sapiens_grch38/generated_json/splice"));
+        SpliceBuilder spliceBuilder = new SpliceBuilder(spliceDir, serializer);
+        spliceBuilder.parse();
+        serializer.close();
     }
 }

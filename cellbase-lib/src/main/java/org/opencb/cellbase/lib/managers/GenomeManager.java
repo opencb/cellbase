@@ -17,12 +17,10 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.google.common.base.Splitter;
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -126,6 +124,19 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);
         for (int i = 0; i < regionList.size(); i++) {
             queryResultList.get(i).setId(regions);
+        }
+        return queryResultList;
+    }
+
+    public List<CellBaseDataResult<SpliceScore>> getSplice(String regions, QueryOptions queryOptions) {
+        return getSplice(Region.parseRegions(regions), queryOptions);
+
+    }
+
+    public List<CellBaseDataResult<SpliceScore>> getSplice(List<Region> regionList, QueryOptions queryOptions) {
+        List<CellBaseDataResult<SpliceScore>> queryResultList = genomeDBAdaptor.getSplice(regionList, queryOptions);
+        for (int i = 0; i < regionList.size(); i++) {
+            queryResultList.get(i).setId(regionList.get(i).toString());
         }
         return queryResultList;
     }
