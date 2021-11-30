@@ -224,11 +224,7 @@ public abstract class PhasedQueryManager {
     protected void reset(CellBaseDataResult<Variant> variantCellBaseDataResult) {
         variantCellBaseDataResult.setResults(Collections.emptyList());
         variantCellBaseDataResult.setNumResults(0);
-        variantCellBaseDataResult.setNumTotalResults(0);
+        variantCellBaseDataResult.setNumMatches(0);
     }
-
-
-
-
 
 }
