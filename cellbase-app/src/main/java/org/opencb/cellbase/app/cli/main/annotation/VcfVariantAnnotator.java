@@ -145,7 +145,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
                 Variant variant1 = mapper.readValue(dbContent, Variant.class);
 
                 customAnnotationCellBaseDataResult.setResults(Collections.singletonList(variant1));
-                customAnnotationCellBaseDataResult.setNumTotalResults(1);
+                customAnnotationCellBaseDataResult.setNumMatches(1);
                 customAnnotationCellBaseDataResult.setNumResults(1);
             }
         } catch (RocksDBException | IOException e) {
