@@ -1,1 +1,0 @@
- Hack to get around Maven blocking HTTP repos. Once CellBase does not have any HTTP dependencies, delete this directory.
