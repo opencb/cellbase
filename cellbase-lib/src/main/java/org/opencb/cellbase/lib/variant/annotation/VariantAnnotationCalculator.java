@@ -131,7 +131,7 @@ public class VariantAnnotationCalculator {
         cellBaseDataResult.setId(variant.toString());
         cellBaseDataResult.setTime(Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue());
         cellBaseDataResult.setNumResults(consequenceTypeList.size());
-        cellBaseDataResult.setNumTotalResults(consequenceTypeList.size());
+        cellBaseDataResult.setNumMatches(consequenceTypeList.size());
         cellBaseDataResult.setResults(consequenceTypeList);
         return cellBaseDataResult;
     }
@@ -1761,7 +1761,7 @@ public class VariantAnnotationCalculator {
                     // to the two breakpoints
                     repeatSet.addAll(tmpCellBaseDataResultList.get(1).getResults());
                     newCellBaseDataResult.setNumResults(repeatSet.size());
-                    newCellBaseDataResult.setNumTotalResults(repeatSet.size());
+                    newCellBaseDataResult.setNumMatches(repeatSet.size());
                     newCellBaseDataResult.setResults(new ArrayList(repeatSet));
                 }
                 cellBaseDataResultList.add(newCellBaseDataResult);
@@ -1824,7 +1824,7 @@ public class VariantAnnotationCalculator {
                     // to the two breakpoints
                     cytobandSet.addAll(tmpCellBaseDataResultList.get(1).getResults());
                     newCellBaseDataResult.setNumResults(cytobandSet.size());
-                    newCellBaseDataResult.setNumTotalResults(cytobandSet.size());
+                    newCellBaseDataResult.setNumMatches(cytobandSet.size());
                     newCellBaseDataResult.setResults(new ArrayList(cytobandSet));
                 }
                 cellBaseDataResultList.add(newCellBaseDataResult);
