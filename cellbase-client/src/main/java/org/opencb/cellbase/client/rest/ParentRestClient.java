@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.client.ClientProperties;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.DrugResponseClassification;
 import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
@@ -92,9 +93,13 @@ public class ParentRestClient<T> {
         this.species = species;
         this.assembly = assembly;
         this.configuration = configuration;
+        logger = LoggerFactory.getLogger(this.getClass().toString());
 
         this.client = ClientBuilder.newClient();
-        logger = LoggerFactory.getLogger(this.getClass().toString());
+        client.property(ClientProperties.CONNECT_TIMEOUT, 1000);
+        client.property(ClientProperties.READ_TIMEOUT, configuration.getRest().getTimeout());
+
+        logger.debug("Configure read timeout : " + configuration.getRest().getTimeout() + "ms");
     }
 
     static {
@@ -204,6 +209,7 @@ public class ParentRestClient<T> {
                 ? options.getInt("numThreads", DEFAULT_NUM_THREADS)
                 : DEFAULT_NUM_THREADS;
 
+        // TODO: Use cached thread pool
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
         List<Future<CellBaseDataResponse<U>>> futureList = new ArrayList<>((idList.size() / REST_CALL_BATCH_SIZE) + 1);
         for (int i = 0; i < idList.size(); i += REST_CALL_BATCH_SIZE) {
@@ -223,8 +229,11 @@ public class ParentRestClient<T> {
                     Thread.sleep(5);
                 }
                 cellBaseDataResults.addAll(responseFuture.get().getResponses());
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException(e);
+            } catch (ExecutionException e) {
+                throw new IOException(e);
             }
         }
 
@@ -248,10 +257,9 @@ public class ParentRestClient<T> {
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
-        CellBaseDataResponse<U> queryResponse = null;
         CellBaseDataResponse<U> finalDataResponse = null;
         while (call) {
-            queryResponse = robustRestCall(idList, resource, options, clazz, post);
+            CellBaseDataResponse<U> queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
             // Create id -> finalDataResponse-position map, so that we can know in forthcoming iterations where to
@@ -296,8 +304,12 @@ public class ParentRestClient<T> {
                 options.put("skip", skip);
             }
         }
+        logger.debug("queryResponse: {"
+                + "time: " + finalDataResponse.getTime() + ", "
+                + "apiVersion: " + finalDataResponse.getApiVersion() + ", "
+                + "responses: " + finalDataResponse.getResponses().size() + ", "
+                + "events: " + finalDataResponse.getEvents() + "}");
 
-        logger.debug("queryResponse = " + queryResponse);
         return finalDataResponse;
     }
 

@@ -22,6 +22,7 @@ jobs:
     - name: Clone and build java-common-libs
       run: cd ~ && git clone -b develop https://github.com/opencb/java-common-libs.git && cd ~/java-common-libs && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
     - name: Clone and build biodata
-      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
+      # remove copying over the .mvn directory once the HTTP repo is removed
+      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && cp -ar $GITHUB_WORKSPACE/.mvn . && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
     - name: Build with Maven
       run: mvn -T 2 clean install

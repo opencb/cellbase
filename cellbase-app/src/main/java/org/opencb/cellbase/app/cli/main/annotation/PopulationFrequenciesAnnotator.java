@@ -127,8 +127,8 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
                 flagVisitedVariant(variantKey, variant1);
 
                 populationFrequencyCellBaseDataResult.setResults(Collections.singletonList(variant1));
-                populationFrequencyCellBaseDataResult.setNumTotalResults(1);
                 populationFrequencyCellBaseDataResult.setNumResults(1);
+                populationFrequencyCellBaseDataResult.setNumMatches(1);
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();

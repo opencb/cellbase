@@ -48,7 +48,7 @@ public class HgvsTranscriptCalculator {
     private static final String INS = "ins";
     private static final String DEL = "del";
     private static final String DUP = "dup";
-    private static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
+    private static final int MINIMUM_NEIGHBOURING_SEQUENCE_SIZE = 100;
     private final GenomeManager genomeManager;
 
     /**
@@ -72,6 +72,11 @@ public class HgvsTranscriptCalculator {
      * @return HGVS string for this transcript
      */
     public String calculate() {
+        // Check reference and alternate alleles do not contain unexpected characters
+        if (!HgvsCalculator.isValid(this.variant)) {
+            return null;
+        }
+
         switch (variant.getType()) {
             case SNV:
                 return calculateSNVHgvsString();
@@ -425,8 +430,9 @@ public class HgvsTranscriptCalculator {
     private BuildingComponents.MutationType genomicInsertionHgvsNormalize(Variant variant, Transcript transcript,
                                                                           Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
-        int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
-        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
+        int neighbouringSequenceSize = Math.max(MINIMUM_NEIGHBOURING_SEQUENCE_SIZE, variant.getAlternate().length());
+        int start = Math.max(variant.getStart() - neighbouringSequenceSize, 1);  // TODO: might need to adjust +-1 nt
+        int end = variant.getStart() + neighbouringSequenceSize + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
@@ -450,13 +456,13 @@ public class HgvsTranscriptCalculator {
 
         // Check duplication
         String previousSequence = genomicSequence.substring(Math.max(0,
-                NEIGHBOURING_SEQUENCE_SIZE - variant.getAlternate().length()  // TODO: might need to adjust +-1 nt
+                neighbouringSequenceSize - variant.getAlternate().length()  // TODO: might need to adjust +-1 nt
                         + (normalizedVariant.getStart() - variant.getStart())), // Needs to sum the difference with the
                 // normalized one in order to take into
                 // account potential
                 // normalization/lef-right alignment
                 // differences
-                NEIGHBOURING_SEQUENCE_SIZE + (normalizedVariant.getStart() - variant.getStart())); // Needs to sum the difference with the
+                neighbouringSequenceSize + (normalizedVariant.getStart() - variant.getStart())); // Needs to sum the difference with the
         // normalized one in order to take into
         // account potential
         // normalization/lef-right alignment
@@ -464,13 +470,13 @@ public class HgvsTranscriptCalculator {
         if (previousSequence.equals(normalizedVariant.getAlternate())) {
             return BuildingComponents.MutationType.DUPLICATION;
         } else {
-            String nextSequence = genomicSequence.substring(NEIGHBOURING_SEQUENCE_SIZE // TODO: might need to adjust +-1 nt
+            String nextSequence = genomicSequence.substring(neighbouringSequenceSize // TODO: might need to adjust +-1 nt
                             + (normalizedVariant.getStart() - variant.getStart()), // Needs to sum the difference with the
                     // normalized one in order to take into
                     // account potential
                     // normalization/lef-right alignment
                     // differences
-                    NEIGHBOURING_SEQUENCE_SIZE + variant.getAlternate().length()
+                    neighbouringSequenceSize + variant.getAlternate().length()
                             + (normalizedVariant.getStart() - variant.getStart())); // Needs to sum the difference with the
             // normalized one in order to take into
             // account potential
@@ -485,8 +491,8 @@ public class HgvsTranscriptCalculator {
 
     private String transcriptDeletionHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
-        int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
-        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
+        int start = Math.max(variant.getStart() - MINIMUM_NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
+        int end = variant.getStart() + MINIMUM_NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence
