@@ -21,7 +21,6 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
@@ -514,22 +513,6 @@ public class RegionWSServer extends GenericRestWSServer {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults
                     = genomeManager.getConservation(query.toQueryOptions(), regions);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{regions}/splice")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the splice scores", response = SpliceScore.class,
-            responseContainer = "QueryResponse")
-    public Response splice(@PathParam("regions")
-                           @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
-        try {
-            GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult<SpliceScore>> queryResults
-                    = genomeManager.getSplice(regions, query.toQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

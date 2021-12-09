@@ -16,9 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.variant.avro.AlternateSpliceScore;
-import org.opencb.biodata.models.variant.avro.SpliceScore;
+import org.opencb.biodata.models.core.SpliceScore;
+import org.opencb.biodata.models.core.SpliceScoreAlternate;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
@@ -95,7 +94,7 @@ public class SpliceBuilder extends CellBaseBuilder {
                         String[] idFields = fields[0].split(":");
 
                         String chrom = idFields[0];
-                        int start = Integer.parseInt(idFields[1]);
+                        int position = Integer.parseInt(idFields[1]);
                         String ref = idFields[2];
                         String alt = idFields[3].replace("'", "").replace("[", "").replace("]", "");
 
@@ -103,29 +102,28 @@ public class SpliceBuilder extends CellBaseBuilder {
                         String transcript = fields[5];
 
                         // Check for duplicated lines
-                        String uid = chrom + ":" + start + ":" + ref + ":" + alt + ":" + transcript;
+                        String uid = chrom + ":" + position + ":" + ref + ":" + alt + ":" + transcript;
                         if (rocksDB.get(uid.getBytes()) != null) {
                             continue;
                         }
                         rocksDB.put(uid.getBytes(), "1".getBytes());
 
                         // Create alternate splice score to be added further
-                        AlternateSpliceScore alternateSpliceScore = new AlternateSpliceScore(alt, new HashMap<>());
+                        SpliceScoreAlternate scoreAlt = new SpliceScoreAlternate(alt, new HashMap<>());
                         for (int i = 6; i < labels.length; i++) {
-                            alternateSpliceScore.getScores().put(labels[i], Double.parseDouble(fields[i]));
+                            scoreAlt.getScores().put(labels[i], Double.parseDouble(fields[i]));
                         }
 
                         // Create splice score
                         if (spliceScore != null
                                 && spliceScore.getChromosome().equals(chrom)
-                                && spliceScore.getStart() == start
+                                && spliceScore.getPosition() == position
                                 && spliceScore.getRefAllele().equals(ref)
                                 && spliceScore.getTranscriptId().equals(transcript)) {
-                            spliceScore.getAlternates().add(alternateSpliceScore);
+                            spliceScore.getAlternates().add(scoreAlt);
                         } else {
                             if (spliceScore != null) {
                                 // Write the currant splice score
-                                setEndPosition(spliceScore);
                                 fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
                                         + spliceScore.getChromosome());
                             }
@@ -133,7 +131,7 @@ public class SpliceBuilder extends CellBaseBuilder {
                             // And prepare the new splice score
                             spliceScore = new SpliceScore();
                             spliceScore.setChromosome(chrom);
-                            spliceScore.setStart(start);
+                            spliceScore.setPosition(position);
                             spliceScore.setRefAllele(ref);
                             spliceScore.setGeneId(fields[3]);
                             spliceScore.setGeneName(fields[4]);
@@ -142,13 +140,12 @@ public class SpliceBuilder extends CellBaseBuilder {
                             spliceScore.setSource("mmsplice");
                             spliceScore.setAlternates(new ArrayList<>());
 
-                            spliceScore.getAlternates().add(alternateSpliceScore);
+                            spliceScore.getAlternates().add(scoreAlt);
                         }
                     }
 
                     if (spliceScore != null) {
                         // Write the last splice score
-                        setEndPosition(spliceScore);
                         fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
                                 + spliceScore.getChromosome());
                     }
@@ -159,18 +156,5 @@ public class SpliceBuilder extends CellBaseBuilder {
             }
         }
         rocksDB.close();
-    }
-
-    private void setEndPosition(SpliceScore spliceScore) {
-        // Manage end position
-        int end = spliceScore.getStart();
-        for (AlternateSpliceScore alternate : spliceScore.getAlternates()) {
-            if (StringUtils.isNotEmpty(alternate.getAltAllele())) {
-                if (spliceScore.getStart() + alternate.getAltAllele().length() - 1 > end) {
-                    end = spliceScore.getStart() + alternate.getAltAllele().length() - 1;
-                }
-            }
-        }
-        spliceScore.setEnd(end);
     }
 }

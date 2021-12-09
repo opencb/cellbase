@@ -79,6 +79,10 @@ public class MongoDBAdaptorFactory {
         return new MissenseVariationFunctionalScoreMongoDBAdaptor(mongoDatastore);
     }
 
+    public SpliceScoreMongoDBAdaptor getSpliceScoreDBAdaptor() {
+        return new SpliceScoreMongoDBAdaptor(mongoDatastore);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MongoDBAdaptorFactory{");

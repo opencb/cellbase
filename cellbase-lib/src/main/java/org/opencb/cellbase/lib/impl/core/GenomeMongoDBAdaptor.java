@@ -26,7 +26,6 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.biodata.models.variant.avro.SpliceScore;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;

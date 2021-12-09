@@ -147,7 +147,6 @@ public class VariantAnnotationCalculator {
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
                                                                                   QueryOptions queryOptions)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
-
         logger.debug("Annotating  batch");
         parseQueryParam(queryOptions);
 
@@ -160,7 +159,6 @@ public class VariantAnnotationCalculator {
         } else {
             normalizedVariantList = variantList;
         }
-
         long startTime = System.currentTimeMillis();
         // Normalized variants already contain updated VariantAnnotation objects since runAnnotationProcess will
         // write on them if available (if not will create and set them) - i.e. no need to use variantAnnotationList
@@ -169,7 +167,6 @@ public class VariantAnnotationCalculator {
 
         return generateCellBaseDataResultList(variantList, normalizedVariantList, startTime);
     }
-
     private List<CellBaseDataResult<VariantAnnotation>> generateCellBaseDataResultList(List<Variant> variantList,
                                                                                        List<Variant> normalizedVariantList,
                                                                                        long startTime) {
@@ -1958,26 +1955,10 @@ public class VariantAnnotationCalculator {
             logger.debug("Query splice");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                // Truncate region size of SVs to avoid server collapse
-                List<Region> regionList = variantToRegionList(variant).stream().map(region -> region.size() > 50
-                                ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
-                                : region).collect(Collectors.toList());
-
-                List<CellBaseDataResult<SpliceScore>> tmpCellBaseDataResultList = genomeManager.getSplice(regionList, queryOptions);
-
-                // There may be more than one CellBaseDataResult per variant for breakends
-                // Reuse one of the CellBaseDataResult objects returned by the adaptor
-                CellBaseDataResult<SpliceScore> newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
-                if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
-                    // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
-                    // to the two breakpoints
-                    newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
-                    newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
-                    newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());
-                }
-                cellBaseDataResultList.add(newCellBaseDataResult);
+                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant));
             }
-            logger.debug("Splice query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+            logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
             return cellBaseDataResultList;
         }
 
@@ -1991,7 +1972,8 @@ public class VariantAnnotationCalculator {
             List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults = spliceFuture.get();
             if (spliceCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    variantAnnotationList.get(i).setSplice(spliceCellBaseDataResults.get(i).getResults());
+                    System.out.println(spliceCellBaseDataResults.get(i));
+//                    variantAnnotationList.get(i).getConsequenceTypes(spliceCellBaseDataResults.get(i).getResults());
                 }
             }
         }

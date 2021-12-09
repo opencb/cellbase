@@ -121,7 +121,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/annotation")
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
-            + " values from the following set: {variation, traitAssociation, conservation, consequenceType,"
+            + " values from the following set: {variation, traitAssociation, conservation, splice, consequenceType,"
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse", hidden = true)
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
@@ -200,7 +200,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{variants}/annotation")
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
-            + " values from the following set: {variation, traitAssociation, conservation, consequenceType,"
+            + " values from the following set: {variation, traitAssociation, conservation, splice, consequenceType,"
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
