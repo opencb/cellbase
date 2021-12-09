@@ -49,11 +49,11 @@ public class SpliceBuilder extends CellBaseBuilder {
 
         logger.info("Parsing variant slice...");
 
-        SpliceAIBuildExecutor executor = new SpliceAIBuildExecutor(genePath, genomeInfoPath, fastaPath, DISTANCE, CHUNK_SIZE, serializer);
-
-        executor.prepareInput();
-        executor.runSpliceAI();
-        executor.parseOutput();
+//        SpliceAIBuildExecutor executor = new SpliceAIBuildExecutor(genePath, genomeInfoPath, fastaPath, DISTANCE, CHUNK_SIZE, serializer);
+//
+//        executor.prepareInput();
+//        executor.runSpliceAI();
+//        executor.parseOutput();
 //
 //
 //        BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFilePath);
