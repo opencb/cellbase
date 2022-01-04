@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>4.9.6</version>
+    <version>4.9.7</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -22,7 +22,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>4.9.6</cellbase.version>
+        <cellbase.version>4.9.7</cellbase.version>
         <compileSource>1.8</compileSource>
         <java-common-libs.version>3.7.5</java-common-libs.version>
         <biodata.version>1.5.5</biodata.version>
@@ -33,7 +33,7 @@
         <jersey.version>2.25.1</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
         <slf4j.version>1.7.25</slf4j.version>
-        <log4j2.version>2.13.3</log4j2.version>
+        <log4j2.version>2.17.1</log4j2.version>
     </properties>
 
     <scm>
