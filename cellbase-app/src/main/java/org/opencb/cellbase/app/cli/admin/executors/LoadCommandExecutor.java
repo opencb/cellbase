@@ -99,7 +99,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                         EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                        EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_DATA};
+                        EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA};
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -188,9 +188,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve(EtlCommons.DO_VERSION_FILE), METADATA);
                             createIndex("ontology");
                             break;
-                        case EtlCommons.SPLICE_DATA:
+                        case EtlCommons.SPLICE_SCORE_DATA:
                             loadSplice();
-                            createIndex("splice");
+                            createIndex("splice_score");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
@@ -357,16 +357,16 @@ public class LoadCommandExecutor extends CommandExecutor {
         logger.info("Loading splice scores from '{}'", input);
 
         // MMSplice scores
-        Path mmspliceFolder = input.resolve(EtlCommons.SPLICE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY);
+        Path mmspliceFolder = input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY);
         DirectoryStream<Path> stream = Files.newDirectoryStream(mmspliceFolder, entry -> {
             return entry.getFileName().toString().startsWith("mmsplice_");
         });
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(mmspliceFolder.resolve(entry.getFileName()), "splice");
+            loadRunner.load(mmspliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA);
         }
-        loadIfExists(input.resolve(EtlCommons.SPLICE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME), METADATA);
+        loadIfExists(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME), METADATA);
     }
 
     private void createIndex(String collectionName) {

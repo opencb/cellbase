@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.variant.annotation;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
@@ -503,11 +504,11 @@ public class VariantAnnotationCalculator {
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
         }
 
-        FutureSpliceAnnotator futureSpliceAnnotator = null;
-        Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture = null;
-        if (annotatorSet.contains("splice")) {
-            futureSpliceAnnotator = new FutureSpliceAnnotator(normalizedVariantList, QueryOptions.empty());
-            spliceFuture = fixedThreadPool.submit(futureSpliceAnnotator);
+        FutureSpliceScoreAnnotator futureSpliceScoreAnnotator = null;
+        Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture = null;
+        if (annotatorSet.contains("consequenceType")) {
+            futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty());
+            spliceScoreFuture = fixedThreadPool.submit(futureSpliceScoreAnnotator);
         }
 
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
@@ -626,8 +627,8 @@ public class VariantAnnotationCalculator {
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
-        if (futureSpliceAnnotator != null) {
-            futureSpliceAnnotator.processResults(spliceFuture, variantAnnotationList);
+        if (futureSpliceScoreAnnotator != null) {
+            futureSpliceScoreAnnotator.processResults(spliceScoreFuture, variantAnnotationList);
         }
         fixedThreadPool.shutdown();
 
@@ -1705,100 +1706,10 @@ public class VariantAnnotationCalculator {
                         variantAnnotationList.get(i)
                                 .setTraitAssociation(clinicalCellBaseDataResult.getResults().get(0).getAnnotation()
                                         .getTraitAssociation());
-//                        // DEPRECATED
-//                        // TODO: remove in 4.6
-//                        variantAnnotationList.get(i)
-//                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalCellBaseDataResult
-//                                        .getResults()
-//                                        .get(0)
-//                                        .getAnnotation()
-//                                        .getTraitAssociation()));
                     }
                 }
             }
         }
-
-//        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
-//            List<ClinVar> clinvarList = new ArrayList<>();
-//            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
-//            for (EvidenceEntry evidenceEntry : traitAssociation) {
-//                switch (evidenceEntry.getSource().getName()) {
-//                    case CLINVAR:
-//                        clinvarList.add(parseClinvar(evidenceEntry));
-//                        break;
-//                    case COSMIC:
-//                        cosmicList.add(parseCosmic(evidenceEntry));
-//                        break;
-//                    default:
-//                        break;
-//                }
-//            }
-//            return new VariantTraitAssociation(clinvarList, null, cosmicList);
-//        }
-
-//        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
-//            String primarySite = null;
-//            String siteSubtype = null;
-//            String primaryHistology = null;
-//            String histologySubtype = null;
-//            String sampleSource = null;
-//            String tumourOrigin = null;
-//            if (evidenceEntry.getSomaticInformation() != null) {
-//                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
-//                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
-//                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
-//                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
-//                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
-//                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
-//            }
-//            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
-//                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
-//                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
-//        }
-
-//        private String parseGeneName(EvidenceEntry evidenceEntry) {
-//            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
-//                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
-//                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
-//                // is expected to be found at index 0.
-//                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
-//            }
-//            return null;
-//        }
-
-//        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
-//            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
-//            List<String> traitList = null;
-//            if (evidenceEntry.getHeritableTraits() != null) {
-//                traitList = evidenceEntry
-//                        .getHeritableTraits()
-//                        .stream()
-//                        .map((heritableTrait) -> heritableTrait.getTrait())
-//                        .collect(Collectors.toList());
-//            }
-//            List<String> geneNameList = null;
-//            if (evidenceEntry.getGenomicFeatures() != null) {
-//                geneNameList = evidenceEntry
-//                        .getGenomicFeatures()
-//                        .stream()
-//                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
-//                        .collect(Collectors.toList());
-//            }
-//            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
-//            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
-//                    reviewStatus);
-//        }
-
-//        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
-//            if (evidenceEntry.getAdditionalProperties() != null) {
-//                for (Property property : evidenceEntry.getAdditionalProperties()) {
-//                    if (name.equals(property.getName())) {
-//                        return property.getValue();
-//                    }
-//                }
-//            }
-//            return null;
-//        }
     }
 
     class FutureRepeatsAnnotator implements Callable<List<CellBaseDataResult<Repeat>>> {
@@ -1937,11 +1848,11 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    class FutureSpliceAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
+    class FutureSpliceScoreAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        FutureSpliceAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureSpliceScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -1970,10 +1881,24 @@ public class VariantAnnotationCalculator {
             }
 
             List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults = spliceFuture.get();
-            if (spliceCellBaseDataResults != null) {
+            if (CollectionUtils.isNotEmpty(spliceCellBaseDataResults)) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    System.out.println(spliceCellBaseDataResults.get(i));
-//                    variantAnnotationList.get(i).getConsequenceTypes(spliceCellBaseDataResults.get(i).getResults());
+                    CellBaseDataResult<SpliceScore> spliceScoreResult = spliceCellBaseDataResults.get(i);
+                    if (spliceScoreResult != null && CollectionUtils.isNotEmpty(spliceScoreResult.getResults())) {
+                        for (SpliceScore spliceScore : spliceScoreResult.getResults()) {
+                            for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
+                                if (variantAnnotationList.get(i).getAlternate().equals(spliceScoreAlt.getAltAllele())) {
+                                    for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
+                                        if (spliceScore.getTranscriptId().equals(ct.getTranscriptId())) {
+                                            SpliceScores scores = new SpliceScores(spliceScore.getSource(), spliceScoreAlt.getScores());
+                                            ct.setSpliceScores(Collections.singletonList(scores));
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -100,7 +100,9 @@ public class BuildCommandExecutor extends CommandExecutor {
             }
             // <output>/<species>_<assembly>/generated_json
             buildFolder = output.resolve(spFolder + "/generated_json");
-            makeDir(buildFolder);
+            if (!buildFolder.toFile().exists()) {
+                makeDir(buildFolder);
+            }
 
             if (buildCommandOptions.data != null) {
                 String[] buildOptions;
@@ -155,7 +157,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.OBO_DATA:
                             parser = buildObo();
                             break;
-                        case EtlCommons.SPLICE_DATA:
+                        case EtlCommons.SPLICE_SCORE_DATA:
                             parser = buildSplice();
                             break;
                         default:
@@ -376,8 +378,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildSplice() throws IOException {
-        Path spliceInputFolder = downloadFolder.resolve(EtlCommons.SPLICE_DATA);
-        Path spliceOutputFolder = buildFolder.resolve(EtlCommons.SPLICE_DATA);
+        Path spliceInputFolder = downloadFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
+        Path spliceOutputFolder = buildFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
         if (!spliceOutputFolder.toFile().exists()) {
             spliceOutputFolder.toFile().mkdirs();
         }

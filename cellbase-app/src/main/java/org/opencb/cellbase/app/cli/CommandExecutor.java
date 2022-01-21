@@ -72,8 +72,6 @@ public abstract class CommandExecutor {
             this.conf = this.appHome + "/conf";
         }
 
-        System.out.println(">>>>> " + this.conf);
-
         if (logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
             setLogLevel(logLevel);

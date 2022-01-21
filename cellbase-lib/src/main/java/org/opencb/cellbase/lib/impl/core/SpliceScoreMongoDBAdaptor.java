@@ -41,14 +41,14 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
     private void init() {
         logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(EtlCommons.SPLICE_DATA);
+        mongoDBCollection = mongoDataStore.getCollection(EtlCommons.SPLICE_SCORE_DATA);
     }
 
     public CellBaseDataResult<SpliceScore> query(String chromosome, int position, String reference) {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));
-        andBsonList.add(Filters.eq("reference", reference));
+        andBsonList.add(Filters.eq("refAllele", reference));
         Bson query = Filters.and(andBsonList);
         return new CellBaseDataResult<>(mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions()));
 
@@ -58,14 +58,14 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));
-        andBsonList.add(Filters.eq("reference", reference));
+        andBsonList.add(Filters.eq("refAllele", reference));
         Bson query = Filters.and(andBsonList);
 
         final String id = chromosome + ":" + position + ":" + reference + ":" + alternate;
 
         DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
 
-        // Search for the right aa change
+        // Search for the right splice score
         if (spliceScoreDataResult.getNumResults() > 0) {
             for (SpliceScore score : spliceScoreDataResult.getResults()) {
                 for (SpliceScoreAlternate scoreAlternate : score.getAlternates()) {

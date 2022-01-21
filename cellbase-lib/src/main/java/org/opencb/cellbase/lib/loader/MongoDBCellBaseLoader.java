@@ -265,8 +265,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "ontology":
                 collection = "ontology";
                 break;
-            case "splice":
-                collection = "splice";
+            case "splice_score":
+                collection = "splice_score";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
@@ -298,7 +298,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "repeats":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
-                case "splice":
+                case "splice_score":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.SPLICE_CHUNK_SIZE};
                     break;
                 default:
@@ -700,8 +700,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (chunkSizes != null && chunkSizes.length > 0) {
             List<String> chunkIds = new ArrayList<>();
             for (int chunkSize : chunkSizes) {
-                int chunkStart = (Integer) document.get("start") / chunkSize;
-                int chunkEnd = (Integer) document.get("end") / chunkSize;
+                int start = document.get("position") != null ? (Integer) document.get("position") : (Integer) document.get("start");
+                int end = document.get("position") != null ? (Integer) document.get("position") : (Integer) document.get("end");
+
+                int chunkStart = start / chunkSize;
+                int chunkEnd = end / chunkSize;
                 String chunkIdSuffix = chunkSize / 1000 + "k";
                 for (int i = chunkStart; i <= chunkEnd; i++) {
                     if (document.containsKey("chromosome")) {
@@ -781,8 +784,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "repeats":
                 indexFileName = "repeat-indexes.js";
                 break;
-            case "splice":
-                indexFileName = "splice-indexes.js";
+            case "splice_score":
+                indexFileName = "splice_score-indexes.js";
                 break;
             default:
                 break;

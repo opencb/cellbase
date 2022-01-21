@@ -124,7 +124,7 @@ public class SpliceBuilder extends CellBaseBuilder {
                         } else {
                             if (spliceScore != null) {
                                 // Write the currant splice score
-                                fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
+                                fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_chr"
                                         + spliceScore.getChromosome());
                             }
 
@@ -146,7 +146,7 @@ public class SpliceBuilder extends CellBaseBuilder {
 
                     if (spliceScore != null) {
                         // Write the last splice score
-                        fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_"
+                        fileSerializer.serialize(spliceScore, EtlCommons.MMSPLICE_SUBDIRECTORY + "/mmsplice_chr"
                                 + spliceScore.getChromosome());
                     }
                 }
