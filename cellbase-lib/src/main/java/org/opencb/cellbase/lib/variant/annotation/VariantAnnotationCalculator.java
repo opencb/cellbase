@@ -1886,15 +1886,18 @@ public class VariantAnnotationCalculator {
                     CellBaseDataResult<SpliceScore> spliceScoreResult = spliceCellBaseDataResults.get(i);
                     if (spliceScoreResult != null && CollectionUtils.isNotEmpty(spliceScoreResult.getResults())) {
                         for (SpliceScore spliceScore : spliceScoreResult.getResults()) {
-                            for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
-                                if (variantAnnotationList.get(i).getAlternate().equals(spliceScoreAlt.getAltAllele())) {
-                                    for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
+                            for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
+                                List<SpliceScores> selectedScores = new ArrayList<>();
+                                for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
+                                    if (variantAnnotationList.get(i).getAlternate().equals(spliceScoreAlt.getAltAllele())) {
                                         if (spliceScore.getTranscriptId().equals(ct.getTranscriptId())) {
                                             SpliceScores scores = new SpliceScores(spliceScore.getSource(), spliceScoreAlt.getScores());
-                                            ct.setSpliceScores(Collections.singletonList(scores));
-                                            break;
+                                            selectedScores.add(scores);
                                         }
                                     }
+                                }
+                                if (CollectionUtils.isNotEmpty(selectedScores)) {
+                                    ct.setSpliceScores(selectedScores);
                                 }
                             }
                         }
