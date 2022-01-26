@@ -41,6 +41,7 @@ import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.*;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by imedina on 25/11/15.
@@ -128,6 +129,27 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         Bson bsonQuery = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return groupBy(bsonQuery, geneQuery, "name");
+    }
+
+    public CellBaseDataResult<Gene> startsWith(String id, QueryOptions options) {
+        Bson regex;
+        if (id.startsWith("ENSG")) {
+            regex = Filters.regex("id", Pattern.compile("^" + id));
+        } else {
+            regex = Filters.regex("name", Pattern.compile("^" + id));
+        }
+
+        Bson projection;
+        if (options.containsKey(QueryOptions.INCLUDE)) {
+            projection = Projections.include(options.getAsStringList(QueryOptions.INCLUDE));
+        } else {
+            if (options.containsKey(QueryOptions.EXCLUDE)) {
+                projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
+            } else {
+                projection = Projections.exclude("transcripts", "annotation");
+            }
+        }
+        return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
     }
 
     public Bson parseQuery(GeneQuery geneQuery) {

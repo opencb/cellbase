@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +91,10 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
             geneQueryResults.add(geneQueryResult);
         }
         return geneQueryResults;
+    }
+
+    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions) {
+        return geneDBAdaptor.startsWith(query, queryOptions);
     }
 
 }
