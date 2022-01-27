@@ -89,6 +89,8 @@ public class EtlCommons {
     public static final String GERP_SUBDIRECTORY = "gerp";
     public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
     public static final String MMSPLICE_VERSION_FILENAME = "mmspliceVersion.json";
+    public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
+    public static final String SPLICEAI_VERSION_FILENAME = "spliceaiVersion.json";
 
     // binary bigwig file
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
