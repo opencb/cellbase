@@ -50,6 +50,7 @@ public class GeneBuilderIndexer {
     protected String dbLocation;
     protected Options dbOption;
 
+    protected final String HGNC_ID_SUFFIX = "_hgncid";
     protected final String MANE_SUFFIX = "_mane";
     protected final String LRG_SUFFIX = "_lrg";
     protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
@@ -111,6 +112,29 @@ public class GeneBuilderIndexer {
 
     protected String getProteinFasta(String id) throws RocksDBException {
         return getIndexEntry(id, PROTEIN_SEQUENCE_SUFFIX);
+    }
+
+    protected void indexHgncIdMapping(Path hgncMappingFile) throws IOException, RocksDBException {
+        // #hgnc_id symbol  name    locus_group     locus_type      status  location        location_sortable  ...
+        logger.info("Indexing HGNC ID mapping data ...");
+
+        // We only need the first two columns: hgnc_id -> symbol
+        if (hgncMappingFile != null && Files.exists(hgncMappingFile) && Files.size(hgncMappingFile) > 0) {
+            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hgncMappingFile)) {
+                String line = bufferedReader.readLine();
+                while (StringUtils.isNotEmpty(line)) {
+                    String[] fields = line.split("\t", -1);
+                    rocksDbManager.update(rocksdb, fields[1] + HGNC_ID_SUFFIX, fields[0]);
+                    line = bufferedReader.readLine();
+                }
+            }
+        } else {
+            logger.warn("HGNC ID mapping file " + hgncMappingFile + " not found");
+        }
+    }
+
+    public String getHgncId(String id) throws RocksDBException {
+        return getIndexEntry(id, HGNC_ID_SUFFIX);
     }
 
     protected void indexManeMapping(Path maneMappingFile, String referenceId) throws IOException, RocksDBException {

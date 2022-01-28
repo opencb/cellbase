@@ -45,6 +45,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path cDnaFastaFile;
     private Path geneDescriptionFile;
     private Path xrefsFile;
+    private Path hgncFile;
     private Path maneFile;
     private Path lrgFile;
     private Path uniprotIdMappingFile;
@@ -89,6 +90,7 @@ public class GeneBuilder extends CellBaseBuilder {
                        boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellBaseException {
         this(null, geneDirectoryPath.resolve("description.txt"),
                 geneDirectoryPath.resolve("xrefs.txt"),
+                geneDirectoryPath.resolve("hgnc_complete_set_2022-01-01.txt"),
                 geneDirectoryPath.resolve("MANE.GRCh38.v0.93.summary.txt.gz"),
                 geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
@@ -115,9 +117,10 @@ public class GeneBuilder extends CellBaseBuilder {
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
-                       Path tfbsFile, Path tabixFile, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile,
-                       Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
+    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile,
+                       Path lrgFile, Path uniprotIdMappingFile, Path tfbsFile, Path tabixFile, Path geneExpressionFile,
+                       Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+                       Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneCensusFile,
                        Path cancerHostpotFile, Path ensemblCanonicalFile, Path tso500File, Path eglhHaemOncFile,
                        Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
                        CellBaseSerializer serializer) {
@@ -126,6 +129,7 @@ public class GeneBuilder extends CellBaseBuilder {
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
         this.xrefsFile = xrefsFile;
+        this.hgncFile = hgncFile;
         this.maneFile = maneFile;
         this.lrgFile = lrgFile;
         this.uniprotIdMappingFile = uniprotIdMappingFile;
@@ -162,9 +166,10 @@ public class GeneBuilder extends CellBaseBuilder {
 
         try {
             // process files and put values in rocksdb
-            indexer.index(geneDescriptionFile, xrefsFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
-                    speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
+            indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile,
+                    proteinFastaFile, cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile,
+                    geneDrugFile, hpoFile, disgenetFile, gnomadFile, geneOntologyAnnotationFile, miRBaseFile,
+                    miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
                     tso500File, eglhHaemOncFile);
 
             TabixReader tabixReader = null;
@@ -392,6 +397,13 @@ public class GeneBuilder extends CellBaseBuilder {
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
         // that the xrefs array contains all ids present in the GTF file
         addGtfXrefs(transcript, gene, gtfAttributes);
+
+        // Add LRG mappings, with this we can know which Ensembl and Refseq transcripts match according to LRG
+        logger.info(gene.getName());
+        String hgncId = indexer.getHgncId(gene.getName());
+        if (StringUtils.isNotEmpty(hgncId)) {
+            transcript.getXrefs().add(new Xref(hgncId, "hgnc_id", "HGNC ID"));
+        }
 
         // Add MANE Select mappings, with this we can know which Ensembl and Refseq transcripts match according to MANE
         for (String suffix: Arrays.asList("refseq", "refseq_protein")) {

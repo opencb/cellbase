@@ -52,13 +52,16 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
         super(geneDirectoryPath);
     }
 
-    public void index(Path geneDescriptionFile, Path xrefsFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
+    public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
                       Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile, Path tso500File, Path eglhHaemOncFile)
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
+
+        indexHgncIdMapping(hgncFile);
+
         indexManeMapping(maneFile, "ensembl");
         indexLrgMapping(lrgFile, "ensembl");
         indexProteinSequences(proteinFastaFile);
