@@ -366,11 +366,11 @@ public class MongoDBAdaptor {
 
     protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
         if (queryValues instanceof LogicalList) {
-            MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+            MongoDBQueryUtils.LogicalOperator logicalOperator = ((LogicalList<?>) queryValues).isAnd()
                     ? MongoDBQueryUtils.LogicalOperator.AND
                     : MongoDBQueryUtils.LogicalOperator.OR;
             Query query = new Query(mongoDbField, queryValues);
-            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, logicalOperator);
             andBsonList.add(filter);
         } else if (queryValues instanceof List) {
             Query query = new Query(mongoDbField, queryValues);
