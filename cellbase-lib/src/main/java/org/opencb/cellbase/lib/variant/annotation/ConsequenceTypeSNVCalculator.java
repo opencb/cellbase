@@ -63,7 +63,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 consequenceType.setBiotype(transcript.getBiotype());
                 consequenceType.setSource(source);
                 // FIXME, replaced by transcriptFlags
-                consequenceType.setTranscriptAnnotationFlags(transcript.getFlags() != null
+                consequenceType.setTranscriptFlags(transcript.getFlags() != null
                         ? new ArrayList<>(transcript.getFlags())
                         : null);
                 consequenceType.setTranscriptFlags(transcript.getFlags() != null

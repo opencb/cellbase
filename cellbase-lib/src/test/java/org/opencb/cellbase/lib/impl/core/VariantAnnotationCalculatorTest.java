@@ -509,16 +509,16 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResults(),
-                CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
-                        "ENST00000417324", "ENSG00000237613",
+                CoreMatchers.hasItems(new ConsequenceType("ENSG00000237613", "FAM138A",
+                                "ENSG00000237613", "ENST00000417324",
                                 "ENST00000417324", "-", "lincRNA", "ensembl", null,
-                        Arrays.asList("basic"), Arrays.asList("basic"),null, null, null,
+                        Arrays.asList("basic"), null,null, null,
                         null, Arrays.asList(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))),
                         new ConsequenceType("FAM138A", "ENSG00000237613",
                                 "ENST00000461467", "ENSG00000237613",
                                 "ENST00000461467", "-", "lincRNA", "ensembl", null,
-                                null, null, null, null,
+                                null, null, null,
                                 null, null, Arrays.asList(new SequenceOntologyTerm("SO:0001889",
                                 "transcript_amplification")))));
 
@@ -555,13 +555,13 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "ENSG00000237613",
                                 "ENST00000417324", "-", "lincRNA", "ensembl", null,
-                        Arrays.asList("basic"), Arrays.asList("basic"),null, null, null,
+                        Arrays.asList("basic"), null, null, null,
                         null, Arrays.asList(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))),
                         new ConsequenceType("FAM138A", "ENSG00000237613",
                                 "ENST00000461467", "ENSG00000237613",
                                 "ENST00000461467", "-", "lincRNA", "ensembl", null,
-                                null, null, null, null,
+                                null, null, null,
                                 null, null, Arrays.asList(new SequenceOntologyTerm("SO:0001893",
                                 "transcript_ablation")))));
 

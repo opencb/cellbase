@@ -64,7 +64,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
                 consequenceType.setBiotype(transcript.getBiotype());
                 consequenceType.setSource(source);
                 // deprecated
-                consequenceType.setTranscriptAnnotationFlags(transcript.getFlags() != null
+                consequenceType.setTranscriptFlags(transcript.getFlags() != null
                         ? new ArrayList<>(transcript.getFlags()) : null);
                 consequenceType.setTranscriptFlags(transcript.getFlags() != null
                         ? new ArrayList<>(transcript.getFlags()) : null);

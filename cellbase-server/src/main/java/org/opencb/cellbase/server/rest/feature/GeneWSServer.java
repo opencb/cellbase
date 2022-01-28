@@ -364,6 +364,36 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/{gene}/startsWith")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = ParamConstants.GENE_SOURCE, value = ParamConstants.GENE_SOURCE_DESCRIPTION, required = false,
+                    allowableValues="ensembl,refseq", defaultValue = "ensembl", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query")
+    })
+    public Response startsWith(@PathParam("gene") @ApiParam(name = "gene", value = ParamConstants.GENE_IDS, required = true) String gene) {
+        try {
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            String source = "ensembl";
+            if (geneQuery.getSource() != null && !geneQuery.getSource().isEmpty()) {
+                source = geneQuery.getSource().get(0);
+            }
+
+            CellBaseDataResult<Gene> queryResults = geneManager.startsWith(gene, geneQuery.toQueryOptions());
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
     @Path("/{genes}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs", response = Transcript.class,
             responseContainer = "QueryResponse")
