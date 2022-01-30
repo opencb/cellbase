@@ -38,7 +38,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path gtfFile;
     private Path fastaFile;
     private Path proteinFastaFile, cdnaFastaFile;
-    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile, cancerGeneCensus, cancerHotspot;
+    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
+    private Path cancerGeneCensus, cancerHotspot;
     private Path tso500File, eglhHaemOncFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
@@ -201,16 +202,20 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         exonDbxrefs.addAll(geneDbxrefs);
 //        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
         transcript.getXrefs().addAll(exonDbxrefs);
-        transcript.getXrefs().add(new Xref(transcript.getName(), "HGNC", "HGNC Symbol"));
+        transcript.getXrefs().add(new Xref(transcript.getName(), "hgnc_symbol", "HGNC Symbol"));
 
         // transcript has version, e.g. XR_002957988.1. put both XR_002957988 AND XR_002957988.1 in xrefs
         String transcriptId = transcript.getId();
-        Xref transcriptWithVersion = new Xref(transcriptId, "RefSeq", "RefSeq");
+        Xref transcriptWithVersion = new Xref(transcriptId, "refseq_mrna", "RefSeq mRNA");
         transcript.getXrefs().add(transcriptWithVersion);
         String[] transcriptAndVersion = transcriptId.split("\\.");
         if (transcriptAndVersion.length == 2) {
-            Xref transcriptWithoutVersion = new Xref(transcriptAndVersion[0], "RefSeq", "RefSeq");
+            Xref transcriptWithoutVersion = new Xref(transcriptAndVersion[0], "refseq_mrna", "RefSeq mRNA");
             transcript.getXrefs().add(transcriptWithoutVersion);
+        }
+
+        if (StringUtils.isNotEmpty(transcript.getProteinId())) {
+            transcript.getXrefs().add(new Xref(transcript.getProteinId(), "refseq_peptide", "RefSeq peptide"));
         }
     }
 
@@ -260,7 +265,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         }
         String exonNumber = gtf.getAttributes().get("exon_number");
-        // RefSeq does not provode Exon IDs, we are using transcript ID and exon numbers
+        // RefSeq does not provide Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;
 
         // default value. can be overwritten in the CDS entry
@@ -529,11 +534,21 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 if (dbxrefParts.length != 2) {
                     throw new RuntimeException("Bad xref, expected colon: " + xrefString);
                 }
+                String dbName = dbxrefParts[0].toLowerCase();
                 String id = dbxrefParts[1];
-                String dbName = dbxrefParts[0];
                 String dbDisplayName = dbName;
-                if ("HGNC".equalsIgnoreCase(dbName)) {
+                if ("hgnc".equalsIgnoreCase(dbName)) {
+                    dbName = "hgnc_id";
                     dbDisplayName = "HGNC ID";
+                }
+                if ("ensembl".equalsIgnoreCase(dbName)) {
+                    if (id.startsWith("ENST")) {
+                        dbName = "ensembl_transcript";
+                        dbDisplayName = "Ensembl transcript";
+                    } else {
+                        dbName = "ensembl_protein";
+                        dbDisplayName = "Ensembl protein";
+                    }
                 }
                 Xref xref = new Xref(id, dbName, dbDisplayName);
                 xrefSet.add(xref);
@@ -586,12 +601,10 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         // 3. TSO500 and EGLH HaemOnc
         String tso500Flag = indexer.getTSO500(transcriptId.split("\\.")[0]);
         if (StringUtils.isNotEmpty(tso500Flag)) {
-            System.out.println("tso500Flag = " + tso500Flag);
             transcript.getFlags().add(tso500Flag);
         }
         String eglhHaemOncFlag = indexer.getEGLHHaemOnc(transcriptId.split("\\.")[0]);
         if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-            System.out.println("eglhHaemOncFlag = " + eglhHaemOncFlag);
             transcript.getFlags().add(eglhHaemOncFlag);
         }
 

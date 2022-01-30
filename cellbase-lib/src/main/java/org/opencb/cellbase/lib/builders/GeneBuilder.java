@@ -398,8 +398,7 @@ public class GeneBuilder extends CellBaseBuilder {
         // that the xrefs array contains all ids present in the GTF file
         addGtfXrefs(transcript, gene, gtfAttributes);
 
-        // Add LRG mappings, with this we can know which Ensembl and Refseq transcripts match according to LRG
-        logger.info(gene.getName());
+        // Add HGNC ID mappings, with this we can know which Ensembl and Refseq transcripts match to HGNC ID
         String hgncId = indexer.getHgncId(gene.getName());
         if (StringUtils.isNotEmpty(hgncId)) {
             transcript.getXrefs().add(new Xref(hgncId, "hgnc_id", "HGNC ID"));

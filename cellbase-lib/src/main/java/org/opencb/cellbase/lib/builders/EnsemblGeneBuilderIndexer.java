@@ -59,9 +59,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer{
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
-
         indexHgncIdMapping(hgncFile);
-
         indexManeMapping(maneFile, "ensembl");
         indexLrgMapping(lrgFile, "ensembl");
         indexProteinSequences(proteinFastaFile);

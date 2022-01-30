@@ -25,6 +25,7 @@ public class DownloadProperties {
 
     private EnsemblProperties ensembl;
     private EnsemblProperties ensemblGenomes;
+    private URLProperties hgnc;
     private URLProperties refSeq;
     private URLProperties refSeqFasta;
     private URLProperties refSeqProteinFasta;
@@ -484,6 +485,15 @@ public class DownloadProperties {
 
     public DownloadProperties setLrg(URLProperties lrg) {
         this.lrg = lrg;
+        return this;
+    }
+
+    public URLProperties getHgnc() {
+        return hgnc;
+    }
+
+    public DownloadProperties setHgnc(URLProperties hgnc) {
+        this.hgnc = hgnc;
         return this;
     }
 
