@@ -1887,7 +1887,6 @@ public class VariantAnnotationCalculator {
                     if (spliceScoreResult != null && CollectionUtils.isNotEmpty(spliceScoreResult.getResults())) {
                         for (SpliceScore spliceScore : spliceScoreResult.getResults()) {
                             for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
-                                List<SpliceScores> selectedScores = new ArrayList<>();
                                 for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
                                     String alt = StringUtils.isEmpty(variantAnnotationList.get(i).getAlternate())
                                             ? "-"
