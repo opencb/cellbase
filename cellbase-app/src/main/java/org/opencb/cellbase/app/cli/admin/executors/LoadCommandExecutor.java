@@ -189,7 +189,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("ontology");
                             break;
                         case EtlCommons.SPLICE_SCORE_DATA:
-                            loadSplice();
+                            loadSpliceScores();
                             createIndex("splice_score");
                             break;
                         default:
@@ -350,24 +350,34 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadSplice() throws NoSuchMethodException, InterruptedException, ExecutionException,
+    private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException {
-
         logger.info("Loading splice scores from '{}'", input);
 
         // MMSplice scores
-        Path mmspliceFolder = input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY);
-        DirectoryStream<Path> stream = Files.newDirectoryStream(mmspliceFolder, entry -> {
-            return entry.getFileName().toString().startsWith("mmsplice_");
-        });
+        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY),
+                EtlCommons.MMSPLICE_VERSION_FILENAME);
 
+        // SpliceAI scores
+        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY),
+                EtlCommons.SPLICEAI_VERSION_FILENAME);
+    }
+
+    private void loadSpliceScores(Path spliceFolder, String versionFilename) throws IOException, ExecutionException, InterruptedException,
+            ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        // Get files from folder
+        DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder, entry -> {
+            return entry.getFileName().toString().startsWith("splice_score_");
+        });
+        // Load from JSON files
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(mmspliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA);
+            loadRunner.load(spliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA);
         }
-        loadIfExists(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME), METADATA);
+        loadIfExists(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + versionFilename), METADATA);
     }
+
 
     private void createIndex(String collectionName) {
         if (!createIndexes) {
@@ -377,7 +387,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         try {
             indexManager.createMongoDBIndexes(collectionName, true);
         } catch (IOException e) {
-            logger.error("Error creating indexes:" + e.toString());
+            logger.error("Error creating indexes:" + e);
         }
     }
 }

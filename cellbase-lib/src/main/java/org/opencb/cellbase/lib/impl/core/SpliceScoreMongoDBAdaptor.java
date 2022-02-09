@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.core.SpliceScoreAlternate;
@@ -44,38 +45,39 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
         mongoDBCollection = mongoDataStore.getCollection(EtlCommons.SPLICE_SCORE_DATA);
     }
 
-    public CellBaseDataResult<SpliceScore> query(String chromosome, int position, String reference) {
-        List<Bson> andBsonList = new ArrayList<>();
-        andBsonList.add(Filters.eq("chromosome", chromosome));
-        andBsonList.add(Filters.eq("position", position));
-        andBsonList.add(Filters.eq("refAllele", reference));
-        Bson query = Filters.and(andBsonList);
-        return new CellBaseDataResult<>(mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions()));
-
-    }
-
     public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate) {
+        long dbTimeStart = System.currentTimeMillis();
+
+        String ref = StringUtils.isEmpty(reference) ? "-" : reference;
+        String alt = StringUtils.isEmpty(alternate) ? "-" : alternate;
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("chromosome", chromosome));
         andBsonList.add(Filters.eq("position", position));
-        andBsonList.add(Filters.eq("refAllele", reference));
+        andBsonList.add(Filters.eq("refAllele", ref));
         Bson query = Filters.and(andBsonList);
+//        System.out.println("\t\tgetScores >>>>>>> " + query);
 
-        final String id = chromosome + ":" + position + ":" + reference + ":" + alternate;
+        final String id = chromosome + ":" + position + ":" + ref + ":" + alt;
 
         DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
 
+        List<SpliceScore> results = new ArrayList<>();
+
         // Search for the right splice score
         if (spliceScoreDataResult.getNumResults() > 0) {
+//            System.out.println("\t\tgetScores >>>>>>> num. results = " + spliceScoreDataResult.getNumResults());
             for (SpliceScore score : spliceScoreDataResult.getResults()) {
                 for (SpliceScoreAlternate scoreAlternate : score.getAlternates()) {
-                    if (scoreAlternate.getAltAllele().equals(alternate)) {
+                    if (alt.equals(scoreAlternate.getAltAllele())) {
                         score.setAlternates(Collections.singletonList(scoreAlternate));
-                        return new CellBaseDataResult<>(id, -1, new ArrayList<>(), 1, Collections.singletonList(score), 1);
+//                        System.out.println("\t\t\t\tgetScores, MATCH (" + score.getSource() + "): " + alt + " vs "
+//                                + scoreAlternate.getAltAllele());
+                        results.add(score);
                     }
                 }
             }
         }
-        return new CellBaseDataResult<>(id, -1, new ArrayList<>(), 0, null, 0);
+        int dbTime = Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue();
+        return new CellBaseDataResult<>(id, dbTime, new ArrayList<>(), results.size(), results, results.size());
     }
 }

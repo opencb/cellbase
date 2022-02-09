@@ -1889,15 +1889,20 @@ public class VariantAnnotationCalculator {
                             for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
                                 List<SpliceScores> selectedScores = new ArrayList<>();
                                 for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
-                                    if (variantAnnotationList.get(i).getAlternate().equals(spliceScoreAlt.getAltAllele())) {
-                                        if (spliceScore.getTranscriptId().equals(ct.getTranscriptId())) {
+                                    String alt = StringUtils.isEmpty(variantAnnotationList.get(i).getAlternate())
+                                            ? "-"
+                                            : variantAnnotationList.get(i).getAlternate();
+                                    if (alt.equals(spliceScoreAlt.getAltAllele())) {
+                                        if (StringUtils.isEmpty(spliceScore.getTranscriptId())
+                                                || StringUtils.isEmpty(ct.getTranscriptId())
+                                                || spliceScore.getTranscriptId().equals(ct.getTranscriptId())) {
                                             SpliceScores scores = new SpliceScores(spliceScore.getSource(), spliceScoreAlt.getScores());
-                                            selectedScores.add(scores);
+                                            if (ct.getSpliceScores() == null) {
+                                                ct.setSpliceScores(new ArrayList<>());
+                                            }
+                                            ct.getSpliceScores().add(scores);
                                         }
                                     }
-                                }
-                                if (CollectionUtils.isNotEmpty(selectedScores)) {
-                                    ct.setSpliceScores(selectedScores);
                                 }
                             }
                         }
