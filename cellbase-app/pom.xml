@@ -19,10 +19,10 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-lib</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.opencb.cellbase</groupId>-->
+<!--            <artifactId>cellbase-lib</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-client</artifactId>

@@ -25,9 +25,9 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 
@@ -100,7 +100,9 @@ public class BuildCommandExecutor extends CommandExecutor {
             }
             // <output>/<species>_<assembly>/generated_json
             buildFolder = output.resolve(spFolder + "/generated_json");
-            makeDir(buildFolder);
+            if (!buildFolder.toFile().exists()) {
+                makeDir(buildFolder);
+            }
 
             if (buildCommandOptions.data != null) {
                 String[] buildOptions;
@@ -155,7 +157,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.OBO_DATA:
                             parser = buildObo();
                             break;
-                        case EtlCommons.SPLICE_DATA:
+                        case EtlCommons.SPLICE_SCORE_DATA:
                             parser = buildSplice();
                             break;
                         default:
@@ -375,11 +377,20 @@ public class BuildCommandExecutor extends CommandExecutor {
         return fastaFile;
     }
 
-    private CellBaseBuilder buildSplice() {
-        Path genePath = buildFolder.resolve("gene.json.gz");
-        Path genomeInfoPath = buildFolder.resolve("genome_info.json");
-        Path fastaPath = getFastaReferenceGenome();
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "splice");
-        return new SpliceBuilder(genePath, genomeInfoPath, fastaPath, serializer);
+    private CellBaseBuilder buildSplice() throws IOException {
+        Path spliceInputFolder = downloadFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
+        Path spliceOutputFolder = buildFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
+        if (!spliceOutputFolder.toFile().exists()) {
+            spliceOutputFolder.toFile().mkdirs();
+        }
+
+        if (spliceInputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(spliceInputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME),
+                    spliceOutputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(spliceOutputFolder);
+        return new SpliceBuilder(spliceInputFolder, serializer);
     }
 }

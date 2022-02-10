@@ -47,8 +47,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> download() throws IOException, InterruptedException {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         downloadFiles.addAll(downloadReferenceGenome());
-        downloadFiles.addAll(downloadConservation());
-        downloadFiles.addAll(downloadRepeats());
+//        downloadFiles.addAll(downloadConservation());
+//        downloadFiles.addAll(downloadRepeats());
 
         // cytobands
         runGenomeInfo();

@@ -227,8 +227,4 @@ public abstract class PhasedQueryManager {
         variantCellBaseDataResult.setNumMatches(0);
     }
 
-
-
-
-
 }

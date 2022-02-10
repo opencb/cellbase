@@ -99,7 +99,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                         EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                        EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_DATA};
+                        EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA};
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -188,9 +188,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve(EtlCommons.DO_VERSION_FILE), METADATA);
                             createIndex("ontology");
                             break;
-                        case EtlCommons.SPLICE_DATA:
-                            loadIfExists(input.resolve("splice.json.gz"), "splice");
-                            createIndex("splice");
+                        case EtlCommons.SPLICE_SCORE_DATA:
+                            loadSpliceScores();
+                            createIndex("splice_score");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
@@ -350,6 +350,35 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException {
+        logger.info("Loading splice scores from '{}'", input);
+
+        // MMSplice scores
+        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY),
+                EtlCommons.MMSPLICE_VERSION_FILENAME);
+
+        // SpliceAI scores
+        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY),
+                EtlCommons.SPLICEAI_VERSION_FILENAME);
+    }
+
+    private void loadSpliceScores(Path spliceFolder, String versionFilename) throws IOException, ExecutionException, InterruptedException,
+            ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        // Get files from folder
+        DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder, entry -> {
+            return entry.getFileName().toString().startsWith("splice_score_");
+        });
+        // Load from JSON files
+        for (Path entry : stream) {
+            logger.info("Loading file '{}'", entry.toString());
+            loadRunner.load(spliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA);
+        }
+        loadIfExists(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + versionFilename), METADATA);
+    }
+
+
     private void createIndex(String collectionName) {
         if (!createIndexes) {
             return;
@@ -358,7 +387,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         try {
             indexManager.createMongoDBIndexes(collectionName, true);
         } catch (IOException e) {
-            logger.error("Error creating indexes:" + e.toString());
+            logger.error("Error creating indexes:" + e);
         }
     }
 }

@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
@@ -32,6 +33,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
@@ -53,6 +55,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             + "[:(ref)]"
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
     private VariantMongoDBAdaptor variantDBAdaptor;
+    private SpliceScoreMongoDBAdaptor spliceDBAdaptor;
+
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
 
@@ -68,6 +72,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 
     private void init() throws CellBaseException {
         variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
+        spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor();
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
         genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
     }
@@ -275,5 +280,16 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions);
     }
 
+    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant) {
+        return spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate());
+    }
+
+    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants) {
+        List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            cellBaseDataResults.add(getSpliceScoreVariant(variant));
+        }
+        return cellBaseDataResults;
+    }
 
 }

@@ -62,57 +62,61 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
+        Path path;
+        path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
-        loadRunner.load(path, "regulatory_region");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
+//        loadRunner.load(path, "genome_sequence");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
+//        loadRunner.load(path, "regulatory_region");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/protein.test.json.gz").toURI());
+//        loadRunner.load(path, "protein");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
+//        loadRunner.load(path, "protein_functional_prediction");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
+//        loadRunner.load(path, "protein_functional_prediction");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
+//        loadRunner.load(path, "protein_functional_prediction");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
+//        loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
-        loadRunner.load(path, "variation");
-        path = Paths.get(getClass()
-                .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+//        path = Paths.get(getClass()
+//                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
+//        loadRunner.load(path, "variation");
+//        path = Paths.get(getClass()
+//                .getResource("/genome/genome_info.json").toURI());
+//        loadRunner.load(path, "genome_info");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
         loadRunner.load(path, "repeats");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
+//        path = Paths.get(getClass()
+//                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
+//        loadRunner.load(path, "missense_variation_functional_score");
         path = Paths.get(getClass()
-                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
-        loadRunner.load(path, "missense_variation_functional_score");
+                .getResource("/splice/build/splice_1.json.gz").toURI());
+        loadRunner.load(path, "splice");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
                 cellBaseManagerFactory);
 
@@ -509,15 +513,15 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResults(),
-                CoreMatchers.hasItems(new ConsequenceType("ENSG00000237613", "FAM138A",
-                                "ENSG00000237613", "ENST00000417324",
-                                "ENST00000417324", "-", "lincRNA", "ensembl", null,
-                        Arrays.asList("basic"), null,null, null,
+                CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
+                        "ENST00000417324", "ENSG00000237613",
+                                "ENST00000417324", "-", "lincRNA", "ensembl", null, null,
+                        Arrays.asList("basic"), null, null, null,
                         null, Arrays.asList(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))),
                         new ConsequenceType("FAM138A", "ENSG00000237613",
                                 "ENST00000461467", "ENSG00000237613",
-                                "ENST00000461467", "-", "lincRNA", "ensembl", null,
+                                "ENST00000461467", "-", "lincRNA", "ensembl", null, null,
                                 null, null, null,
                                 null, null, Arrays.asList(new SequenceOntologyTerm("SO:0001889",
                                 "transcript_amplification")))));
@@ -554,13 +558,13 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertThat(consequenceTypeResult.getResults(),
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "ENSG00000237613",
-                                "ENST00000417324", "-", "lincRNA", "ensembl", null,
+                                "ENST00000417324", "-", "lincRNA", "ensembl", null, null,
                         Arrays.asList("basic"), null, null, null,
                         null, Arrays.asList(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))),
                         new ConsequenceType("FAM138A", "ENSG00000237613",
                                 "ENST00000461467", "ENSG00000237613",
-                                "ENST00000461467", "-", "lincRNA", "ensembl", null,
+                                "ENST00000461467", "-", "lincRNA", "ensembl", null, null,
                                 null, null, null,
                                 null, null, Arrays.asList(new SequenceOntologyTerm("SO:0001893",
                                 "transcript_ablation")))));
@@ -1905,5 +1909,15 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         }
     }
 
+    @Test
+    public void testSpliceAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "splice");
+
+        Variant variant = new Variant("1", 1212942, "G", "");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, cellBaseDataResult.getNumMatches());
+    }
 
 }

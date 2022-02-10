@@ -46,7 +46,7 @@ public class EtlCommons {
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
-    public static final String SPLICE_DATA = "splice";
+    public static final String SPLICE_SCORE_DATA = "splice_score";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
     public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2021-07.xml.gz";
@@ -87,10 +87,15 @@ public class EtlCommons {
 
     // Path and file names
     public static final String GERP_SUBDIRECTORY = "gerp";
+    public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
+    public static final String MMSPLICE_VERSION_FILENAME = "mmspliceVersion.json";
+    public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
+    public static final String SPLICEAI_VERSION_FILENAME = "spliceaiVersion.json";
+
     // binary bigwig file
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
     // bigwig file manually transformed to bedGraph file
-    public static final String GERP_PROCESSED_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
+    public static final String GERP_PROCESSED_FILE = "gerp.bedGraph.gz"; //"gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
     public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
     public static final String CLINICAL_VARIANTS_ANNOTATED_JSON_FILE = "clinical_variants.full.json.gz";
     public static final String DOCM_FILE = "docm.json.gz";
