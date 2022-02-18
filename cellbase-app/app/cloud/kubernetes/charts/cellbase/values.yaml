@@ -57,10 +57,11 @@ cellbase: {}
 rest:
   name: cellbase-rest
   replicaCount: 1
+  ## Changes in this variable must be in sync with any ingress.annotation rewrite rule
   war: cellbase
 
   image:
-    repository: "opencb/cellbase-rest:5.0.0-SNAPSHOT"
+    repository: "opencb/cellbase-rest:5.1.0-SNAPSHOT"
     pullPolicy: IfNotPresent
 
   imagePullSecrets: []
@@ -90,6 +91,16 @@ rest:
 
   ingress:
     enabled: true
+
+    ## Multi-version deployment
+    # 1) Capture by version
+    # path: [ /cellbase/webservices/rest/(dev|v5.1)/(.*) ]
+    #
+    # 2) Rewrite removing the version
+    # annotations:
+    #   nginx.ingress.kubernetes.io/rewrite-target: /cellbase/webservices/rest/v5/$2
+
+
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -130,7 +141,7 @@ worker:
   enabled: true
 
   image:
-    repository: "opencb/cellbase-builder:5.0.0-SNAPSHOT"
+    repository: "opencb/cellbase-builder:5.1.0-SNAPSHOT"
     pullPolicy: IfNotPresent
 
   imagePullSecrets: []
@@ -189,7 +200,7 @@ load:
 #    overwrite: false
 
   image:
-    repository: "opencb/cellbase-builder:5.0.0-SNAPSHOT"
+    repository: "opencb/cellbase-builder:5.1.0-SNAPSHOT"
     pullPolicy: IfNotPresent
 
   imagePullSecrets: []
