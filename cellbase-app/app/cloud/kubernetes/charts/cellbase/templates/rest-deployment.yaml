@@ -4,6 +4,7 @@ metadata:
   name: {{ .Values.rest.name }}
   labels:
     app: {{  .Values.rest.name  }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.rest.replicaCount }}
   selector:
@@ -48,6 +49,8 @@ spec:
               value: {{ .Values.mongodb.authenticationDatabase | quote }}
             - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
               value: {{ .Values.mongodb.authenticationMechanism | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET"
+              value: {{ .Values.mongodb.replicaSet | quote }}
           ports:
             - name: http
               containerPort: 9090
@@ -57,14 +60,14 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 20
             httpGet:
-              path: /cellbase/webservices/rest/v5/meta/health
+              path: "/{{ .Values.rest.war }}/webservices/rest/v5/meta/health"
               port: 9090
           livenessProbe:
             initialDelaySeconds: 15
             periodSeconds: 20
             timeoutSeconds: 20
             httpGet:
-              path: /cellbase/webservices/rest/v5/meta/health
+              path: "/{{ .Values.rest.war }}/webservices/rest/v5/meta/health"
               port: 9090
           resources:
             {{- toYaml .Values.rest.resources | nindent 12 }}

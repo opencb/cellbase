@@ -52,6 +52,8 @@ spec:
               value: {{ .Values.mongodb.authenticationDatabase | quote }}
             - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
               value: {{ .Values.mongodb.authenticationMechanism | quote }}
+            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET"
+              value: { { .Values.mongodb.replicaSet | quote } }
           resources:
             {{- toYaml .Values.load.resources | nindent 12 }}
           volumeMounts:

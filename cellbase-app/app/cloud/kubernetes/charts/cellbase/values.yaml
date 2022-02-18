@@ -8,6 +8,7 @@ mongodb:
   ssl: true
   authenticationDatabase : "admin"
   authenticationMechanism : "SCRAM-SHA-256"
+  replicaSet: ""
 
   # MongoDB can either be deployed in the same Kubernetes instance, or be provided externally.
 
@@ -56,6 +57,7 @@ cellbase: {}
 rest:
   name: cellbase-rest
   replicaCount: 1
+  war: cellbase
 
   image:
     repository: "opencb/cellbase-rest:5.0.0-SNAPSHOT"
@@ -125,6 +127,7 @@ rest:
 worker:
   name: cellbase-worker
   replicaCount: 1
+  enabled: true
 
   image:
     repository: "opencb/cellbase-builder:5.0.0-SNAPSHOT"

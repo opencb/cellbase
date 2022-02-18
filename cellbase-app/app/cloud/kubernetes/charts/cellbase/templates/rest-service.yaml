@@ -4,6 +4,7 @@ metadata:
   name: {{ .Values.rest.name }}
   labels:
     app: {{  .Values.rest.name  }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.rest.service.type }}
   ports:
