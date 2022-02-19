@@ -1,0 +1,162 @@
+name: CellBase Develop workflow
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
+    with:
+      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+
+  test:
+    name: CellBase Test
+    runs-on: ubuntu-20.04
+    needs: build
+    strategy:
+      matrix:
+        mongodb: ["4.2"]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.3.1
+        with:
+          java-version: 8
+          maven-version: 3.6.3
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '8'
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven
+      - name: Start MongoDB v${{ matrix.mongodb }}
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: ${{ matrix.mongodb }}
+          mongodb-replica-set: rs-test
+      - name: Build with Maven
+        run: mvn -T 2 clean install -Dcheckstyle.skip
+
+  deploy-maven:
+    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
+    needs: test
+    with:
+      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+    secrets:
+      MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
+      MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+      MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+
+  deploy-docker:
+    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
+    needs: test
+    with:
+      cli: python3 ./build/cloud/docker/docker-build.py push --images base,rest
+    secrets:
+      DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+#  deploy:
+#    name: Build and Deploy CellBase libs, Javadocs and Docker images in Maven Central and DockerHub repositories
+#    runs-on: ubuntu-20.04
+#    needs: test
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: '10'
+#      - name: Set up JDK 1.8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 1.8
+#          server-id: ossrh                        # Value of the distributionManagement/repository/id field of the pom.xml
+#          server-username: MAVEN_NEXUS_USER       # env variable for username in deploy
+#          server-password: MAVEN_NEXUS_PASSWORD   # env variable for token in deploy
+#
+#      ## IMPORTANT: this creates the 'build' installation folder and must be the FIRST action!
+#      ## Deploy in Maven repository
+#      - name: Copy GPG Private key
+#        run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > private-key.txt && gpg --import --no-tty --batch --yes private-key.txt
+#      - name: Deploy to Maven Central respository
+#        env:
+#          MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
+#          MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+#        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
+#
+#      ## making requests via Python needs special package
+#      - name: Install Python package
+#        run: pip3 install requests
+#
+#      ## Build and deploy Docker images to DockerHub
+#      - name: Login to dockerhub
+#        run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+#      - name: Build and publish Docker images to DockerHub
+#        run: python3 ./build/cloud/docker/docker-build.py push
+#
+#      ## Generate and deploy Javadocs
+#      - name: Get CellBase version
+#        id: get_version
+#        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+#      - name: Generate Javadocs
+#        run: mvn javadoc:aggregate
+#      - name: Deploy to server
+#        id: deploy
+#        uses: Pendect/action-rsyncer@v1.1.0
+#        env:
+#          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+#        with:
+#          flags: '-avzr --delete'
+#          options: ''
+#          ssh_options: ''
+#          src: 'target/site/apidocs/*'
+#          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/resources/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}'
+#      - name: Display status from deploy
+#        run: echo "${{ steps.deploy.outputs.status }}"
+#  site:
+#    name: Generate Maven site
+#    runs-on: ubuntu-18.04
+#    needs: build
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: '10'
+#      - name: Set up JDK 1.8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 1.8
+#      - name: Generate Site with Maven CLI
+#        run: mvn site
+#      - name: Prepare Maven Site submodules
+#        run: cp -r cellbase-app/target/site target/site/cellbase-app &&
+#              cp -r cellbase-client/target/site target/site/cellbase-client &&
+#              cp -r cellbase-core/target/site target/site/cellbase-core &&
+#              cp -r cellbase-lib/target/site target/site/cellbase-lib &&
+#              cp -r cellbase-server/target/site target/site/cellbase-server
+#      - name: Get CellBase version
+#        id: get_version
+#        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+#      - name: Get current date in YYMMDD format
+#        id: get_date
+#        run: echo ::set-output name=YYMMDD::$(date +%Y%m%d)
+#      - name: Get current date in HHMMSS format
+#        id: get_time
+#        run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
+#      - name: Deploy Site web recursively to remote
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: target/site
+#          remote: /mnt/resources/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+#          host: 128.232.224.128
+#          username: ${{ secrets.SCP_SITE_USER }}
+#          password: ${{ secrets.SCP_SITE_PASSWORD }}
+
