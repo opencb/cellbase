@@ -1,22 +1,26 @@
-FROM openjdk:8-jre-alpine
+## Based on Debian 11 (bullseye)
+FROM openjdk:11-jre
 
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.name="cellbase-base" \
       org.label-schema.url="http://docs.opencb.org/display/cellbase" \
       org.label-schema.description="An Open Computational Genomics Analysis platform for big data processing and analysis in genomics" \
-      maintainer="Julie Sullivan <julie.sullivan@gmail.com>" \
+      maintainer="Ignacio Medina <igmecas@gmail.com>" \
       org.label-schema.schema-version="1.0"
 
-ENV CELLBASE_USER cellbase
-ENV CELLBASE_HOME /opt/cellbase/
+## Update and install dependencies
+RUN apt-get update -y && apt-get install -y openssl wget htop vim && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    adduser --disabled-password --uid 1001 cellbase
 
-RUN apk update && apk upgrade && apk add ca-certificates openssl wget bash \
-    && update-ca-certificates \
-    && addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER -u 1001
+## Run Docker images as non root
+USER cellbase
 
-USER $CELLBASE_USER
+## It is important to use --chown parameter in COPY command to reduce the size
+COPY --chown=cellbase:cellbase . /opt/cellbase
 
+## Declare the volume to be mounted later
 VOLUME /opt/cellbase/conf
 
-COPY . /opt/cellbase
 WORKDIR /opt/cellbase
