@@ -9,7 +9,7 @@ LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.schema-version="1.0"
 
 ## Update and install dependencies
-RUN apt-get update -y && apt-get install -y openssl wget htop vim && \
+RUN apt-get update && apt-get -y upgrade && apt-get install -y openssl wget htop vim && \
     update-ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --uid 1001 cellbase
