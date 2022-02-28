@@ -34,6 +34,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
@@ -1730,7 +1731,15 @@ public class VariantAnnotationCalculator {
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+                if (queryOptions.containsKey("SKIP_HGMD")) {
+                    for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
+                        if (!EtlCommons.HGMD_DATA.equals(entry.getSource())) {
+                            traitAssociations.add(entry);
+                        }
+                    }
+                } else {
+                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+                }
             }
             return traitAssociations;
         }

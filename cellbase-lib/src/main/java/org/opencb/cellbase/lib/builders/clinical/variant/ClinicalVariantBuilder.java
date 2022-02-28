@@ -22,7 +22,10 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
-import org.rocksdb.*;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +52,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
     private final Path iarctp53SomaticReferencesFile;
     private final Path genomeSequenceFilePath;
     private final Path docmFile;
+    private final Path hgmdFile;
     private boolean normalize = true;
 
 
@@ -66,6 +70,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.DOCM_FILE),
+                clinicalVariantFolder.resolve(EtlCommons.HGMD_FILE),
                 normalize,
                 genomeSequenceFilePath, assembly, serializer);
     }
@@ -73,7 +78,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
     public ClinicalVariantBuilder(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
                                   Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
                                   Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
-                                  Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile,
+                                  Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile, Path hgmdFile,
                                   boolean normalize, Path genomeSequenceFilePath, String assembly,
                                   CellBaseSerializer serializer) {
         super(serializer);
@@ -89,6 +94,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         this.iarctp53SomaticFile = iarctp53SomaticFile;
         this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
         this.docmFile = docmFile;
+        this.hgmdFile = hgmdFile;
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
@@ -106,7 +112,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
-
+            // ClinVar
             if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
                     && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
@@ -120,6 +126,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                         + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
             }
 
+            // COSMIC
             if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
                 CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 cosmicIndexer.index();
@@ -131,6 +138,8 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
 //                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
 //                cosmicIndexer.index();
 //            }
+
+            // IARC TP53
             if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null
                     && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
                 IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
@@ -141,11 +150,20 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
             }
 
+            // DOCM
             if (this.docmFile != null && Files.exists(docmFile)) {
                 DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 docmIndexer.index();
             } else {
                 logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
+            }
+
+            // HGMD
+            if (this.hgmdFile != null && Files.exists(hgmdFile)) {
+                HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFile, normalize, genomeSequenceFilePath, assembly, rdb);
+                hgmdIndexer.index();
+            } else {
+                logger.warn("The HGMD file {} is missing. Skipping HGMD data.", hgmdFile);
             }
 
             serializeRDB(rdb);
@@ -186,7 +204,12 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
 
     private Variant parseVariantFromVariantId(String variantId) {
         String[] parts = variantId.split(":", -1); // -1 to include empty fields
-        return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
+        if (parts[1].contains("-")) {
+            String[] pos = parts[1].split("-");
+            return new Variant(parts[0].trim(), Integer.parseInt(pos[0].trim()), Integer.parseInt(pos[1].trim()), parts[2], parts[3]);
+        } else {
+            return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
+        }
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {

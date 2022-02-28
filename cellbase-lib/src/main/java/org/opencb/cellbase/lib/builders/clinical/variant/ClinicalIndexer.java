@@ -170,8 +170,17 @@ public abstract class ClinicalIndexer {
                 || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
     }
 
-     protected List<String> getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
+    protected List<String> getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
         Variant variant = new Variant(chromosome, start, reference, alternate);
+        return getNormalisedVariantString(variant);
+    }
+
+    protected List<String> getNormalisedVariantString(String chromosome, int start, int end, String reference, String alternate) {
+        Variant variant = new Variant(chromosome, start, end, reference, alternate);
+        return getNormalisedVariantString(variant);
+    }
+
+    protected List<String> getNormalisedVariantString(Variant variant) {
 
         // Checks no weird characters are part of the reference & alternate alleles
         if (isValid(variant)) {
