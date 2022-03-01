@@ -127,7 +127,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer svExtraPadding,
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
-                                                                              String consequenceTypeSource)
+                                                                              String consequenceTypeSource,
+                                                                              String enable)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
@@ -164,6 +165,9 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
         if (consequenceTypeSource != null) {
             queryOptions.put("consequenceTypeSource", consequenceTypeSource);
+        }
+        if (enable != null) {
+            queryOptions.put("enable", enable);
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,

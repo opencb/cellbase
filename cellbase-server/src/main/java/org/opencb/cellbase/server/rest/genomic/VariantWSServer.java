@@ -182,7 +182,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 @QueryParam("consequenceTypeSource")
                                                 @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                         + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
-                                                        required = false) String consequenceTypeSource) {
+                                                        required = false) String consequenceTypeSource,
+                                                @QueryParam("enable")
+                                                @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
+                                                        + " e.g.: hgdm", hidden = true) String enable
+) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -193,7 +197,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 svExtraPadding,
                 cnvExtraPadding,
                 checkAminoAcidChange,
-                consequenceTypeSource);
+                consequenceTypeSource,
+                enable);
     }
 
     @GET
@@ -260,7 +265,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                             + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
-                                                       defaultValue = "ensembl", required = false) String consequenceTypeSource) {
+                                                       defaultValue = "ensembl", required = false) String consequenceTypeSource,
+                                               @QueryParam("enable")
+                                               @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
+                                                           + " e.g.: hgdm", hidden = true) String enable
+    ) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -270,8 +279,10 @@ public class VariantWSServer extends GenericRestWSServer {
                 svExtraPadding,
                 cnvExtraPadding,
                 checkAminoAcidChange,
-                consequenceTypeSource);
+                consequenceTypeSource,
+                enable);
     }
+
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
                                             Boolean skipDecompose,
@@ -281,7 +292,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Integer svExtraPadding,
                                             Integer cnvExtraPadding,
                                             Boolean checkAminoAcidChange,
-                                            String consequenceTypeSource) {
+                                            String consequenceTypeSource,
+                                            String enable) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
@@ -289,7 +301,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources);
+                    checkAminoAcidChange, consequenceTypeSources, enable);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

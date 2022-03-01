@@ -81,6 +81,7 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
+    private String enable = null;
 
     private static HgvsCalculator hgvsCalculator;
 
@@ -726,6 +727,10 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
+
+        enable = (queryOptions.get("enable") != null
+                ? (String) queryOptions.get("enable") : "");
+        logger.debug("enable = {}", enable);
     }
 
 //    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
@@ -1731,14 +1736,14 @@ public class VariantAnnotationCalculator {
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                if (queryOptions.containsKey("SKIP_HGMD")) {
+                if (enable.contains("hgmd")) {
+                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+                } else {
                     for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
-                        if (!EtlCommons.HGMD_DATA.equals(entry.getSource())) {
+                        if (entry.getSource() == null || !EtlCommons.HGMD_DATA.equals(entry.getSource().getName())) {
                             traitAssociations.add(entry);
                         }
                     }
-                } else {
-                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
                 }
             }
             return traitAssociations;
