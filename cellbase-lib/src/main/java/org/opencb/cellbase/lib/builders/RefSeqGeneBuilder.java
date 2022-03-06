@@ -70,7 +70,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private void setAnnotationFiles(Path refSeqDirectoryPath) {
         Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
-        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v0.93.summary.txt.gz");
+        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v1.0.summary.txt.gz");
         lrgFile = geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt");
         geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
         disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");

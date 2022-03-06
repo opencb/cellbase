@@ -91,7 +91,7 @@ public class GeneBuilder extends CellBaseBuilder {
         this(null, geneDirectoryPath.resolve("description.txt"),
                 geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("hgnc_complete_set_2022-01-01.txt"),
-                geneDirectoryPath.resolve("MANE.GRCh38.v0.93.summary.txt.gz"),
+                geneDirectoryPath.resolve("MANE.GRCh38.v1.0.summary.txt.gz"),
                 geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
