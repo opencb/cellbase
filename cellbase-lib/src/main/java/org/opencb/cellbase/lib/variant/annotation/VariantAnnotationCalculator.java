@@ -34,6 +34,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
@@ -80,6 +81,7 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
+    private String enable = null;
 
     private static HgvsCalculator hgvsCalculator;
 
@@ -725,6 +727,10 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
+
+        enable = (queryOptions.get("enable") != null
+                ? (String) queryOptions.get("enable") : "");
+        logger.debug("enable = {}", enable);
     }
 
 //    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
@@ -1730,7 +1736,15 @@ public class VariantAnnotationCalculator {
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+                if (enable.contains("hgmd")) {
+                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
+                } else {
+                    for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
+                        if (entry.getSource() == null || !EtlCommons.HGMD_DATA.equals(entry.getSource().getName())) {
+                            traitAssociations.add(entry);
+                        }
+                    }
+                }
             }
             return traitAssociations;
         }

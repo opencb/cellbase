@@ -101,7 +101,7 @@ Create the name of the service account to use
 
 
 {{- define "pvResources" -}}
-pv-{{ include "cellbase.fullname" . }}-conf
+pv-{{ include "cellbase.fullname" . }}-resources
 {{- end -}}
 
 
@@ -112,5 +112,9 @@ azurefile
 {{- end -}}
 
 {{- define "pvcResources" -}}
-pvc-{{ include "cellbase.fullname" . }}-conf
+pvc-{{ include "cellbase.fullname" . }}-resources
+{{- end -}}
+
+{{- define "pvcWorkdir" -}}
+pvc-{{ include "cellbase.fullname" . }}-workdir
 {{- end -}}

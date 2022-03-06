@@ -81,6 +81,7 @@ public class EtlCommons {
     public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
     public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
     public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
+    public static final String HGMD_DATA = "hgmd";
 
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
@@ -116,6 +117,7 @@ public class EtlCommons {
     public static final String HPO_VERSION_FILE = "hpoVersion.json";
     public static final String GO_VERSION_FILE = "goVersion.json";
     public static final String DO_VERSION_FILE = "doVersion.json";
+    public static final String HGMD_FILE = "hgmd.vcf";
 
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";

@@ -25,9 +25,9 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -35,21 +35,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 07/10/16.
@@ -184,11 +174,11 @@ public class ClinicalVariantBuilderTest {
             // the RCV and one SCV
             assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
             assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
-                    + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
-                    + "9:107594052:-:CTCTGCCTCCTGAG,"
-                    + "9:107594069:-:AAGTGATT,"
-                    + "9:107594080:-:GTGCC,"
-                    + "9:107594088:-:GCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG",
+                            + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
+                            + "9:107594052:-:CTCTGCCTCCTGAG,"
+                            + "9:107594069:-:AAGTGATT,"
+                            + "9:107594080:-:GTGCC,"
+                            + "9:107594088:-:GCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG",
                     variant);
         }
 
@@ -317,7 +307,7 @@ public class ClinicalVariantBuilderTest {
                 checkEvidenceEntry.getVariantClassification().getClinicalSignificance());
         assertEquals(1, variant.getAnnotation().getDrugs().size());
         assertEquals(new Drug("rapamycin", "activation", "gain-of-function",
-                null, "preclinical", "emerging", Collections.singletonList("PMID:24631838")),
+                        null, "preclinical", "emerging", Collections.singletonList("PMID:24631838")),
                 variant.getAnnotation().getDrugs().get(0));
 
         variant = getVariantByVariant(parsedVariantList,
@@ -522,7 +512,7 @@ public class ClinicalVariantBuilderTest {
         assertEquals(1, variantList.size());
         variant = variantList.get(0);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
+                        .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("RCV000148505"));
 
         variantList = getVariantByAccession(parsedVariantList, "RCV000148485");
@@ -628,8 +618,8 @@ public class ClinicalVariantBuilderTest {
         for (EvidenceEntry evidenceEntry : evidenceEntryList) {
             if (source.equals(evidenceEntry.getSource().getName())) {
                 geneSymbolSet.addAll(evidenceEntry.getGenomicFeatures().stream()
-                                .map(genomicFeature -> genomicFeature.getXrefs() != null ?
-                                        genomicFeature.getXrefs().get(SYMBOL) : null).collect(Collectors.toSet()));
+                        .map(genomicFeature -> genomicFeature.getXrefs() != null ?
+                                genomicFeature.getXrefs().get(SYMBOL) : null).collect(Collectors.toSet()));
             }
         }
         return geneSymbolSet;
@@ -681,7 +671,7 @@ public class ClinicalVariantBuilderTest {
                 int i = 0;
                 while (i < variant.getAnnotation().getTraitAssociation().size()
                         && (variant.getAnnotation().getTraitAssociation().get(i).getId() == null
-                            || !variant.getAnnotation().getTraitAssociation().get(i).getId().equals(accession))) {
+                        || !variant.getAnnotation().getTraitAssociation().get(i).getId().equals(accession))) {
                     i++;
                 }
                 if (i < variant.getAnnotation().getTraitAssociation().size()) {
@@ -710,6 +700,109 @@ public class ClinicalVariantBuilderTest {
         }
 
         return variantList;
+    }
+
+//    @Test
+//    public void testHGMD() {
+//        Path hgmdFile = Paths.get("/home/jtarraga/data/cellbase/hgmd/hgmd_pro_2020.3_hg38.vcf");
+//        VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "", null);
+//
+//        VcfFileReader reader = new VcfFileReader(hgmdFile.toAbsolutePath().toString(), false);
+//        Iterator<VariantContext> iterator = reader.iterator();
+//
+//        while (iterator.hasNext()) {
+//            VariantContext context = iterator.next();
+//            Variant variant = converter.convert(context);
+//            if (CollectionUtils.isNotEmpty(variant.getStudies())
+//                    && CollectionUtils.isNotEmpty(variant.getStudies().get(0).getFiles())
+//                    && MapUtils.isNotEmpty(variant.getStudies().get(0).getFiles().get(0).getData())) {
+//                Map<String, String> info = variant.getStudies().get(0).getFiles().get(0).getData();
+//
+//                EvidenceEntry entry = buildEvidenceEntry(info);
+//                System.out.println(variant.toStringSimple() + " : " + entry.toString());
+////                if (variant != null) {
+////                    boolean success = updateRocksDB(variant);
+////                    // updateRocksDB may fail (false) if normalisation process fails
+////                    if (success) {
+////                        numberIndexedRecords++;
+////                    }
+////                }
+////                totalNumberRecords++;
+////                if (totalNumberRecords % 1000 == 0) {
+////                    logger.info("{} records parsed", totalNumberRecords);
+////                }
+//            }
+//        }
+//    }
+//
+//    private EvidenceEntry buildEvidenceEntry(Map<String, String> info) {
+//        EvidenceEntry entry = new EvidenceEntry();
+//
+//        // Source
+//        entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, null, null));
+//
+//        // Features
+//        List<GenomicFeature> features = new ArrayList<>();
+//        if (info.containsKey("GENE")) {
+//            Map<String, String> map = new HashMap<>();
+//            map.put(SYMBOL, info.get("GENE"));
+//
+//            if (info.containsKey("DNA")) {
+//                map.put("NM", cleanString(info.get("DNA")));
+//            }
+//            if (info.containsKey("PROT")) {
+//                map.put("NP", cleanString(info.get("PROT")));
+//            }
+//            if (info.containsKey("DB")) {
+//                map.put("dbSNP", info.get("DB"));
+//            }
+//            features.add(new GenomicFeature(FeatureTypes.gene, null, map));
+//        }
+//        if (!CollectionUtils.isEmpty(features)) {
+//            entry.setGenomicFeatures(features);
+//        }
+//
+//        // Heritable traits
+//        if (info.containsKey("PHEN")) {
+//            entry.setHeritableTraits(Collections.singletonList(new HeritableTrait(cleanString(info.get("PHEN")), null)));
+//        }
+//
+//        // Ethinicity
+//        entry.setEthnicity(EthnicCategory.Z);
+//
+//        // Additional properties
+//        List<Property> additionalProperties = new ArrayList<>();
+//        addAdditionalProperty("CLASS", info, additionalProperties);
+//        addAdditionalProperty("MUT", info, additionalProperties);
+//        addAdditionalProperty("RANKSCORE", info, additionalProperties);
+//        addAdditionalProperty("SVTYPE", info, additionalProperties);
+//        addAdditionalProperty("END", info, additionalProperties);
+//        addAdditionalProperty("SVLEN", info, additionalProperties);
+//        if (CollectionUtils.isNotEmpty(additionalProperties)) {
+//            entry.setAdditionalProperties(additionalProperties);
+//        }
+//
+//        return entry;
+//    }
+//
+//    private String cleanString(String input) {
+//        String output = input.replaceAll("%2C", ",");
+//        output = output.replaceAll("%3A", ":");
+//        output = output.replaceAll("%3B", ";");
+//        output = output.replaceAll("%3D", "=");
+//        return output;
+//    }
+//
+//    private void addAdditionalProperty(String key, Map<String, String> info, List<Property> additionalProperties) {
+//        if (info.containsKey(key)) {
+//            additionalProperties.add(new Property(null, key, info.get(key)));
+//        }
+//    }
+
+    @Test
+    public void testVariant() {
+        Variant v = new Variant("1", 2000, 2100, "A", "<DEL>");
+        System.out.println(v.toStringSimple());
     }
 
 }
