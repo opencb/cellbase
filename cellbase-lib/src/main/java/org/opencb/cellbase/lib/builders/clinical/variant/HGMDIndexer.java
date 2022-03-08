@@ -146,6 +146,7 @@ public class HGMDIndexer extends ClinicalIndexer {
         output = output.replaceAll("%3A", ":");
         output = output.replaceAll("%3B", ";");
         output = output.replaceAll("%3D", "=");
+        output = output.replaceAll("\"", "");
         return output;
     }
 
