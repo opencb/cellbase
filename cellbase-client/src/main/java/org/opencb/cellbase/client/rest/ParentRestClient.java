@@ -250,7 +250,15 @@ public class ParentRestClient<T> {
         if (options == null) {
             options = new QueryOptions();
         }
-        options.putIfAbsent("limit", LIMIT);
+        int limit;
+        if (options.containsKey(QueryOptions.LIMIT)) {
+            limit = options.getInt(QueryOptions.LIMIT);
+        } else {
+            limit = LIMIT;
+            // Do not modify input QueryOptions!
+            options = new QueryOptions(options);
+            options.put(QueryOptions.LIMIT, limit);
+        }
 
         Map<String, Integer> idMap = new HashMap<>();
         List<String> prevIdList = idList;
@@ -289,7 +297,7 @@ public class ParentRestClient<T> {
             newIdsList = new ArrayList<>();
             if (queryResponse.getResponses() != null) {
                 for (int i = 0; i < queryResponse.getResponses().size(); i++) {
-                    if (queryResponse.getResponses().get(i).getNumResults() == LIMIT) {
+                    if (queryResponse.getResponses().get(i).getNumResults() == limit) {
                         newIdsList.add(prevIdList.get(i));
                     }
                 }
@@ -300,7 +308,7 @@ public class ParentRestClient<T> {
                 call = false;
             } else {
                 idList = newIdsList;
-                skip += LIMIT;
+                skip += limit;
                 options.put("skip", skip);
             }
         }

@@ -51,7 +51,7 @@ public class MetaClient extends ParentRestClient<ObjectMap> {
     }
 
     public CellBaseDataResponse<SpeciesProperties> species(String species) throws IOException {
-        return execute("species", new Query(),  new QueryOptions(), SpeciesProperties.class);
+        return execute("species", new Query(),  new QueryOptions(QueryOptions.LIMIT, 1000), SpeciesProperties.class);
     }
 
     public CellBaseDataResponse<ObjectMap> versions() throws IOException {
@@ -59,7 +59,7 @@ public class MetaClient extends ParentRestClient<ObjectMap> {
     }
 
     public CellBaseDataResponse<ObjectMap> versions(String species) throws IOException {
-        return execute(species, "versions", new QueryOptions(), ObjectMap.class);
+        return execute(species, "versions", new QueryOptions(QueryOptions.LIMIT, 1000), ObjectMap.class);
     }
 
     @Override
