@@ -555,6 +555,10 @@ public class HgvsProteinCalculator {
                 }
             } else {
                 cdsVariantStartPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
+                // A deletion happens in the first 2 nucleotides of an incomplete transcript
+                if (cdsVariantStartPosition < 3 && transcriptUtils.hasUnconfirmedStart()) {
+                    return null;
+                }
             }
         } else {
             if (variant.getStart() <= transcript.getGenomicCodingEnd() && variant.getEnd() > transcript.getGenomicCodingEnd()) {
