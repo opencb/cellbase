@@ -1262,8 +1262,8 @@ public class VariantAnnotationCalculator {
             case MNV:
                 return new ConsequenceTypeMNVCalculator(genomeManager);
             case CNV:
-//            case COPY_NUMBER_GAIN:
-//            case COPY_NUMBER:
+            case COPY_NUMBER_GAIN:
+            case COPY_NUMBER:
                 if (variant.getSv().getCopyNumber() == null) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
@@ -1471,8 +1471,8 @@ public class VariantAnnotationCalculator {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                 break;
             case CNV:
-//            case COPY_NUMBER_GAIN:
-//            case COPY_NUMBER:
+            case COPY_NUMBER_GAIN:
+            case COPY_NUMBER:
                 if (imprecise) {
                     regionList.add(new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
                             variant.getStart() + cnvExtraPadding));
