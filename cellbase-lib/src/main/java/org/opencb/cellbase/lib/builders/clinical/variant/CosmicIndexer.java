@@ -218,6 +218,7 @@ public class CosmicIndexer extends ClinicalIndexer {
                 VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
                 List<EvidenceEntry> mergedEvidenceEntries = mergeEvidenceEntries(evidenceEntries);
                 addHaplotypeProperty(mergedEvidenceEntries, normalisedVariantStringList);
+                // IMPORTANT: COSMIC must be indexed first because of the next line !!!
                 variantAnnotation.setTraitAssociation(mergedEvidenceEntries);
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }

@@ -112,6 +112,15 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
+            // COSMIC
+            // IMPORTANT: COSMIC must be indexed first (before ClinVar, IARC TP53, DOCM, HGMD,...)!!!
+            if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
+                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);
+                cosmicIndexer.index();
+            } else {
+                logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
+            }
+
             // ClinVar
             if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
@@ -126,13 +135,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                         + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
             }
 
-            // COSMIC
-            if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);
-                cosmicIndexer.index();
-            } else {
-                logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
-            }
             // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
 //            if (this.gwasFile != null) {
 //                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
