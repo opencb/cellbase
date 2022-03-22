@@ -34,7 +34,6 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.5</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
-        <bigwig.version>1.0</bigwig.version>
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
@@ -65,6 +64,11 @@
             <email>javild@gmail.com</email>
         </developer>
         <developer>
+            <id>jtarraga</id>
+            <name>Joaquin</name>
+            <email>joaquintarraga@gmail.com</email>
+        </developer>
+        <developer>
             <id>julie-sullivan</id>
             <name>Julie</name>
             <email>julie.sullivan@gmail.com</email>
@@ -84,11 +88,6 @@
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
             </snapshots>
-        </repository>
-        <!-- needed for bigwig -->
-        <repository>
-            <id>opencb-ext-libs</id>
-            <url>http://bioinfo.hpc.cam.ac.uk/downloads/ext-libs/</url>
         </repository>
     </repositories>
 
@@ -118,10 +117,6 @@
                     <exclusion>
                         <artifactId>slf4j-simple</artifactId>
                         <groupId>org.slf4j</groupId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>BigWig</artifactId>
-                        <groupId>BigWig</groupId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.mortbay.jetty</groupId>
@@ -185,11 +180,6 @@
                 <groupId>org.glassfish.jersey.media</groupId>
                 <artifactId>jersey-media-json-jackson</artifactId>
                 <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>BigWig</groupId>
-                <artifactId>BigWig</artifactId>
-                <version>${bigwig.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>

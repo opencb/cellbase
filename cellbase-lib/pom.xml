@@ -50,10 +50,6 @@
             <version>4.1.2</version>
         </dependency>
         <dependency>
-            <groupId>BigWig</groupId>
-            <artifactId>BigWig</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
         </dependency>
