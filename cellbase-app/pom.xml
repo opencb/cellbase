@@ -19,10 +19,6 @@
     </properties>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.opencb.cellbase</groupId>-->
-<!--            <artifactId>cellbase-lib</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-client</artifactId>
@@ -37,10 +33,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>commons-io</groupId>-->
-<!--            <artifactId>commons-io</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
