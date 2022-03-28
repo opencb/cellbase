@@ -1,7 +1,6 @@
 package org.opencb.cellbase.lib.monitor;
 
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -32,7 +31,6 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Ignore
     @Test
     public void run() throws Exception {
 

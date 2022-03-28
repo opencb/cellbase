@@ -153,8 +153,6 @@ public abstract class CliOptionsParser {
         return generalOptions;
     }
 
-
-
     public String getSubCommand() {
         return getSubCommand(jCommander);
     }
