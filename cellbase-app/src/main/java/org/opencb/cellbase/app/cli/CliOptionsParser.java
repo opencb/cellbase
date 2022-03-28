@@ -145,8 +145,7 @@ public abstract class CliOptionsParser {
 
     protected void printMainUsage() {
         for (String s : jCommander.getCommands().keySet()) {
-//            System.err.printf("%20s  %s\n", s, jCommander.getCommandDescription(s));
-            System.err.printf("%20s  %s\n", s, jCommander.getDescriptions().get(s));
+            System.err.printf("%20s  %s\n", s, jCommander.getCommandDescription(s));
         }
     }
 
@@ -177,8 +176,7 @@ public abstract class CliOptionsParser {
         pad = Math.max(14, pad);
         pad = Math.min(40, pad);
         for (Map.Entry<String, JCommander> entry : commander.getCommands().entrySet()) {
-//            System.err.printf("%" + pad + "s  %s\n", entry.getKey(), commander.getCommandDescription(entry.getKey()));
-            System.err.printf("%" + pad + "s  %s\n", entry.getKey(), commander.getDescriptions().get(entry.getKey()));
+            System.err.printf("%" + pad + "s  %s\n", entry.getKey(), commander.getCommandDescription(entry.getKey()));
         }
     }
 
