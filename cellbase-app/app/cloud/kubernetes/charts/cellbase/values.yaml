@@ -55,13 +55,13 @@ fullnameOverride: ""
 cellbase: {}
 
 rest:
-  name: cellbase-rest
+  name: cellbase-base
   replicaCount: 1
   ## Changes in this variable must be in sync with any ingress.annotation rewrite rule
   war: cellbase
 
   image:
-    repository: "opencb/cellbase-rest:5.1.0-SNAPSHOT"
+    repository: "opencb/cellbase-base:5.1.0-SNAPSHOT"
     pullPolicy: IfNotPresent
 
   imagePullSecrets: []
