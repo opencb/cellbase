@@ -55,7 +55,7 @@ fullnameOverride: ""
 cellbase: {}
 
 rest:
-  name: cellbase-base
+  name: cellbase-rest
   replicaCount: 1
   ## Changes in this variable must be in sync with any ingress.annotation rewrite rule
   war: cellbase
