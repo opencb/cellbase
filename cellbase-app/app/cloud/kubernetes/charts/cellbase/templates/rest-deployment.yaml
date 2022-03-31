@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: {{ .Values.rest.image.pullPolicy }}
           command: [ "/bin/sh", "-c" ]
           args:
-            - "/opt/cellbase/bin/cellabse-admin.sh server --start"
+            - "/opt/cellbase/bin/cellbase-admin.sh server --start"
           env:
             - name: "CELLBASE_HOME"
               value: "/opt/cellbase"
