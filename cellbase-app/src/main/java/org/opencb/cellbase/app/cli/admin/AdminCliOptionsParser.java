@@ -33,6 +33,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
+    private DataReleaseCommandOptions dataReleaseCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
@@ -47,6 +48,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
+        dataReleaseCommandOptions = new DataReleaseCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
@@ -56,6 +58,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
+        jCommander.addCommand("data-release", dataReleaseCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
@@ -119,6 +122,22 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "requires more memory and is less efficient.", required = false, arity = 0)
         public boolean flexibleGTFParsing = false;
 
+    }
+
+    @Parameters(commandNames = {"data-release"}, commandDescription = "Manage data releases in order to support multiple versions of data")
+    public class DataReleaseCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        public String database;
+
+        @Parameter(names = {"--create"}, description = "Create a new data release", arity = 0)
+        public boolean create;
+
+        @Parameter(names = {"--set-active"}, description = "Set the release active by default", arity = 1)
+        public int activeByDefault;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
@@ -299,6 +318,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     public BuildCommandOptions getBuildCommandOptions() {
         return buildCommandOptions;
+    }
+
+    public DataReleaseCommandOptions getDataReleaseCommandOptions() {
+        return dataReleaseCommandOptions;
     }
 
     public LoadCommandOptions getLoadCommandOptions() {
