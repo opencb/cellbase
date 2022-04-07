@@ -24,6 +24,7 @@ import org.opencb.commons.monitor.DatastoreStatus;
 
 import java.util.Map;
 
+@Deprecated
 public class MetaManager extends AbstractManager {
 
     public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
