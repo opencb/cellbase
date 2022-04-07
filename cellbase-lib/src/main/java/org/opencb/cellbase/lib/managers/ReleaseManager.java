@@ -17,8 +17,8 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.release.DataRelease;
@@ -31,9 +31,19 @@ import java.util.Date;
 public class ReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
 
+    public ReleaseManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
+        super(databaseName, configuration);
+
+        init();
+    }
+
     public ReleaseManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
         super(species, assembly, configuration);
 
+        init();
+    }
+
+    private void init() {
         releaseDBAdaptor = dbAdaptorFactory.getReleaseDBAdaptor();
     }
 
@@ -68,8 +78,9 @@ public class ReleaseManager extends AbstractManager {
             // Check if collections are empty, a new data release will be created only if collections is not empty
             if (MapUtils.isNotEmpty(lastRelease.getCollections())) {
                 // Increment the release number, only if the previous release has collections
-                lastRelease.setRelease(lastRelease.getRelease() + 1);
-                lastRelease.setActiveByDefault(false);
+                lastRelease.setRelease(lastRelease.getRelease() + 1)
+                        .setActiveByDefault(false)
+                        .setDate(sdf.format(new Date()));
                 // Write it to the database
                 releaseDBAdaptor.insert(lastRelease);
             } else {

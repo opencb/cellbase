@@ -42,8 +42,15 @@ public class AbstractManager {
 
     protected Logger logger;
 
-    public AbstractManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public AbstractManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
+        this.configuration = configuration;
+
+        logger = LoggerFactory.getLogger(this.getClass());
+
+        // We create a MongoDB database connection for each Manager
+        mongoDBManager = new MongoDBManager(configuration);
+        mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
     }
 
     public AbstractManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
@@ -51,10 +58,6 @@ public class AbstractManager {
         this.assembly = assembly;
         this.configuration = configuration;
 
-        this.init();
-    }
-
-    private void init() throws CellBaseException {
         logger = LoggerFactory.getLogger(this.getClass());
 
         // If assembly is emtpy we take the default, typically the first and only one.

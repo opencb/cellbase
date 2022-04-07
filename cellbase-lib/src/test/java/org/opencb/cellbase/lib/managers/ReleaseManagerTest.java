@@ -26,7 +26,7 @@ class ReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void test1() throws JsonProcessingException, CellBaseException {
-        ReleaseManager releaseManager = new ReleaseManager("hsapiens", "GRCh37", cellBaseConfiguration);
+        ReleaseManager releaseManager = new ReleaseManager("cellbase_hsapiens_grch37_v4", cellBaseConfiguration);
         DataRelease firstRelease = releaseManager.createRelease();
         if (firstRelease != null) {
             releaseManager.activeByDefault(firstRelease.getRelease());
