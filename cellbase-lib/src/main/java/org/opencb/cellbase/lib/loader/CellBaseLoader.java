@@ -24,9 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -39,7 +36,6 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
     protected int dataRelease;
-    protected List<Path> dataSourcePaths;
     protected ReleaseManager releaseManager;
     protected String database;
 
@@ -50,25 +46,17 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final Logger logger;
 
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, List<Path> dataSourcePaths,
-                          String database, CellBaseConfiguration configuration) throws CellBaseException {
-        this(blockingQueue, data, dataRelease, dataSourcePaths, database, null, null, configuration);
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, String database,
+                          CellBaseConfiguration configuration) throws CellBaseException {
+        this(blockingQueue, data, dataRelease, database, null, null, configuration);
     }
 
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, Path[] dataSourcePaths,
-                          String database, String field, String[] innerFields, CellBaseConfiguration configuration)
-            throws CellBaseException {
-        this(blockingQueue, data, dataRelease, new ArrayList<>(Arrays.asList(dataSourcePaths)), database, field, innerFields,
-                configuration);
-    }
-
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, List<Path> dataSourcePaths,
-                          String database, String field, String[] innerFields, CellBaseConfiguration configuration)
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, String database, String field,
+                          String[] innerFields, CellBaseConfiguration configuration)
             throws CellBaseException {
         this.blockingQueue = blockingQueue;
         this.data = data;
         this.dataRelease = dataRelease;
-        this.dataSourcePaths = dataSourcePaths;
         this.database = database;
         this.field = field;
         this.innerFields = innerFields;

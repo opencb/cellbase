@@ -17,16 +17,23 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.cellbase.core.release.DataReleaseSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ReleaseMongoDBAdaptor;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 
 public class ReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
@@ -102,13 +109,77 @@ public class ReleaseManager extends AbstractManager {
         return null;
     }
 
+    public void update(int release, String data, List<Path> dataSourcePaths) {
+        DataRelease currDataRelease = get(release);
+        if (currDataRelease != null) {
+            // Update collections
+            currDataRelease.getCollections().put(data, CellBaseCoreDBAdaptor.getDataReleaseCollectionName(data, release));
+
+            // Check sources
+            List<DataReleaseSource> newSources = new ArrayList<>();
+            // First, remove previous sources for the data loaded
+            if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
+                for (DataReleaseSource source : currDataRelease.getSources()) {
+                    if (StringUtils.isNotEmpty(source.getData()) && !source.getData().equals(data)) {
+                        newSources.add(source);
+                    }
+                }
+            }
+            // Second, add new sources
+            if (CollectionUtils.isNotEmpty(dataSourcePaths)) {
+                ObjectMapper jsonObjectMapper = new ObjectMapper();
+                ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
+
+                List<DataReleaseSource> sources = new ArrayList<>();
+                for (Path dataSourcePath : dataSourcePaths) {
+                    if (dataSourcePath.toFile().exists()) {
+                        try {
+                            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
+                            newSources.add(dataReleaseSource);
+                        } catch (IOException e) {
+                            logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
+                                    + e.getMessage());
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(newSources)) {
+                currDataRelease.setSources(newSources);
+            }
+
+            // Update data release in the database
+            update(currDataRelease);
+        }
+    }
+
     public void update(DataRelease dataRelase) {
         if (MapUtils.isNotEmpty(dataRelase.getCollections())) {
             releaseDBAdaptor.update(dataRelase.getRelease(), "collections", dataRelase.getCollections());
         }
 
         if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
-            releaseDBAdaptor.update(dataRelase.getRelease(), "sources", dataRelase.getSources());
+            // TODO: improve this update
+            List<Map<String, String>> tmp = new ArrayList<>();
+            for (DataReleaseSource source : dataRelase.getSources()) {
+                Map<String, String> map = new HashMap<>();
+                if (StringUtils.isNotEmpty(source.getData())) {
+                    map.put("data", source.getData());
+                }
+                if (StringUtils.isNotEmpty(source.getName())) {
+                    map.put("name", source.getName());
+                }
+                if (StringUtils.isNotEmpty(source.getVersion())) {
+                    map.put("version", source.getVersion());
+                }
+                if (StringUtils.isNotEmpty(source.getUrl())) {
+                    map.put("url", source.getUrl());
+                }
+                if (StringUtils.isNotEmpty(source.getDate())) {
+                    map.put("date", source.getDate());
+                }
+                tmp.add(map);
+            }
+            releaseDBAdaptor.update(dataRelase.getRelease(), "sources", tmp);
         }
     }
 

@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoBulkWriteException;
@@ -35,7 +34,6 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.release.DataRelease;
-import org.opencb.cellbase.core.release.DataReleaseSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
@@ -87,19 +85,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private Path indexScriptFolder;
     private int[] chunkSizes;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, List<Path> sources, String database)
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database)
             throws CellBaseException {
-        this(queue, data, dataRelease, sources, database, null, null, null);
+        this(queue, data, dataRelease, database, null, null, null);
     }
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, Path[] sources, String database,
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database,
                                  String field, String[] innerFields, CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
-        this(queue, data, dataRelease, new ArrayList<>(Arrays.asList(sources)), database, field, innerFields, cellBaseConfiguration);
-    }
-
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, List<Path> sources, String database,
-                                 String field, String[] innerFields, CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
-        super(queue, data, dataRelease, sources, database, field, innerFields, cellBaseConfiguration);
+        super(queue, data, dataRelease, database, field, innerFields, cellBaseConfiguration);
         if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
@@ -692,37 +685,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     @Override
     public void close() throws LoaderException {
-        DataRelease currDataRelease = releaseManager.get(this.dataRelease);
-        if (currDataRelease != null) {
-            // Update collections
-            currDataRelease.getCollections().put(data, getCollectionName());
-
-            // Check sources
-            if (CollectionUtils.isNotEmpty(dataSourcePaths)) {
-                ObjectMapper jsonObjectMapper = new ObjectMapper();
-                ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
-
-                List<DataReleaseSource> sources = new ArrayList<>();
-                for (Path dataSourcePath : dataSourcePaths) {
-                    if (dataSourcePath.toFile().exists()) {
-                        try {
-                            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-                            sources.add(dataReleaseSource);
-                        } catch (IOException e) {
-                            logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
-                                    + e.getMessage());
-                        }
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(sources)) {
-                    currDataRelease.setSources(sources);
-                }
-            }
-
-            // Update data release in the database
-            releaseManager.update(currDataRelease);
-
-        }
         mongoDBManager.close();
     }
 
