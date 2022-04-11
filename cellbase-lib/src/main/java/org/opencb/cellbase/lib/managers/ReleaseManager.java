@@ -90,6 +90,28 @@ public class ReleaseManager extends AbstractManager {
         return lastRelease;
     }
 
+    public DataRelease get(int release) {
+        CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
+        if (CollectionUtils.isNotEmpty(result.getResults())) {
+            for (DataRelease dataRelease : result.getResults()) {
+                if (dataRelease.getRelease() == release) {
+                    return dataRelease;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void update(DataRelease dataRelase) {
+        if (MapUtils.isNotEmpty(dataRelase.getCollections())) {
+            releaseDBAdaptor.update(dataRelase.getRelease(), "collections", dataRelase.getCollections());
+        }
+
+        if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
+            releaseDBAdaptor.update(dataRelase.getRelease(), "sources", dataRelase.getSources());
+        }
+    }
+
     public void activeByDefault(int release) throws JsonProcessingException {
         // Gel all releases and check if the input release exists
         DataRelease prevActive = null;
@@ -129,4 +151,5 @@ public class ReleaseManager extends AbstractManager {
     public String getMaintainerContact() {
         return configuration.getMaintainerContact();
     }
+
 }

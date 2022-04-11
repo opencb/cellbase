@@ -17,11 +17,16 @@
 package org.opencb.cellbase.lib.loader;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -33,6 +38,9 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
+    protected int dataRelease;
+    protected List<Path> dataSourcePaths;
+    protected ReleaseManager releaseManager;
     protected String database;
 
     protected String field;
@@ -42,15 +50,25 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final Logger logger;
 
-
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, CellBaseConfiguration configuration) {
-        this(blockingQueue, data, database, null, null, configuration);
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, List<Path> dataSourcePaths,
+                          String database, CellBaseConfiguration configuration) throws CellBaseException {
+        this(blockingQueue, data, dataRelease, dataSourcePaths, database, null, null, configuration);
     }
 
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, String field,
-                          String[] innerFields, CellBaseConfiguration configuration) {
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, Path[] dataSourcePaths,
+                          String database, String field, String[] innerFields, CellBaseConfiguration configuration)
+            throws CellBaseException {
+        this(blockingQueue, data, dataRelease, new ArrayList<>(Arrays.asList(dataSourcePaths)), database, field, innerFields,
+                configuration);
+    }
+
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, List<Path> dataSourcePaths,
+                          String database, String field, String[] innerFields, CellBaseConfiguration configuration)
+            throws CellBaseException {
         this.blockingQueue = blockingQueue;
         this.data = data;
+        this.dataRelease = dataRelease;
+        this.dataSourcePaths = dataSourcePaths;
         this.database = database;
         this.field = field;
         this.innerFields = innerFields;
@@ -66,6 +84,8 @@ public abstract class CellBaseLoader implements Callable<Integer> {
             }
         }
 
+        releaseManager = new ReleaseManager(this.database, this.cellBaseConfiguration);
+
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -76,6 +96,5 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     public abstract void createIndex(String data) throws LoaderException;
 
-    public abstract void close();
-
+    public abstract void close() throws LoaderException;
 }

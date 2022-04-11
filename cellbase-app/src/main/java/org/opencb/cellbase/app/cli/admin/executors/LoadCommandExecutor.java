@@ -16,12 +16,19 @@
 
 package org.opencb.cellbase.app.cli.admin.executors;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.indexer.IndexManager;
+import org.opencb.cellbase.lib.managers.ReleaseManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,7 +38,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 03/02/15.
@@ -43,6 +54,8 @@ public class LoadCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.LoadCommandOptions loadCommandOptions;
 
     private Path input;
+    private String[] loadOptions;
+    private int dataRelease;
 
     private String database;
     private String field;
@@ -61,6 +74,24 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
         }
+        if (loadCommandOptions.data.equals("all")) {
+            loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
+                    EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
+                    EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
+                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA};
+        } else {
+            loadOptions = loadCommandOptions.data.split(",");
+        }
+        if (loadCommandOptions.dataRelease >= 0) {
+            if (loadCommandOptions.dataRelease == 0) {
+                logger.warn("Since the parameter data-release is zero, the active release by default will be used");
+            }
+            dataRelease = loadCommandOptions.dataRelease;
+        } else {
+            throw new IllegalArgumentException("The input paremeter 'data-release' must be greater or equal to 0. To use the active"
+                    + " release by default, set this parameter to 0");
+        }
         if (loadCommandOptions.field != null) {
             field = loadCommandOptions.field;
         }
@@ -73,11 +104,12 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndexes = !loadCommandOptions.skipIndex;
     }
 
-
     /**
      * Parse specific 'data' command options.
+     *
+     * @throws CellBaseException CellBase exception
      */
-    public void execute() {
+    public void execute() throws CellBaseException {
 
         checkParameters();
 
@@ -93,17 +125,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                 indexManager = new IndexManager(database, indexFile, configuration);
             }
 
-            String[] loadOptions;
-            if (loadCommandOptions.data.equals("all")) {
-                loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
-                        EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-                        EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                        EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA};
-            } else {
-                loadOptions = loadCommandOptions.data.split(",");
-            }
-
             for (int i = 0; i < loadOptions.length; i++) {
                 String loadOption = loadOptions[i];
                 try {
@@ -115,14 +136,16 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("genome_sequence");
                             break;
                         case EtlCommons.GENE_DATA:
-                            loadIfExists(input.resolve("gene.json.gz"), "gene");
-                            loadIfExists(input.resolve("dgidbVersion.json"), METADATA);
-                            loadIfExists(input.resolve("ensemblCoreVersion.json"), METADATA);
-                            loadIfExists(input.resolve("uniprotXrefVersion.json"), METADATA);
-                            loadIfExists(input.resolve("geneExpressionAtlasVersion.json"), METADATA);
-                            loadIfExists(input.resolve("hpoVersion.json"), METADATA);
-                            loadIfExists(input.resolve("disgenetVersion.json"), METADATA);
-                            loadIfExists(input.resolve("gnomadVersion.json"), METADATA);
+                            List<Path> sources = new ArrayList<>(Arrays.asList(
+                                    input.resolve("dgidbVersion.json"),
+                                    input.resolve("ensemblCoreVersion.json"),
+                                    input.resolve("uniprotXrefVersion.json"),
+                                    input.resolve("geneExpressionAtlasVersion.json"),
+                                    input.resolve("hpoVersion.json"),
+                                    input.resolve("disgenetVersion.json"),
+                                    input.resolve("gnomadVersion.json")
+                            ));
+                            loadIfExists(input.resolve("gene.json.gz"), "gene", sources);
                             createIndex("gene");
                             break;
                         case EtlCommons.REFSEQ_DATA:
@@ -218,13 +241,14 @@ public class LoadCommandExecutor extends CommandExecutor {
 //        }
 //    }
 
+    @Deprecated
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
             ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException {
         File file = new File(path.toString());
         if (file.exists()) {
             if (file.isFile()) {
-                loadRunner.load(path, collection);
+                loadRunner.load(path, collection, dataRelease, null);
             } else {
                 logger.warn("{} is not a file - skipping", path.toString());
             }
@@ -233,7 +257,22 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void checkParameters() {
+    private void loadIfExists(Path path, String collection, List<Path> sources) throws NoSuchMethodException, InterruptedException,
+            ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
+            ClassNotFoundException {
+        File file = new File(path.toString());
+        if (file.exists()) {
+            if (file.isFile()) {
+                loadRunner.load(path, collection, dataRelease, sources);
+            } else {
+                logger.warn("{} is not a file - skipping", path.toString());
+            }
+        } else {
+            logger.warn("{} does not exist - skipping", path.toString());
+        }
+    }
+
+    private void checkParameters() throws CellBaseException {
         if (loadCommandOptions.numThreads > 1) {
             numThreads = loadCommandOptions.numThreads;
         } else {
@@ -257,6 +296,32 @@ public class LoadCommandExecutor extends CommandExecutor {
             e.printStackTrace();
             System.exit(-1);
         }
+
+        // Check data release
+        ReleaseManager releaseManager = new ReleaseManager(database, configuration);
+        CellBaseDataResult<DataRelease> result = releaseManager.getReleases();
+        if (CollectionUtils.isEmpty(result.getResults())) {
+            throw new CellBaseException("No data releases are available for database " + database);
+        }
+        List<Integer> releases = result.getResults().stream().map(dr -> dr.getRelease()).collect(Collectors.toList());
+        if (!releases.contains(dataRelease)) {
+            throw new IllegalArgumentException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
+                    + " are: " + StringUtils.join(releases, ","));
+        }
+        for (DataRelease dr : result.getResults()) {
+            if (dr.getRelease() == dataRelease) {
+                for (String loadOption : loadOptions) {
+                    if (dr.getCollections().containsKey(loadOption)) {
+                        String collectionName = CellBaseCoreDBAdaptor.getDataReleaseCollectionName(loadOption, dataRelease);
+                        if (dr.getCollections().get(loadOption).equals(collectionName)) {
+                            throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
+                                    + " has already been done.");
+                        }
+                    }
+                }
+                break;
+            }
+        }
     }
 
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
@@ -271,14 +336,14 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             for (Path entry : stream) {
                 logger.info("Loading file '{}'", entry.toString());
-                loadRunner.load(input.resolve(entry.getFileName()), "variation");
+                loadRunner.load(input.resolve(entry.getFileName()), "variation", dataRelease, null);
             }
             loadIfExists(input.resolve("ensemblVariationVersion.json"), METADATA);
             createIndex("variation");
             // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
-            loadRunner.load(input, "variation", field, innerFields);
+            loadRunner.load(input, "variation", dataRelease, null, field, innerFields);
         }
     }
 
@@ -292,7 +357,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+            loadRunner.load(input.resolve(entry.getFileName()), "conservation", dataRelease, null);
         }
         loadIfExists(input.resolve("gerpVersion.json"), METADATA);
         loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
@@ -309,7 +374,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
+            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction", dataRelease, null);
         }
     }
 
@@ -318,7 +383,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (Files.exists(path)) {
             try {
                 logger.info("Loading '{}' ...", path.toString());
-                loadRunner.load(path, EtlCommons.CLINICAL_VARIANTS_DATA);
+                loadRunner.load(path, EtlCommons.CLINICAL_VARIANTS_DATA, dataRelease, null);
                 loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
                 loadIfExists(input.resolve("cosmicVersion.json"), "metadata");
                 loadIfExists(input.resolve("gwasVersion.json"), "metadata");
@@ -336,7 +401,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (Files.exists(path)) {
             try {
                 logger.debug("Loading '{}' ...", path.toString());
-                loadRunner.load(path, EtlCommons.REPEATS_DATA);
+                loadRunner.load(path, EtlCommons.REPEATS_DATA, dataRelease, null);
                 loadIfExists(input.resolve(EtlCommons.TRF_VERSION_FILE), METADATA);
                 loadIfExists(input.resolve(EtlCommons.GSD_VERSION_FILE), METADATA);
                 loadIfExists(input.resolve(EtlCommons.WM_VERSION_FILE), METADATA);
@@ -373,7 +438,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         // Load from JSON files
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(spliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA);
+            loadRunner.load(spliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA, dataRelease, null);
         }
         loadIfExists(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + versionFilename), METADATA);
     }

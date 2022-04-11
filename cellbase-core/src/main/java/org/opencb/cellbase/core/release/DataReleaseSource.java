@@ -23,6 +23,9 @@ public class DataReleaseSource {
     private String url;
     private String date;
 
+    public DataReleaseSource() {
+    }
+
     public DataReleaseSource(String name, String version, String data, String url, String date) {
         this.name = name;
         this.version = version;

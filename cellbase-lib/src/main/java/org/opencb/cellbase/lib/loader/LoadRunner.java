@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.loader;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +65,20 @@ public class LoadRunner {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    @Deprecated
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
-        load(filePath, data, null, null);
+        load(filePath, data, 0, null, null, null);
     }
 
-    public void load(Path filePath, String data, String field, String[] innerFields) throws ClassNotFoundException,
-            NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException,
+    public void load(Path filePath, String data, int dataRelease, List<Path> sources) throws ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException,
+            IOException {
+        load(filePath, data, dataRelease, sources, null, null);
+    }
+
+    public void load(Path filePath, String data, int dataRelease, List<Path> sources, String field, String[] innerFields)
+            throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException,
             ExecutionException, InterruptedException, IOException {
         try {
 
@@ -91,10 +99,17 @@ public class LoadRunner {
             List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
                 // Java reflection is used to create the CellBase data loaders for a specific database engine.
+                Path[] paths = null;
+                if (CollectionUtils.isNotEmpty(sources)) {
+                    paths = new Path[sources.size()];
+                    for (int j = 0; j < sources.size(); j++) {
+                        paths[j] = sources.get(j);
+                    }
+                }
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, String[].class,
-                                CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, field, innerFields, cellBaseConfiguration));
+                        .getConstructor(BlockingQueue.class, String.class, Integer.class, Path[].class, String.class, String.class,
+                                String[].class, CellBaseConfiguration.class)
+                        .newInstance(blockingQueue, data, dataRelease, paths, database, field, innerFields, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 

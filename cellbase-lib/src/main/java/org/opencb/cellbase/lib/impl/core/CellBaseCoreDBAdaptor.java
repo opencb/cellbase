@@ -30,6 +30,10 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     int MAX_ROWS = 50000;
 
+    static String getDataReleaseCollectionName(String data, int dataRelease) {
+        return data + "__v" + dataRelease;
+    }
+
     default CellBaseDataResult<T> query(Q query) {
         List<T> results = new ArrayList<>();
         long time = System.currentTimeMillis();

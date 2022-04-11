@@ -151,6 +151,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 required = true, arity = 1)
         public String data;
 
+        @Parameter(names = {"--data-release"}, description = "Data release where the data will be loaded, if this is not provided or"
+                + " is zero, then the active release by default will be used", arity = 1)
+        public int dataRelease;
+
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded, e.g. "
                 + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
                 + "--fields parameter).", required = true, arity = 1)

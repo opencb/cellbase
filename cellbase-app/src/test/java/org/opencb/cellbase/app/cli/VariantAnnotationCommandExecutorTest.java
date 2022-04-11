@@ -31,6 +31,7 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.LoadCommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
@@ -76,7 +77,7 @@ public class VariantAnnotationCommandExecutorTest {
 
     @Test
     @Disabled
-    public void proteinChangeMatchTest() throws IOException, URISyntaxException {
+    public void proteinChangeMatchTest() throws IOException, URISyntaxException, CellBaseException {
         // Remove database content
         cleanUp();
         // Load test data
