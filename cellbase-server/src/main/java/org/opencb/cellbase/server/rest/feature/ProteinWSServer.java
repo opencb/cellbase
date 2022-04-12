@@ -47,10 +47,13 @@ public class ProteinWSServer extends GenericRestWSServer {
     private ProteinManager proteinManager;
 
     public ProteinWSServer(@PathParam("apiVersion")
-                                @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                        defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                           @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                   defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                           @PathParam("dataRelease")
+                           @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                   defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
                            @PathParam("species")
-                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                            @DefaultValue("")
                            @QueryParam("assembly") String assembly,
@@ -82,7 +85,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_IDS,
-                                               required = true) String id) {
+            required = true) String id) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query);
@@ -143,7 +146,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteins}/substitutionScores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
-        notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
+            notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
 
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
@@ -163,7 +166,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_ID,
-                                                  required = true) String id,
+            required = true) String id,
                                           @QueryParam("position") @ApiParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION,
                                                   required = false) Integer position,
                                           @QueryParam("aa") @ApiParam(name = "aa", value = ParamConstants.AA_DESCRIPTION,
@@ -209,9 +212,9 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteins}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = ParamConstants.PROTEIN_ACCESSION,
-                                        required = true) String proteins) throws QueryException {
+            required = true) String proteins) throws QueryException {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setAccessions(Arrays.asList(proteins.split(",")));

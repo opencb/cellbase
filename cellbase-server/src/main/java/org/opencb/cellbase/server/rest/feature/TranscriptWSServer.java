@@ -57,6 +57,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public TranscriptWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                              @PathParam("dataRelease")
+                              @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
@@ -121,7 +124,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
-                                    value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
+            value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] ids = id.split(",");
@@ -220,7 +223,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/{transcripts}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Retrieve transcript cDNA sequence", response = String.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
             required = true) String id) {

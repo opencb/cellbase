@@ -44,6 +44,9 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public RegulatoryWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                              @PathParam("dataRelease")
+                              @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)

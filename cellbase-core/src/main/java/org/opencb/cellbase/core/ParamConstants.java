@@ -109,8 +109,12 @@ public class ParamConstants {
 
     public static final String DOT_NOTATION_NOTE = "Parameters can be camel case (e.g. transcriptsBiotype) "
             + "or dot notation (e.g. transcripts.biotype).";
-    public static final String VERSION_DESCRIPTION = "Possible values: v4, v5";
+    public static final String VERSION_DESCRIPTION = "Possible values: v5";
     public static final String DEFAULT_VERSION = "v5";
+    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. Please,"
+            + " check the web service /metadata/dataReleases in order to know the different data releases and sources, and the default"
+            + " data release";
+    public static final String DEFAULT_DATA_RELEASE = "0";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
             + "potentially available assemblies, please refer to: "
             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";
@@ -244,7 +248,7 @@ public class ParamConstants {
     public static final String ANNOTATION_CONSTRAINTS_PARAM = "constraint";
     public static final String ANNOTATION_CONSTRAINTS_DESCRIPTION = "Name of constraint and desired value, "
             + "e.g. exac_oe_lof<=1.0,exac_pLI>0. Allowed values for names are exac_oe_lof, exac_pLI, oe_lof, oe_mis, oe_syn";
-//    public static final String ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
+    //    public static final String ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
 //    public static final String ANNOTATION_CONSTRAINTS_VALUE_PARAM = "constraintValue";
 //    public static final String ANNOTATION_CONSTRAINTS_NAME_PARAM = "constraintName";
     public static final String ANNOTATION_TARGETS_DESCRIPTION = "e.g. MIRT001919 or hsa-miR-146a-5p";
@@ -377,7 +381,7 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-//    public static final String REGULATION_FEATURE_CLASSES = "Comma separated list of regulatory region classes, e.g.:"
+    //    public static final String REGULATION_FEATURE_CLASSES = "Comma separated list of regulatory region classes, e.g.:"
 //            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
 //            + "list of available regulatory types: "
 //            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass";

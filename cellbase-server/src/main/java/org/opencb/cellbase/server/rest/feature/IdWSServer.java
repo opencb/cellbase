@@ -55,12 +55,15 @@ public class IdWSServer extends GenericRestWSServer {
     public IdWSServer(@PathParam("apiVersion")
                       @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                               defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                        @PathParam("species")
+                      @PathParam("dataRelease")
+                      @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                              defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
+                      @PathParam("species")
                       @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                       @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                       @DefaultValue("")
                       @QueryParam("assembly") String assembly,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
+                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -81,10 +84,10 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves the external reference(s) info for the ID(s)",
             notes = "An independent database query will be issued for each id, meaning that results for each id will be"
-            + " returned in independent CellBaseDataResult objects within the QueryResponse object.", response = Xref.class,
+                    + " returned in independent CellBaseDataResult objects within the QueryResponse object.", response = Xref.class,
             responseContainer = "QueryResponse")
     public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = ParamConstants.FEATURE_IDS_DESCRIPTION, required = true)
-                                        String id) {
+                                    String id) {
         try {
             XrefQuery query = new XrefQuery(uriParams);
             List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query);
@@ -97,7 +100,7 @@ public class IdWSServer extends GenericRestWSServer {
     @GET
     @Path("/{id}/xref")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references related with given ID(s)",
-        response = Xref.class, responseContainer = "QueryResponse")
+            response = Xref.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = ParamConstants.FEATURE_IDS_DESCRIPTION,
                     required = true, dataType = "java.util.List", paramType = "query"),

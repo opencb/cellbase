@@ -51,6 +51,9 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public ChromosomeWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                              @PathParam("dataRelease")
+                              @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
@@ -80,7 +83,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
@@ -145,7 +148,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING")
     })
     public Response getChromosomes(@PathParam("chromosomes") @ApiParam(name = "chromosomes", value = ParamConstants.CHROMOSOMES,
-                                                required = true) String chromosomes) {
+            required = true) String chromosomes) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes);

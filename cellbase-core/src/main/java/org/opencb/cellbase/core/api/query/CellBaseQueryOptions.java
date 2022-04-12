@@ -38,6 +38,9 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     @QueryParameter(id = "facet")
     protected String facet;
 
+    @QueryParameter(id = "dataRelease")
+    protected int dataRelease;
+
     public enum Order {
         ASCENDING,
         DESCENDING
@@ -46,16 +49,17 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     public CellBaseQueryOptions() {
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, int dataRelease) {
         this.limit = limit;
         this.skip = skip;
         this.count = count;
         this.sort = sort;
         this.order = order;
         this.facet = facet;
+        this.dataRelease = dataRelease;
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, int dataRelease,
                                 List<String> includes, List<String> excludes) {
         super(includes, excludes);
 
@@ -65,6 +69,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.sort = sort;
         this.order = order;
         this.facet = facet;
+        this.dataRelease = dataRelease;
     }
 
     @Override
@@ -76,6 +81,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         sb.append(", sort=").append(sort);
         sb.append(", order=").append(order);
         sb.append(", facet=").append(facet);
+        sb.append(", dataRelease=").append(dataRelease);
         sb.append(", includes=").append(includes);
         sb.append(", excludes=").append(excludes);
         sb.append('}');
@@ -133,6 +139,15 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     public CellBaseQueryOptions setFacet(String facet) {
         this.facet = facet;
+        return this;
+    }
+
+    public int getDataRelease() {
+        return dataRelease;
+    }
+
+    public CellBaseQueryOptions setDataRelease(int dataRelease) {
+        this.dataRelease = dataRelease;
         return this;
     }
 }

@@ -46,10 +46,14 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     private OntologyManager ontologyManager;
 
-    public OntologyWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion",
-                                value = ParamConstants.VERSION_DESCRIPTION,
-                                defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                            @PathParam("species") @ApiParam(name = "species",
+    public OntologyWSServer(@PathParam("apiVersion")
+                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                            @PathParam("dataRelease")
+                            @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                    defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
+                            @PathParam("species")
+                            @ApiParam(name = "species",
                                     value = ParamConstants.SPECIES_DESCRIPTION) String species,
                             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                             @QueryParam("assembly") String assembly,
@@ -128,7 +132,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_DESCRIPTION, required = true)
-                                        String ids) {
+                                    String ids) {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query);

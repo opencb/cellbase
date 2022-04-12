@@ -59,9 +59,14 @@ public class GeneWSServer extends GenericRestWSServer {
     private ProteinManager proteinManager;
     private TfbsManager tfbsManager;
 
-    public GeneWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+    public GeneWSServer(@PathParam("apiVersion")
+                        @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                        @PathParam("species") @ApiParam(name = "species",
+                        @PathParam("dataRelease")
+                        @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
+                        @PathParam("species")
+                        @ApiParam(name = "species",
                                 value = ParamConstants.SPECIES_DESCRIPTION) String species,
                         @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                         @DefaultValue("")
@@ -176,7 +181,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAggregationStats(@DefaultValue("") @QueryParam("field")
-            @ApiParam(name = "field", value = ParamConstants.GROUP_BY_FIELDS, required = true) String field) {
+                                        @ApiParam(name = "field", value = ParamConstants.GROUP_BY_FIELDS, required = true) String field) {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
@@ -493,7 +498,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getSNPByGenes(@PathParam("genes")
-                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
+                                  @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
             List<VariantQuery> queries = new ArrayList<>();
             String[] ids = genes.split(",");
@@ -520,7 +525,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_ENSEMBL_IDS,
-                                       required = true) String genes) {
+            required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setIds(Arrays.asList(genes.split(",")));
@@ -542,7 +547,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
-                                           required = true) String genes) {
+            required = true) String genes) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setGenes(Arrays.asList(genes.split(",")));
