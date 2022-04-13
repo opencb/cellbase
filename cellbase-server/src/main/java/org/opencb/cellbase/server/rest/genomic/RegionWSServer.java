@@ -21,7 +21,6 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -42,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 @Path("/{apiVersion}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Region", description = "Region RESTful Web Services API")
@@ -55,17 +56,13 @@ public class RegionWSServer extends GenericRestWSServer {
     private RegulatoryManager regulatoryManager;
     private RepeatsManager repeatsManager;
 
-    public RegionWSServer(@PathParam("apiVersion")
-                          @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                  defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                          @PathParam("dataRelease")
-                          @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
-                                  defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
-                          @PathParam("species")
-                          @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                          @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                          @DefaultValue("")
-                          @QueryParam("assembly") String assembly,
+    public RegionWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                          @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                          @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                  String assembly,
+                          @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
+                                  int dataRelease,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -83,7 +80,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION,
+    @ApiOperation(httpMethod = "GET", value = DATA_MODEL_DESCRIPTION,
             response = Map.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Region.class);
@@ -99,40 +96,40 @@ public class RegionWSServer extends GenericRestWSServer {
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
+            @ApiImplicitParam(name = "biotype",  value = GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.biotype", value = TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.xrefs", value = TRANSCRIPT_XREFS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.tfbs.id", value = TRANSCRIPT_TFBS_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.diseases.id", value = ANNOTATION_DISEASES_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.diseases.name", value = ANNOTATION_DISEASES_NAMES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
+            @ApiImplicitParam(name = "annotation.expression.gene", value = ANNOTATION_EXPRESSION_GENE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.expression.tissue", value = ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.drugs.name", value = ANNOTATION_DRUGS_NAME_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
 
     })
     public Response getGenesByRegionPost(@FormParam("region") @ApiParam(name = "region",
-            value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
+            value = REGION_DESCRIPTION, required = true) String region) {
         return getGenesByRegion(region);
     }
 
@@ -146,41 +143,41 @@ public class RegionWSServer extends GenericRestWSServer {
 //            @ApiImplicitParam(name = "interval",
 //                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
 //                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
+            @ApiImplicitParam(name = "biotype",  value = GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.biotype", value = TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.xrefs", value = TRANSCRIPT_XREFS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.tfbs.id", value = TRANSCRIPT_TFBS_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.diseases.id", value = ANNOTATION_DISEASES_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.diseases.name", value = ANNOTATION_DISEASES_NAMES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
+            @ApiImplicitParam(name = "annotation.expression.gene", value = ANNOTATION_EXPRESSION_GENE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.expression.tissue", value = ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME_DESCRIPTION,
+            @ApiImplicitParam(name = "annotation.drugs.name", value = ANNOTATION_DRUGS_NAME_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                              required = true) String regions) {
         try {
             List<GeneQuery> queries = new ArrayList<>();
@@ -203,31 +200,31 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.biotype", value = TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.xrefs", value = TRANSCRIPT_XREFS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.id", value = TRANSCRIPT_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.name", value = TRANSCRIPT_NAMES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "transcripts.tfbs.id", value = TRANSCRIPT_TFBS_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
-            value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
+            value = REGION_DESCRIPTION, required = true) String regions) {
         try {
             List<TranscriptQuery> queries = new ArrayList<>();
             String[] coordinates = regions.split(",");
@@ -249,24 +246,24 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all repeats for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
-                                                  value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
+                                                  value = REGION_DESCRIPTION, required = true) String region) {
         try {
             List<RepeatsQuery> queries = new ArrayList<>();
             String[] coordinates = region.split(",");
@@ -288,26 +285,26 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions.", notes = "Please NOTE that regions "
             + "must be smaller than 10Mb", responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
+            @ApiImplicitParam(name = "gene", value = GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "id", value = "Comma separated list of ids, e.g.: 22:35490160:G:A",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getVariantByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getVariantByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                                  required = true) String regions) {
         try {
             List<VariantQuery> queries = new ArrayList<>();
@@ -351,10 +348,10 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves genomic sequence", response = String.class,
             responseContainer = "QueryResponse")
     public Response getSequenceByRegion(@PathParam("regions")
-                                        @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                        @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                                 required = true) String regions,
                                         @DefaultValue("1") @QueryParam("strand")
-                                        @ApiParam(name = "strand", value = ParamConstants.STRAND,
+                                        @ApiParam(name = "strand", value = STRAND,
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
@@ -375,7 +372,7 @@ public class RegionWSServer extends GenericRestWSServer {
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
             response = Document.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "so", value = ParamConstants.SEQUENCE_ONTOLOGY_DESCRIPTION,
+            @ApiImplicitParam(name = "so", value = SEQUENCE_ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene",
                     value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
@@ -402,20 +399,20 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
         try {
             // FIXME
@@ -435,22 +432,22 @@ public class RegionWSServer extends GenericRestWSServer {
             + " returned in independent QueryResult objects within the QueryResponse object.",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "featureType", value = ParamConstants.REGULATION_FEATURE_TYPES,
+            @ApiImplicitParam(name = "featureType", value = REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getRegulatoryRegions(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getRegulatoryRegions(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
         try {
             List<RegulationQuery> queries = new ArrayList<>();
@@ -473,20 +470,20 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. ",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = false) String regions) {
         try {
             List<RegulationQuery> queries = new ArrayList<>();
@@ -510,7 +507,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores", response = GenomicScoreRegion.class,
         responseContainer = "QueryResponse")
     public Response conservation(@PathParam("regions")
-                                 @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                 @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                          required = true) String regions) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);

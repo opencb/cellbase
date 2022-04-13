@@ -20,9 +20,8 @@ import io.swagger.annotations.*;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -40,6 +39,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 @Path("/{apiVersion}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Variant", description = "Variant RESTful Web Services API")
@@ -47,17 +48,13 @@ public class VariantWSServer extends GenericRestWSServer {
 
     private VariantManager variantManager;
 
-    public VariantWSServer(@PathParam("apiVersion")
-                           @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                           @PathParam("dataRelease")
-                           @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
-                           @PathParam("species")
-                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                           @DefaultValue("")
-                           @QueryParam("assembly") String assembly,
+    public VariantWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                           @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                           @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                   String assembly,
+                           @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
+                                   int dataRelease,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -69,7 +66,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+    @ApiOperation(httpMethod = "GET", value = DATA_MODEL_DESCRIPTION, response = Map.class,
             responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Variant.class);
@@ -79,7 +76,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{variants}/hgvs")
     @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = List.class,
             responseContainer = "QueryResponse")
-    public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+    public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
         try {
             List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id);
@@ -93,7 +90,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @Path("/{variants}/normalization")
     @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = Map.class,
             responseContainer = "QueryResponse")
-    public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+    public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
 
         try {
@@ -212,48 +209,48 @@ public class VariantWSServer extends GenericRestWSServer {
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getAnnotationByVariantsGET(@PathParam("variants")
-                                               @ApiParam(name = "variants", value = ParamConstants.VARIANTS,
+                                               @ApiParam(name = "variants", value = VARIANTS,
                                                        required = true) String variants,
                                                @QueryParam("normalize")
-                                               @ApiParam(name = "normalize", value = ParamConstants.NORMALISE,
+                                               @ApiParam(name = "normalize", value = NORMALISE,
                                                        allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean normalize,
                                                @QueryParam("skipDecompose")
-                                               @ApiParam(name = "skipDecompose", value = ParamConstants.SKIP_DECOMPOSE,
+                                               @ApiParam(name = "skipDecompose", value = SKIP_DECOMPOSE,
                                                        allowableValues = "false,true",
                                                        defaultValue = "false", required = false) Boolean skipDecompose,
                                                @QueryParam("ignorePhase")
-                                               @ApiParam(name = "ignorePhase", value = ParamConstants.IGNORE_PHASE,
+                                               @ApiParam(name = "ignorePhase", value = IGNORE_PHASE,
                                                        allowableValues = "false,true",
                                                        required = false) Boolean ignorePhase,
                                                @Deprecated
                                                @QueryParam("phased")
-                                               @ApiParam(name = "phased", value = ParamConstants.PHASED,
+                                               @ApiParam(name = "phased", value = PHASED,
                                                        allowableValues = "false,true", required = false) Boolean phased,
                                                @QueryParam("imprecise")
                                                @ApiParam(name = "imprecise",
-                                                       value = ParamConstants.IMPRECISE, allowableValues = "false,true",
+                                                       value = IMPRECISE, allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean imprecise,
                                                @QueryParam("svExtraPadding")
                                                @ApiParam(name = "svExtraPadding",
-                                                       value = ParamConstants.SV_EXTRA_PADDING,
+                                                       value = SV_EXTRA_PADDING,
                                                        defaultValue = "0", required = false) Integer svExtraPadding,
                                                @QueryParam("cnvExtraPadding")
                                                @ApiParam(name = "cnvExtraPadding",
@@ -350,12 +347,12 @@ public class VariantWSServer extends GenericRestWSServer {
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+    public Response getInfo(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
@@ -371,33 +368,33 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Retrieves all variation objects", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
+            @ApiImplicitParam(name = "region", value = REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = ParamConstants.RS_IDS,
+            @ApiImplicitParam(name = "id", value = RS_IDS,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = CONSEQUENCE_TYPE,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
+            @ApiImplicitParam(name = "gene", value = GENE_ENSEMBL_IDS,
                     dataType = "java.util.List", paramType = "query"),
 //            @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
 //                    dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
 //            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
 //                    required = false, dataType = "java.util.List", paramType = "query"),
 //            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
 //                    required = false, dataType = "java.util.List", paramType = "query",
 //                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response search() {

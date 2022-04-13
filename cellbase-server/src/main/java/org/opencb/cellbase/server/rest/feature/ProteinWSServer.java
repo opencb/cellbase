@@ -18,10 +18,9 @@ package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
-import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ProteinQuery;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -39,6 +38,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 @Path("/{apiVersion}/{species}/feature/protein")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Protein", description = "Protein RESTful Web Services API")
@@ -46,17 +47,13 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     private ProteinManager proteinManager;
 
-    public ProteinWSServer(@PathParam("apiVersion")
-                           @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                           @PathParam("dataRelease")
-                           @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
-                           @PathParam("species")
-                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                           @DefaultValue("")
-                           @QueryParam("assembly") String assembly,
+    public ProteinWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                           @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                           @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                   String assembly,
+                           @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
+                                   int dataRelease,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -68,7 +65,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+    @ApiOperation(httpMethod = "GET", value = DATA_MODEL_DESCRIPTION, response = Map.class,
             responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Entry.class);
@@ -79,12 +76,12 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the protein info", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_IDS,
+    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = PROTEIN_IDS,
             required = true) String id) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
@@ -100,37 +97,37 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "accession", value = ParamConstants.PROTEIN_ACCESSIONS,
+            @ApiImplicitParam(name = "accession", value = PROTEIN_ACCESSIONS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = ParamConstants.PROTEIN_NAMES,
+            @ApiImplicitParam(name = "name", value = PROTEIN_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
+            @ApiImplicitParam(name = "gene", value = GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs", value = ParamConstants.PROTEIN_XREF_IDS,
+            @ApiImplicitParam(name = "xrefs", value = PROTEIN_XREF_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
+            @ApiImplicitParam(name = "keyword", value = PROTEIN_KEYWORD,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "featureId", value = ParamConstants.PROTEIN_FEATURE_ID,
+            @ApiImplicitParam(name = "featureId", value = PROTEIN_FEATURE_ID,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "featureType", value = ParamConstants.PROTEIN_FEATURE_TYPE,
+            @ApiImplicitParam(name = "featureType", value = PROTEIN_FEATURE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getAll() {
@@ -146,30 +143,30 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteins}/substitutionScores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
-            notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
+            notes = SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
 
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_ID,
+    public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = PROTEIN_XREF_ID,
             required = true) String id,
-                                          @QueryParam("position") @ApiParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION,
+                                          @QueryParam("position") @ApiParam(name = "position", value = POSITION_DESCRIPTION,
                                                   required = false) Integer position,
-                                          @QueryParam("aa") @ApiParam(name = "aa", value = ParamConstants.AA_DESCRIPTION,
+                                          @QueryParam("aa") @ApiParam(name = "aa", value = AA_DESCRIPTION,
                                                   required = false) String aa) {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
@@ -213,7 +210,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @Path("/{proteins}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
             responseContainer = "QueryResponse")
-    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = ParamConstants.PROTEIN_ACCESSION,
+    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = PROTEIN_ACCESSION,
             required = true) String proteins) throws QueryException {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);

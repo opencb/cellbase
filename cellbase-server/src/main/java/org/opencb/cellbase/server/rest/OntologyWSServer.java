@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.OntologyTerm;
-import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -39,6 +38,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 @Path("/{apiVersion}/{species}/feature/ontology")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Ontology", description = "Ontology RESTful Web Services API")
@@ -46,17 +47,12 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     private OntologyManager ontologyManager;
 
-    public OntologyWSServer(@PathParam("apiVersion")
-                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                            @PathParam("dataRelease")
-                            @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
-                                    defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
-                            @PathParam("species")
-                            @ApiParam(name = "species",
-                                    value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                            @QueryParam("assembly") String assembly,
+    public OntologyWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                            @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                            @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @QueryParam("assembly") String assembly,
+                            @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
+                                    int dataRelease,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -75,39 +71,39 @@ public class OntologyWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Retrieves all ontology objects", response = OntologyTerm.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "id", value = ONTOLOGY_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
+            @ApiImplicitParam(name = "name", value = ONTOLOGY_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
+            @ApiImplicitParam(name = "namespace",  value = ONTOLOGY_NAMESPACES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "source",  value = ParamConstants.ONTOLOGY_SOURCES,
+            @ApiImplicitParam(name = "source",  value = ONTOLOGY_SOURCES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "synonyms", value = ParamConstants.ONTOLOGY_SYNONYMS,
+            @ApiImplicitParam(name = "synonyms", value = ONTOLOGY_SYNONYMS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs", value = ParamConstants.ONTOLOGY_XREFS,
+            @ApiImplicitParam(name = "xrefs", value = ONTOLOGY_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "parents", value = ParamConstants.ONTOLOGY_PARENTS,
+            @ApiImplicitParam(name = "parents", value = ONTOLOGY_PARENTS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "children", value = ParamConstants.ONTOLOGY_CHILDREN,
+            @ApiImplicitParam(name = "children", value = ONTOLOGY_CHILDREN,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getAll() {
@@ -126,12 +122,12 @@ public class OntologyWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontology terms(s)", response = OntologyTerm.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION, dataType = "java.util.List",
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION, dataType = "java.util.List",
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_DESCRIPTION, required = true)
+    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ONTOLOGY_DESCRIPTION, required = true)
                                     String ids) {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
@@ -147,19 +143,19 @@ public class OntologyWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. namespace",
             value = "Get a unique list of values for a given field.")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "id", value = ONTOLOGY_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
+            @ApiImplicitParam(name = "name", value = ONTOLOGY_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
+            @ApiImplicitParam(name = "namespace",  value = ONTOLOGY_NAMESPACES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "synonyms", value = ParamConstants.ONTOLOGY_SYNONYMS,
+            @ApiImplicitParam(name = "synonyms", value = ONTOLOGY_SYNONYMS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs", value = ParamConstants.ONTOLOGY_XREFS,
+            @ApiImplicitParam(name = "xrefs", value = ONTOLOGY_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "parents", value = ParamConstants.ONTOLOGY_PARENTS,
+            @ApiImplicitParam(name = "parents", value = ONTOLOGY_PARENTS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "children", value = ParamConstants.ONTOLOGY_CHILDREN,
+            @ApiImplicitParam(name = "children", value = ONTOLOGY_CHILDREN,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
@@ -176,7 +172,7 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+    @ApiOperation(httpMethod = "GET", value = DATA_MODEL_DESCRIPTION, response = Map.class,
             responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(OntologyTerm.class);
