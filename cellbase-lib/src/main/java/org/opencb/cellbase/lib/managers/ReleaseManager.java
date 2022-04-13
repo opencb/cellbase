@@ -78,7 +78,7 @@ public class ReleaseManager extends AbstractManager {
             // Create the first release, collections and sources are empty
             lastRelease = new DataRelease()
                     .setRelease(1)
-                    .setActiveByDefault(false)
+                    .setActiveByDefault(true)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
         } else {

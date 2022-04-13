@@ -25,9 +25,11 @@ import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
+import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;
@@ -108,13 +110,52 @@ public class MetaWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/{species}/dataReleases")
+    @ApiOperation(httpMethod = "GET", value = "Returns data releases stored in the database. Each data release contains the source names,"
+            + " versions and urls from which data files were downloaded.", response = DataRelease.class,
+            responseContainer = "QueryResponse")
+    public Response getDataRelease(@PathParam("species")
+                                   @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
+                                   @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
+                                           String assembly,
+                                   @ApiParam(name = "onlyDefault", value = "Set to true if you only want to get the default data relaease")
+                                       @QueryParam("onlyDefault") @DefaultValue("false") boolean onlyDefault) {
+        try {
+            if (StringUtils.isEmpty(assembly)) {
+                SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
+                if (assemblyObject != null) {
+                    assembly = assemblyObject.getName();
+                }
+            }
+            if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
+                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                        + assembly + "'");
+            }
+            ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
+            CellBaseDataResult<DataRelease> result = releaseManager.getReleases();
+            if (onlyDefault) {
+                for (DataRelease release : result.getResults()) {
+                    if (release.isActiveByDefault()) {
+                        return createOkResponse(new CellBaseDataResult<>(result.getId(), result.getTime(), result.getEvents(), 1,
+                                Collections.singletonList(release), 1));
+                    }
+                }
+            }
+
+            return createOkResponse(result);
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
     @Path("/{category}")
     @ApiOperation(httpMethod = "GET", value = "Returns available subcategories for a given category",
-           responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     public Response getCategory(@PathParam("category")
                                 @ApiParam(name = "category", value = "String containing the name of the category",
-                                            allowableValues = "feature,genomic,regulatory", required = true)
-                                            String category) {
+                                        allowableValues = "feature,genomic,regulatory", required = true)
+                                        String category) {
 
         Set<String> subcategories = new HashSet<>();
 
@@ -203,16 +244,16 @@ public class MetaWSServer extends GenericRestWSServer {
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                                       String species,
+                                   String species,
                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                        String assembly,
+                                   String assembly,
                            @DefaultValue("")
-                               @QueryParam("token")
-                               @ApiParam(name = "token",
-                                       value = "API token for health check. When passed all of the "
-                                               + "dependencies and their status will be displayed. The dependencies will be checked if "
-                                               + "this parameter is not used, but they won't be part of the response",
-                                       required = false) String token) {
+                           @QueryParam("token")
+                           @ApiParam(name = "token",
+                                   value = "API token for health check. When passed all of the "
+                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
+                                           + "this parameter is not used, but they won't be part of the response",
+                                   required = false) String token) {
 
         if (StringUtils.isEmpty(assembly)) {
             try {
