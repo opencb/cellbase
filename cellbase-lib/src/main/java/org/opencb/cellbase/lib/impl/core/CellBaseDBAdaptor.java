@@ -21,9 +21,11 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 public class CellBaseDBAdaptor extends MongoDBAdaptor{
 
     protected int dataRelease;
+
+    public static final String DATA_RELEASE_SEPARATOR = "__v";
+
     public static String getCollectionName(String data, int dataRelease) {
-        String name = data + "__v" + dataRelease;
-        System.out.println(">>> get collection name = " + name);
+        String name = data + DATA_RELEASE_SEPARATOR + dataRelease;
         return name;
     }
 

@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -545,15 +546,16 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void createIndex(String collectionName) {
+    private void createIndex(String collection) {
         if (!createIndexes) {
             return;
         }
+        String collectionName = CellBaseDBAdaptor.getCollectionName(collection, dataRelease);
         logger.info("Loading indexes for '{}' collection ...", collectionName);
         try {
-            indexManager.createMongoDBIndexes(collectionName, true);
+            indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
         } catch (IOException e) {
-            logger.error("Error creating indexes:" + e);
+            logger.error("Error creating index: " +  e.getMessage());
         }
     }
 }
