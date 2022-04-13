@@ -44,7 +44,7 @@ import java.util.*;
 /**
  * Created by imedina on 01/12/15.
  */
-public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
+public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
 
     private MongoDBCollection proteinSubstitutionMongoDBCollection;
 
@@ -79,8 +79,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
 
-    public ProteinMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public ProteinMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
@@ -88,8 +88,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     private void init() {
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("protein");
-        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein", dataRelease));
+        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein_functional_prediction",
+                dataRelease));
     }
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {

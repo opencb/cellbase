@@ -74,7 +74,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
         VariantAnnotationCalculator variantAnnotationCalculator = null;
         try {
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
-                    validationCommandOptions.assembly, cellbaseManagerFactory);
+                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, cellbaseManagerFactory);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;

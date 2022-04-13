@@ -48,7 +48,7 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ClinicalVariantQuery, ClinicalVariant> {
+public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<ClinicalVariantQuery, ClinicalVariant> {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
@@ -59,8 +59,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     private GenomeManager genomeManager;
 
 
-    public ClinicalMongoDBAdaptor(MongoDataStore mongoDataStore, GenomeManager genomeManager) throws CellBaseException {
-        super(mongoDataStore);
+    public ClinicalMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore, GenomeManager genomeManager) throws CellBaseException {
+        super(dataRelease, mongoDataStore);
 
         this.genomeManager = genomeManager;
 
@@ -70,7 +70,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     private void init() {
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("clinical_variants", dataRelease));
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

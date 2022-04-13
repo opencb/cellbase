@@ -100,6 +100,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int port;
     private String species;
     private String assembly;
+    private int dataRelease;
     private int numThreads;
     private int batchSize;
     private List<Path> customFiles;
@@ -197,7 +198,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 if (local) {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, this.assembly, cellBaseManagerFactory);
+                            new VariantAnnotationCalculator(this.species, this.assembly, this.dataRelease, cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -248,7 +249,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     for (String chromosome : chromosomeList) {
                         logger.info("Annotating chromosome {}", chromosome);
                         Query query = new Query("chromosome", chromosome);
-                        VariantManager variantManager = new VariantManager(species, configuration);
+                        VariantManager variantManager = new VariantManager(species, dataRelease, configuration);
                         DataReader<Variant> dataReader =
                                 new VariationDataReader((VariantMongoDBAdaptor)variantManager.getDBAdaptor(), query, options);
 
@@ -352,7 +353,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //            GenomeMongoDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
 //            CellBaseDataResult cellBaseDataResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
 
-            GenomeManager genomeManager = new GenomeManager(species, assembly, configuration);
+            GenomeManager genomeManager = new GenomeManager(species, assembly, dataRelease, configuration);
             CellBaseDataResult cellBaseDataResult = genomeManager.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
             List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) cellBaseDataResult
                     .getResults()).get(0).get("chromosomes");
@@ -409,7 +410,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                }
                 CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                 return variantNormalizerConfig
-                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(cellBaseManagerFactory.getGenomeManager(species, assembly)));
+                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(cellBaseManagerFactory.getGenomeManager(species, assembly,
+                                dataRelease)));
             }
         }
         return variantNormalizerConfig;
@@ -468,7 +470,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // Normalization should just be performed in one place: before calling the annotation calculator - within the
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
-            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
+            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly, dataRelease,
                     new CellBaseManagerFactory(configuration)), serverQueryOptions);
         } else {
             try {
@@ -676,6 +678,18 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } else {
             assembly = null;
             logger.warn("No assembly provided. Using default assembly for {}", species);
+        }
+
+        // Data release
+        if (variantAnnotationCommandOptions.dataRelease > 0) {
+            dataRelease = variantAnnotationCommandOptions.dataRelease;
+            // In case annotation is made through WS assembly must be set in the serverQueryOptions
+            serverQueryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
+            serverQueryOptions.put("dataRelease", variantAnnotationCommandOptions.dataRelease);
+        } else {
+            // TODO: maybe read data_release collection to get the default release
+            dataRelease = 0;
+            logger.warn("No data release provided. Using default data release for {}", species);
         }
 
         // Custom files

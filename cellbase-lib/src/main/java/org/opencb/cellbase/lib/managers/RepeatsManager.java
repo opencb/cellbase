@@ -27,18 +27,18 @@ public class RepeatsManager extends AbstractManager implements AggregationApi<Re
 
     private RepeatsMongoDBAdaptor repeatsDBAdaptor;
 
-    public RepeatsManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public RepeatsManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public RepeatsManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor();
+        repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(dataRelease);
     }
 
     @Override

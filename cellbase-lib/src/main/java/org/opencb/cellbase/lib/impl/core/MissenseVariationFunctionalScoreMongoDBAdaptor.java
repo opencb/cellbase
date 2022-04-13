@@ -30,11 +30,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MissenseVariationFunctionalScoreMongoDBAdaptor extends MongoDBAdaptor {
+public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
 
-    public MissenseVariationFunctionalScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public MissenseVariationFunctionalScoreMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
@@ -42,7 +42,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends MongoDBAdapt
     private void init() {
         logger.debug("MissenseVariationFunctionalScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("missense_variation_functional_score");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("missense_variation_functional_score", dataRelease));
     }
 
     public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference) {

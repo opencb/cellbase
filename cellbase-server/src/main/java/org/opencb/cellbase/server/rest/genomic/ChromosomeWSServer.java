@@ -69,7 +69,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
     }
 
     @GET

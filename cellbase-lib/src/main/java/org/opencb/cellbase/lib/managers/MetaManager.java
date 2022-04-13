@@ -28,7 +28,7 @@ import java.util.Map;
 public class MetaManager extends AbstractManager {
 
     public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
-        super("Homo sapiens", null, configuration);
+        super("Homo sapiens", null, 0, configuration);
     }
 
     @Deprecated

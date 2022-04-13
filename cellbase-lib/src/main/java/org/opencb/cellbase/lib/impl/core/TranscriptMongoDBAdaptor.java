@@ -46,7 +46,7 @@ import java.util.*;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
+public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
 
     private MongoDBCollection refseqCollection = null;
 
@@ -56,15 +56,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         CONVERTER = new GenericDocumentComplexConverter<>(Transcript.class);
     }
 
-    public TranscriptMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public TranscriptMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         this.init();
     }
 
     private void init() {
-        mongoDBCollection = mongoDataStore.getCollection("gene");
-        refseqCollection = mongoDataStore.getCollection("refseq");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
+        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq", dataRelease));
     }
 
     @Override

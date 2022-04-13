@@ -60,21 +60,21 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
 
-    public VariantManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public VariantManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public VariantManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public VariantManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() throws CellBaseException {
-        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
-        spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor();
+        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
+        spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor(dataRelease);
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
-        genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
+        genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         List<Variant> variantList = parseVariants(variants);
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager);
         List<CellBaseDataResult<String>> results = new ArrayList<>();
-        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly, dataRelease,
                 cellbaseManagerFactory);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
@@ -111,7 +111,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      */
     public CellBaseDataResult<Variant> getNormalizationByVariant(String variants) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
-        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly, dataRelease,
                 cellbaseManagerFactory);
         List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
         return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
@@ -170,7 +170,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             queryOptions.put("enable", enable);
         }
 
-        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly, dataRelease,
                 cellbaseManagerFactory);
         List<CellBaseDataResult<VariantAnnotation>> queryResults =
                 variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);

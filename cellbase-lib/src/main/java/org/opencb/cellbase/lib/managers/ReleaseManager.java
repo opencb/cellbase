@@ -27,7 +27,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.release.DataReleaseSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ReleaseMongoDBAdaptor;
 
 import java.io.IOException;
@@ -39,13 +39,13 @@ public class ReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
 
     public ReleaseManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
-        super(databaseName, configuration);
+        super(databaseName, 0, configuration);
 
         init();
     }
 
     public ReleaseManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+        super(species, assembly, 0, configuration);
 
         init();
     }
@@ -113,7 +113,7 @@ public class ReleaseManager extends AbstractManager {
         DataRelease currDataRelease = get(release);
         if (currDataRelease != null) {
             // Update collections
-            currDataRelease.getCollections().put(data, CellBaseCoreDBAdaptor.getDataReleaseCollectionName(data, release));
+            currDataRelease.getCollections().put(data, CellBaseDBAdaptor.getCollectionName(data, release));
 
             // Check sources
             List<DataReleaseSource> newSources = new ArrayList<>();

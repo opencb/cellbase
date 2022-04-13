@@ -23,11 +23,11 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
+import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
-import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.managers.ReleaseManager;
 
 import java.io.File;
@@ -373,7 +373,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (dr.getRelease() == dataRelease) {
                 for (String loadOption : loadOptions) {
                     if (dr.getCollections().containsKey(loadOption)) {
-                        String collectionName = CellBaseCoreDBAdaptor.getDataReleaseCollectionName(loadOption, dataRelease);
+                        String collectionName = CellBaseDBAdaptor.getCollectionName(loadOption, dataRelease);
                         if (dr.getCollections().get(loadOption).equals(collectionName)) {
                             throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
                                     + " has already been done.");

@@ -35,6 +35,7 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     }
 
     public void setUp() throws Exception {
+        dataRelease = 1;
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/genome/genome_info.json").toURI());
@@ -43,7 +44,7 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
                 .getResource("/genome/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
         cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
-                cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"));
+                cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37", dataRelease));
     }
 
     @Test

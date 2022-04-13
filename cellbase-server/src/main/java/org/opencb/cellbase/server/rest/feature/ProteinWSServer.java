@@ -63,7 +63,7 @@ public class ProteinWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly, dataRelease);
     }
 
     @GET

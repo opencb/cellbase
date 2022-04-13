@@ -38,19 +38,19 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
     private GeneMongoDBAdaptor geneDBAdaptor;
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
-    public GeneManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public GeneManager(String species, int dataRelease,  CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public GeneManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public GeneManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor();
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor();
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(dataRelease);
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(dataRelease);
     }
 
     @Override

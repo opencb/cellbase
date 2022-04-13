@@ -37,7 +37,7 @@ import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.ReleaseManager;
@@ -195,7 +195,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                throw new LoaderException("Unknown data to load: '" + data + "'");
 //        }
 
-        String collection = CellBaseCoreDBAdaptor.getDataReleaseCollectionName(data, dataRelease);
+        String collection = CellBaseDBAdaptor.getCollectionName(data, dataRelease);
 
         // Sanity check
         if (releaseManager == null) {
@@ -217,7 +217,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         for (DataRelease dr : result.getResults()) {
             if (dr.getRelease() == dataRelease) {
                 if (dr.getCollections().containsKey(data)) {
-                    String collectionName = CellBaseCoreDBAdaptor.getDataReleaseCollectionName(data, dataRelease);
+                    String collectionName = CellBaseDBAdaptor.getCollectionName(data, dataRelease);
                     if (dr.getCollections().get(data).equals(collectionName)) {
                         throw new LoaderException("Impossible load data " + data + " with release " + dataRelease + " since it"
                                 + " has already been done.");
@@ -286,7 +286,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
+                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
 //                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;

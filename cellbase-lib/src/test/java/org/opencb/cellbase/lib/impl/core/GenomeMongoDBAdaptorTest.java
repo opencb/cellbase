@@ -53,12 +53,13 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
+        dataRelease = 1;
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/genome/genome_info.json").toURI());
         loadRunner.load(path, "genome_info");
         path = Paths.get(getClass().getResource("/genome/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
-        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
+        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38", dataRelease);
     }
 
     @Test

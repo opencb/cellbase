@@ -36,15 +36,17 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     public void setUp() throws Exception {
+        dataRelease = 1;
+
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/xref/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", dataRelease);
     }
 
     @Test
     public void contains() throws Exception {
-//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37");
-        XrefManager xrefManager = cellBaseManagerFactory.getXrefManager("hsapiens", "GRCh38");
+//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37", dataRelease);
+        XrefManager xrefManager = cellBaseManagerFactory.getXrefManager("hsapiens", "GRCh38", dataRelease);
 //        CellBaseDataResult xrefs = xRefDBAdaptor.contains("BRCA2", new QueryOptions());
 //        Set<String> reference = new HashSet<>(Arrays.asList("ENSG00000185515", "ENSG00000139618", "ENSG00000107949",
 //                "ENSG00000083093", "ENSG00000170037"));

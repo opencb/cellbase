@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<RegulationQuery, RegulatoryFeature> {
+public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<RegulationQuery, RegulatoryFeature> {
 
     private static final GenericDocumentComplexConverter<RegulatoryFeature> CONVERTER;
 
@@ -47,8 +47,8 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         CONVERTER = new GenericDocumentComplexConverter<>(RegulatoryFeature.class);
     }
 
-    public RegulationMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public RegulationMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         this.init();
     }
@@ -56,7 +56,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     private void init() {
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("regulatory_region", dataRelease));
     }
 
     public Bson parseQuery(RegulationQuery query) {

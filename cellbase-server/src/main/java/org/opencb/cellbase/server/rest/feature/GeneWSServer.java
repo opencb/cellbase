@@ -81,7 +81,7 @@ public class GeneWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
 //        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
 //        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
 //        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);

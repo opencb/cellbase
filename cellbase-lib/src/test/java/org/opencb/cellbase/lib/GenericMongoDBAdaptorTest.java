@@ -36,6 +36,8 @@ import java.util.List;
  */
 public class GenericMongoDBAdaptorTest {
 
+    protected int dataRelease = 1;
+
     private static final String LOCALHOST = "localhost:27017";
     protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";

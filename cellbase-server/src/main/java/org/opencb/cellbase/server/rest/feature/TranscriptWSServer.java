@@ -71,9 +71,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dataRelease);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly, dataRelease);
     }
 
     @GET

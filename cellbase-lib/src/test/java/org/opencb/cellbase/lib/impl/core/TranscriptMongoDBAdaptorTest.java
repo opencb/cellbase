@@ -44,6 +44,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        dataRelease = 1;
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/transcript/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
@@ -52,7 +53,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testQuery() throws Exception {
 //        TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
-        TranscriptManager transcriptManager = cellBaseManagerFactory.getTranscriptManager("hsapiens", "GRCh38");
+        TranscriptManager transcriptManager = cellBaseManagerFactory.getTranscriptManager("hsapiens", "GRCh38", dataRelease);
 //        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
         TranscriptQuery query = new TranscriptQuery();
         Region region = Region.parseRegion("1:816481-825251");

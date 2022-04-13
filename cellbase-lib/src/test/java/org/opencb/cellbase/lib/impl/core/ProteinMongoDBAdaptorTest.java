@@ -46,6 +46,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        dataRelease = 1;
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/protein/protein.test.json.gz").toURI());
         loadRunner.load(path, "protein");
@@ -54,7 +55,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testQuery() throws Exception {
 //        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
-        ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager("hsapiens", "GRCh38");
+        ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager("hsapiens", "GRCh38", dataRelease);
         ProteinQuery query = new ProteinQuery();
         query.setExcludes(new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         query.setLimit(3);

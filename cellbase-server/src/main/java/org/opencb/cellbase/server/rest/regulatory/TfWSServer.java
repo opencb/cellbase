@@ -65,9 +65,9 @@ public class TfWSServer extends RegulatoryWSServer {
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, dataRelease, species, assembly, uriInfo, hsr);
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
+        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly, dataRelease);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
     }
 
     @GET

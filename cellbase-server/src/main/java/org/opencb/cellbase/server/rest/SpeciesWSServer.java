@@ -46,6 +46,9 @@ public class SpeciesWSServer extends GenericRestWSServer {
     public SpeciesWSServer(@PathParam("apiVersion")
                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                           @PathParam("dataRelease")
+                           @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION,
+                                   defaultValue = ParamConstants.DEFAULT_DATA_RELEASE) int dataRelease,
                            @PathParam("species")
                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
@@ -54,7 +57,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
     }
 
     @GET

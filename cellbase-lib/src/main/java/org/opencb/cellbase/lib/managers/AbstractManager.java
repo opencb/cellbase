@@ -34,6 +34,7 @@ public class AbstractManager {
 
     protected String species;
     protected String assembly;
+    protected int dataRelease;
     protected CellBaseConfiguration configuration;
 
     protected MongoDBManager mongoDBManager;
@@ -42,18 +43,19 @@ public class AbstractManager {
 
     protected Logger logger;
 
-    public AbstractManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
+    public AbstractManager(String databaseName, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
         this.configuration = configuration;
 
         logger = LoggerFactory.getLogger(this.getClass());
 
         // We create a MongoDB database connection for each Manager
+        this.dataRelease = dataRelease;
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
     }
 
-    public AbstractManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public AbstractManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
         this.species = species;
         this.assembly = assembly;
         this.configuration = configuration;
@@ -66,6 +68,7 @@ public class AbstractManager {
         }
 
         // We create a MongoDB database connection for each Manager
+        this.dataRelease = dataRelease;
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);

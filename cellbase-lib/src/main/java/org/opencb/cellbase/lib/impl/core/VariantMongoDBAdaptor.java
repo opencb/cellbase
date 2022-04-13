@@ -53,7 +53,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<VariantQuery, Variant> {
+public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<VariantQuery, Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -66,8 +66,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public VariantMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
@@ -75,8 +75,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     private void init() {
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("variation");
-        caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("variation", dataRelease));
+        caddDBCollection = mongoDataStore.getCollection(getCollectionName("variation_functional_score", dataRelease));
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

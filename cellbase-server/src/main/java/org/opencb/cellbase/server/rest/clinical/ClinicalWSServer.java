@@ -63,7 +63,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dataRelease);
     }
 
     @GET

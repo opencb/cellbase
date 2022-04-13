@@ -53,6 +53,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void phasedQueriesTest() throws Exception {
+        dataRelease = 1;
 
         // Load test data
         clearDB(GRCH37_DBNAME);
@@ -61,7 +62,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         loadRunner.load(path, "clinical_variants");
 
 //        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38");
+        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38", dataRelease);
         // Two variants being queried with PS and genotype. The PS is different in each of them. In the database, these
         // variants form an MNV. Both of them should be returned since the fact of having different PS indicates that
         // it's unknown if alternate alleles are in the same chromosome copy or not, i.e. could potentially  be in the
@@ -510,6 +511,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void proteinChangeMatchTest() throws Exception {
+        dataRelease = 1;
 
         // Load test data
         clearDB(GRCH37_DBNAME);
@@ -518,7 +520,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         loadRunner.load(path, "clinical_variants");
 
 //        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38");
+        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38", dataRelease);
 
         List<CellBaseDataResult<Variant>> queryResultList = clinicalManager.getByVariant(
                 Collections.singletonList(new Variant("2:170361068:G:C")),

@@ -27,18 +27,18 @@ public class TfbsManager extends AbstractManager implements AggregationApi<TfbsQ
 
     private GeneMongoDBAdaptor geneDBAdaptor;
 
-    public TfbsManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public TfbsManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public TfbsManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public TfbsManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor();
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(dataRelease);
     }
 
     @Override

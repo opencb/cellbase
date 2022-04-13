@@ -31,10 +31,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
+public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
-    public SpliceScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public SpliceScoreMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
@@ -42,7 +42,7 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
     private void init() {
         logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(EtlCommons.SPLICE_SCORE_DATA);
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(EtlCommons.SPLICE_SCORE_DATA, dataRelease));
     }
 
     public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate) {

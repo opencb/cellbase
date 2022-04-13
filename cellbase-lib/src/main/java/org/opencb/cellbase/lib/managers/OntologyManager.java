@@ -27,18 +27,18 @@ public class OntologyManager extends AbstractManager implements AggregationApi<O
 
     private OntologyMongoDBAdaptor ontologyMongoDBAdaptor;
 
-    public OntologyManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public OntologyManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public OntologyManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public OntologyManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        ontologyMongoDBAdaptor = dbAdaptorFactory.getOntologyMongoDBAdaptor();
+        ontologyMongoDBAdaptor = dbAdaptorFactory.getOntologyMongoDBAdaptor(dataRelease);
     }
 
     @Override

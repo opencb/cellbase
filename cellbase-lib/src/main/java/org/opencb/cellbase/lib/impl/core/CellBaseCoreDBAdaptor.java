@@ -17,9 +17,9 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.opencb.cellbase.core.api.query.AbstractQuery;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.Event;
 
 import java.util.ArrayList;
@@ -29,10 +29,6 @@ import java.util.List;
 public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
 
     int MAX_ROWS = 50000;
-
-    static String getDataReleaseCollectionName(String data, int dataRelease) {
-        return data + "__v" + dataRelease;
-    }
 
     default CellBaseDataResult<T> query(Q query) {
         List<T> results = new ArrayList<>();

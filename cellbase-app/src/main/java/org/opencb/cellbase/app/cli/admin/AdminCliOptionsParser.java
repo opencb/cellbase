@@ -279,6 +279,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
         public String assembly = "GRCh38";
 
+        @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter to 0", required = false, arity = 1)
+        public int dataRelease = 0;
+
         @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
         public String inputFile;
 

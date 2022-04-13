@@ -40,18 +40,18 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
 
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
-    public GenomeManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public GenomeManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public GenomeManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor();
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(dataRelease);
     }
 
     @Override

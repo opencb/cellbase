@@ -38,7 +38,8 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
     }
 
     @BeforeAll
-    public static void setUp() throws Exception {
+    public void setUp() throws Exception {
+        dataRelease = 1;
         cellBaseConfiguration = CellBaseConfiguration.load(
                 MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);

@@ -34,18 +34,19 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
 
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
-    public TranscriptManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public TranscriptManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public TranscriptManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration)
+            throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor();
+        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(dataRelease);
     }
 
     @Override

@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
+public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
     private static final GenericDocumentComplexConverter<OntologyTerm> CONVERTER;
 
@@ -44,8 +44,8 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         CONVERTER = new GenericDocumentComplexConverter<>(OntologyTerm.class);
     }
 
-    public OntologyMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public OntologyMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         this.init();
     }
@@ -53,7 +53,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     private void init() {
         logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("ontology");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("ontology", dataRelease));
     }
 
     @Override

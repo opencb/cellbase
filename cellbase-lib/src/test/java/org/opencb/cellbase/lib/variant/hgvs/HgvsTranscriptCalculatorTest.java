@@ -55,13 +55,13 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
+        dataRelease = 1;
+
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/hgvs/gene_grch38.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
-        path = Paths.get(getClass()
-                .getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
+        Path path = Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").toURI());
+        loadRunner.load(path, "gene", dataRelease);
+        path = Paths.get(getClass().getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence", dataRelease);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -78,7 +78,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 //        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
 
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
+        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38", dataRelease);
     }
 
     @Test

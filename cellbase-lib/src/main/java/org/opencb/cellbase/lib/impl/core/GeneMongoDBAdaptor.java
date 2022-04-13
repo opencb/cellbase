@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
 /**
  * Created by imedina on 25/11/15.
  */
-public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<GeneQuery, Gene> {
+public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<GeneQuery, Gene> {
 
     private static final Set<String> CONSTRAINT_NAMES = new HashSet<>();
     private MongoDBCollection refseqCollection;
@@ -63,15 +63,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         CONSTRAINT_NAMES.add("oe_syn");
     }
 
-    public GeneMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public GeneMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         this.init();
     }
 
     private void init() {
-        mongoDBCollection = mongoDataStore.getCollection("gene");
-        refseqCollection = mongoDataStore.getCollection("refseq");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
+        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq", dataRelease));
 
         logger.debug("GeneMongoDBAdaptor initialised");
     }

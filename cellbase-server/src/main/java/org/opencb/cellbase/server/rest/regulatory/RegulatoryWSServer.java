@@ -58,7 +58,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
     }
 
     @GET

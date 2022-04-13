@@ -67,7 +67,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
+        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly, dataRelease);
     }
 
     @GET

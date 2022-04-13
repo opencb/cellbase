@@ -72,13 +72,13 @@ public class RegionWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dataRelease);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dataRelease);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dataRelease);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
+        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly, dataRelease);
     }
 
     @GET

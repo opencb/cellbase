@@ -41,17 +41,17 @@ import java.util.Map;
 /**
  * Created by imedina on 07/12/15.
  */
-public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
+public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
-    public XRefMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public XRefMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
 
     private void init() {
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
     }
 
     @Override

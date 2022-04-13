@@ -91,15 +91,15 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
             throws CellBaseException {
-        this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
-        this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
-        this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
-        this.regulationManager = cellbaseManagerFactory.getRegulatoryManager(species, assembly);
-        this.proteinManager = cellbaseManagerFactory.getProteinManager(species, assembly);
-        this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
-        this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
+        this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
+        this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly, dataRelease);
+        this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly, dataRelease);
+        this.regulationManager = cellbaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
+        this.proteinManager = cellbaseManagerFactory.getProteinManager(species, assembly, dataRelease);
+        this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly, dataRelease);
+        this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly, dataRelease);
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam

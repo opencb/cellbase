@@ -25,18 +25,18 @@ public class XrefManager extends AbstractManager implements FeatureApi {
 
     private XRefMongoDBAdaptor xRefDBAdaptor;
 
-    public XrefManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public XrefManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public XrefManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public XrefManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor();
+        xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(dataRelease);
     }
 
     @Override

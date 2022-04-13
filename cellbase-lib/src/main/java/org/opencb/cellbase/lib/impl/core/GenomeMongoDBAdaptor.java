@@ -47,7 +47,7 @@ import java.util.*;
 /**
  * Created by imedina on 07/12/15.
  */
-public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<GenomeQuery, Chromosome> {
+public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<GenomeQuery, Chromosome> {
 
     private MongoDBCollection genomeInfoMongoDBCollection;
     private MongoDBCollection conservationMongoDBCollection;
@@ -60,8 +60,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     private static final Object CHROMOSOMES = "chromosomes";
     private Document genomeInfo = null;
 
-    public GenomeMongoDBAdaptor(MongoDataStore mongoDataStore) {
-        super(mongoDataStore);
+    public GenomeMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+        super(dataRelease, mongoDataStore);
 
         init();
     }
@@ -69,10 +69,9 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     private void init() {
         logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
 
-        genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
-        mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
-        conservationMongoDBCollection = mongoDataStore.getCollection("conservation");
-        spliceMongoDBCollection = mongoDataStore.getCollection("splice");
+        genomeInfoMongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_info", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_sequence", dataRelease));
+        conservationMongoDBCollection = mongoDataStore.getCollection(getCollectionName("conservation", dataRelease));
     }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {

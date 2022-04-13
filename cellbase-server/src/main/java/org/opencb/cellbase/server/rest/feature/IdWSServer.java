@@ -68,8 +68,8 @@ public class IdWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly, dataRelease);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
     }
 
     @GET

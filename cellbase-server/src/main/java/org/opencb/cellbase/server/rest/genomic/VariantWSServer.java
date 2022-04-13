@@ -64,7 +64,7 @@ public class VariantWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dataRelease);
     }
 
     @GET

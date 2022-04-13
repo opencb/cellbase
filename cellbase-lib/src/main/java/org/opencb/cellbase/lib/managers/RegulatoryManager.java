@@ -27,19 +27,20 @@ public class RegulatoryManager extends AbstractManager implements AggregationApi
 
     private RegulationMongoDBAdaptor regulationDBAdaptor;
 
-    public RegulatoryManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public RegulatoryManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
     @Deprecated
-    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public RegulatoryManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration)
+            throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor();
+        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(dataRelease);
     }
 
     @Override

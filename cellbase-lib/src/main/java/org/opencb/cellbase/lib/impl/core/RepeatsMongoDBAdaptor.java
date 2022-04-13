@@ -39,12 +39,12 @@ import java.util.Map;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<RepeatsQuery, Repeat> {
+public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<RepeatsQuery, Repeat> {
 
     private static final String REPEAT_COLLECTION = "repeats";
 
-    public RepeatsMongoDBAdaptor(MongoDataStore mongoDatastore) {
-        super(mongoDatastore);
+    public RepeatsMongoDBAdaptor(int dataRelease, MongoDataStore mongoDatastore) {
+        super(dataRelease, mongoDatastore);
 
         init();
     }
@@ -52,7 +52,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     private void init() {
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(REPEAT_COLLECTION);
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(REPEAT_COLLECTION, dataRelease));
     }
 
     public Bson parseQuery(RepeatsQuery query) {

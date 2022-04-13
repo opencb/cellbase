@@ -44,20 +44,20 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
     private MissenseVariationFunctionalScoreMongoDBAdaptor missenseVariationFunctionalScoreMongoDBAdaptor;
 
-    public ProteinManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public ProteinManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public ProteinManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public ProteinManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor();
-        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor();
-        missenseVariationFunctionalScoreMongoDBAdaptor = dbAdaptorFactory.getMissenseVariationFunctionalScoreMongoDBAdaptor();
+        proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(dataRelease);
+        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(dataRelease);
+        missenseVariationFunctionalScoreMongoDBAdaptor = dbAdaptorFactory.getMissenseVariationFunctionalScoreMongoDBAdaptor(dataRelease);
     }
 
     @Override

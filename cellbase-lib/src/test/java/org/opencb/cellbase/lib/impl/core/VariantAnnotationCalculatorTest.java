@@ -57,6 +57,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
+        dataRelease = 1;
+
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -65,7 +67,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         Path path;
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", dataRelease);
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
 //        loadRunner.load(path, "genome_sequence");
@@ -89,7 +91,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", dataRelease);
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
 //        loadRunner.load(path, "variation");
@@ -107,17 +109,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "genome_info");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats");
+        loadRunner.load(path, "repeats", dataRelease);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants");
+        loadRunner.load(path, "clinical_variants", dataRelease);
 //        path = Paths.get(getClass()
 //                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
 //        loadRunner.load(path, "missense_variation_functional_score");
         path = Paths.get(getClass()
                 .getResource("/splice/build/splice_1.json.gz").toURI());
-        loadRunner.load(path, "splice");
-        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
+        loadRunner.load(path, "splice_score", dataRelease);
+        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
                 cellBaseManagerFactory);
 
     }
@@ -702,8 +704,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
-        VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens",
-                "GRCh37", cellBaseManagerFactory);
+        VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
+                cellBaseManagerFactory);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.

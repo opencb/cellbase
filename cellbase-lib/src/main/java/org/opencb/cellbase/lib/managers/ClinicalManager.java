@@ -38,18 +38,19 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
-    public ClinicalManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, configuration);
+    public ClinicalManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, dataRelease, configuration);
     }
 
-    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, configuration);
+    public ClinicalManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() throws CellBaseException {
-        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(new GenomeManager(species, assembly, configuration));
+        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(dataRelease, new GenomeManager(species, assembly, dataRelease,
+                configuration));
     }
 
     @Override
