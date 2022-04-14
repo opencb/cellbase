@@ -39,13 +39,13 @@ public class ReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
 
     public ReleaseManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
-        super(databaseName, 0, configuration);
+        super(databaseName, null, configuration);
 
         init();
     }
 
     public ReleaseManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, 0, configuration);
+        super(species, assembly, null, configuration);
 
         init();
     }
@@ -109,11 +109,23 @@ public class ReleaseManager extends AbstractManager {
         return null;
     }
 
+    public DataRelease getDefault() {
+        CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
+        if (CollectionUtils.isNotEmpty(result.getResults())) {
+            for (DataRelease dataRelease : result.getResults()) {
+                if (dataRelease.isActiveByDefault()) {
+                    return dataRelease;
+                }
+            }
+        }
+        return null;
+    }
+
     public void update(int release, String data, List<Path> dataSourcePaths) {
         DataRelease currDataRelease = get(release);
         if (currDataRelease != null) {
             // Update collections
-            currDataRelease.getCollections().put(data, CellBaseDBAdaptor.getCollectionName(data, release));
+            currDataRelease.getCollections().put(data, CellBaseDBAdaptor.buildCollectionName(data, release));
 
             // Check sources
             List<DataReleaseSource> newSources = new ArrayList<>();
@@ -158,7 +170,7 @@ public class ReleaseManager extends AbstractManager {
         }
 
         if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
-            // TODO: improve this update
+            // TODO: use native functions
             List<Map<String, String>> tmp = new ArrayList<>();
             for (DataReleaseSource source : dataRelase.getSources()) {
                 Map<String, String> map = new HashMap<>();

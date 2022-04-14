@@ -141,7 +141,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
-    public void indexedVariantWithoutRequiredAttributeTest() throws IOException, URISyntaxException {
+    public void indexedVariantWithoutRequiredAttributeTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
         // continued
@@ -172,7 +172,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
-    public void twoCustomFilesTest() throws IOException, URISyntaxException {
+    public void twoCustomFilesTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         String customFileString =
                 resourcesFolder.resolve("commandExecutor/customAnnotation/twoCustomFiles/GEL_GL_6628.duprem.sites.annot.subset.atomic.left.split.test.vcf.gz").toString()
@@ -219,7 +219,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
-    public void alreadyIndexedTest() throws IOException, URISyntaxException {
+    public void alreadyIndexedTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
         // continued
@@ -262,7 +262,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
-    public void maxFilesCustomAnnotationTest() throws IOException, URISyntaxException {
+    public void maxFilesCustomAnnotationTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
         // continued
@@ -341,7 +341,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
-    public void phasedCustomAnnotationTest() throws IOException, URISyntaxException {
+    public void phasedCustomAnnotationTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
         // continued

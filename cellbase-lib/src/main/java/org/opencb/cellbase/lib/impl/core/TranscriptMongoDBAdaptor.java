@@ -30,6 +30,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
@@ -56,15 +57,15 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         CONVERTER = new GenericDocumentComplexConverter<>(Transcript.class);
     }
 
-    public TranscriptMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public TranscriptMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         this.init();
     }
 
     private void init() {
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
-        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene"));
+        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq"));
     }
 
     @Override

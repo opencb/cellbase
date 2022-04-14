@@ -21,6 +21,7 @@ import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
@@ -55,7 +56,10 @@ public class RegulatoryWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
+
+        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
+
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dr);
     }
 
     @GET

@@ -57,7 +57,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        dataRelease = 1;
+        int release = 1;
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -67,7 +67,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         Path path;
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
+        loadRunner.load(path, "gene", release);
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
 //        loadRunner.load(path, "genome_sequence");
@@ -91,7 +91,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
+        loadRunner.load(path, "variation", release);
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
 //        loadRunner.load(path, "variation");
@@ -109,16 +109,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "genome_info");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats", dataRelease);
+        loadRunner.load(path, "repeats", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
+        loadRunner.load(path, "clinical_variants", release);
 //        path = Paths.get(getClass()
 //                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
 //        loadRunner.load(path, "missense_variation_functional_score");
         path = Paths.get(getClass()
                 .getResource("/splice/build/splice_1.json.gz").toURI());
-        loadRunner.load(path, "splice_score", dataRelease);
+        loadRunner.load(path, "splice_score", release);
+        
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
                 cellBaseManagerFactory);
 

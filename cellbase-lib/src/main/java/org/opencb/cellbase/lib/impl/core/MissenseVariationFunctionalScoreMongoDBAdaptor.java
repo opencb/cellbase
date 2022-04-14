@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.DataResult;
@@ -33,7 +34,7 @@ import java.util.List;
 public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
 
-    public MissenseVariationFunctionalScoreMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public MissenseVariationFunctionalScoreMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -42,7 +43,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
     private void init() {
         logger.debug("MissenseVariationFunctionalScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("missense_variation_functional_score", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("missense_variation_functional_score"));
     }
 
     public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference) {

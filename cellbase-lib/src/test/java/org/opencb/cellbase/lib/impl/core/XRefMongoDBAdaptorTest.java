@@ -36,7 +36,7 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     public void setUp() throws Exception {
-        dataRelease = 1;
+        int dataRelease = 1;
 
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/xref/gene.test.json.gz").toURI());

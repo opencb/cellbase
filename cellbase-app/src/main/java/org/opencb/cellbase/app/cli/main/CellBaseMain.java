@@ -62,7 +62,12 @@ public class CellBaseMain {
             } else {
                 switch (parsedCommand) {
                     case "variant-annotation":
-                        commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
+                        try {
+                            commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
+                        } catch (CellBaseException e) {
+                            commandExecutor.getLogger().error("Error executing variant-annotation: " + e.getMessage());
+                            System.exit(1);
+                        }
                         break;
                     default:
                         break;

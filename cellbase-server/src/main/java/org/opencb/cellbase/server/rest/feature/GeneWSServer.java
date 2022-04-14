@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -80,7 +81,9 @@ public class GeneWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
+
+        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
 //        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
 //        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
 //        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);

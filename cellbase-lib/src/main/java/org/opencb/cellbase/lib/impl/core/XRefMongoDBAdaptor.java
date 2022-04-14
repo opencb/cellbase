@@ -22,6 +22,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.XrefQuery;
@@ -43,7 +44,7 @@ import java.util.Map;
  */
 public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
-    public XRefMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public XRefMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -51,7 +52,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
 
     private void init() {
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene"));
     }
 
     @Override

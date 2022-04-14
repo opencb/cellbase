@@ -374,7 +374,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (dr.getRelease() == dataRelease) {
                 for (String loadOption : loadOptions) {
                     if (dr.getCollections().containsKey(loadOption)) {
-                        String collectionName = CellBaseDBAdaptor.getCollectionName(loadOption, dataRelease);
+                        String collectionName = CellBaseDBAdaptor.buildCollectionName(loadOption, dataRelease);
                         if (dr.getCollections().get(loadOption).equals(collectionName)) {
                             throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
                                     + " has already been done.");
@@ -550,7 +550,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (!createIndexes) {
             return;
         }
-        String collectionName = CellBaseDBAdaptor.getCollectionName(collection, dataRelease);
+        String collectionName = CellBaseDBAdaptor.buildCollectionName(collection, dataRelease);
         logger.info("Loading indexes for '{}' collection ...", collectionName);
         try {
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);

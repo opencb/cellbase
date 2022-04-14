@@ -29,6 +29,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -59,7 +60,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     private GenomeManager genomeManager;
 
 
-    public ClinicalMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore, GenomeManager genomeManager) throws CellBaseException {
+    public ClinicalMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore, GenomeManager genomeManager)
+            throws CellBaseException {
         super(dataRelease, mongoDataStore);
 
         this.genomeManager = genomeManager;
@@ -70,7 +72,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     private void init() {
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("clinical_variants", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("clinical_variants"));
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

@@ -31,6 +31,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -63,15 +64,15 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         CONSTRAINT_NAMES.add("oe_syn");
     }
 
-    public GeneMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public GeneMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         this.init();
     }
 
     private void init() {
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene", dataRelease));
-        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene"));
+        refseqCollection = mongoDataStore.getCollection(getCollectionName("refseq"));
 
         logger.debug("GeneMongoDBAdaptor initialised");
     }

@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.VariantManager;
@@ -61,7 +62,10 @@ public class VariantWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dataRelease);
+
+        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
+
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dr);
     }
 
     @GET

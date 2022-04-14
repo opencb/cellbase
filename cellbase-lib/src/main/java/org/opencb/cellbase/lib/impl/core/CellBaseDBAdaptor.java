@@ -16,20 +16,30 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import org.apache.commons.collections4.MapUtils;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 public class CellBaseDBAdaptor extends MongoDBAdaptor{
 
-    protected int dataRelease;
+    protected DataRelease dataRelease;
 
     public static final String DATA_RELEASE_SEPARATOR = "__v";
 
-    public static String getCollectionName(String data, int dataRelease) {
-        String name = data + DATA_RELEASE_SEPARATOR + dataRelease;
+    public static String buildCollectionName(String data, int release) {
+        String name = data + DATA_RELEASE_SEPARATOR + release;
         return name;
     }
 
-    public CellBaseDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public String getCollectionName(String data) {
+        if (dataRelease == null || MapUtils.isEmpty(dataRelease.getCollections()) || !dataRelease.getCollections().containsKey(data)) {
+            return data;
+        } else {
+            return dataRelease.getCollections().get(data);
+        }
+    }
+
+    public CellBaseDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(mongoDataStore);
         this.dataRelease = dataRelease;
     }
@@ -42,11 +52,11 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor{
         return sb.toString();
     }
 
-    public int getDataRelease() {
+    public DataRelease getDataRelease() {
         return dataRelease;
     }
 
-    public CellBaseDBAdaptor setDataRelease(int dataRelease) {
+    public CellBaseDBAdaptor setDataRelease(DataRelease dataRelease) {
         this.dataRelease = dataRelease;
         return this;
     }

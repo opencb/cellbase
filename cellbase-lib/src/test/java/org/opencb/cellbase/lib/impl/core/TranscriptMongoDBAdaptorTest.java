@@ -44,7 +44,8 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        dataRelease = 1;
+        dataRelease = null;
+
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/transcript/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");

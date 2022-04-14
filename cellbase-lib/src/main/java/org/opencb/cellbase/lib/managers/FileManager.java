@@ -40,7 +40,7 @@ import java.util.List;
 public class FileManager extends AbstractManager {
 
     public FileManager(CellBaseConfiguration configuration) throws CellBaseException {
-        super("Homo sapiens", null, 0, configuration);
+        super("Homo sapiens", null, null, configuration);
     }
 
     public List<CellBaseDataResult<String>> search(FileQuery query) throws IOException {

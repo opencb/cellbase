@@ -22,6 +22,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -47,7 +48,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         CONVERTER = new GenericDocumentComplexConverter<>(RegulatoryFeature.class);
     }
 
-    public RegulationMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public RegulationMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         this.init();
@@ -56,7 +57,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     private void init() {
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("regulatory_region", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("regulatory_region"));
     }
 
     public Bson parseQuery(RegulationQuery query) {

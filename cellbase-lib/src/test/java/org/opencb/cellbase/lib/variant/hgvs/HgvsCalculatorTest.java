@@ -39,15 +39,15 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void init() throws Exception {
-        dataRelease = 1;
+        int release = 1;
 
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/hgvs/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
+        loadRunner.load(path, "gene", release);
         path = Paths.get(getClass()
                 .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
+        loadRunner.load(path, "genome_sequence", release);
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
         geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37", dataRelease);
         hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37", dataRelease));

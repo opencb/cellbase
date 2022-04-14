@@ -57,7 +57,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     public void setUp() throws Exception {
-        dataRelease = 1;
+        int dataRelease = 1;
 
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -73,7 +73,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation", dataRelease);
 
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37", dataRelease);
+        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37", this.dataRelease);
     }
 
     // TODO: to be finished - properly implemented

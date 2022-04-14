@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
@@ -63,7 +64,10 @@ public class OntologyWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly, dataRelease);
+
+        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
+
+        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly, dr);
     }
 
     @GET

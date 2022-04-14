@@ -229,9 +229,9 @@ public class MongoDBManager {
 
     private String getDataResponseTime(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        // Get the default data release
+        // TODO: check and get the default data release
         int dataRelease = 0;
-        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(dataRelease, mongoDatastore);
+        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(null, mongoDatastore);
         try {
             GeneQuery geneQuery = new GeneQuery();
             geneQuery.setLimit(1);

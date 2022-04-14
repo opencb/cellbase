@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.core.SpliceScoreAlternate;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.datastore.core.DataResult;
@@ -33,7 +34,7 @@ import java.util.List;
 
 public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
-    public SpliceScoreMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public SpliceScoreMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -42,7 +43,7 @@ public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
     private void init() {
         logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(EtlCommons.SPLICE_SCORE_DATA, dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(EtlCommons.SPLICE_SCORE_DATA));
     }
 
     public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate) {

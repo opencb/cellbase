@@ -20,6 +20,7 @@ import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 
@@ -27,12 +28,12 @@ public class RegulatoryManager extends AbstractManager implements AggregationApi
 
     private RegulationMongoDBAdaptor regulationDBAdaptor;
 
-    public RegulatoryManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public RegulatoryManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, dataRelease, configuration);
     }
 
     @Deprecated
-    public RegulatoryManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration)
+    public RegulatoryManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
             throws CellBaseException {
         super(species, assembly, dataRelease, configuration);
 
@@ -40,7 +41,7 @@ public class RegulatoryManager extends AbstractManager implements AggregationApi
     }
 
     private void init() {
-        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(dataRelease);
+        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor();
     }
 
     @Override

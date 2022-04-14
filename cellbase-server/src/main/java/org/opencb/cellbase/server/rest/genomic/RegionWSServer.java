@@ -24,6 +24,7 @@ import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -69,13 +70,16 @@ public class RegionWSServer extends GenericRestWSServer {
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dataRelease);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dataRelease);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dataRelease);
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dataRelease);
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dataRelease);
-        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly, dataRelease);
+
+        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
+
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dr);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dr);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dr);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dr);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dr);
+        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly, dr);
     }
 
     @GET

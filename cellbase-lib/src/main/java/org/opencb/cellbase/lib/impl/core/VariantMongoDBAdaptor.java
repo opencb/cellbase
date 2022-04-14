@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -66,7 +67,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public VariantMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -75,8 +76,8 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     private void init() {
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("variation", dataRelease));
-        caddDBCollection = mongoDataStore.getCollection(getCollectionName("variation_functional_score", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("variation"));
+        caddDBCollection = mongoDataStore.getCollection(getCollectionName("variation_functional_score"));
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

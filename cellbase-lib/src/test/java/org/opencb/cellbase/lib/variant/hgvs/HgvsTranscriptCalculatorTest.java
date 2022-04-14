@@ -55,13 +55,13 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        dataRelease = 1;
+        int release = 1;
 
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
+        loadRunner.load(path, "gene", release);
         path = Paths.get(getClass().getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
+        loadRunner.load(path, "genome_sequence", release);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);

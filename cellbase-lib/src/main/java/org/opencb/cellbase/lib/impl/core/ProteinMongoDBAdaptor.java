@@ -27,6 +27,7 @@ import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.ProteinQuery;
@@ -79,7 +80,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
 
-    public ProteinMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public ProteinMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -88,9 +89,8 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     private void init() {
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein", dataRelease));
-        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein_functional_prediction",
-                dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein"));
+        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein_functional_prediction"));
     }
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {

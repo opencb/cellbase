@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
@@ -91,8 +92,8 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
-            throws CellBaseException {
+    public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease,
+                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly, dataRelease);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly, dataRelease);

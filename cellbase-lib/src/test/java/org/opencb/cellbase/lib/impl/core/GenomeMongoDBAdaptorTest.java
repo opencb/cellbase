@@ -53,7 +53,8 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        dataRelease = 1;
+        dataRelease = null;
+
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass().getResource("/genome/genome_info.json").toURI());
         loadRunner.load(path, "genome_info");

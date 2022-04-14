@@ -32,7 +32,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
     private String databaseName = "cellbase_hsapiens_grch37_v4";
 
     public IndexManagerTest() throws Exception {
-        dataRelease = 1;
+        int release = 1;
 
         Path path = Paths.get(getClass().getResource("/index/mongodb-indexes.json").toURI());
         indexManager = new IndexManager(databaseName, path, cellBaseConfiguration);
@@ -42,7 +42,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
         releaseManager.createRelease();
         path = Paths.get(getClass().getResource("/gene/gene-test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
+        loadRunner.load(path, "gene", release);
     }
 
     @Test

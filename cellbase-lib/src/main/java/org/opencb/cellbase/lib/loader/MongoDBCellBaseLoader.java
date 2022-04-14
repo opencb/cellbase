@@ -38,8 +38,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -76,7 +74,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at", "in", "on"));
 
-    private MongoDBAdaptorFactory dbAdaptorFactory;
+//    private MongoDBAdaptorFactory dbAdaptorFactory;
 
     private MongoDBManager mongoDBManager;
     private MongoDBCollection mongoDBCollection;
@@ -119,83 +117,16 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
-        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDataStore);
-
         try {
             releaseManager = new ReleaseManager(database, cellBaseConfiguration);
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(releaseManager.get(dataRelease), mongoDataStore);
         } catch (CellBaseException e) {
             throw new LoaderException(e);
         }
     }
 
     private String getCollectionName() throws LoaderException {
-//        String collection;
-//        switch (data) {
-//            case "genome_info":
-//                collection = "genome_info";
-//                break;
-//            case "genome_sequence":
-//                collection = "genome_sequence";
-//                break;
-//            case "gene":
-//                collection = "gene";
-//                break;
-//            case "refseq":
-//                collection = "refseq";
-//                break;
-//            case "variation":
-//                collection = "variation";
-//                break;
-//            case "svs":
-//                collection = "variation";
-//                break;
-//            case "cadd":
-//                collection = "variation_functional_score";
-//                break;
-//            case "missense_variation_functional_score":
-//                collection = "missense_variation_functional_score";
-//                break;
-//            case "regulatory_region":
-//                collection = "regulatory_region";
-//                break;
-//            case "protein":
-//                collection = "protein";
-//                break;
-//            case "protein_protein_interaction":
-//                collection = "protein_protein_interaction";
-//                break;
-//            case "protein_functional_prediction":
-//                collection = "protein_functional_prediction";
-//                break;
-//            case "conservation":
-//                collection = "conservation";
-//                break;
-//            case "clinical":
-//                collection = "clinical";
-//                break;
-//            case "clinical_variants":
-//                collection = CLINICAL_VARIANTS_COLLECTION;
-//                break;
-//            case "metadata":
-//                collection = "metadata";
-//                break;
-//            case "repeats":
-//                collection = "repeats";
-//                break;
-//            case "regulatory_pfm":
-//                collection = "regulatory_pfm";
-//                break;
-//            case "ontology":
-//                collection = "ontology";
-//                break;
-//            case "splice_score":
-//                collection = "splice_score";
-//                break;
-//            default:
-//                throw new LoaderException("Unknown data to load: '" + data + "'");
-//        }
-
-        String collection = CellBaseDBAdaptor.getCollectionName(data, dataRelease);
+        String collection = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
 
         // Sanity check
         if (releaseManager == null) {
@@ -217,7 +148,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         for (DataRelease dr : result.getResults()) {
             if (dr.getRelease() == dataRelease) {
                 if (dr.getCollections().containsKey(data)) {
-                    String collectionName = CellBaseDBAdaptor.getCollectionName(data, dataRelease);
+                    String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
                     if (dr.getCollections().get(data).equals(collectionName)) {
                         throw new LoaderException("Impossible load data " + data + " with release " + dataRelease + " since it"
                                 + " has already been done.");
@@ -263,43 +194,44 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Override
-    public Integer call() {
+    public Integer call() throws LoaderException {
         if (field != null) {
-            return prepareBatchAndUpdate();
+            throw new LoaderException("Parameter 'field' is not supported yet!!");
+//            return prepareBatchAndUpdate();
         } else {
             return prepareBatchAndLoad();
         }
     }
 
-    private int prepareBatchAndUpdate() {
-        int numLoadedObjects = 0;
-        boolean finished = false;
-        while (!finished) {
-            try {
-                List<String> batch = blockingQueue.take();
-                if (batch == LoadRunner.POISON_PILL) {
-                    finished = true;
-                } else {
-                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
-                    for (String jsonLine : batch) {
-                        Document dbObject = Document.parse(jsonLine);
-                        dbObjectsBatch.add(dbObject);
-                    }
-
-                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
-//                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
-                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
-                    numLoadedObjects += numUpdates;
-                }
-            } catch (InterruptedException e) {
-                logger.error("Loader thread interrupted: " + e.getMessage());
-            } catch (Exception e) {
-                logger.error("Error Loading batch: " + e.getMessage());
-            }
-        }
-        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
-        return numLoadedObjects;
-    }
+//    private int prepareBatchAndUpdate() {
+//        int numLoadedObjects = 0;
+//        boolean finished = false;
+//        while (!finished) {
+//            try {
+//                List<String> batch = blockingQueue.take();
+//                if (batch == LoadRunner.POISON_PILL) {
+//                    finished = true;
+//                } else {
+//                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
+//                    for (String jsonLine : batch) {
+//                        Document dbObject = Document.parse(jsonLine);
+//                        dbObjectsBatch.add(dbObject);
+//                    }
+//
+//                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
+////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+//                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
+//                    numLoadedObjects += numUpdates;
+//                }
+//            } catch (InterruptedException e) {
+//                logger.error("Loader thread interrupted: " + e.getMessage());
+//            } catch (Exception e) {
+//                logger.error("Error Loading batch: " + e.getMessage());
+//            }
+//        }
+//        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
+//        return numLoadedObjects;
+//    }
 
     private int prepareBatchAndLoad() {
         int numLoadedObjects = 0;

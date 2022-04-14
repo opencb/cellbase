@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
@@ -44,7 +45,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         CONVERTER = new GenericDocumentComplexConverter<>(OntologyTerm.class);
     }
 
-    public OntologyMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public OntologyMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         this.init();
@@ -53,7 +54,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     private void init() {
         logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("ontology", dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("ontology"));
     }
 
     @Override

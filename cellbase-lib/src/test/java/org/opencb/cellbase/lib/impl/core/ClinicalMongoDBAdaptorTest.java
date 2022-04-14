@@ -53,7 +53,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void phasedQueriesTest() throws Exception {
-        dataRelease = 1;
+        dataRelease = null;
 
         // Load test data
         clearDB(GRCH37_DBNAME);
@@ -511,7 +511,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void proteinChangeMatchTest() throws Exception {
-        dataRelease = 1;
+        dataRelease = null;
 
         // Load test data
         clearDB(GRCH37_DBNAME);

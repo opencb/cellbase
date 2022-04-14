@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.RepeatsQuery;
@@ -43,7 +44,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
     private static final String REPEAT_COLLECTION = "repeats";
 
-    public RepeatsMongoDBAdaptor(int dataRelease, MongoDataStore mongoDatastore) {
+    public RepeatsMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDatastore) {
         super(dataRelease, mongoDatastore);
 
         init();
@@ -52,7 +53,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     private void init() {
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(REPEAT_COLLECTION, dataRelease));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(REPEAT_COLLECTION));
     }
 
     public Bson parseQuery(RepeatsQuery query) {

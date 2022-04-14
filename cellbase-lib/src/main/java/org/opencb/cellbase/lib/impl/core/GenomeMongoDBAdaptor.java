@@ -29,6 +29,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -60,7 +61,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     private static final Object CHROMOSOMES = "chromosomes";
     private Document genomeInfo = null;
 
-    public GenomeMongoDBAdaptor(int dataRelease, MongoDataStore mongoDataStore) {
+    public GenomeMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
         super(dataRelease, mongoDataStore);
 
         init();
@@ -69,9 +70,9 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     private void init() {
         logger.debug("GenomeMongoDBAdaptor: in 'constructor'");
 
-        genomeInfoMongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_info", dataRelease));
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_sequence", dataRelease));
-        conservationMongoDBCollection = mongoDataStore.getCollection(getCollectionName("conservation", dataRelease));
+        genomeInfoMongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_info"));
+        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("genome_sequence"));
+        conservationMongoDBCollection = mongoDataStore.getCollection(getCollectionName("conservation"));
     }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {

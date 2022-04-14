@@ -80,7 +80,7 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     public abstract void init() throws LoaderException;
 
     @Override
-    public abstract Integer call();
+    public abstract Integer call() throws LoaderException;
 
     public abstract void createIndex(String data) throws LoaderException;
 

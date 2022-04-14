@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 public class GenericMongoDBAdaptorTest {
 
-    protected int dataRelease = 1;
+    protected DataRelease dataRelease;
 
     private static final String LOCALHOST = "localhost:27017";
     protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";

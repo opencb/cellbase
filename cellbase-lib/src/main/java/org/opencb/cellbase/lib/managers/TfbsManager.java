@@ -20,6 +20,7 @@ import org.opencb.cellbase.core.api.TfbsQuery;
 import org.opencb.cellbase.core.common.regulatory.Tfbs;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 
@@ -27,18 +28,19 @@ public class TfbsManager extends AbstractManager implements AggregationApi<TfbsQ
 
     private GeneMongoDBAdaptor geneDBAdaptor;
 
-    public TfbsManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public TfbsManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, dataRelease, configuration);
     }
 
-    public TfbsManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public TfbsManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() {
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(dataRelease);
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor();
     }
 
     @Override

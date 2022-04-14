@@ -44,11 +44,13 @@ import org.opencb.cellbase.app.cli.main.annotation.indexers.VariantIndexer;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
@@ -100,7 +102,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int port;
     private String species;
     private String assembly;
-    private int dataRelease;
+    private DataRelease dataRelease;
     private int numThreads;
     private int batchSize;
     private List<Path> customFiles;
@@ -117,12 +119,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private QueryOptions serverQueryOptions;
 
     private MongoDBAdaptorFactory dbAdaptorFactory = null;
+    private ReleaseManager releaseManager = null;
 
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
     private static final String VARIATION_ANNOTATION_FILE_PREFIX = "variation_annotation_";
 
-    public VariantAnnotationCommandExecutor(CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
+    public VariantAnnotationCommandExecutor(CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions)
+            throws CellBaseException {
         super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
@@ -135,6 +139,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
         }
+
+        releaseManager = new ReleaseManager(species, assembly, configuration);
+        dataRelease = releaseManager.get(variantAnnotationCommandOptions.dataRelease);
     }
 
     @Override
@@ -193,12 +200,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Build indexes for custom files and/or population frequencies file
         getIndexes();
         try {
+            ReleaseManager releaseManager = new ReleaseManager(this.species, this.assembly, configuration);
+
             if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
                 List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
                 if (local) {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, this.assembly, this.dataRelease, cellBaseManagerFactory);
+                            new VariantAnnotationCalculator(this.species, this.assembly, dataRelease, cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -680,17 +689,17 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             logger.warn("No assembly provided. Using default assembly for {}", species);
         }
 
-        // Data release
-        if (variantAnnotationCommandOptions.dataRelease > 0) {
-            dataRelease = variantAnnotationCommandOptions.dataRelease;
-            // In case annotation is made through WS assembly must be set in the serverQueryOptions
-            serverQueryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
-            serverQueryOptions.put("dataRelease", variantAnnotationCommandOptions.dataRelease);
-        } else {
-            // TODO: maybe read data_release collection to get the default release
-            dataRelease = 0;
-            logger.warn("No data release provided. Using default data release for {}", species);
-        }
+//        // Data release
+//        if (variantAnnotationCommandOptions.dataRelease > 0) {
+//            dataRelease = variantAnnotationCommandOptions.dataRelease;
+//            // In case annotation is made through WS assembly must be set in the serverQueryOptions
+//            serverQueryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
+//            serverQueryOptions.put("dataRelease", variantAnnotationCommandOptions.dataRelease);
+//        } else {
+//            // TODO: maybe read data_release collection to get the default release
+//            dataRelease = 0;
+//            logger.warn("No data release provided. Using default data release for {}", species);
+//        }
 
         // Custom files
         if (variantAnnotationCommandOptions.customFiles != null) {

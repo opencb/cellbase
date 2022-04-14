@@ -30,6 +30,7 @@ import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
@@ -60,19 +61,20 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
 
-    public VariantManager(String species, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public VariantManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, dataRelease, configuration);
     }
 
-    public VariantManager(String species, String assembly, int dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public VariantManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, dataRelease, configuration);
 
         this.init();
     }
 
     private void init() throws CellBaseException {
-        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
-        spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor(dataRelease);
+        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
+        spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor();
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
         genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly, dataRelease);
     }
