@@ -50,6 +50,15 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
         return collectionMap;
     }
 
+    public MongoDBCollection getCollectionByRelease(Map<Integer, MongoDBCollection> collectionMap, Integer dataRelease) {
+        int release = dataRelease == null ? 0 : dataRelease;
+        if (!collectionMap.containsKey(release)) {
+            logger.error("Data release (" + release + ") not found!!");
+            return null;
+        }
+        return collectionMap.get(release);
+    }
+
     public CellBaseDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
         this.dataReleases = new ReleaseMongoDBAdaptor(mongoDataStore).getAll().getResults();

@@ -103,14 +103,16 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
@@ -126,7 +128,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
@@ -137,7 +140,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
@@ -148,7 +152,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
@@ -324,7 +329,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         fields.put("associatedGenes", 1);
         pipeline.add(new Document("$project", fields));
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return executeAggregation2("", pipeline, queryOptions, mongoDBCollection);
 
     }
@@ -346,7 +351,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         fields.put("associatedGenes", 1);
         pipeline.add(new Document("$project", fields));
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return executeAggregation2("", pipeline, queryOptions, mongoDBCollection);
     }
 
@@ -430,7 +435,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Variant> converter = new GenericDocumentComplexConverter<>(Variant.class);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }

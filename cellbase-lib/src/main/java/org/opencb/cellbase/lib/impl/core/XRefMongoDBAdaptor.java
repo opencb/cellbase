@@ -60,7 +60,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }

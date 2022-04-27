@@ -95,10 +95,10 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
             orBsonList.add(Filters.eq("name", id));
             Bson query = Filters.or(orBsonList);
             if (StringUtils.isEmpty(source) || ParamConstants.QueryParams.ENSEMBL.key().equalsIgnoreCase(source)) {
-                MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 results.add(new CellBaseDataResult<>(mongoDBCollection.find(query, projection, CONVERTER, new QueryOptions())));
             } else {
-                MongoDBCollection mongoDBCollection = refseqCollectionByRelease.get(dataRelease);
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(refseqCollectionByRelease, dataRelease);
                 results.add(new CellBaseDataResult<>(mongoDBCollection.find(query, projection, CONVERTER, new QueryOptions())));
             }
         }
@@ -113,10 +113,10 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         MongoDBIterator<Gene> iterator;
         if (query.getSource() != null && !query.getSource().isEmpty() && ParamConstants.QueryParams.REFSEQ.key()
                 .equalsIgnoreCase(query.getSource().get(0))) {
-            MongoDBCollection mongoDBCollection = refseqCollectionByRelease.get(query.getDataRelease());
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(refseqCollectionByRelease, query.getDataRelease());
             iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         } else {
-            MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
             iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         }
         return new CellBaseMongoDBIterator<>(iterator);
@@ -125,7 +125,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     @Override
     public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
         Bson bsonDocument = parseQuery(geneQuery);
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(geneQuery.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
@@ -133,7 +133,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
         Bson bsonQuery = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(geneQuery.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return groupBy(bsonQuery, geneQuery, "name", mongoDBCollection);
     }
 
@@ -155,7 +155,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
                 projection = Projections.exclude("transcripts", "annotation");
             }
         }
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
     }
 
@@ -351,7 +351,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         GenericDocumentComplexConverter<TranscriptTfbs> converter = new GenericDocumentComplexConverter<>(TranscriptTfbs.class);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         MongoDBIterator<TranscriptTfbs> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
 
         List<TranscriptTfbs> tfbs = new ArrayList<>();

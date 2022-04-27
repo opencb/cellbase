@@ -77,7 +77,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions, int dataRelease) {
-        MongoDBCollection mongoDBCollection = genomeInfoMongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(new Document(), queryOptions));
     }
 
@@ -88,7 +88,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
             queryOptions.addToListOption("include", "chromosomes.$");
         }
         Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
-        MongoDBCollection mongoDBCollection = genomeInfoMongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, dataRelease);
         return executeQuery(chromosomeId, dbObject, queryOptions, mongoDBCollection);
     }
 
@@ -254,7 +254,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
             ids.add(region.toString());
         }
 
-        MongoDBCollection mongoDBCollection = conservationMongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(conservationMongoDBCollectionByRelease, dataRelease);
         List<CellBaseDataResult> cellBaseDataResults = executeQueryList2(ids, queries, options, mongoDBCollection);
         List<CellBaseDataResult<GenomicScoreRegion<Float>>> conservationCellBaseDataResults = new ArrayList<>();
 
@@ -353,7 +353,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
 
         }
 
-        MongoDBCollection mongoDBCollection = conservationMongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(conservationMongoDBCollectionByRelease, dataRelease);
         List<CellBaseDataResult> queryResults = executeQueryList2(ids, queries, options, mongoDBCollection);
 //        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
 
@@ -429,7 +429,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
@@ -452,7 +452,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Chromosome> converter = new GenericDocumentComplexConverter<>(Chromosome.class);
-        MongoDBCollection mongoDBCollection = genomeInfoMongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Chromosome> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -502,21 +502,21 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     public CellBaseDataResult groupBy(GenomeQuery query) {
         Bson bsonQuery = parseQuery(query);
         logger.info("query: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
     @Override
     public CellBaseDataResult<String> distinct(GenomeQuery query) {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = genomeInfoMongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Override
     public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);
             List<Bson> orBsonList = new ArrayList<>(ids.size());

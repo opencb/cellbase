@@ -92,7 +92,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Repeat> converter = new GenericDocumentComplexConverter<>(Repeat.class);
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Repeat> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }

@@ -95,7 +95,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<RegulatoryFeature> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -108,7 +108,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     @Override
     public CellBaseDataResult<String> distinct(RegulationQuery query) {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
     @Override

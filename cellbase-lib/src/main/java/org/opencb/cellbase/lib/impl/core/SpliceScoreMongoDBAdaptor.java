@@ -64,7 +64,7 @@ public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
         final String id = chromosome + ":" + position + ":" + ref + ":" + alt;
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
 
         List<SpliceScore> results = new ArrayList<>();

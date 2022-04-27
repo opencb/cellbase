@@ -53,7 +53,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
         andBsonList.add(Filters.eq("reference", reference));
         Bson query = Filters.and(andBsonList);
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(query, null, MissenseVariantFunctionalScore.class, new QueryOptions()));
 
     }
@@ -69,7 +69,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
 
         final String id = chromosome + ":" + position + ":" + reference + ":" + alternate;
 
-        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         DataResult<MissenseVariantFunctionalScore> missenseVariantFunctionalScoreDataResult =
                 mongoDBCollection.find(query, null, MissenseVariantFunctionalScore.class, new QueryOptions());
 
