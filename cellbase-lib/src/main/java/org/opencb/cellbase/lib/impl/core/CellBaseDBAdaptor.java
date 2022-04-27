@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 

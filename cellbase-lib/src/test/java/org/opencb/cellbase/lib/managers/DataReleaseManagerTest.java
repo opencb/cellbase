@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 
 import java.io.IOException;

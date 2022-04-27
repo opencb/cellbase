@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.release;
+package org.opencb.cellbase.core.models;
 
 import java.util.Collections;
 import java.util.List;

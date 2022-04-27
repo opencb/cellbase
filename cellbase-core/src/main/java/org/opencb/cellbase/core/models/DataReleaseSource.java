@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.release;
+package org.opencb.cellbase.core.models;
 
 public class DataReleaseSource {
     private String name;
