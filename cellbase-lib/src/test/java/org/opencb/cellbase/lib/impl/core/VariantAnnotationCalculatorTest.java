@@ -57,17 +57,21 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        int release = 1;
+        clearDB(CELLBASE_DBNAME);
+
+        createDataRelease();
+        dataRelease = 1;
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        clearDB(GRCH37_DBNAME);
         Path path;
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", release);
+        loadRunner.load(path, "gene", dataRelease);
+        updateDataRelease(dataRelease, "gene", Collections.emptyList());
+
 //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
 //        loadRunner.load(path, "genome_sequence");
@@ -91,8 +95,10 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-//        path = Paths.get(getClass()
+        loadRunner.load(path, "variation", dataRelease);
+        updateDataRelease(dataRelease, "variation", Collections.emptyList());
+
+        //        path = Paths.get(getClass()
 //                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
 //        loadRunner.load(path, "variation");
 //        path = Paths.get(getClass()
@@ -109,19 +115,23 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        loadRunner.load(path, "genome_info");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats", release);
+        loadRunner.load(path, "repeats", dataRelease);
+        updateDataRelease(dataRelease, "repeats", Collections.emptyList());
+
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", release);
-//        path = Paths.get(getClass()
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
+
+        //        path = Paths.get(getClass()
 //                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
 //        loadRunner.load(path, "missense_variation_functional_score");
-        path = Paths.get(getClass()
-                .getResource("/splice/build/splice_1.json.gz").toURI());
-        loadRunner.load(path, "splice_score", release);
-        
-        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
-                cellBaseManagerFactory);
+//        path = Paths.get(getClass()
+//                .getResource("/splice/build/splice_1.json.gz").toURI());
+//        loadRunner.load(path, "splice_score", dataRelease);
+//        updateDataRelease(dataRelease, "splice_score", Collections.emptyList());
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, cellBaseManagerFactory);
 
     }
 
@@ -676,15 +686,15 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        variantAnnotationList.add((VariantAnnotation) ((List) variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19", 45411941, "T", "C"))  // Should return any result
 //                , new QueryOptions()).get(0).getResults()).get(0));
 //        variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 21982892, "C", "T"))  // Should return any result
-//                , new QueryOptions());
+//                , , new QueryOptions());
 //        variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 21982892, "C", "G"))  // Should return any result
-//                , new QueryOptions());
+//                , , new QueryOptions());
 //        variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("10", 78444456, "G", "T"))  // Should include population frequencies
-//                , new QueryOptions());
+//                , , new QueryOptions());
 //        variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 22022872, "T", "C"))  // Should not raise java.lang.NullPointerException
-//                , new QueryOptions());
+//                , , new QueryOptions());
 //        variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("22", 16123409, "-", "A"))
-//                , new QueryOptions());
+//                , , new QueryOptions());
 
 //        VepFormatWriter vepFormatWriter = new VepFormatWriter("/tmp/test.vep");
 //        vepFormatWriter.open();
@@ -1639,150 +1649,150 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertObjectListEquals("[{\"geneName\": \"AC108004.5\", \"ensemblGeneId\": \"ENSG00000273288\", \"ensemblTranscriptId\": \"ENST00000583926\", \"geneId\": \"ENSG00000273288\", \"transcriptId\": \"ENST00000583926\", \"strand\": \"-\", \"biotype\": \"miRNA\", \"source\": \"ensembl\", \"exonOverlap\": null, \"transcriptAnnotationFlags\": [\"basic\"], \"transcriptFlags\": [\"basic\"], \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001632\", \"name\": \"downstream_gene_variant\"}]}, {\"geneName\": null, \"ensemblGeneId\": null, \"ensemblTranscriptId\": null, \"geneId\": null, \"transcriptId\": null, \"strand\": null, \"biotype\": null, \"source\": null, \"exonOverlap\": null, \"transcriptAnnotationFlags\": null, \"transcriptFlags\": null, \"cdnaPosition\": null, \"cdsPosition\": null, \"codon\": null, \"proteinVariantAnnotation\": null, \"sequenceOntologyTerms\": [{\"accession\": \"SO:0001566\", \"name\": \"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResults(), ConsequenceType.class);
 
-////        CellBaseDataResult CellBaseDataResult = variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 108309064, StringUtils.repeat("N",2252), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 124814698, StringUtils.repeat("N",1048), "-"), new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 327947, "A", "-"), new QueryOptions());  // should return
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 101786, "A", "-"), new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10103931, "A", "-"), new QueryOptions());  // should return ENSG00000224788 ENST00000429539 -       intron_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10005684, "-", "AT"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 696869, "C", "-"), new QueryOptions());  // should not return NPE
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 52365874, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 133761141, "G", "A"), new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 12172775, "G", "A"), new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10993859, "G", "C"), new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 323246, "T", "C"), new QueryOptions());  // should not return NPE
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 295047, "T", "G"), new QueryOptions());  // should return NPE
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 172663, "G", "A"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "-"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 220603289, "-", "GTGT"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 220603347, "CCTAGTA", "ACTACTA"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "-", "TG"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "T", "-"), new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 70008, "-", "TG"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 167385325, "A", "-"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "AAAAAA", "-"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 28942717, "NNN", "-"), new QueryOptions());  // should return ENST00000541932 stop_retained
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 45411941, "T", "C"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("9", 107366952, StringUtils.repeat("N",12577), "A"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("7", 23775220, "T", "A"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407693, "T", "G"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("4", 48896023, "G", "C"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 12837706, "-", "CC"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "-", "AAAAAA"), new QueryOptions());  // should return stop_gained
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 115828861, "C", "G"), new QueryOptions());  // should return
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("16", 32859177, "C", "T"), new QueryOptions());  // should return stop_lost
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 13481174, "NN", "-"), new QueryOptions());  // should return stop_lost
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 153600596, "-", "C"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 10041199, "A", "T"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 102269845, "C", "A"), new QueryOptions());  // should
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("7", 158384306, "TGTG", "-"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("11", 118898436, "N", "-"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "-", "T"), new QueryOptions());  // should return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 70612070, StringUtils.repeat("N",11725), "-"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 115412783, "-", "C"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 27793991, StringUtils.repeat("N",1907), "-"), new QueryOptions());  // should not return null
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 27436462, StringUtils.repeat("N",2), "-"), new QueryOptions());  // should not return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), new QueryOptions());  // should not return intergenic_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 3745870, "C", "T"), new QueryOptions());  // should not return null
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return initiator_codon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 28071285, "C", "G"), new QueryOptions());  // should return initiator_codon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), new QueryOptions());  // should return synonymous_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22274249, "-", "AGGAG"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 51042514, "-", "G"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), new QueryOptions());  // should
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 42537628, "T", "C"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 27283340, "-", "C"), new QueryOptions());  // should return splice_region_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 31478142, "-", "G"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 29684676, "G", "A"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 40806293, "-", "TGTG"), new QueryOptions());  // should return downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 39426437, StringUtils.repeat("N",20092), "-"), new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 38069602, StringUtils.repeat("N",5799), "-"), new QueryOptions());  // should return 3_prime_UTR_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "A", "G"), new QueryOptions());  // should NOT return non_coding_transcript_exon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 35661560, "A", "G"), new QueryOptions());  // should return synonymous_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 31368158, StringUtils.repeat("N",4), "-"), new QueryOptions());  // should return donor_variant, intron_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587124, "-", "TA"), new QueryOptions());  // should return stop_retained_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 30824659, "-", "A"), new QueryOptions());  // should return stop_retained_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 26951215, "T", "C"), new QueryOptions());  // should NOT return null pointer exception
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17602839, "G", "A"), new QueryOptions());  // should NOT return null pointer exception
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20891503, "-", "CCTC"), new QueryOptions());  // should return missense_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21991357, "T", "C"), new QueryOptions());  // should return missense_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 24717655, "C", "T"), new QueryOptions());  // should return missense_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 24314402, StringUtils.repeat("N",19399), "-"), new QueryOptions());  // should return 3prime_UTR_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22007661, "G", "A"), new QueryOptions());  // should
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 23476261, "G", "A"), new QueryOptions());  // should
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22517056, StringUtils.repeat("N",82585), "-"), new QueryOptions());  // should return 3prime_UTR_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21388510, "A", "T"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22007634, "G", "A"), new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20891502, "-", "CCTC"), new QueryOptions());  // should return splice_region_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18387495, "G", "A"), new QueryOptions());  // should NOT return incomplete_teminator_codon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 19258045, StringUtils.repeat("N",27376), "-"), new QueryOptions());  // should return initiator_codon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18293502, "T", "C"), new QueryOptions());  // should return initiator_codon_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18620375, StringUtils.repeat("N",9436), "-"), new QueryOptions());  // should return transcript_ablation
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18997219, StringUtils.repeat("N",12521), "-"), new QueryOptions());  // should return transcript_ablation
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should return
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21982892, "C", "T"), new QueryOptions());  // should return a result
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16676212, "C", "T"), new QueryOptions());  // should include downstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22022872, "T", "C"), new QueryOptions());  // should not raise an error
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 179633644, "G", "C"), new QueryOptions());  // should include
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16123409, "-", "A"), new QueryOptions());  // should include
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 51234118, "C", "G"), new QueryOptions());  // should include upstream_variant
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 155159745, "G", "A"), new QueryOptions());  // should not raise error
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 179621477, "C", "T"), new QueryOptions());  // should not raise error
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18628756, "A", "T"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17488995, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17280889, "G", "A"), new QueryOptions());  // should not raise java.lang.NumberFormatException
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16449075, "G", "A"), new QueryOptions());  // should not raise null exception
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287784, "C", "T"), new QueryOptions());  // should not raise null exception
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());  // should not raise null exception
-////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "A"), new QueryOptions());  // missense_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17451081, "C", "T"), new QueryOptions());  // should not include stop_reained_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "T"), new QueryOptions());  // synonymous_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), new QueryOptions());  // should not include stop_reained_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449238, "T", "C"), new QueryOptions());  // should not include stop_codon
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17071673, "A", "G"), new QueryOptions());  // 3_prime_UTR_variant
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16151191, "G", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16340551, "A", "G"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17039749, "C", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16101010, "TTA", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16062270, "G", "T"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17668818, "C", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("8", 408515, "GAA", ""), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("3", 367747, "C", "T"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("9", 214512, "C", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("14", 19108198, "-", "GGTCTAGCATG"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("3L", 22024723, "G", "T"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2L", 37541199, "G", "A"), new QueryOptions());
+////        CellBaseDataResult CellBaseDataResult = variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 108309064, StringUtils.repeat("N",2252), "-"), , new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 124814698, StringUtils.repeat("N",1048), "-"), , new QueryOptions());  // should return ENSG00000215002 ENST00000399415 -       transcript_ablation
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), , new QueryOptions());  // should return
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 327947, "A", "-"), , new QueryOptions());  // should return
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 327947, "A", "-"), , new QueryOptions());  // should return
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 101786, "A", "-"), , new QueryOptions());  // should return ENSG00000173876 ENST00000413237 -       intron_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10103931, "A", "-"), , new QueryOptions());  // should return ENSG00000224788 ENST00000429539 -       intron_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10005684, "-", "AT"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 696869, "C", "-"), , new QueryOptions());  // should not return NPE
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 52365874, "G", "A"), , new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 133761141, "G", "A"), , new QueryOptions());  // should not return 10      133761141       A       ENSG00000175470 ENST00000422256 -       missense_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 12172775, "G", "A"), , new QueryOptions());  // should return 10      12172775        A       ENSG00000265653 ENST00000584402 -       non_coding_transcript_exon_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 10993859, "G", "C"), , new QueryOptions());  // should return 10      10993859        C       ENSG00000229240 ENST00000598573 -       splice_region_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 323246, "T", "C"), , new QueryOptions());  // should not return NPE
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 323246, "T", "C"), , new QueryOptions());  // should not return NPE
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 295047, "T", "G"), , new QueryOptions());  // should return NPE
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariantOld(new Variant("10", 295047, "T", "G"), , new QueryOptions());  // should return NPE
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 172663, "G", "A"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "-"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 114340663, "GCTGGGCATCCT", "ACTGGGCATCCT"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 220603289, "-", "GTGT"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 220603347, "CCTAGTA", "ACTACTA"), , new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "-", "TG"), , new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 16555369, "T", "-"), , new QueryOptions());  // last triplet of the transcript (- strand) and last codifying codon of the transcript, should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 70008, "-", "TG"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 167385325, "A", "-"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 45411941, "T", "C"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "AAAAAA", "-"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 28942717, "NNN", "-"), , new QueryOptions());  // should return ENST00000541932 stop_retained
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 45411941, "T", "C"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("9", 107366952, StringUtils.repeat("N",12577), "A"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("7", 23775220, "T", "A"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407694, "G", "A"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("5", 150407693, "T", "G"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("4", 48896023, "G", "C"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 12837706, "-", "CC"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 20047783, "-", "AAAAAA"), , new QueryOptions());  // should return stop_gained
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 115828861, "C", "G"), , new QueryOptions());  // should return
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("16", 32859177, "C", "T"), , new QueryOptions());  // should return stop_lost
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 13481174, "NN", "-"), , new QueryOptions());  // should return stop_lost
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 153600596, "-", "C"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 10041199, "A", "T"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 102269845, "C", "A"), , new QueryOptions());  // should
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("7", 158384306, "TGTG", "-"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("11", 118898436, "N", "-"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "-", "T"), , new QueryOptions());  // should return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 70612070, StringUtils.repeat("N",11725), "-"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("13", 52718051, "-", "T"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 115412783, "-", "C"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 27793991, StringUtils.repeat("N",1907), "-"), , new QueryOptions());  // should not return null
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 27436462, StringUtils.repeat("N",2), "-"), , new QueryOptions());  // should not return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("10", 6638139, "A", "T"), , new QueryOptions());  // should not return intergenic_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 3745870, "C", "T"), , new QueryOptions());  // should not return null
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), , new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 28071285, "C", "G"), , new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 35656173, "C", "A"), , new QueryOptions());  // should return synonymous_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22274249, "-", "AGGAG"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 51042514, "-", "G"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587846, "-", "CT"), , new QueryOptions());  // should
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 42537628, "T", "C"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 27283340, "-", "C"), , new QueryOptions());  // should return splice_region_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 31478142, "-", "G"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 29684676, "G", "A"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 40806293, "-", "TGTG"), , new QueryOptions());  // should return downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 39426437, StringUtils.repeat("N",20092), "-"), , new QueryOptions());  // ¿should return 3_prime_UTR_variant? No if ENSEMBLs gtf was used
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 38069602, StringUtils.repeat("N",5799), "-"), , new QueryOptions());  // should return 3_prime_UTR_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17054103, "A", "G"), , new QueryOptions());  // should NOT return non_coding_transcript_exon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 35661560, "A", "G"), , new QueryOptions());  // should return synonymous_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 31368158, StringUtils.repeat("N",4), "-"), , new QueryOptions());  // should return donor_variant, intron_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 36587124, "-", "TA"), , new QueryOptions());  // should return stop_retained_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 30824659, "-", "A"), , new QueryOptions());  // should return stop_retained_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 26951215, "T", "C"), , new QueryOptions());  // should NOT return null pointer exception
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17602839, "G", "A"), , new QueryOptions());  // should NOT return null pointer exception
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20891503, "-", "CCTC"), , new QueryOptions());  // should return missense_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21991357, "T", "C"), , new QueryOptions());  // should return missense_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 24717655, "C", "T"), , new QueryOptions());  // should return missense_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 24314402, StringUtils.repeat("N",19399), "-"), , new QueryOptions());  // should return 3prime_UTR_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22007661, "G", "A"), , new QueryOptions());  // should
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 23476261, "G", "A"), , new QueryOptions());  // should
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22517056, StringUtils.repeat("N",82585), "-"), , new QueryOptions());  // should return 3prime_UTR_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21388510, "A", "T"), , new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22007634, "G", "A"), , new QueryOptions());  // should NOT return mature_miRNA_variant but non_coding_transcript_variant,non_coding_transcript_exon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20891502, "-", "CCTC"), , new QueryOptions());  // should return splice_region_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18387495, "G", "A"), , new QueryOptions());  // should NOT return incomplete_teminator_codon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 19258045, StringUtils.repeat("N",27376), "-"), , new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18293502, "T", "C"), , new QueryOptions());  // should return initiator_codon_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18620375, StringUtils.repeat("N",9436), "-"), , new QueryOptions());  // should return transcript_ablation
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18997219, StringUtils.repeat("N",12521), "-"), , new QueryOptions());  // should return transcript_ablation
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), , new QueryOptions());  // should return
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 21982892, "C", "T"), , new QueryOptions());  // should return a result
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16676212, "C", "T"), , new QueryOptions());  // should include downstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 22022872, "T", "C"), , new QueryOptions());  // should not raise an error
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 179633644, "G", "C"), , new QueryOptions());  // should include
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16123409, "-", "A"), , new QueryOptions());  // should include
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 51234118, "C", "G"), , new QueryOptions());  // should include upstream_variant
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 155159745, "G", "A"), , new QueryOptions());  // should not raise error
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2", 179621477, "C", "T"), , new QueryOptions());  // should not raise error
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), , new QueryOptions());  // should not raise java.lang.StringIndexOutOfBoundsException
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 18628756, "A", "T"), , new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17488995, "G", "A"), , new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17280889, "G", "A"), , new QueryOptions());  // should not raise java.lang.NumberFormatException
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16449075, "G", "A"), , new QueryOptions());  // should not raise null exception
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287784, "C", "T"), , new QueryOptions());  // should not raise null exception
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), , new QueryOptions());  // should not raise null exception
+////          variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "A"), , new QueryOptions());  // missense_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17451081, "C", "T"), , new QueryOptions());  // should not include stop_reained_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17468875, "C", "T"), , new QueryOptions());  // synonymous_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449263, "G", "A"), , new QueryOptions());  // should not include stop_reained_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17449238, "T", "C"), , new QueryOptions());  // should not include stop_codon
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17071673, "A", "G"), , new QueryOptions());  // 3_prime_UTR_variant
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16151191, "G", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16340551, "A", "G"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17039749, "C", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16287365, "C", "T"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16101010, "TTA", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 16062270, "G", "T"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 20918922, "C", "T"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTACCAGCTACTTGGAAGGCTGAGGCAGGAGACTCTCTTGAACCTGGGAAGCCGAGGTTGCAGTGAGCTGGGCGACAGAGGGAGACTCCGTAAAAAAAAGAAAAAAAAAGAAGAAGAAGAAAAGAAAACAGGAAGGAAAGAAGAAAGAGAAACTAGAAATAATACATGTAAAGTGGCTGATTCTATTATCCTTGTTATTCCTTCTCCATGGGGCTGTTGTCAGGATTAAGTGAGATAGAGCACAGGAAAGGGCTCTGGAAACGCCTGTAGGCTCTAACCCTGAGGCATGGGCCTGTGGCCAGGAGCTCTCCCATTGACCACCTCCGCTGCCTCTGCTCGCATCCCGCAGGCTCACCTGTTTCTCCGGCGTGGAAGAAGTAAGGCAGCTTAACGCCATCCTTGGCGGGGATCATCAGAGCTTCCTTGTAGTCATGCAAGGAGTGGCCAGTGTCCTCATGCCCCACCTGCAGGACAGAGAGGGACAGGGAGGTGTCTGCAGGGCGCATGCCTCACTTGCTGATGGCGCGCCCTGGAGCCTGTGCACACCCTTCCTTGTACCCTGCCACCACTGCCGGGACCTTTGTCACACAGCCTTTTAAGAATGACCAGGAGCAGGCCAGGCGTGGTGGCTCACACCTGTAATCCCAGCACTTTGGGAGGCCGAGGCAGGCAGATCACGAAGTCAGGAGATCGAGACCATCCTGGCTAACACAGTGAAACCCCA", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22", 17668818, "C", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("8", 408515, "GAA", ""), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("3", 367747, "C", "T"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("9", 214512, "C", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("14", 19108198, "-", "GGTCTAGCATG"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("3L", 22024723, "G", "T"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("2L", 37541199, "G", "A"), , new QueryOptions());
 //
 ////
 ////        // Use local gene collection to test these
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATG", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 1, "G", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATGTTACATGAAG", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 15, "GTTACATGAAG", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 21, "T", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 34, "-", "AAAT"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 42, "G", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 75, "T", "A"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 75, "TCTAAGGCCTC", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 25, "GATAGTTCCTA", "-"), new QueryOptions());
-////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 45, "GATAGGGTAC", "-"), new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATG", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 1, "G", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 5, "GGTCTAGCATGTTACATGAAG", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 15, "GTTACATGAAG", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 21, "T", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 34, "-", "AAAT"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 42, "G", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 75, "T", "A"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 75, "TCTAAGGCCTC", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 25, "GATAGTTCCTA", "-"), , new QueryOptions());
+////        variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 45, "GATAGGGTAC", "-"), , new QueryOptions());
 //
 //
 ////        try {

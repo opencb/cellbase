@@ -27,7 +27,6 @@ import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MissenseVariationFunctionalScoreMongoDBAdaptor;
@@ -45,13 +44,13 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
     private MissenseVariationFunctionalScoreMongoDBAdaptor missenseVariationFunctionalScoreMongoDBAdaptor;
 
-    public ProteinManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public ProteinManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public ProteinManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+    public ProteinManager(String species, String assembly, CellBaseConfiguration configuration)
             throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+        super(species, assembly, configuration);
 
         this.init();
     }
@@ -100,13 +99,14 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     }
 
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int aaPosition,
-                                                                             String aaReference, String aaAlternate, QueryOptions options) {
+                                                                             String aaReference, String aaAlternate, QueryOptions options,
+                                                                             int dataRelease) {
         CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
-                aaPosition, aaReference, aaAlternate, options);
+                aaPosition, aaReference, aaAlternate, options, dataRelease);
         CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> revelResults =
                 missenseVariationFunctionalScoreMongoDBAdaptor.getScores(
                         variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
-                        aaReference, aaAlternate);
+                        aaReference, aaAlternate, dataRelease);
         if (proteinVariantAnnotation.getResults() != null && revelResults.getResults() != null) {
             proteinVariantAnnotation.getResults().get(0).getSubstitutionScores().add(
                     new Score(revelResults.first().getScore(), "revel", ""));

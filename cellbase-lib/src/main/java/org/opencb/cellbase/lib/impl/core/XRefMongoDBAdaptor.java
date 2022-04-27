@@ -22,7 +22,6 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.XrefQuery;
@@ -31,6 +30,7 @@ import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -44,15 +44,15 @@ import java.util.Map;
  */
 public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
-    public XRefMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
-        super(dataRelease, mongoDataStore);
+    public XRefMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
 
         init();
     }
 
     private void init() {
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("gene"));
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("gene");
     }
 
     @Override
@@ -60,15 +60,16 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
         MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         List<CellBaseDataResult<Xref>> results = new ArrayList<>();
         for (String id : ids) {
-            XrefQuery query = getInfoQuery(queryOptions);
+            XrefQuery query = getInfoQuery(queryOptions, dataRelease);
             query.setIds(Collections.singletonList(id));
             CellBaseIterator<Xref> iterator = iterator(query);
             List<Xref> xrefs = new ArrayList<>();
@@ -81,13 +82,14 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         return results;
     }
 
-    private XrefQuery getInfoQuery(ProjectionQueryOptions queryOptions) {
+    private XrefQuery getInfoQuery(ProjectionQueryOptions queryOptions, int dataRelease) {
         XrefQuery xrefQuery;
         if (queryOptions == null) {
             xrefQuery = new XrefQuery();
         } else {
             xrefQuery = (XrefQuery) queryOptions;
         }
+        xrefQuery.setDataRelease(dataRelease);
         return xrefQuery;
     }
 
@@ -148,6 +150,9 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
                         break;
                     case "dbname":
                         createAndOrQuery(value, "transcripts.xrefs.dbName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

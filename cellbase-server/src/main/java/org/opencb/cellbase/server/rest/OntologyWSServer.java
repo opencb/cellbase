@@ -23,7 +23,6 @@ import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
@@ -65,9 +64,7 @@ public class OntologyWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly, dr);
+        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
     }
 
     @GET
@@ -135,7 +132,8 @@ public class OntologyWSServer extends GenericRestWSServer {
                                     String ids) {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
-            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query);
+            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query,
+                    query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

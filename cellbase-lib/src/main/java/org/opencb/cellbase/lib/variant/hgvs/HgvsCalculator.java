@@ -50,11 +50,13 @@ public class HgvsCalculator {
     protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeManager genomeManager;
+    protected int dataRelease;
     protected BuildingComponents buildingComponents;
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
-    public HgvsCalculator(GenomeManager genomeManager) {
+    public HgvsCalculator(GenomeManager genomeManager, int dataRelease) {
         this.genomeManager = genomeManager;
+        this.dataRelease = dataRelease;
     }
 
     // If allele is greater than this use allele length.
@@ -102,7 +104,7 @@ public class HgvsCalculator {
             // We cannot know the type of variant before normalization has been carried out
             Variant normalizedVariant = normalize(variant, normalize);
 
-            HgvsTranscriptCalculator hgvsTranscriptCalculator = new HgvsTranscriptCalculator(genomeManager, normalizedVariant,
+            HgvsTranscriptCalculator hgvsTranscriptCalculator = new HgvsTranscriptCalculator(genomeManager, dataRelease, normalizedVariant,
                     transcript, geneId);
             String hgvsTranscript = hgvsTranscriptCalculator.calculate();
             if (StringUtils.isNotEmpty(hgvsTranscript)) {

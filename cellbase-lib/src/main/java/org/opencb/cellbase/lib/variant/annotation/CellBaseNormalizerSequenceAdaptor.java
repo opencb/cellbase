@@ -27,11 +27,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
+    private final int dataRelease;
     private final GenomeManager genomeManager;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CellBaseNormalizerSequenceAdaptor(GenomeManager genomeManager) {
+    public CellBaseNormalizerSequenceAdaptor(GenomeManager genomeManager, int dataRelease) {
         this.genomeManager = genomeManager;
+        this.dataRelease = dataRelease;
     }
 
     /**
@@ -52,10 +54,9 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
      * @throws Exception if something goes wrong
      * @throws RuntimeException if something goes wrong
      */
-    @Override
     public String query(String contig, int start, int end) throws Exception {
         Region region = new Region(contig, start, end);
-        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getSequence(region, QueryOptions.empty());
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getSequence(region, QueryOptions.empty(), dataRelease);
 
         // This behaviour mimics the behaviour of the org.opencb.biodata.tools.sequence.SamtoolsFastaIndex with one
         // difference. If contig does not exist, start is under the left bound, start AND end are out of the right

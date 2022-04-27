@@ -57,7 +57,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
     public void setUp() throws Exception {
         int release = 1;
 
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
         Path path = Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").toURI());
         loadRunner.load(path, "gene", release);
         path = Paths.get(getClass().getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
@@ -78,7 +78,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 //        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
 
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38", dataRelease);
+        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
                 "-",
                 "CCCTGTCCAGCCAGCCCATTGACCACGAAGACAGCACCATGCAGGCCGGACAGGGAGGCGATCCAGATCTCGG");
 
-        HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeManager, variant, transcript,"ENSG00000179364");
+        HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeManager, dataRelease, variant, transcript,"ENSG00000179364");
         assertEquals("ENST00000447393(ENSG00000179364):c.566_567ins73", predictor.calculate());
     }
 

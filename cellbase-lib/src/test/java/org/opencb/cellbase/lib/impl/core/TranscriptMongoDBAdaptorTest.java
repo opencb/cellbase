@@ -44,22 +44,25 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        dataRelease = null;
+        clearDB(CELLBASE_DBNAME);
 
-        clearDB(GRCH37_DBNAME);
+        createDataRelease();
+        dataRelease = 1;
+
         Path path = Paths.get(getClass().getResource("/transcript/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", dataRelease);
+        updateDataRelease(dataRelease, "gene", Collections.emptyList());
     }
 
     @Test
     public void testQuery() throws Exception {
-//        TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
-        TranscriptManager transcriptManager = cellBaseManagerFactory.getTranscriptManager("hsapiens", "GRCh38", dataRelease);
+        TranscriptManager transcriptManager = cellBaseManagerFactory.getTranscriptManager(SPECIES, ASSEMBLY);
 //        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
         TranscriptQuery query = new TranscriptQuery();
         Region region = Region.parseRegion("1:816481-825251");
         query.setRegions(new ArrayList<>(Arrays.asList(region)));
         query.setCount(Boolean.TRUE);
+        query.setDataRelease(dataRelease);
         CellBaseDataResult<Transcript> cellBaseDataResult = transcriptManager.search(query);
 
         assertEquals(1, cellBaseDataResult.getNumResults());
@@ -73,6 +76,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query = new TranscriptQuery();
         query.setCount(Boolean.TRUE);
         query.setRegions(Collections.singletonList(region));
+        query.setDataRelease(dataRelease);
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(2, cellBaseDataResult.getNumResults());
         assertTrue(transcriptIdEquals(cellBaseDataResult, Arrays.asList("ENST00000417324", "ENST00000461467")));
@@ -82,6 +86,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setTranscriptsXrefs(Collections.singletonList("Q9UL59"));
         query.setCount(Boolean.TRUE);
         query.setIncludes(Collections.singletonList("id"));
+        query.setDataRelease(dataRelease);
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(2, cellBaseDataResult.getNumResults());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(0)).size());
@@ -97,6 +102,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
 //        queryOptions = new QueryOptions("include", "transcripts.id");
         query.setIncludes(Collections.singletonList("transcripts.id"));
+        query.setDataRelease(dataRelease);
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(3, cellBaseDataResult.getNumResults());
 

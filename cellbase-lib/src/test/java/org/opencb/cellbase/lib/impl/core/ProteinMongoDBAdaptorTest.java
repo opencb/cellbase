@@ -46,22 +46,25 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        dataRelease = null;
+        clearDB(CELLBASE_DBNAME);
 
-        clearDB(GRCH37_DBNAME);
+        createDataRelease();
+        dataRelease = 1;
+
         Path path = Paths.get(getClass().getResource("/protein/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein");
+        loadRunner.load(path, "protein", dataRelease);
+        updateDataRelease(dataRelease, "protein", Collections.emptyList());
     }
 
     @Test
     public void testQuery() throws Exception {
-//        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
-        ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager("hsapiens", "GRCh38", dataRelease);
+        ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager(SPECIES, ASSEMBLY);
         ProteinQuery query = new ProteinQuery();
         query.setExcludes(new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         query.setLimit(3);
         query.setIncludes(new ArrayList<>(Arrays.asList("accession", "name")));
         query.setCount(Boolean.TRUE);
+        query.setDataRelease(dataRelease);
 //        QueryOptions queryOptions = new QueryOptions(QueryOptions.EXCLUDE, new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
 //        queryOptions.put(QueryOptions.LIMIT, 3);
 //        queryOptions.put(QueryOptions.INCLUDE, "accession,name");
@@ -71,6 +74,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         query = new ProteinQuery();
         query.setAccessions(new ArrayList<>(Arrays.asList("B2R8Q1","Q9UKT9")));
+        query.setDataRelease(dataRelease);
 //        CellBaseDataResult = proteinDBAdaptor.search(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
 //                "B2R8Q1,Q9UKT9"), queryOptions);
         CellBaseDataResult = proteinManager.search(query);
@@ -81,6 +85,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         query = new ProteinQuery();
         query.setNames(new ArrayList<>(Collections.singletonList("MKS1_HUMAN")));
+        query.setDataRelease(dataRelease);
         CellBaseDataResult = proteinManager.search(query);
 //        CellBaseDataResult = proteinDBAdaptor.query(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
 //                "MKS1_HUMAN"), queryOptions);

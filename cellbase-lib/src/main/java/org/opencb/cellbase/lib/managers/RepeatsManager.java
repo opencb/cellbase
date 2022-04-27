@@ -20,7 +20,6 @@ import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.RepeatsMongoDBAdaptor;
 
@@ -28,13 +27,13 @@ public class RepeatsManager extends AbstractManager implements AggregationApi<Re
 
     private RepeatsMongoDBAdaptor repeatsDBAdaptor;
 
-    public RepeatsManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public RepeatsManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public RepeatsManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+    public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration)
             throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+        super(species, assembly, configuration);
 
         this.init();
     }

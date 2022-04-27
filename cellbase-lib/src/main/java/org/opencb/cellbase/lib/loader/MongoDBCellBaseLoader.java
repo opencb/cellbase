@@ -38,7 +38,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -78,7 +78,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private MongoDBManager mongoDBManager;
     private MongoDBCollection mongoDBCollection;
-    private ReleaseManager releaseManager;
+    private DataReleaseManager dataReleaseManager;
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
@@ -118,7 +118,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
         try {
-            releaseManager = new ReleaseManager(database, cellBaseConfiguration);
+            dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(releaseManager.get(dataRelease), mongoDataStore);
         } catch (CellBaseException e) {
             throw new LoaderException(e);
@@ -129,14 +129,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         String collection = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
 
         // Sanity check
-        if (releaseManager == null) {
+        if (dataReleaseManager == null) {
             try {
-                releaseManager = new ReleaseManager(database, cellBaseConfiguration);
+                dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
             } catch (CellBaseException e) {
                 throw new LoaderException(e);
             }
         }
-        CellBaseDataResult<DataRelease> result = releaseManager.getReleases();
+        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(result.getResults())) {
             throw new LoaderException("No data releases are available for database " + database);
         }

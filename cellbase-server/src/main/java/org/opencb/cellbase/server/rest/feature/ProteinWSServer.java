@@ -22,7 +22,6 @@ import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ProteinManager;
@@ -62,9 +61,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly, dr);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
     }
 
     @GET
@@ -89,7 +86,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
-            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query);
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

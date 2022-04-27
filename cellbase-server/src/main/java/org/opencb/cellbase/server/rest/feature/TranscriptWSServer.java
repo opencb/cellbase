@@ -25,7 +25,6 @@ import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
@@ -70,11 +69,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dr);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly, dr);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
     }
 
     @GET
@@ -107,7 +104,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 source = query.getSource().get(0);
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")), query,
-                    source);
+                    source, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

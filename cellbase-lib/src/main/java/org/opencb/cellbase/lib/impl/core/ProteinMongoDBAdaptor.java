@@ -27,12 +27,11 @@ import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.cellbase.core.release.DataRelease;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -47,7 +46,7 @@ import java.util.*;
  */
 public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
 
-    private MongoDBCollection proteinSubstitutionMongoDBCollection;
+    private Map<Integer, MongoDBCollection> proteinSubstitutionMongoDBCollectionByRelease;
 
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
@@ -80,8 +79,8 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
 
-    public ProteinMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
-        super(dataRelease, mongoDataStore);
+    public ProteinMongoDBAdaptor(MongoDataStore mongoDataStore) {
+        super(mongoDataStore);
 
         init();
     }
@@ -89,8 +88,8 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     private void init() {
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein"));
-        proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection(getCollectionName("protein_functional_prediction"));
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("protein");
+        proteinSubstitutionMongoDBCollectionByRelease = buildCollectionByReleaseMap("protein_functional_prediction");
     }
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {
@@ -100,6 +99,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         if (query.getTranscriptsId() != null && query.getTranscriptsId().get(0) != null) {
             String transcriptId = query.getTranscriptsId().get(0).split("\\.")[0];
             Bson transcript = Filters.eq("transcriptId", transcriptId);
+            MongoDBCollection mongoDBCollection = proteinSubstitutionMongoDBCollectionByRelease.get(query.getDataRelease());
 
             String aaShortName = null;
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
@@ -114,11 +114,10 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
                 // Projection is used to minimize the returned data
                 Bson positionProjection = Projections.include(projectionString);
-                result = new CellBaseDataResult<>(
-                        proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, query.toQueryOptions()));
+                result = new CellBaseDataResult<>(mongoDBCollection.find(transcript, positionProjection, query.toQueryOptions()));
             } else {
                 // Return the whole transcript data
-                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, query.toQueryOptions()));
+                result = new CellBaseDataResult<>(mongoDBCollection.find(transcript, query.toQueryOptions()));
             }
 
             if (result != null && !result.getResults().isEmpty()) {
@@ -216,7 +215,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 //    }
 
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
-                                                                      String aaAlternate, QueryOptions options) {
+                                                                      String aaAlternate, QueryOptions options, int dataRelease) {
         CellBaseDataResult<ProteinVariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>();
         cellBaseDataResult.setId(ensemblTranscriptId + "/" + position + "/" + aaAlternate);
         long dbTimeStart = System.currentTimeMillis();
@@ -269,8 +268,9 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             groupFields.put("feature", new Document("$addToSet", "$feature"));
             pipeline.add(new Document("$group", groupFields));
 
+            MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
             proteinVariantData = executeAggregation2(ensemblTranscriptId + "_" + String.valueOf(position) + "_"
-                    + aaAlternate, pipeline, new QueryOptions());
+                    + aaAlternate, pipeline, new QueryOptions(), mongoDBCollection);
             if (proteinVariantData.getNumResults() > 0) {
                 proteinVariantAnnotation = processProteinVariantData(proteinVariantAnnotation, shortAlternativeAa,
                         (Document) proteinVariantData.getResults().get(0));
@@ -290,21 +290,22 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Entry> converter = new GenericDocumentComplexConverter<>(Entry.class);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
         MongoDBIterator<Entry> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         List<CellBaseDataResult<Entry>> results = new ArrayList<>();
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("accession", id));
             orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Entry>(mongoDBCollection.find(bson, projection,
-                    Entry.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<Entry>(mongoDBCollection.find(bson, projection, Entry.class, new QueryOptions())));
         }
         return results;
     }
@@ -318,12 +319,14 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     public CellBaseDataResult<Entry> groupBy(ProteinQuery query) {
         Bson bsonQuery = parseQuery(query);
         logger.info("proteinQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return groupBy(bsonQuery, query, "name");
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
+        return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
     @Override
     public CellBaseDataResult<String> distinct(ProteinQuery query) {
         Bson bsonDocument = parseQuery(query);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
@@ -355,6 +358,9 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                         break;
                     case "keyword":
                         createAndOrQuery(value, "keyword.value", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

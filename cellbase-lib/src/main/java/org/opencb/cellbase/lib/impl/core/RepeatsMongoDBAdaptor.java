@@ -20,7 +20,6 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.RepeatsQuery;
@@ -30,6 +29,7 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -44,8 +44,8 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
     private static final String REPEAT_COLLECTION = "repeats";
 
-    public RepeatsMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDatastore) {
-        super(dataRelease, mongoDatastore);
+    public RepeatsMongoDBAdaptor(MongoDataStore mongoDatastore) {
+        super(mongoDatastore);
 
         init();
     }
@@ -53,7 +53,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     private void init() {
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName(REPEAT_COLLECTION));
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap(REPEAT_COLLECTION);
     }
 
     public Bson parseQuery(RepeatsQuery query) {
@@ -65,6 +65,9 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 switch (dotNotationName) {
                     case "region":
                         createRegionQuery(query, value, MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE, andBsonList);
+                        break;
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -89,12 +92,13 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Repeat> converter = new GenericDocumentComplexConverter<>(Repeat.class);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
         MongoDBIterator<Repeat> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<Repeat>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Repeat>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         return null;
     }
 

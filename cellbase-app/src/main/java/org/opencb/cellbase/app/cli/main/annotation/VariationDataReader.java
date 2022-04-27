@@ -37,15 +37,17 @@ public class VariationDataReader implements DataReader<Variant> {
     private VariantMongoDBAdaptor dbAdaptor;
     private Query query;
     private QueryOptions options;
+    private int dataRelease;
     private Iterator<Variant> iterator;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private int nReadVariants = 0;
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
-    public VariationDataReader(VariantMongoDBAdaptor dbAdaptor, Query query, QueryOptions options) {
+    public VariationDataReader(VariantMongoDBAdaptor dbAdaptor, Query query, QueryOptions options, int dataRelease) {
         this.dbAdaptor = dbAdaptor;
         this.query = query;
         this.options = options;
+        this.dataRelease = dataRelease;
     }
 
     public boolean open() {
@@ -53,7 +55,7 @@ public class VariationDataReader implements DataReader<Variant> {
     }
 
     public boolean pre() {
-        this.iterator = dbAdaptor.iterator(query, options);
+        this.iterator = dbAdaptor.iterator(query, options, dataRelease);
 
         return this.iterator != null;
     }

@@ -23,7 +23,6 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.VariantManager;
@@ -63,9 +62,7 @@ public class VariantWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dr);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
     }
 
     @GET
@@ -83,7 +80,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
         try {
-            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id);
+            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -98,7 +95,7 @@ public class VariantWSServer extends GenericRestWSServer {
             required = true) String id) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id);
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -305,7 +302,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources, enable);
+                    checkAminoAcidChange, consequenceTypeSources, enable, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -360,7 +357,8 @@ public class VariantWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query);
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query,
+                    query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

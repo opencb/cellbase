@@ -27,10 +27,8 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.validation.VEPVariant;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.utils.FileUtils;
@@ -75,11 +73,8 @@ public class ValidationCommandExecutor extends CommandExecutor {
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
         VariantAnnotationCalculator variantAnnotationCalculator = null;
         try {
-            ReleaseManager releaseManager = new ReleaseManager(validationCommandOptions.species, validationCommandOptions.assembly,
-                    configuration);
-            DataRelease dataRelease = releaseManager.get(validationCommandOptions.dataRelease);
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
-                    validationCommandOptions.assembly, dataRelease, cellbaseManagerFactory);
+                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, cellbaseManagerFactory);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;

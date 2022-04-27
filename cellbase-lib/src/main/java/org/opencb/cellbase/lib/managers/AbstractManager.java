@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.managers;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
@@ -35,7 +34,6 @@ public class AbstractManager {
 
     protected String species;
     protected String assembly;
-    protected DataRelease dataRelease;
     protected CellBaseConfiguration configuration;
 
     protected MongoDBManager mongoDBManager;
@@ -44,19 +42,18 @@ public class AbstractManager {
 
     protected Logger logger;
 
-    public AbstractManager(String databaseName, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
+    public AbstractManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
         this.configuration = configuration;
 
         logger = LoggerFactory.getLogger(this.getClass());
 
         // We create a MongoDB database connection for each Manager
-        this.dataRelease = dataRelease;
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(dataRelease, mongoDatastore);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
     }
 
-    public AbstractManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+    public AbstractManager(String species, String assembly, CellBaseConfiguration configuration)
             throws CellBaseException {
         this.species = species;
         this.assembly = assembly;
@@ -70,10 +67,9 @@ public class AbstractManager {
         }
 
         // We create a MongoDB database connection for each Manager
-        this.dataRelease = dataRelease;
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(dataRelease, mongoDatastore);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
     }
 
 

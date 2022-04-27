@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -53,16 +54,18 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void phasedQueriesTest() throws Exception {
-        dataRelease = null;
+        clearDB(CELLBASE_DBNAME);
+
+        createDataRelease();
+        dataRelease = 1;
 
         // Load test data
-        clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/clinicalMongoDBAdaptor/phasedQueries/clinical_variants.full.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants");
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
 
-//        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38", dataRelease);
+        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager(SPECIES, ASSEMBLY);
         // Two variants being queried with PS and genotype. The PS is different in each of them. In the database, these
         // variants form an MNV. Both of them should be returned since the fact of having different PS indicates that
         // it's unknown if alternate alleles are in the same chromosome copy or not, i.e. could potentially  be in the
@@ -94,7 +97,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         CellBaseDataResult<Variant> variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("X",
@@ -142,7 +145,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
          variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -180,7 +183,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("X",
@@ -228,7 +231,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
 
         assertEquals(2, variantCellBaseDataResultList.size());
@@ -276,7 +279,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
 
         assertEquals(2, variantCellBaseDataResultList.size());
@@ -325,7 +328,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -362,7 +365,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Collections.singletonList(variant),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -387,7 +390,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Arrays.asList(variant, variant1),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -424,7 +427,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Collections.singletonList(variant),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -438,7 +441,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Collections.singletonList(new Variant("14", 55369176, "G", "A")),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("14",
@@ -457,7 +460,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 Arrays.asList(new Variant("1", 115256528, "T", "C"),
                         new Variant("1", 115256529, "T", "A")),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList, new Variant("1",
@@ -485,7 +488,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantCellBaseDataResultList = clinicalManager.getByVariant(
                 Collections.singletonList(new Variant("1", 115256528, "T", "C")),
                 Collections.emptyList(),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(1, variantCellBaseDataResultList.size());
         variantCellBaseDataResult = variantCellBaseDataResultList.get(0);
@@ -511,21 +514,23 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void proteinChangeMatchTest() throws Exception {
-        dataRelease = null;
+        clearDB(CELLBASE_DBNAME);
+
+        createDataRelease();
+        dataRelease = 1;
 
         // Load test data
-        clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants");
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
 
-//        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
-        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager("hsapiens", "GRCh38", dataRelease);
+        ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager(SPECIES, ASSEMBLY);
 
         List<CellBaseDataResult<Variant>> queryResultList = clinicalManager.getByVariant(
                 Collections.singletonList(new Variant("2:170361068:G:C")),
                 loadGeneList(),
-                new QueryOptions(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true), dataRelease);
 
         assertEquals(1, queryResultList.size());
         CellBaseDataResult<Variant> queryResult = queryResultList.get(0);
@@ -537,6 +542,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     private List<Gene> loadGeneList() throws URISyntaxException, IOException {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+//        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         Path path = Paths.get(getClass()
                 .getResource("/clinicalMongoDBAdaptor/gene_list.json.gz").toURI());

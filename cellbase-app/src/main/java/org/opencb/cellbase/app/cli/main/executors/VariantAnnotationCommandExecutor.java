@@ -44,13 +44,11 @@ import org.opencb.cellbase.app.cli.main.annotation.indexers.VariantIndexer;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GenomeManager;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
@@ -102,7 +100,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int port;
     private String species;
     private String assembly;
-    private DataRelease dataRelease;
+//    private DataRelease dataRelease;
     private int numThreads;
     private int batchSize;
     private List<Path> customFiles;
@@ -119,7 +117,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private QueryOptions serverQueryOptions;
 
     private MongoDBAdaptorFactory dbAdaptorFactory = null;
-    private ReleaseManager releaseManager = null;
+//    private ReleaseManager releaseManager = null;
 
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
@@ -140,8 +138,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             output = Paths.get(variantAnnotationCommandOptions.output);
         }
 
-        releaseManager = new ReleaseManager(species, assembly, configuration);
-        dataRelease = releaseManager.get(variantAnnotationCommandOptions.dataRelease);
+//        releaseManager = new ReleaseManager(species, assembly, configuration);
+//        dataRelease = releaseManager.get(variantAnnotationCommandOptions.dataRelease);
     }
 
     @Override
@@ -200,14 +198,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Build indexes for custom files and/or population frequencies file
         getIndexes();
         try {
-            ReleaseManager releaseManager = new ReleaseManager(this.species, this.assembly, configuration);
-
             if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
                 List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
                 if (local) {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, this.assembly, dataRelease, cellBaseManagerFactory);
+                            new VariantAnnotationCalculator(this.species, this.assembly, variantAnnotationCommandOptions.dataRelease,
+                                    cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -258,9 +255,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     for (String chromosome : chromosomeList) {
                         logger.info("Annotating chromosome {}", chromosome);
                         Query query = new Query("chromosome", chromosome);
-                        VariantManager variantManager = new VariantManager(species, dataRelease, configuration);
+                        VariantManager variantManager = new VariantManager(species, configuration);
                         DataReader<Variant> dataReader =
-                                new VariationDataReader((VariantMongoDBAdaptor)variantManager.getDBAdaptor(), query, options);
+                                new VariationDataReader((VariantMongoDBAdaptor)variantManager.getDBAdaptor(), query, options,
+                                        variantAnnotationCommandOptions.dataRelease);
 
                         DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString() + "/"
                                 + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
@@ -362,8 +360,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //            GenomeMongoDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
 //            CellBaseDataResult cellBaseDataResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
 
-            GenomeManager genomeManager = new GenomeManager(species, assembly, dataRelease, configuration);
-            CellBaseDataResult cellBaseDataResult = genomeManager.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
+            GenomeManager genomeManager = new GenomeManager(species, assembly, configuration);
+            CellBaseDataResult cellBaseDataResult = genomeManager.getGenomeInfo(new QueryOptions("include", "chromosomes.name"),
+                    variantAnnotationCommandOptions.dataRelease);
             List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) cellBaseDataResult
                     .getResults()).get(0).get("chromosomes");
             chromosomeList = new ArrayList<>(chromosomeDocumentList.size());
@@ -419,8 +418,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                }
                 CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                 return variantNormalizerConfig
-                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(cellBaseManagerFactory.getGenomeManager(species, assembly,
-                                dataRelease)));
+                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(cellBaseManagerFactory.getGenomeManager(species, assembly),
+                                variantAnnotationCommandOptions.dataRelease));
             }
         }
         return variantNormalizerConfig;
@@ -479,8 +478,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // Normalization should just be performed in one place: before calling the annotation calculator - within the
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
-            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly, dataRelease,
-                    new CellBaseManagerFactory(configuration)), serverQueryOptions);
+            return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
+                    variantAnnotationCommandOptions.dataRelease, new CellBaseManagerFactory(configuration)), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()

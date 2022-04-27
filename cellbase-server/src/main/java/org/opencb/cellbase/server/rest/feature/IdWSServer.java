@@ -23,7 +23,6 @@ import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.XrefQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
@@ -66,10 +65,8 @@ public class IdWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly, dr);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
+        xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
     }
 
     @GET
@@ -90,7 +87,7 @@ public class IdWSServer extends GenericRestWSServer {
                                     String id) {
         try {
             XrefQuery query = new XrefQuery(uriParams);
-            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query);
+            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -181,7 +178,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             GeneQuery query = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

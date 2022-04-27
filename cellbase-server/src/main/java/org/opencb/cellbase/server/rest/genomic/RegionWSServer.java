@@ -24,7 +24,6 @@ import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -71,15 +70,13 @@ public class RegionWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly, dr);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dr);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly, dr);
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dr);
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dr);
-        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly, dr);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
     }
 
     @GET
@@ -516,7 +513,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults
-                    = genomeManager.getConservation(query.toQueryOptions(), regions);
+                    = genomeManager.getConservation(query.toQueryOptions(), regions, query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

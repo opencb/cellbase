@@ -57,9 +57,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     public void setUp() throws Exception {
-        int dataRelease = 1;
+        clearDB(CELLBASE_DBNAME);
 
-        clearDB(GRCH37_DBNAME);
+        createDataRelease();
+        dataRelease = 1;
+
         Path path = Paths.get(getClass()
                 .getResource("/variation_chr22.full.test.json.gz").toURI());
         loadRunner.load(path, "variation", dataRelease);
@@ -72,8 +74,9 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation", dataRelease);
+        updateDataRelease(dataRelease, "variation", Collections.emptyList());
 
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37", this.dataRelease);
+        variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
     // TODO: to be finished - properly implemented
@@ -82,7 +85,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void testGetFunctionalScoreVariant() throws Exception {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
-                new QueryOptions());
+                new QueryOptions(), dataRelease);
 
         System.out.println("Num. of results: " + functionalScoreVariant.getNumResults());
     }
@@ -107,11 +110,9 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("62165739", "0|1"))));
         Variant variant1 = variantBuilder.build();
 
-//        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
-
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList
                 = variantManager.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true));
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
 
         assertEquals(2, variantCellBaseDataResultList.size());
         CellBaseDataResult<Variant> variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList,
@@ -280,7 +281,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);
         CellBaseDataResult<Variant> result = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions, dataRelease);
         assertEquals(21, result.getNumResults());
         assertThat(result.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
@@ -289,12 +290,12 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "rs200994757", "rs200942224", "rs201498625", "rs201498625"));
 
         CellBaseDataResult<Variant> resultENSEMBLGene = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions, dataRelease);
         assertEquals(result.getResults(), resultENSEMBLGene.getResults());
 
         // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
         CellBaseDataResult<Variant> resultENSEMBLTranscript = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENST00000565764"), queryOptions, dataRelease);
         assertEquals(20, resultENSEMBLTranscript.getNumResults());
         assertThat(resultENSEMBLTranscript.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
@@ -303,7 +304,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                         "rs201498625", "rs201498625", "rs201498625"));
 
         CellBaseDataResult<Variant> geneCellBaseDataResult = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CERK"), queryOptions);
+                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CERK"), queryOptions, dataRelease);
         assertThat(geneCellBaseDataResult.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs192195512", "rs193091997", "rs200609865"));
 

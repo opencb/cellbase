@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
@@ -39,13 +38,12 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
     private GeneMongoDBAdaptor geneDBAdaptor;
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
-    public GeneManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public GeneManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public GeneManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
-            throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+    public GeneManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, configuration);
 
         this.init();
     }
@@ -60,8 +58,8 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source) {
-        return geneDBAdaptor.info(ids, query, source);
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease) {
+        return geneDBAdaptor.info(ids, query, source, dataRelease);
     }
 
     public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) {
@@ -72,7 +70,7 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
             List<Gene> results = geneCellBaseDataResult.getResults();
             Gene gene = results.get(0);
             Region region = new Region(gene.getChromosome(), gene.getStart(), gene.getEnd());
-            return genomeDBAdaptor.getSequence(region, query.toQueryOptions());
+            return genomeDBAdaptor.getSequence(region, query.toQueryOptions(), query.getDataRelease());
         }
         return null;
     }
@@ -88,15 +86,16 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
     public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) {
         List<CellBaseDataResult<TranscriptTfbs>> geneQueryResults = new ArrayList<>();
         for (String gene : query.getIds()) {
-            CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions());
+            CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions(),
+                    query.getDataRelease());
             geneQueryResult.setId(gene);
             geneQueryResults.add(geneQueryResult);
         }
         return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions) {
-        return geneDBAdaptor.startsWith(query, queryOptions);
+    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions, int dataRelease) {
+        return geneDBAdaptor.startsWith(query, queryOptions, dataRelease);
     }
 
 }

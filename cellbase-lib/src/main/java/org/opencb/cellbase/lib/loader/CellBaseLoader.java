@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.loader;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
     protected int dataRelease;
-    protected ReleaseManager releaseManager;
+    protected DataReleaseManager dataReleaseManager;
     protected String database;
 
     protected String field;
@@ -72,7 +72,7 @@ public abstract class CellBaseLoader implements Callable<Integer> {
             }
         }
 
-        releaseManager = new ReleaseManager(this.database, this.cellBaseConfiguration);
+        dataReleaseManager = new DataReleaseManager(this.database, this.cellBaseConfiguration);
 
         logger = LoggerFactory.getLogger(this.getClass());
     }

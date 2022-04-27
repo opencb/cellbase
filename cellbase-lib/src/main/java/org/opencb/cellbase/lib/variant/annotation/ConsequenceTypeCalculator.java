@@ -49,6 +49,7 @@ public abstract class ConsequenceTypeCalculator {
     protected Transcript transcript;
     protected Variant variant;
     protected GenomeManager genomeManager;
+    protected int dataRelease;
     protected Boolean imprecise = true;
     protected int svExtraPadding = 0;
     protected int cnvExtraPadding = 0;
@@ -337,7 +338,7 @@ public abstract class ConsequenceTypeCalculator {
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                        .get(genomeManager.getGenomicSequence(query, new QueryOptions())
+                        .get(genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease)
                                 .getResults().get(0).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
@@ -356,8 +357,7 @@ public abstract class ConsequenceTypeCalculator {
 
     protected int updatePositiveInsertionCodonArrays(String transcriptSequence, char[] modifiedCodonArray,
                                                      int transcriptSequencePosition, int modifiedCodonPosition,
-                                                     char[] formattedReferenceCodonArray,
-                                                     char[] formattedModifiedCodonArray) {
+                                                     char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray) {
         for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
             if (transcriptSequencePosition >= transcriptSequence.length()) {
                 int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
@@ -367,7 +367,7 @@ public abstract class ConsequenceTypeCalculator {
                 Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
-                modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions())
+                modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease)
                         .getResults().get(0).getSequence().charAt(0);
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);

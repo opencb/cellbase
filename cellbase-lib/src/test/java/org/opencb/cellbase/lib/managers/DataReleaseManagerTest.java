@@ -8,32 +8,30 @@ import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
-class ReleaseManagerTest extends GenericMongoDBAdaptorTest {
+class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
-    public ReleaseManagerTest() throws IOException {
+    public DataReleaseManagerTest() throws IOException {
         super();
     }
 
     @BeforeEach
     public void setUp() throws Exception {
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
 //        Path path = Paths.get(getClass().getResource("/gene/gene-test.json.gz").toURI());
 //        loadRunner.load(path, "gene");
     }
 
     @Test
     public void test1() throws JsonProcessingException, CellBaseException {
-        ReleaseManager releaseManager = new ReleaseManager("cellbase_hsapiens_grch37_v4", cellBaseConfiguration);
-        DataRelease firstRelease = releaseManager.createRelease();
+        DataReleaseManager dataReleaseManager = new DataReleaseManager(CELLBASE_DBNAME, cellBaseConfiguration);
+        DataRelease firstRelease = dataReleaseManager.createRelease();
         if (firstRelease != null) {
-            releaseManager.activeByDefault(firstRelease.getRelease());
+            dataReleaseManager.activeByDefault(firstRelease.getRelease());
         }
-        DataRelease secondRelease = releaseManager.createRelease();
+        DataRelease secondRelease = dataReleaseManager.createRelease();
         if (secondRelease != null) {
-            releaseManager.activeByDefault(secondRelease.getRelease());
+            dataReleaseManager.activeByDefault(secondRelease.getRelease());
         }
     }
 

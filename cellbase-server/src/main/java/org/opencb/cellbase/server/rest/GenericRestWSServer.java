@@ -31,11 +31,9 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -166,15 +164,23 @@ public class GenericRestWSServer implements IWSServer {
         checkVersion();
     }
 
-    protected DataRelease getDataRelease(String species, String assembly, int release, CellBaseConfiguration cellBaseConfiguration)
-            throws CellBaseException {
-        ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
-        if (release == 0) {
-            return releaseManager.getDefault();
-        } else {
-            return releaseManager.get(release);
-        }
+//    protected DataRelease getDataRelease(String species, String assembly, int release, CellBaseConfiguration cellBaseConfiguration)
+//            throws CellBaseException {
+//        ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
+//        if (release == 0) {
+//            return releaseManager.getDefault();
+//        } else {
+//            return releaseManager.get(release);
+//        }
+//
+//    }
 
+    protected int getDataRelease() throws CellBaseException {
+        if (uriParams.containsKey("dataRelease")) {
+            return Integer.parseInt(uriParams.get("dataRelease"));
+        }
+        // It means to use the default data release
+        return 0;
     }
 
     /**

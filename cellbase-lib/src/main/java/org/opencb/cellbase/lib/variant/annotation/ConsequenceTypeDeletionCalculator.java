@@ -222,7 +222,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT
-                            .get(genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0)
+                            .get(genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0)
                                     .getSequence().charAt(0));
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
@@ -332,7 +332,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     substitutingNt = genomeManager
-                            .getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0);
+                            .getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence().charAt(0);
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     substitutingNt = transcriptSequence.charAt(i);
@@ -440,7 +440,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.
-                            get(genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0));
+                            get(genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease)
+                                    .getResults().get(0).getSequence().charAt(0));
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseTranscriptSequence.charAt(i));
@@ -543,7 +544,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = genomeManager
-                            .getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0);
+                            .getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence().charAt(0);
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);

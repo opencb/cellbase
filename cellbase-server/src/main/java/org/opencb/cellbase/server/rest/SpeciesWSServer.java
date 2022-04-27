@@ -21,7 +21,6 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 
@@ -56,9 +55,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dr);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @GET
@@ -74,7 +71,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
     public Response getSpeciesInfo() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -16,13 +16,18 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.apache.commons.collections4.MapUtils;
 import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-public class CellBaseDBAdaptor extends MongoDBAdaptor{
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-    protected DataRelease dataRelease;
+public class CellBaseDBAdaptor extends MongoDBAdaptor {
+
+    protected List<DataRelease> dataReleases;
+    protected Map<Integer, MongoDBCollection> mongoDBCollectionByRelease;
 
     public static final String DATA_RELEASE_SEPARATOR = "__v";
 
@@ -31,33 +36,39 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor{
         return name;
     }
 
-    public String getCollectionName(String data) {
-        if (dataRelease == null || MapUtils.isEmpty(dataRelease.getCollections()) || !dataRelease.getCollections().containsKey(data)) {
-            return data;
-        } else {
-            return dataRelease.getCollections().get(data);
+    public Map<Integer, MongoDBCollection> buildCollectionByReleaseMap(String data) {
+        Map<Integer, MongoDBCollection> collectionMap = new HashMap<>();
+        for (DataRelease dataRelease : dataReleases) {
+            if (dataRelease.getCollections().containsKey(data)) {
+                String collectionName = dataRelease.getCollections().get(data);
+                collectionMap.put(dataRelease.getRelease(), mongoDataStore.getCollection(collectionName));
+                if (dataRelease.isActiveByDefault()) {
+                    collectionMap.put(0, mongoDataStore.getCollection(collectionName));
+                }
+            }
         }
+        return collectionMap;
     }
 
-    public CellBaseDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore) {
+    public CellBaseDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-        this.dataRelease = dataRelease;
+        this.dataReleases = new ReleaseMongoDBAdaptor(mongoDataStore).getAll().getResults();
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CellBaseDBAdaptor{");
-        sb.append("dataRelease=").append(dataRelease);
+        sb.append("dataReleasse=").append(dataReleases);
         sb.append('}');
         return sb.toString();
     }
 
-    public DataRelease getDataRelease() {
-        return dataRelease;
+    public List<DataRelease> getDataReleases() {
+        return dataReleases;
     }
 
-    public CellBaseDBAdaptor setDataRelease(DataRelease dataRelease) {
-        this.dataRelease = dataRelease;
+    public CellBaseDBAdaptor setDataReleases(List<DataRelease> dataReleases) {
+        this.dataReleases = dataReleases;
         return this;
     }
 }

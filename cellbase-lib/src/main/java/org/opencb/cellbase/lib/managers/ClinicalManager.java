@@ -23,7 +23,6 @@ import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
@@ -39,19 +38,18 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
-    public ClinicalManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public ClinicalManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public ClinicalManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
-            throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, configuration);
 
         this.init();
     }
 
     private void init() throws CellBaseException {
-        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(new GenomeManager(species, assembly, dataRelease, configuration));
+        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(new GenomeManager(species, assembly, configuration));
     }
 
     @Override
@@ -99,7 +97,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     }
 
     public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
-                                                          QueryOptions queryOptions) {
-        return clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions);
+                                                          QueryOptions queryOptions, int dataRelease) {
+        return clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
     }
 }

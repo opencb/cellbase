@@ -91,5 +91,5 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     CellBaseDataResult<String> distinct(Q query);
 
-    List<CellBaseDataResult<T>> info(List<String> ids, ProjectionQueryOptions queryOptions);
+    List<CellBaseDataResult<T>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease);
 }

@@ -22,7 +22,6 @@ import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
@@ -62,9 +61,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly, dr);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
     }
 
     @GET

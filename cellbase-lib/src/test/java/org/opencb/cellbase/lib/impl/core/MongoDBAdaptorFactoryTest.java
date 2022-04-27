@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
@@ -27,10 +28,11 @@ import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
-    private static MongoDBManager mongoDBManager;
-    private static CellBaseConfiguration cellBaseConfiguration;
+    private MongoDBManager mongoDBManager;
+    private CellBaseConfiguration cellBaseConfiguration;
 
 
     public MongoDBAdaptorFactoryTest() throws IOException {
@@ -39,7 +41,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        dataRelease = null;
+        dataRelease = 1;
 
         cellBaseConfiguration = CellBaseConfiguration.load(
                 MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
@@ -60,7 +62,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
                         () -> mongoDBManager.getDatabaseName("speciesName", null),
                         "Expected getDatabaseName() to throw an exception, but it didn't");
 
-        assertTrue(thrown.getMessage().contains("Assembly is required"));
+        assertTrue(thrown.getMessage().contains("Species and assembly are required"));
 
         // handle special characters
         databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name");

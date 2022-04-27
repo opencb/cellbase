@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
@@ -63,11 +62,9 @@ public class TfWSServer extends RegulatoryWSServer {
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, assembly, dataRelease, uriInfo, hsr);
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly, dr);
-        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly, dr);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
     }
 
     @GET

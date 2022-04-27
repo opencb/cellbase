@@ -32,7 +32,6 @@ import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
@@ -82,8 +81,7 @@ public class GeneWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly, dr);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
 //        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
 //        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
 //        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
@@ -363,7 +361,8 @@ public class GeneWSServer extends GenericRestWSServer {
             if (geneQuery.getSource() != null && !geneQuery.getSource().isEmpty()) {
                 source = geneQuery.getSource().get(0);
             }
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery, source);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery, source,
+                    geneQuery.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -393,7 +392,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 source = geneQuery.getSource().get(0);
             }
 
-            CellBaseDataResult<Gene> queryResults = geneManager.startsWith(gene, geneQuery.toQueryOptions());
+            CellBaseDataResult<Gene> queryResults = geneManager.startsWith(gene, geneQuery.toQueryOptions(), geneQuery.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

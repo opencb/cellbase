@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.VariantManager;
@@ -53,7 +52,7 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene", release);
@@ -112,19 +111,19 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
                 .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
 
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37", dataRelease);
+        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37");
 
     }
 
     @Test
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT");
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
         assertEquals(1, results.getResults().size());
     }
 
     @Test
     public void testHgvs() throws Exception {
-        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG");
+        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease);
         assertEquals(5, results.get(0).getResults().size());
     }
 }

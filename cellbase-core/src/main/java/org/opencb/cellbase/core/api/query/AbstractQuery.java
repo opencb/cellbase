@@ -45,6 +45,8 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
+    public static final String DATA_RELEASE = "dataRelease";
+
     // list of fields in this class
     private Map<String, Field> classFields;
     // key = transcripts.biotype, value = transcriptsBiotype
@@ -53,6 +55,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     private Map<String, Class<?>> classAttributesToType;
     // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
+
+    @QueryParameter(id = "dataRelease")
+    private Integer dataRelease;
 
     public AbstractQuery() {
         init();
@@ -399,5 +404,14 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
             queryOptions.put(QueryOptions.FACET, facet);
         }
         return queryOptions;
+    }
+
+    public Integer getDataRelease() {
+        return dataRelease;
+    }
+
+    public AbstractQuery setDataRelease(Integer dataRelease) {
+        this.dataRelease = dataRelease;
+        return this;
     }
 }

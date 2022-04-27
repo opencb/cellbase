@@ -22,6 +22,7 @@ import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdap
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,16 +36,23 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     }
 
     public void setUp() throws Exception {
-        dataRelease = null;
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
+
+        dataRelease = 1;
+        createDataRelease();
+
         Path path = Paths.get(getClass()
                 .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info");
+        loadRunner.load(path, "genome_info", dataRelease);
+        updateDataRelease(dataRelease, "genome_info", Collections.emptyList());
+
         path = Paths.get(getClass()
                 .getResource("/genome/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
+        loadRunner.load(path, "genome_sequence", dataRelease);
+        updateDataRelease(dataRelease, "genome_sequence", Collections.emptyList());
+
         cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
-                cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37", dataRelease));
+                cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
     }
 
     @Test

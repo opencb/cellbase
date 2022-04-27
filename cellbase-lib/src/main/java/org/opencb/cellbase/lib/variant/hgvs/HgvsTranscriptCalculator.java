@@ -50,21 +50,24 @@ public class HgvsTranscriptCalculator {
     private static final String DUP = "dup";
     private static final int MINIMUM_NEIGHBOURING_SEQUENCE_SIZE = 100;
     private final GenomeManager genomeManager;
+    private final int dataRelease;
 
     /**
      * Constructor.
      *
+     * @param genomeManager Genome manager
+     * @param dataRelease Data release
      * @param variant variant of interest. Can be SNV, DEL or INS
      * @param transcript transcript containing variant
-     * @param genomeManager database connection used for querying sequences
      * @param geneId ensembl gene id
      */
-    public HgvsTranscriptCalculator(GenomeManager genomeManager, Variant variant, Transcript transcript, String geneId) {
+    public HgvsTranscriptCalculator(GenomeManager genomeManager, int dataRelease, Variant variant, Transcript transcript, String geneId) {
         this.variant = variant;
         this.transcript = transcript;
         this.transcriptUtils =  new TranscriptUtils(transcript);
         this.geneId = geneId;
         this.genomeManager = genomeManager;
+        this.dataRelease = dataRelease;
     }
 
     /**
@@ -435,7 +438,7 @@ public class HgvsTranscriptCalculator {
         int end = variant.getStart() + neighbouringSequenceSize + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+        String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
@@ -496,7 +499,7 @@ public class HgvsTranscriptCalculator {
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence
-                = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+                = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());

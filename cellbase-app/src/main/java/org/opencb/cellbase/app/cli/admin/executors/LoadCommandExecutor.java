@@ -28,7 +28,7 @@ import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,7 +65,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private int numThreads;
     private boolean createIndexes;
     private IndexManager indexManager;
-    private ReleaseManager releaseManager;
+    private DataReleaseManager dataReleaseManager;
 
     public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.conf);
@@ -113,7 +113,7 @@ public class LoadCommandExecutor extends CommandExecutor {
      */
     public void execute() throws CellBaseException {
         // Init release manager
-        releaseManager = new ReleaseManager(database, configuration);
+        dataReleaseManager = new DataReleaseManager(database, configuration);
 
         checkParameters();
 
@@ -145,7 +145,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("genomeVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
                         case EtlCommons.GENE_DATA: {
@@ -165,7 +165,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("disgenetVersion.json"),
                                     input.resolve("gnomadVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
                         case EtlCommons.REFSEQ_DATA: {
@@ -192,7 +192,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("caddVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -207,7 +207,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("revelVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
                         case EtlCommons.CONSERVATION_DATA: {
@@ -226,7 +226,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("ensemblRegulationVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
 
                             // Load data (regulatory PFM)
                             loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
@@ -247,7 +247,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("uniprotVersion.json"),
                                     input.resolve("interproVersion.json")
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
 //                        case EtlCommons.PPI_DATA:
@@ -286,7 +286,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve(EtlCommons.GO_VERSION_FILE),
                                     input.resolve(EtlCommons.DO_VERSION_FILE)
                             ));
-                            releaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, loadOption, sources);
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -361,7 +361,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Check data release
-        CellBaseDataResult<DataRelease> result = releaseManager.getReleases();
+        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(result.getResults())) {
             throw new CellBaseException("No data releases are available for database " + database);
         }
@@ -408,7 +408,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             List<Path> sources = new ArrayList<>(Arrays.asList(
                     input.resolve("ensemblVariationVersion.json")
             ));
-            releaseManager.update(dataRelease, "variation", sources);
+            dataReleaseManager.update(dataRelease, "variation", sources);
 
             // Custom update required e.g. population freqs loading
         } else {
@@ -438,7 +438,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 input.resolve("phastConsVersion.json"),
                 input.resolve("phyloPVersion.json")
         ));
-        releaseManager.update(dataRelease, "conservation", sources);
+        dataReleaseManager.update(dataRelease, "conservation", sources);
     }
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
@@ -474,7 +474,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve("cosmicVersion.json"),
                         input.resolve("gwasVersion.json")
                 ));
-                releaseManager.update(dataRelease, "clinical_variants", sources);
+                dataReleaseManager.update(dataRelease, "clinical_variants", sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
@@ -501,7 +501,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve(EtlCommons.GSD_VERSION_FILE),
                         input.resolve(EtlCommons.WM_VERSION_FILE)
                 ));
-                releaseManager.update(dataRelease, "repeats", sources);
+                dataReleaseManager.update(dataRelease, "repeats", sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
@@ -530,7 +530,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME),
                 input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_VERSION_FILENAME)
         ));
-        releaseManager.update(dataRelease, EtlCommons.SPLICE_SCORE_DATA, sources);
+        dataReleaseManager.update(dataRelease, EtlCommons.SPLICE_SCORE_DATA, sources);
     }
 
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,

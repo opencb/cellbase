@@ -27,9 +27,9 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -40,6 +40,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -57,12 +58,11 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     // TODO: watch out this prefix only works for ENSMBL hgvs strings!!
     private static final String PROTEIN_HGVS_PREFIX = "ENSP";
     private static ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
+
     private GenomeManager genomeManager;
 
-
-    public ClinicalMongoDBAdaptor(DataRelease dataRelease, MongoDataStore mongoDataStore, GenomeManager genomeManager)
-            throws CellBaseException {
-        super(dataRelease, mongoDataStore);
+    public ClinicalMongoDBAdaptor(MongoDataStore mongoDataStore, GenomeManager genomeManager) throws CellBaseException {
+        super(mongoDataStore);
 
         this.genomeManager = genomeManager;
 
@@ -72,7 +72,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     private void init() {
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(getCollectionName("clinical_variants"));
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("clinical_variants");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -102,11 +102,15 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
@@ -121,6 +125,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
@@ -130,6 +136,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
@@ -139,6 +147,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
@@ -291,7 +301,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         }
     }
 
-    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
+    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) {
 
         List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
@@ -314,11 +324,12 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         fields.put("associatedGenes", 1);
         pipeline.add(new Document("$project", fields));
 
-        return executeAggregation2("", pipeline, queryOptions);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        return executeAggregation2("", pipeline, queryOptions, mongoDBCollection);
 
     }
 
-    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
+    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) {
 
         List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents
@@ -335,13 +346,12 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         fields.put("associatedGenes", 1);
         pipeline.add(new Document("$project", fields));
 
-        return executeAggregation2("", pipeline, queryOptions);
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(dataRelease);
+        return executeAggregation2("", pipeline, queryOptions, mongoDBCollection);
     }
 
-    private CellBaseDataResult<Variant> getClinicalVariant(Variant variant,
-                                                    GenomeManager genomeManager,
-                                                    List<Gene> geneList,
-                                                    QueryOptions options) {
+    private CellBaseDataResult<Variant> getClinicalVariant(Variant variant, GenomeManager genomeManager, List<Gene> geneList,
+                                                           QueryOptions options, int dataRelease) {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(ParamConstants.QueryParams.CHROMOSOME.key(), variant.getChromosome())
@@ -358,7 +368,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                     && genomeManager != null
                     && geneList != null
                     && !geneList.isEmpty()) {
-                HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager);
+                HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease);
                 List<String> proteinHgvsList = getProteinHgvs(hgvsCalculator.run(variant, geneList));
                 // Only add the protein HGVS query if it's a protein coding variant
                 if (!proteinHgvsList.isEmpty()) {
@@ -395,15 +405,15 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return proteinHgvsList;
     }
 
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-        return this.getByVariant(variants, null, queryOptions);
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions, int dataRelease) {
+        return this.getByVariant(variants, null, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
-                                                   QueryOptions queryOptions) {
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList, QueryOptions queryOptions,
+                                                          int dataRelease) {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getClinicalVariant(variant, genomeManager, geneList, queryOptions));
+            results.add(getClinicalVariant(variant, genomeManager, geneList, queryOptions, dataRelease));
         }
         if (queryOptions.get(ParamConstants.QueryParams.PHASE.key()) != null
                 && (Boolean) queryOptions.get(ParamConstants.QueryParams.PHASE.key())) {
@@ -419,12 +429,14 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Variant> converter = new GenericDocumentComplexConverter<>(Variant.class);
+
+        MongoDBCollection mongoDBCollection = mongoDBCollectionByRelease.get(query.getDataRelease());
         MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<ClinicalVariant>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<ClinicalVariant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         return null;
     }
 

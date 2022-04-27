@@ -12,7 +12,7 @@ import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GeneManager;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
     private IndexManager indexManager;
-    private ReleaseManager releaseManager;
+    private DataReleaseManager dataReleaseManager;
     private String databaseName = "cellbase_hsapiens_grch37_v4";
 
     public IndexManagerTest() throws Exception {
@@ -36,11 +36,11 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
         Path path = Paths.get(getClass().getResource("/index/mongodb-indexes.json").toURI());
         indexManager = new IndexManager(databaseName, path, cellBaseConfiguration);
-        releaseManager = new ReleaseManager(databaseName, cellBaseConfiguration);
+        dataReleaseManager = new DataReleaseManager(databaseName, cellBaseConfiguration);
 
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
 
-        releaseManager.createRelease();
+        dataReleaseManager.createRelease();
         path = Paths.get(getClass().getResource("/gene/gene-test.json.gz").toURI());
         loadRunner.load(path, "gene", release);
     }
@@ -58,7 +58,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
         assertNotNull(index);
 
         CellBaseManagerFactory factory = new CellBaseManagerFactory(cellBaseConfiguration);
-        GeneManager geneManager = factory.getGeneManager("hsapiens", "grch37", dataRelease);
+        GeneManager geneManager = factory.getGeneManager("hsapiens", "grch37");
         GeneQuery query = new GeneQuery();
         query.setIds(Collections.singletonList("ENSG00000279457"));
         CellBaseDataResult<Gene> result = geneManager.search(query);

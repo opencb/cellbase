@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.XRefMongoDBAdaptor;
 
@@ -26,13 +25,13 @@ public class XrefManager extends AbstractManager implements FeatureApi {
 
     private XRefMongoDBAdaptor xRefDBAdaptor;
 
-    public XrefManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public XrefManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public XrefManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+    public XrefManager(String species, String assembly, CellBaseConfiguration configuration)
             throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+        super(species, assembly, configuration);
 
         this.init();
     }

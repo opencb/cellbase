@@ -53,22 +53,29 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        dataRelease = null;
+        clearDB(CELLBASE_DBNAME);
 
-        clearDB(GRCH37_DBNAME);
+        createDataRelease();
+        dataRelease = 1;
+
         Path path = Paths.get(getClass().getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info");
+        loadRunner.load(path, "genome_info", dataRelease);
+        updateDataRelease(dataRelease, "genome_info", Collections.emptyList());
+
         path = Paths.get(getClass().getResource("/genome/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
-        genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38", dataRelease);
+        loadRunner.load(path, "genome_sequence", dataRelease);
+        updateDataRelease(dataRelease, "genome_sequence", Collections.emptyList());
+
+        genomeManager = cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY);
     }
 
     @Test
     public void getChromosomeInfo() throws Exception {
         GenomeQuery query = new GenomeQuery();
         query.setNames(Collections.singletonList("1"));
+        query.setDataRelease(dataRelease);
         CellBaseDataResult<Chromosome> cellBaseDataResult = genomeManager.search(query);
-        logger.error("cellBaseDataResult.getResults()" + cellBaseDataResult.getResults().size());
+        logger.error("cellBaseDataResult.getResults().size() = " + cellBaseDataResult.getResults().size());
         Chromosome chromosome = cellBaseDataResult.getResults().get(0);
         assertEquals("1", chromosome.getName());
         assertEquals(248956422, chromosome.getSize());
@@ -76,20 +83,20 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void getGenomicSequence() {
-        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions(), dataRelease);
         assertEquals(StringUtils.repeat("N", 1999), cellBaseDataResult.getResults().get(0).getSequence());
 
-        cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions());
+        cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions(), dataRelease);
         assertEquals("GAGAAAAAACC", cellBaseDataResult.getResults().get(0).getSequence());
 
-        cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions());
+        cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions(), dataRelease);
         assertEquals("TTCATTTTTAGATT", cellBaseDataResult.getResults().get(0).getSequence());
     }
 
     @Test
     public void testGenomicSequenceChromosomeNotPresent() {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
-                .getSequence(new Region("1234:1-1999"), new QueryOptions());
+                .getSequence(new Region("1234:1-1999"), new QueryOptions(), dataRelease);
         assertEquals(0, cellBaseDataResult.getNumResults());
     }
 
@@ -97,18 +104,18 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void testGenomicSequenceQueryOutOfBounds() {
         // Both start & end out of the right bound
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
-                .getSequence(new Region("17", 73973989, 73974999), new QueryOptions());
+                .getSequence(new Region("17", 73973989, 73974999), new QueryOptions(), dataRelease);
         assertEquals(0, cellBaseDataResult.getNumResults());
 
         // start within the bounds, end out of the right bound. Should return last 10 nts.
-        cellBaseDataResult = genomeManager.getSequence(new Region("17", 63973989, 63974999), new QueryOptions());
+        cellBaseDataResult = genomeManager.getSequence(new Region("17", 63973989, 63974999), new QueryOptions(), dataRelease);
         assertEquals(1, cellBaseDataResult.getNumResults());
         assertEquals("TCAAGACCAGC", cellBaseDataResult.getResults().get(0).getSequence());
 
         // Start out of the left bound, end in bound. should return nts.
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("count", "true");
-        cellBaseDataResult = genomeManager.getSequence(new Region("17", 63960000, 63970000), queryOptions);
+        cellBaseDataResult = genomeManager.getSequence(new Region("17", 63960000, 63970000), queryOptions, dataRelease);
         assertEquals(1, cellBaseDataResult.getNumResults());
     }
 
@@ -116,7 +123,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testGetCytoband() {
         List<Region> regions = Arrays.asList(new Region("19:55799900-55803000"), new Region("11:121300000-124030001"));
-        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = genomeManager.getCytobands(regions);
+        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = genomeManager.getCytobands(regions, dataRelease);
 
         assertEquals(2, cellBaseDataResultList.size());
         CellBaseDataResult<Cytoband> result = cellBaseDataResultList.get(0);

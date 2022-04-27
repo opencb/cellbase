@@ -16,9 +16,10 @@
 
 package org.opencb.cellbase.lib;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.release.DataRelease;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,10 +39,13 @@ import java.util.List;
  */
 public class GenericMongoDBAdaptorTest {
 
-    protected DataRelease dataRelease;
+    protected int dataRelease = 1;
 
     private static final String LOCALHOST = "localhost:27017";
-    protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
+    protected static final String SPECIES = "hsapiens";
+    protected static final String ASSEMBLY = "grch37";
+    protected static final String API_VERSION = "v4";
+    protected static final String CELLBASE_DBNAME = "cellbase_" + SPECIES + "_" + ASSEMBLY + "_" + API_VERSION;
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
@@ -54,7 +59,7 @@ public class GenericMongoDBAdaptorTest {
         cellBaseConfiguration = CellBaseConfiguration.load(
                 GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
+        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
         cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
     }
@@ -67,6 +72,14 @@ public class GenericMongoDBAdaptorTest {
             mongoManager.get(dbName, mongoDBConfiguration);
             mongoManager.drop(dbName);
         }
+    }
+
+    protected void createDataRelease() throws CellBaseException, JsonProcessingException {
+        cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY).createRelease();
+    }
+
+    protected void updateDataRelease(int dataRelease, String data, List<Path> sources) throws CellBaseException, JsonProcessingException {
+        cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY).update(dataRelease, data, sources);
     }
 
     protected CellBaseDataResult<Variant> getByVariant(List<CellBaseDataResult<Variant>> variantCellBaseDataResultList, Variant variant) {

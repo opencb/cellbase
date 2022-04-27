@@ -35,17 +35,17 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ReleaseManager extends AbstractManager {
+public class DataReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
 
-    public ReleaseManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
-        super(databaseName, null, configuration);
+    public DataReleaseManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
+        super(databaseName, configuration);
 
         init();
     }
 
-    public ReleaseManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
-        super(species, assembly, null, configuration);
+    public DataReleaseManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+        super(species, assembly, configuration);
 
         init();
     }

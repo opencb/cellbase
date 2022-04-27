@@ -29,7 +29,7 @@ import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;
@@ -131,8 +131,8 @@ public class MetaWSServer extends GenericRestWSServer {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
-            ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
-            CellBaseDataResult<DataRelease> result = releaseManager.getReleases();
+            DataReleaseManager dataReleaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
+            CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
             if (onlyDefault) {
                 for (DataRelease release : result.getResults()) {
                     if (release.isActiveByDefault()) {

@@ -21,7 +21,6 @@ import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
@@ -35,13 +34,13 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
 
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
-    public TranscriptManager(String species, DataRelease dataRelease, CellBaseConfiguration configuration) throws CellBaseException {
-        this(species, null, dataRelease, configuration);
+    public TranscriptManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
+        this(species, null, configuration);
     }
 
-    public TranscriptManager(String species, String assembly, DataRelease dataRelease, CellBaseConfiguration configuration)
+    public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration)
             throws CellBaseException {
-        super(species, assembly, dataRelease, configuration);
+        super(species, assembly, configuration);
 
         this.init();
     }
@@ -55,8 +54,8 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return transcriptDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source) {
-        return transcriptDBAdaptor.info(ids, query, source);
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease) {
+        return transcriptDBAdaptor.info(ids, query, source, dataRelease);
     }
 
 

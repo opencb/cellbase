@@ -17,22 +17,19 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 public class MongoDBAdaptorFactory {
 
-    private final DataRelease dataRelease;
     private final MongoDataStore mongoDatastore;
 
-    public MongoDBAdaptorFactory(DataRelease dataRelease, MongoDataStore mongoDatastore) {
-        this.dataRelease = dataRelease;
+    public MongoDBAdaptorFactory(MongoDataStore mongoDatastore) {
         this.mongoDatastore = mongoDatastore;
     }
 
     public GenomeMongoDBAdaptor getGenomeDBAdaptor() {
-        return new GenomeMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new GenomeMongoDBAdaptor(mongoDatastore);
     }
 
     @Deprecated
@@ -45,49 +42,49 @@ public class MongoDBAdaptorFactory {
     }
 
     public GeneMongoDBAdaptor getGeneDBAdaptor() {
-        return new GeneMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new GeneMongoDBAdaptor(mongoDatastore);
     }
 
     public TranscriptMongoDBAdaptor getTranscriptDBAdaptor() {
-        return new TranscriptMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new TranscriptMongoDBAdaptor(mongoDatastore);
     }
 
     public ProteinMongoDBAdaptor getProteinDBAdaptor() {
-        return new ProteinMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new ProteinMongoDBAdaptor(mongoDatastore);
     }
 
     public XRefMongoDBAdaptor getXRefDBAdaptor() {
-        return new XRefMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new XRefMongoDBAdaptor(mongoDatastore);
     }
 
     public VariantMongoDBAdaptor getVariationDBAdaptor() {
-        return new VariantMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new VariantMongoDBAdaptor(mongoDatastore);
     }
 
     public ClinicalMongoDBAdaptor getClinicalDBAdaptor(GenomeManager genomeManager) throws CellBaseException {
         // FIXME temporarily add config so we can get to the manager. this should be removed when we move all
         // methods to the manager.
-        return new ClinicalMongoDBAdaptor(dataRelease, mongoDatastore, genomeManager);
+        return new ClinicalMongoDBAdaptor(mongoDatastore, genomeManager);
     }
 
     public RepeatsMongoDBAdaptor getRepeatsDBAdaptor() {
-        return new RepeatsMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new RepeatsMongoDBAdaptor(mongoDatastore);
     }
 
     public OntologyMongoDBAdaptor getOntologyMongoDBAdaptor() {
-        return new OntologyMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new OntologyMongoDBAdaptor(mongoDatastore);
     }
 
     public RegulationMongoDBAdaptor getRegulationDBAdaptor() {
-        return new RegulationMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new RegulationMongoDBAdaptor(mongoDatastore);
     }
 
     public MissenseVariationFunctionalScoreMongoDBAdaptor getMissenseVariationFunctionalScoreMongoDBAdaptor() {
-        return new MissenseVariationFunctionalScoreMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new MissenseVariationFunctionalScoreMongoDBAdaptor(mongoDatastore);
     }
 
     public SpliceScoreMongoDBAdaptor getSpliceScoreDBAdaptor() {
-        return new SpliceScoreMongoDBAdaptor(dataRelease, mongoDatastore);
+        return new SpliceScoreMongoDBAdaptor(mongoDatastore);
     }
 
     @Override

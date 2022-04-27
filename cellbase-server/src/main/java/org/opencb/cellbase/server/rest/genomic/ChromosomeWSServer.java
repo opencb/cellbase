@@ -23,7 +23,6 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.release.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GenomeManager;
@@ -68,9 +67,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
 
-        DataRelease dr = getDataRelease(species, assembly, dataRelease, cellBaseConfiguration);
-
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly, dr);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @GET
@@ -109,7 +106,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             logger.info("/search GenomeQuery: {}", query.toString());
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -152,7 +149,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             required = true) String chromosomes) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes,
+                    query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

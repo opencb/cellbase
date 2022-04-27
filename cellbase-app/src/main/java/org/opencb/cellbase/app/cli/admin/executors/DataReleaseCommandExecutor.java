@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.lib.managers.ReleaseManager;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
 public class DataReleaseCommandExecutor extends CommandExecutor {
 
@@ -45,12 +45,12 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
         checkParameters();
 
         try {
-            ReleaseManager releaseManager = new ReleaseManager(database, configuration);
+            DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
             if (dataReleaseCommandOptions.create) {
-                releaseManager.createRelease();
+                dataReleaseManager.createRelease();
             } else if (dataReleaseCommandOptions.activeByDefault > 0) {
-                releaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
+                dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
             }
         } catch (Exception e) {
             e.printStackTrace();
