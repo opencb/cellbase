@@ -61,7 +61,7 @@ rest:
   war: cellbase
 
   image:
-    repository: "opencb/cellbase-rest:5.1.0-SNAPSHOT"
+    repository: "opencb/cellbase-base:5.1.0-SNAPSHOT"
     pullPolicy: IfNotPresent
 
   imagePullSecrets: []

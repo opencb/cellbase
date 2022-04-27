@@ -30,7 +30,9 @@ spec:
             {{- toYaml .Values.rest.securityContext | nindent 12 }}
           image: {{ tpl .Values.rest.image.repository . | quote }}
           imagePullPolicy: {{ .Values.rest.image.pullPolicy }}
-#          command: ["./bin/cellbase-admin.sh", "server", "--start"]
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - "/opt/cellbase/bin/cellbase-admin.sh server --start"
           env:
             - name: "CELLBASE_HOME"
               value: "/opt/cellbase"
