@@ -224,15 +224,19 @@ function deployNginx() {
 }
 
 function deployMongodbOperator() {
-  NAME="mongodb-operator${NAME_SUFFIX}"
-  DATE=$(date "+%Y%m%d%H%M%S")
-  ./charts/mongodb-operator/fetch-mongodb-operator-files.sh
+  NAME="mongodb-community-operator${NAME_SUFFIX}"
+  helm repo add mongodb https://mongodb.github.io/helm-charts
+  helm repo update
+  MONGODB_OPERATOR_VERSION="${MONGODB_OPERATOR_VERSION:-v0.7.2}"
 
-  helm upgrade "${NAME}" charts/mongodb-operator \
+  helm upgrade "${NAME}" mongodb/community-operator \
+    -f charts/mongodb-operator/values.yaml \
+    --set "namespace=${K8S_NAMESPACE}" \
     --values "${HELM_VALUES_FILE}" \
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
+
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest-${DATE}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest${FILE_NAME_SUFFIX}.yaml"
   fi
 }
 

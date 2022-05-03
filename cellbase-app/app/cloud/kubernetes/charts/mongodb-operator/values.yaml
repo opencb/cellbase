@@ -1,1 +1,8 @@
+operator:
+  watchNamespace: "*"
 
+createResource: false
+resource:
+  tls:
+    enabled: false
+    useCertManager: false
