@@ -227,10 +227,10 @@ function deployMongodbOperator() {
   NAME="mongodb-community-operator${NAME_SUFFIX}"
   helm repo add mongodb https://mongodb.github.io/helm-charts
   helm repo update
-  MONGODB_OPERATOR_VERSION="${MONGODB_OPERATOR_VERSION:-v0.7.2}"
 
   helm upgrade "${NAME}" mongodb/community-operator \
     -f charts/mongodb-operator/values.yaml \
+    --version 0.7.3 \
     --set "namespace=${K8S_NAMESPACE}" \
     --values "${HELM_VALUES_FILE}" \
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
