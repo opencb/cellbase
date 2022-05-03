@@ -236,3 +236,15 @@ load:
   tolerations: []
 
   affinity: {}
+
+
+tls:
+  publicIssuer:
+    ## WARNING!
+    ##  Manual steps involved to enable public certificate issuer
+    enabled: false
+    # Issuer or ClusterIssuer
+    type: Issuer
+    name: letsencrypt-prod
+    acme:
+      email: # REQUIRED
