@@ -27,6 +27,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.LoadCommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;

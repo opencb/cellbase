@@ -522,6 +522,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         // SpliceAI scores
         loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY));
 
+        /////////// for purpose
+        System.exit(-1);
+
         // Create index
         createIndex("splice_score");
 

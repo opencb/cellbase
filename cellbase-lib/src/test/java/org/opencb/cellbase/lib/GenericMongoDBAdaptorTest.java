@@ -21,10 +21,13 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +83,12 @@ public class GenericMongoDBAdaptorTest {
 
     protected void updateDataRelease(int dataRelease, String data, List<Path> sources) throws CellBaseException, JsonProcessingException {
         cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY).update(dataRelease, data, sources);
+    }
+
+    protected void createEmptyCollection(String data, int dataRelease) {
+        MongoDBManager mongoDBManager = new MongoDBManager(cellBaseConfiguration);
+        MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore(CELLBASE_DBNAME);
+        mongoDataStore.createCollection(CellBaseDBAdaptor.buildCollectionName(data, dataRelease));
     }
 
     protected CellBaseDataResult<Variant> getByVariant(List<CellBaseDataResult<Variant>> variantCellBaseDataResultList, Variant variant) {
