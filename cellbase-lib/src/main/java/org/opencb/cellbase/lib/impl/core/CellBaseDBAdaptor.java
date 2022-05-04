@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -38,23 +39,31 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
 
     public Map<Integer, MongoDBCollection> buildCollectionByReleaseMap(String data) {
         Map<Integer, MongoDBCollection> collectionMap = new HashMap<>();
-        for (DataRelease dataRelease : dataReleases) {
-            if (dataRelease.getCollections().containsKey(data)) {
-                String collectionName = dataRelease.getCollections().get(data);
-                collectionMap.put(dataRelease.getRelease(), mongoDataStore.getCollection(collectionName));
-                if (dataRelease.isActiveByDefault()) {
-                    collectionMap.put(0, mongoDataStore.getCollection(collectionName));
+        if (CollectionUtils.isNotEmpty(dataReleases)) {
+            for (DataRelease dataRelease : dataReleases) {
+                if (dataRelease.getCollections().containsKey(data)) {
+                    String collectionName = dataRelease.getCollections().get(data);
+                    collectionMap.put(dataRelease.getRelease(), mongoDataStore.getCollection(collectionName));
+                    if (dataRelease.isActiveByDefault()) {
+                        // Associate the default data release to the key 0 in the map
+                        collectionMap.put(0, mongoDataStore.getCollection(collectionName));
+                    }
                 }
             }
+        } else {
+            // For backward compatibility (i.e., in case data_release collection is missing)
+            collectionMap.put(0, mongoDataStore.getCollection(data));
         }
+
         return collectionMap;
     }
 
     public MongoDBCollection getCollectionByRelease(Map<Integer, MongoDBCollection> collectionMap, Integer dataRelease) {
         int release = dataRelease == null ? 0 : dataRelease;
         if (!collectionMap.containsKey(release)) {
-            logger.error("Data release (" + release + ") not found!!");
-            return null;
+            // If the data release is invalid, it will use the default data release
+            logger.warn("Data release (" + release + ") not found. Using the default data release!!");
+            release = 0;
         }
         return collectionMap.get(release);
     }
