@@ -22,6 +22,9 @@ mongodb:
     version: "4.2.6"
     replicas: 1
 
+    certificateKeySecretRef: mongodb-tls-certificate
+
+
     volume:
       size: "2048Gi"
 
@@ -236,3 +239,22 @@ load:
   tolerations: []
 
   affinity: {}
+
+
+tls:
+  publicIssuer:
+    ## WARNING!
+    ##  Manual steps involved to enable public certificate issuer
+    enabled: false
+    # Issuer or ClusterIssuer
+    type: Issuer
+    name: letsencrypt-prod
+    acme:
+      email: # REQUIRED
+
+  privateIssuer:
+    ## Internal CA self-signed
+    enabled: true
+    selfSignedName: tls-selfsigned-issuer
+    caName: tls-ca-issuer
+    caCertificateSecretRef: tls-ca-key-pair

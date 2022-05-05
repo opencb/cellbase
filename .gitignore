@@ -29,6 +29,8 @@ target/
 *.iws
 .idea/
 
+# vscode
+*.code-workspace
 
 # Eclipse
 *.pydevproject
