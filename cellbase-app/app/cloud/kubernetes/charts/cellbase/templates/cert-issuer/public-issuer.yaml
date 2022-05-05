@@ -4,7 +4,7 @@ kind: {{ .Values.tls.publicIssuer.type }}
 metadata:
   name: {{ .Values.tls.publicIssuer.name }}
   labels:
-    {{- include "opencga.labels" . | nindent 4 }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory

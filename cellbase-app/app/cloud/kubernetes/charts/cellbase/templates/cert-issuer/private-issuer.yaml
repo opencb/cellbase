@@ -12,7 +12,7 @@ metadata:
   name: {{ .Values.tls.privateIssuer.selfSignedName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "opencga.labels" . | nindent 4 }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   selfSigned: {}
 ---
@@ -23,7 +23,7 @@ metadata:
   name: {{ .Values.tls.privateIssuer.caName }}-selfsigned-cert
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "opencga.labels" . | nindent 4 }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   isCA: true
   commonName: "*.{{ .Release.Namespace }}.svc.cluster.local"
@@ -45,7 +45,7 @@ metadata:
   name: {{ .Values.tls.privateIssuer.caName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "opencga.labels" . | nindent 4 }}
+    {{- include "cellbase.labels" . | nindent 4 }}
 spec:
   ca:
     secretName: {{ .Values.tls.privateIssuer.caCertificateSecretRef }}
