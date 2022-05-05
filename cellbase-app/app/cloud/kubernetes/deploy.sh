@@ -9,7 +9,6 @@ function printUsage() {
   echo " - nginx"
   echo " - mongodb-operator"
   echo " - cert-manager"
-  echo " - cert-issuer"
   echo " - cellbase"
   echo ""
   echo "Usage:   $(basename $0) --context <context> [options]"
@@ -193,17 +192,6 @@ function deployCertManager() {
 }
 
 
-function deployCertIssuer() {
-  NAME="cert-issuer${NAME_SUFFIX}"
-  DATE=$(date "+%Y%m%d%H%M%S")
-  helm upgrade "${NAME}" "charts/cert-issuer/" \
-  --values "${HELM_VALUES_FILE}" \
-  --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
-  if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest-${DATE}.yaml"
-  fi
-}
-
 function deployNginx() {
   # Use Helm to deploy an NGINX ingress controller
   ## Deploy in the same namespace
@@ -272,17 +260,9 @@ echo "# Deploy kubernetes"
 echo "# Configuring context $K8S_CONTEXT"
 configureContext
 
-if [[ "$WHAT" == "CERT" ]]; then
-  deployCertManager
-  deployCertIssuer
-fi
 
-if [[ "$WHAT" == "CERTMANAGER" || "$WHAT" == "ALL" ]]; then
+if [[ "$WHAT" == "CERTMANAGER" || "$WHAT" == "CERT" || "$WHAT" == "ALL" ]]; then
   deployCertManager
-fi
-
-if [[ "$WHAT" == "CERTISSUER" || "$WHAT" == "ALL" ]]; then
-  deployCertIssuer
 fi
 
 if [[ "$WHAT" == "NGINX" || "$WHAT" == "ALL" ]]; then
