@@ -1,4 +1,3 @@
----
 {{- if and .Values.mongodb.deploy.enabled  .Values.mongodb.deploy.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
