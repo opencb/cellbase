@@ -152,7 +152,7 @@ public class IndexManager {
                             myIndexes.put("options", new ObjectMap((Map) hashMap.getOrDefault("options", Collections.emptyMap())));
                             indexes.get(collection).add(myIndexes);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            logger.error(e.getMessage(), e);
                         }
                     });
         }
