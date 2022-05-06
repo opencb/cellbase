@@ -23,7 +23,10 @@ mongodb:
     replicas: 1
 
     certificateKeySecretRef: mongodb-tls-certificate
-
+    
+    serviceAccount:
+      create: true
+      name: mongodb-database
 
     volume:
       size: "2048Gi"
