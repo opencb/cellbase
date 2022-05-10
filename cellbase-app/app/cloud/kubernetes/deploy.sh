@@ -224,7 +224,7 @@ function deployMongodbOperator() {
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
 
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest${FILE_NAME_SUFFIX}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest${FILE_NAME_SUFFIX}-${DATE}.yaml"
   fi
 }
 
