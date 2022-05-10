@@ -6,6 +6,6 @@
 
 {{ if .Values.mongodb.deploy.enabled }}
     {{ if ne .Values.mongodb.replicaSet .Values.mongodb.deploy.name}}
-        {{ fail "Wrong .Values.mongodb.replicaSet. is diferent from .Values.mongodb.deploy.name"  }}
+        {{ fail "Wrong Values.mongodb.replicaSet is diferent from Values.mongodb.deploy.name"  }}
     {{ end }}
 {{ end }}
