@@ -179,15 +179,15 @@ function deployCertManager() {
   # Update your local Helm chart repository cache
   helm repo update
 
+  NAME="cellbase-cert-manager${NAME_SUFFIX}"
+  echo " Deploy CERT-MANAGER ${NAME}"
+  CERT_MANAGER_VERSION="${CERT_MANAGER_VERSION:-1.8.0}"
   # Install the cert-manager Helm chart
-  helm upgrade cert-manager jetstack/cert-manager \
+  helm upgrade ${NAME} jetstack/cert-manager \
     --install \
-    --version 1.4.0 \
     --kube-context "${K8S_CONTEXT}" --namespace "${K8S_NAMESPACE}"  \
-    --set installCRDs=true \
-    --set nodeSelector."kubernetes\.io/os"=linux \
-    --set webhook.nodeSelector."kubernetes\.io/os"=linux \
-    --set cainjector.nodeSelector."kubernetes\.io/os"=linux \
+    --version ${CERT_MANAGER_VERSION} \
+    -f charts/cert-manager/values.yaml \
     --values "${HELM_VALUES_FILE}"
 }
 
