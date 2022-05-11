@@ -31,6 +31,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -82,11 +83,13 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         return info(ids, queryOptions, null, dataRelease);
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source, int dataRelease) {
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {
@@ -106,7 +109,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public CellBaseIterator<Gene> iterator(GeneQuery query) {
+    public CellBaseIterator<Gene> iterator(GeneQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
@@ -123,21 +126,21 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
+    public CellBaseDataResult<String> distinct(GeneQuery geneQuery) throws CellBaseException {
         Bson bsonDocument = parseQuery(geneQuery);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
     @Override
-    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
+    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) throws CellBaseException {
         Bson bsonQuery = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return groupBy(bsonQuery, geneQuery, "name", mongoDBCollection);
     }
 
-    public CellBaseDataResult<Gene> startsWith(String id, QueryOptions options, int dataRelease) {
+    public CellBaseDataResult<Gene> startsWith(String id, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson regex;
         if (id.startsWith("ENSG")) {
             regex = Filters.regex("id", Pattern.compile("^" + id));
@@ -334,7 +337,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         }
     }
 
-    public CellBaseDataResult<TranscriptTfbs> getTfbs(String geneId, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<TranscriptTfbs> getTfbs(String geneId, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
 
         GeneQuery query = new GeneQuery();
         query.setIds(Collections.singletonList(geneId));

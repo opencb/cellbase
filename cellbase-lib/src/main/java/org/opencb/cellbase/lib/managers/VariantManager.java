@@ -83,7 +83,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor;
     }
 
-    public CellBaseDataResult get(Query query, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult get(Query query, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         return variantDBAdaptor.nativeGet(query, queryOptions, dataRelease);
     }
 
@@ -267,11 +267,13 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return queryResults;
     }
 
-    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         return variantDBAdaptor.getFunctionalScoreVariant(variant, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options, int dataRelease) {
+    public List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Score>> cellBaseDataResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             if (variant.getType() == VariantType.SNV) {
@@ -284,16 +286,16 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     }
 
     public List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions,
-                                                                             int dataRelease) {
+                                                                             int dataRelease) throws CellBaseException {
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, int dataRelease) {
+    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, int dataRelease) throws CellBaseException {
         return spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
                 dataRelease);
     }
 
-    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, int dataRelease) {
+    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             cellBaseDataResults.add(getSpliceScoreVariant(variant, dataRelease));

@@ -123,7 +123,7 @@ public class VariantAnnotationCalculator {
 
     @Deprecated
     public CellBaseDataResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions)
-            throws QueryException, IllegalAccessException {
+            throws QueryException, IllegalAccessException, CellBaseException {
         long dbTimeStart = System.currentTimeMillis();
 
         parseQueryParam(queryOptions);
@@ -143,7 +143,7 @@ public class VariantAnnotationCalculator {
     }
 
     public CellBaseDataResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions)
-            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
@@ -152,7 +152,7 @@ public class VariantAnnotationCalculator {
     }
 
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions)
-            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         logger.debug("Annotating  batch");
         parseQueryParam(queryOptions);
 
@@ -248,7 +248,8 @@ public class VariantAnnotationCalculator {
         return variantCellBaseDataResult.first();
     }
 
-    private List<Gene> setGeneAnnotation(List<Gene> geneList, Variant variant) throws QueryException, IllegalAccessException {
+    private List<Gene> setGeneAnnotation(List<Gene> geneList, Variant variant)
+            throws QueryException, IllegalAccessException, CellBaseException {
         // Fetch overlapping genes for this variant
         VariantAnnotation variantAnnotation = variant.getAnnotation();
 
@@ -399,7 +400,7 @@ public class VariantAnnotationCalculator {
         return geneList;
     }
 
-    private List<GeneMirnaTarget> getTargets(Gene mirna) throws QueryException, IllegalAccessException {
+    private List<GeneMirnaTarget> getTargets(Gene mirna) throws QueryException, IllegalAccessException, CellBaseException {
         List<String> mirnas = new ArrayList<>();
         for (MiRnaMature mature : mirna.getMirna().getMatures()) {
             if (mature.getId() != null) {
@@ -448,7 +449,7 @@ public class VariantAnnotationCalculator {
 //    }
 
     private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, int dataRelease)
-            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         long globalStartTime = System.currentTimeMillis();
 
         // Object to be returned
@@ -647,7 +648,7 @@ public class VariantAnnotationCalculator {
     }
 
     public List<Gene> getBatchGeneList(List<Variant> variantList)
-            throws QueryException, IllegalAccessException {
+            throws QueryException, IllegalAccessException, CellBaseException {
         List<Region> regionList = variantListToRegionList(variantList);
         // Add +-5Kb for gene search
         for (Region region : regionList) {
@@ -765,7 +766,8 @@ public class VariantAnnotationCalculator {
 //        }
 //    }
 
-    private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer, int dataRelease) {
+    private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer, int dataRelease)
+            throws CellBaseException {
         // Only SNVs are currently considered for phase adjustment
         if (variant.getType().equals(VariantType.SNV)) {
             // Check and manage variantBuffer for dealing with phased variants
@@ -800,7 +802,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private void adjustPhasedConsequenceTypes(Object[] variantArray, int dataRelease) {
+    private void adjustPhasedConsequenceTypes(Object[] variantArray, int dataRelease) throws CellBaseException {
         Variant variant0 = (Variant) variantArray[0];
         Variant variant1 = null;
         Variant variant2 = null;
@@ -1233,7 +1235,8 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private ProteinVariantAnnotation getProteinAnnotation(Variant variant, ConsequenceType consequenceType, int dataRelease) {
+    private ProteinVariantAnnotation getProteinAnnotation(Variant variant, ConsequenceType consequenceType, int dataRelease)
+            throws CellBaseException {
         ProteinVariantAnnotation proteinVariantAnnotation = null;
         if (consequenceType.getProteinVariantAnnotation() != null) {
             String transcriptId = consequenceType.getTranscriptId();
@@ -1287,7 +1290,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(Variant variant) throws QueryException, IllegalAccessException {
+    private boolean[] getRegulatoryRegionOverlaps(Variant variant) throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
@@ -1320,7 +1323,8 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) throws QueryException, IllegalAccessException {
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position)
+            throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
@@ -1347,7 +1351,7 @@ public class VariantAnnotationCalculator {
     }
 
     private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end)
-            throws QueryException, IllegalAccessException {
+            throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
@@ -1393,7 +1397,7 @@ public class VariantAnnotationCalculator {
 
     private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList, boolean regulatoryAnnotation,
                                                          QueryOptions queryOptions, int dataRelease)
-            throws QueryException, IllegalAccessException {
+            throws QueryException, IllegalAccessException, CellBaseException {
         boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);

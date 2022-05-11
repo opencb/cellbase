@@ -21,6 +21,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -44,7 +45,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
+                                     QueryOptions queryOptions) throws CellBaseException {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getStart() + variant.getReference().length() - 1;
@@ -118,7 +119,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     protected void solveCodingExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Boolean codingAnnotationAdded = false;
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -155,7 +156,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     private void solveStopCodonNegativeMNV(String transcriptSequence, int cdnaCodingStart,
-                                           int cdnaVariantStart, int cdnaVariantEnd) {
+                                           int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -240,7 +241,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     protected void solveCodingExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
 
@@ -278,7 +279,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     private void solveStopCodonPositiveMNV(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                           int cdnaVariantEnd) {
+                                           int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;

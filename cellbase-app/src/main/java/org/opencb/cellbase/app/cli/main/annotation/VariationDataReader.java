@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.cli.main.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -55,7 +56,11 @@ public class VariationDataReader implements DataReader<Variant> {
     }
 
     public boolean pre() {
-        this.iterator = dbAdaptor.iterator(query, options, dataRelease);
+        try {
+            this.iterator = dbAdaptor.iterator(query, options, dataRelease);
+        } catch (CellBaseException e) {
+            e.printStackTrace();
+        }
 
         return this.iterator != null;
     }

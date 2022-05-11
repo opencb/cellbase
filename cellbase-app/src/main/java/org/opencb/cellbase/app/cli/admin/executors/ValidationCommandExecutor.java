@@ -163,7 +163,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
             matchWriter.close();
 
             writeResultsSummary(resultsWriter);
-        } catch (IOException | InterruptedException | ExecutionException | IllegalAccessException | QueryException e) {
+        } catch (IOException | InterruptedException | ExecutionException | IllegalAccessException | QueryException | CellBaseException e) {
             e.printStackTrace();
         }
     }

@@ -22,6 +22,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -91,7 +92,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public CellBaseIterator<RegulatoryFeature> iterator(RegulationQuery query) {
+    public CellBaseIterator<RegulatoryFeature> iterator(RegulationQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
@@ -106,7 +107,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(RegulationQuery query) {
+    public CellBaseDataResult<String> distinct(RegulationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -58,12 +59,14 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
         return collectionMap;
     }
 
-    public MongoDBCollection getCollectionByRelease(Map<Integer, MongoDBCollection> collectionMap, Integer dataRelease) {
+    public MongoDBCollection getCollectionByRelease(Map<Integer, MongoDBCollection> collectionMap, Integer dataRelease)
+            throws CellBaseException {
         int release = dataRelease == null ? 0 : dataRelease;
         if (!collectionMap.containsKey(release)) {
-            // If the data release is invalid, it will use the default data release
-            logger.warn("Data release (" + release + ") not found. Using the default data release!!");
-            release = 0;
+            // If the data release is invalid, throw an exception
+            String msg = "Data not found in release " + release + " not found!";
+            logger.error(msg);
+            throw new CellBaseException(msg);
         }
         return collectionMap.get(release);
     }

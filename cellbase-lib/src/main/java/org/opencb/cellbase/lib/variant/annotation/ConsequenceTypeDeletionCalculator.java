@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -46,7 +47,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
+                                     QueryOptions queryOptions) throws CellBaseException {
         parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
@@ -133,7 +134,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantEnd > transcript.getGenomicCodingEnd()) {
             if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
                 SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
@@ -198,7 +200,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     }
 
     private void solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                                int cdnaVariantEnd) {
+                                                int cdnaVariantEnd) throws CellBaseException {
         // Not necessary to include % 3 since if we get here we already know that the difference is < 3
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         // Get reference codon
@@ -243,7 +245,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantStart < transcript.getGenomicCodingStart()) {
             // Check transcript has 3 UTR
             if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedStart()) {
@@ -309,7 +312,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     }
 
     private void solveStartCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                                  int cdnaVariantEnd) {
+                                                  int cdnaVariantEnd) throws CellBaseException {
         // Not necessary to include % 3 since if we get here we already know that the difference is < 3
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
@@ -351,7 +354,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveCodingExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Boolean codingAnnotationAdded = false;
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -391,7 +394,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveStopCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart,
-                                               int cdnaVariantStart, int cdnaVariantEnd) {
+                                               int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -476,7 +479,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveCodingExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
 
@@ -516,7 +519,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveStopCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                               int cdnaVariantEnd) {
+                                               int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;

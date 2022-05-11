@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.Event;
@@ -30,7 +31,7 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     int MAX_ROWS = 50000;
 
-    default CellBaseDataResult<T> query(Q query) {
+    default CellBaseDataResult<T> query(Q query) throws CellBaseException {
         List<T> results = new ArrayList<>();
         long time = System.currentTimeMillis();
         CellBaseIterator<T> iterator = iterator(query);
@@ -60,7 +61,7 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
         return result;
     }
 
-    default List<CellBaseDataResult<T>> query(List<Q> queries) {
+    default List<CellBaseDataResult<T>> query(List<Q> queries) throws CellBaseException {
         List<CellBaseDataResult<T>> results = new ArrayList<>();
         for (Q query : queries) {
             results.add(query(query));
@@ -70,12 +71,17 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     @Override
     default CellBaseIterator<T> iterator() {
-        return iterator(null);
+        try {
+            return iterator(null);
+        } catch (CellBaseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    CellBaseIterator<T> iterator(Q query);
+    CellBaseIterator<T> iterator(Q query) throws CellBaseException;
 
-    default CellBaseDataResult<Long> count(Q query) {
+    default CellBaseDataResult<Long> count(Q query) throws CellBaseException {
         query.setCount(true);
         query.setSkip(0);
         query.setLimit(0);
@@ -87,9 +93,9 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     CellBaseDataResult<T> aggregationStats(Q query);
 
-    CellBaseDataResult<T> groupBy(Q query);
+    CellBaseDataResult<T> groupBy(Q query) throws CellBaseException;
 
-    CellBaseDataResult<String> distinct(Q query);
+    CellBaseDataResult<String> distinct(Q query) throws CellBaseException;
 
-    List<CellBaseDataResult<T>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease);
+    List<CellBaseDataResult<T>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) throws CellBaseException;
 }

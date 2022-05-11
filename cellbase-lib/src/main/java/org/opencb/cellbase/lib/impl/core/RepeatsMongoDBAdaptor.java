@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.RepeatsQuery;
@@ -87,7 +88,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public CellBaseIterator iterator(RepeatsQuery query) {
+    public CellBaseIterator iterator(RepeatsQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);

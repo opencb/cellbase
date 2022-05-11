@@ -67,7 +67,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     }
 
     public CellBaseDataResult getSubstitutionScores(TranscriptQuery query, Integer position, String aa)
-            throws JsonProcessingException {
+            throws JsonProcessingException, CellBaseException {
         // Fetch Ensembl transcriptId to query substiturion scores
         logger.info("Searching transcripts for {}", query.getTranscriptsXrefs());
         CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.query(query);
@@ -84,7 +84,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         }
     }
 
-    public CellBaseDataResult<String> getSequence(ProteinQuery query) {
+    public CellBaseDataResult<String> getSequence(ProteinQuery query) throws CellBaseException {
         List<String> includes = new ArrayList<>();
         includes.add("sequence.value");
         query.setIncludes(includes);
@@ -100,7 +100,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
 
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int aaPosition,
                                                                              String aaReference, String aaAlternate, QueryOptions options,
-                                                                             int dataRelease) {
+                                                                             int dataRelease) throws CellBaseException {
         CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
                 aaPosition, aaReference, aaAlternate, options, dataRelease);
         CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> revelResults =

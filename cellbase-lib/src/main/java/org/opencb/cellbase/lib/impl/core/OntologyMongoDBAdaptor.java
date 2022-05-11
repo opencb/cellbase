@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
@@ -58,7 +59,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) {
+    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
@@ -69,7 +70,8 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -89,7 +91,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(OntologyQuery query) {
+    public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
@@ -101,7 +103,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseDataResult groupBy(OntologyQuery query) {
+    public CellBaseDataResult groupBy(OntologyQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());

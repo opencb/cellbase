@@ -57,7 +57,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         return clinicalDBAdaptor;
     }
 
-    public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) {
+    public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) throws CellBaseException {
         return clinicalDBAdaptor.nativeGet(query, queryOptions);
     }
 
@@ -97,7 +97,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     }
 
     public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
-                                                          QueryOptions queryOptions, int dataRelease) {
+                                                          QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         return clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
     }
 }

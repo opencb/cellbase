@@ -32,6 +32,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -76,12 +77,12 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         conservationMongoDBCollectionByRelease = buildCollectionByReleaseMap("conservation");
     }
 
-    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(new Document(), queryOptions));
     }
 
-    public CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         if (queryOptions == null) {
             queryOptions = new QueryOptions("include", Collections.singletonList("chromosomes.$"));
         } else {
@@ -92,7 +93,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         return executeQuery(chromosomeId, dbObject, queryOptions, mongoDBCollection);
     }
 
-    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         List<Cytoband> cytobandList = new ArrayList<>();
         long dbStartTime = System.currentTimeMillis();
         long dbTime = System.currentTimeMillis() - dbStartTime;
@@ -127,11 +128,12 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
 
     }
 
-    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, int dataRelease) {
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, int dataRelease) throws CellBaseException {
         return getCytobands(regionList, null, dataRelease);
     }
 
-    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = new ArrayList<>(regionList.size());
         for (Region region : regionList) {
             cellBaseDataResultList.add(getCytobands(region, queryOptions, dataRelease));
@@ -167,11 +169,13 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
 //    }
 
     @Deprecated
-    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         return getSequence(Region.parseRegion(query.getString("region")), queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         Query query = new Query("region", region.toString());
         CellBaseDataResult<Document> cellBaseDataResult = nativeGet(query, queryOptions, dataRelease);
         List<Document> cellBaseDataResultList = cellBaseDataResult.getResults();
@@ -217,7 +221,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regionList, QueryOptions options,
-                                                                               int dataRelease) {
+                                                                               int dataRelease) throws CellBaseException {
         //TODO not finished yet
         List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regionList.size());
@@ -307,7 +311,8 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         return conservationCellBaseDataResults;
     }
 
-    public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options, int dataRelease) {
+    public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options, int dataRelease)
+            throws CellBaseException {
         //TODO not finished yet
         List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regionList.size());
@@ -426,7 +431,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     @Deprecated
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -448,7 +453,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     @Override
-    public CellBaseIterator<Chromosome> iterator(GenomeQuery query) {
+    public CellBaseIterator<Chromosome> iterator(GenomeQuery query) throws CellBaseException {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Chromosome> converter = new GenericDocumentComplexConverter<>(Chromosome.class);
@@ -499,7 +504,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     @Override
-    public CellBaseDataResult groupBy(GenomeQuery query) {
+    public CellBaseDataResult groupBy(GenomeQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("query: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
@@ -507,14 +512,15 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(GenomeQuery query) {
+    public CellBaseDataResult<String> distinct(GenomeQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Override
-    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         for (String id : ids) {

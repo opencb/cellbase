@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +32,8 @@ public interface VariantAnnotator {
 
     boolean open();
 
-    void run(List<Variant> variantList) throws InterruptedException, ExecutionException, QueryException, IllegalAccessException;
+    void run(List<Variant> variantList) throws InterruptedException, ExecutionException, QueryException, IllegalAccessException,
+            CellBaseException;
 
     boolean close();
 

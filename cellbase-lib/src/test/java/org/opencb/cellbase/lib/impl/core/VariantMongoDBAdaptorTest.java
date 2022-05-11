@@ -24,6 +24,7 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.VariantManager;
@@ -276,7 +277,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGet() {
+    public void testGet() throws CellBaseException {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);

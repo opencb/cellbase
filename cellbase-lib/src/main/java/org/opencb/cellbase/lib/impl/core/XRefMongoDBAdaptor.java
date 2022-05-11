@@ -22,6 +22,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.XrefQuery;
@@ -56,7 +57,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public CellBaseIterator<Xref> iterator(XrefQuery query) {
+    public CellBaseIterator<Xref> iterator(XrefQuery query) throws CellBaseException {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
@@ -66,7 +67,8 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Xref>> results = new ArrayList<>();
         for (String id : ids) {
             XrefQuery query = getInfoQuery(queryOptions, dataRelease);

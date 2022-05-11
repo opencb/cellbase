@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -38,7 +39,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     protected static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
+                                     QueryOptions queryOptions) throws CellBaseException {
         parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
@@ -235,7 +236,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    protected void solveCodingNegativeTranscript() {
+    protected void solveCodingNegativeTranscript() throws CellBaseException {
         Exon exon = transcript.getExons().get(0);
         int exonSize = exon.getEnd() - exon.getStart() + 1;
         String exonStringSuffix = "/" + transcript.getExons().size();
@@ -339,7 +340,8 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantEnd > transcript.getGenomicCodingEnd()) {
             if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
                 SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
@@ -382,7 +384,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveCodingExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Boolean codingAnnotationAdded = false;
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -420,7 +422,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveStopCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart,
-                                                 int cdnaVariantStart, int cdnaVariantEnd) {
+                                                 int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -498,7 +500,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         }
     }
 
-    protected void solveCodingPositiveTranscript() {
+    protected void solveCodingPositiveTranscript() throws CellBaseException {
         Exon exon = transcript.getExons().get(0);
         int exonSize = exon.getEnd() - exon.getStart() + 1;
         String exonStringSuffix = "/" + transcript.getExons().size();
@@ -602,7 +604,8 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantStart < transcript.getGenomicCodingStart()) {
             // Check transcript has 3 UTR
             if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedStart()) {
@@ -646,7 +649,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveCodingExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
 
@@ -684,7 +687,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveStopCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                                 int cdnaVariantEnd) {
+                                                 int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;

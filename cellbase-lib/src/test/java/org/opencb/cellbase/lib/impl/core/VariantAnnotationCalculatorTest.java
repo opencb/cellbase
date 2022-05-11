@@ -28,6 +28,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
@@ -1236,7 +1237,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     @Disabled
-    public void testDebug() throws QueryException, IllegalAccessException, IOException {
+    public void testDebug() throws QueryException, IllegalAccessException, IOException, CellBaseException {
         CellBaseDataResult<ConsequenceType> consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 33167329, "AC", "TT"),
                         new QueryOptions("normalize", false));
@@ -1245,7 +1246,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException, QueryException, IllegalAccessException {
+    public void testGetAllConsequenceTypesByVariant() throws IOException, QueryException, IllegalAccessException, CellBaseException {
 
 
 //        try {

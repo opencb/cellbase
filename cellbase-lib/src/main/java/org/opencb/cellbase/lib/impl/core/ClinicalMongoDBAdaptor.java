@@ -100,7 +100,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return null;
     }
 
-    public CellBaseDataResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) throws CellBaseException {
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
@@ -108,7 +108,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
-    public CellBaseDataResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) throws CellBaseException {
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
@@ -121,7 +121,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 //        return null;
 //    }
 
-    public CellBaseDataResult<Variant> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<Variant> get(Query query, QueryOptions options) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
@@ -133,7 +133,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
@@ -149,7 +149,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return null;
     }
 
-    public Iterator nativeIterator(Query query, QueryOptions options) {
+    public Iterator nativeIterator(Query query, QueryOptions options) throws CellBaseException {
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
@@ -157,7 +157,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
-    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) throws CellBaseException {
         Objects.requireNonNull(action);
         Iterator iterator = nativeIterator(query, options);
         while (iterator.hasNext()) {
@@ -306,7 +306,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         }
     }
 
-    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) {
+    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) throws CellBaseException {
 
         List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
@@ -334,7 +334,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 
     }
 
-    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) {
+    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions, int dataRelease) throws CellBaseException {
 
         List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents
@@ -356,7 +356,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     private CellBaseDataResult<Variant> getClinicalVariant(Variant variant, GenomeManager genomeManager, List<Gene> geneList,
-                                                           QueryOptions options, int dataRelease) {
+                                                           QueryOptions options, int dataRelease) throws CellBaseException {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(ParamConstants.QueryParams.CHROMOSOME.key(), variant.getChromosome())
@@ -410,12 +410,13 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         return proteinHgvsList;
     }
 
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         return this.getByVariant(variants, null, queryOptions, dataRelease);
     }
 
     public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList, QueryOptions queryOptions,
-                                                          int dataRelease) {
+                                                          int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             results.add(getClinicalVariant(variant, genomeManager, geneList, queryOptions, dataRelease));
@@ -429,7 +430,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseIterator iterator(ClinicalVariantQuery query) {
+    public CellBaseIterator iterator(ClinicalVariantQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);

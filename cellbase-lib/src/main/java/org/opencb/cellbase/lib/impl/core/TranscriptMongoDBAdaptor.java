@@ -30,6 +30,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
@@ -68,7 +69,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
+    public CellBaseIterator<Transcript> iterator(TranscriptQuery query) throws CellBaseException {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         MongoDBIterator<Transcript> iterator;
@@ -83,12 +84,13 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease)
+            throws CellBaseException {
         return info(ids, projectionQueryOptions, null, dataRelease);
     }
 
     public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source,
-                                                     int dataRelease) {
+                                                     int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
@@ -155,7 +157,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         return Arrays.asList(match, include, unwind, match2, project);
     }
 
-    public CellBaseDataResult<Long> count(TranscriptQuery query) {
+    public CellBaseDataResult<Long> count(TranscriptQuery query) throws CellBaseException {
         List<Bson> projections = unwind(query);
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
         projections.add(group);
@@ -173,7 +175,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) {
+    public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
@@ -181,7 +183,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(TranscriptQuery query) {
+    public CellBaseDataResult<String> distinct(TranscriptQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());

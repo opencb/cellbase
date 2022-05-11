@@ -54,12 +54,13 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return transcriptDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease) {
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease)
+            throws CellBaseException {
         return transcriptDBAdaptor.info(ids, query, source, dataRelease);
     }
 
 
-    public CellBaseDataResult<String> getCdna(String id) {
+    public CellBaseDataResult<String> getCdna(String id) throws CellBaseException {
         TranscriptQuery query = new TranscriptQuery();
         query.setTranscriptsXrefs(Collections.singletonList(id));
         CellBaseDataResult<Transcript> transcriptCellBaseDataResult = transcriptDBAdaptor.query(query);
@@ -77,7 +78,7 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
                 transcriptCellBaseDataResult.getNumResults(), Collections.singletonList(cdnaSequence), 1);
     }
 
-    private List<CellBaseDataResult<String>> getCdna(List<String> idList) {
+    private List<CellBaseDataResult<String>> getCdna(List<String> idList) throws CellBaseException {
         List<CellBaseDataResult<String>> cellBaseDataResults = new ArrayList<>();
         for (String id : idList) {
             cellBaseDataResults.add(getCdna(id));
@@ -85,7 +86,7 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return cellBaseDataResults;
     }
 
-    public List<CellBaseDataResult<String>> getSequence(String id) {
+    public List<CellBaseDataResult<String>> getSequence(String id) throws CellBaseException {
         List<String> transcriptsList = Arrays.asList(id.split(","));
         List<CellBaseDataResult<String>> queryResult = getCdna(transcriptsList);
         for (int i = 0; i < transcriptsList.size(); i++) {

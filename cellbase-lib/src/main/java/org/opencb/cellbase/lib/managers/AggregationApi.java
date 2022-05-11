@@ -17,21 +17,22 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.api.query.AbstractQuery;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 public interface AggregationApi<Q extends AbstractQuery, T> extends FeatureApi<Q, T> {
 
-    default CellBaseDataResult<Long> count(Q query) {
+    default CellBaseDataResult<Long> count(Q query) throws CellBaseException {
         query.setCount(Boolean.TRUE);
         return getDBAdaptor().count(query);
     }
 
-    default CellBaseDataResult<T> groupBy(Q query) {
+    default CellBaseDataResult<T> groupBy(Q query) throws CellBaseException {
         query.setCount(Boolean.FALSE);
         return getDBAdaptor().groupBy(query);
     }
 
-    default CellBaseDataResult<T> aggregationStats(Q query) {
+    default CellBaseDataResult<T> aggregationStats(Q query) throws CellBaseException {
         query.setCount(Boolean.TRUE);
         return getDBAdaptor().groupBy(query);
     }

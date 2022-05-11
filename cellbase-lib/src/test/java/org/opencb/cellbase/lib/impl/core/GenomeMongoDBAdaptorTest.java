@@ -25,6 +25,7 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.GenomeQuery;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.GenomeManager;
@@ -82,7 +83,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void getGenomicSequence() {
+    public void getGenomicSequence() throws CellBaseException {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions(), dataRelease);
         assertEquals(StringUtils.repeat("N", 1999), cellBaseDataResult.getResults().get(0).getSequence());
 
@@ -94,14 +95,14 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGenomicSequenceChromosomeNotPresent() {
+    public void testGenomicSequenceChromosomeNotPresent() throws CellBaseException {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
                 .getSequence(new Region("1234:1-1999"), new QueryOptions(), dataRelease);
         assertEquals(0, cellBaseDataResult.getNumResults());
     }
 
     @Test
-    public void testGenomicSequenceQueryOutOfBounds() {
+    public void testGenomicSequenceQueryOutOfBounds() throws CellBaseException {
         // Both start & end out of the right bound
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
                 .getSequence(new Region("17", 73973989, 73974999), new QueryOptions(), dataRelease);
@@ -121,7 +122,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
 
     @Test
-    public void testGetCytoband() {
+    public void testGetCytoband() throws CellBaseException {
         List<Region> regions = Arrays.asList(new Region("19:55799900-55803000"), new Region("11:121300000-124030001"));
         List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = genomeManager.getCytobands(regions, dataRelease);
 

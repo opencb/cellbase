@@ -58,11 +58,12 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease) {
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease)
+            throws CellBaseException {
         return geneDBAdaptor.info(ids, query, source, dataRelease);
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) {
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) throws CellBaseException {
         // get the coordinates for the gene
         CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);
         // get the sequences for those coordinates
@@ -75,7 +76,7 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return null;
     }
 
-    public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) {
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) throws CellBaseException {
         List<CellBaseDataResult<GenomeSequenceFeature>> sequences = new ArrayList<>();
         for (GeneQuery query : queries) {
             sequences.add(getSequence(query));
@@ -83,7 +84,7 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return sequences;
     }
 
-    public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) {
+    public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) throws CellBaseException {
         List<CellBaseDataResult<TranscriptTfbs>> geneQueryResults = new ArrayList<>();
         for (String gene : query.getIds()) {
             CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions(),
@@ -94,7 +95,7 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions, int dataRelease) {
+    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         return geneDBAdaptor.startsWith(query, queryOptions, dataRelease);
     }
 

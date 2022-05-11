@@ -21,6 +21,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -36,7 +37,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     public ConsequenceTypeSNVCalculator() {
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> genes, boolean[] overlapsRegulatoryRegion, QueryOptions options) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> genes, boolean[] overlapsRegulatoryRegion, QueryOptions options)
+            throws CellBaseException {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         boolean isIntergenic = true;

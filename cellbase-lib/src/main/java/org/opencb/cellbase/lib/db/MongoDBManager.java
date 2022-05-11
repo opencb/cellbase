@@ -245,6 +245,9 @@ public class MongoDBManager {
         } catch (MongoTimeoutException e) {
             e.printStackTrace();
             return null;
+        } catch (CellBaseException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

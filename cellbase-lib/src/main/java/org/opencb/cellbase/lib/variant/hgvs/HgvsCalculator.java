@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -66,11 +67,11 @@ public class HgvsCalculator {
             false);
 
 
-    public List<String> run(Variant variant, List<Gene> geneList) {
+    public List<String> run(Variant variant, List<Gene> geneList) throws CellBaseException {
         return this.run(variant, geneList, true);
     }
 
-    public List<String> run(Variant variant, List<Gene> geneList, boolean normalize) {
+    public List<String> run(Variant variant, List<Gene> geneList, boolean normalize) throws CellBaseException {
         List<String> hgvsList = new ArrayList<>();
         for (Gene gene : geneList) {
             hgvsList.addAll(this.run(variant, gene, normalize));
@@ -79,11 +80,11 @@ public class HgvsCalculator {
         return hgvsList;
     }
 
-    public List<String> run(Variant variant, Gene gene) {
+    public List<String> run(Variant variant, Gene gene) throws CellBaseException {
         return run(variant, gene, true);
     }
 
-    public List<String> run(Variant variant, Gene gene, boolean normalize) {
+    public List<String> run(Variant variant, Gene gene, boolean normalize) throws CellBaseException {
         if (gene.getTranscripts() == null) {
             return new ArrayList<>();
         }
@@ -95,7 +96,7 @@ public class HgvsCalculator {
         return hgvsList;
     }
 
-    protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+    protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) throws CellBaseException {
         List<String> hgvsStrings = new ArrayList<>();
 
         // Check variant falls within transcript coords

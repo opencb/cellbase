@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.core.SpliceScoreAlternate;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.datastore.core.DataResult;
@@ -46,11 +47,13 @@ public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
         mongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.SPLICE_SCORE_DATA);
     }
 
-    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate) {
+    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate)
+            throws CellBaseException {
         return getScores(chromosome, position, reference, alternate, 0);
     }
 
-    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate, int dataRelease) {
+    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate, int dataRelease)
+            throws CellBaseException {
         long dbTimeStart = System.currentTimeMillis();
 
         String ref = StringUtils.isEmpty(reference) ? "-" : reference;
