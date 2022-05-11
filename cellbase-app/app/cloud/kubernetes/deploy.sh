@@ -189,6 +189,10 @@ function deployCertManager() {
     --version ${CERT_MANAGER_VERSION} \
     -f charts/cert-manager/values.yaml \
     --values "${HELM_VALUES_FILE}"
+  
+  if [ $DRY_RUN == "false" ]; then
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
+  fi
 }
 
 
@@ -209,6 +213,10 @@ function deployNginx() {
     -f charts/nginx/values.yaml \
     --values "${HELM_VALUES_FILE}" \
     --install --wait --timeout 10m ${HELM_OPTS}
+  
+  if [ $DRY_RUN == "false" ]; then
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
+  fi
 }
 
 function deployMongodbOperator() {
@@ -224,7 +232,7 @@ function deployMongodbOperator() {
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
 
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest${FILE_NAME_SUFFIX}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
   fi
 }
 
