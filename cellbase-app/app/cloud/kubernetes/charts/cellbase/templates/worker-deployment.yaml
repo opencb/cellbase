@@ -35,23 +35,14 @@ spec:
           imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
           command: ["sleep", "31536000"]
           env:
-            - name: "CELLBASE_HOME"
-              value: "/opt/cellbase"
-            - name: "CELLBASE_DATABASES_MONGODB_HOST"
-              value: {{ include "mongodbHosts" . | toString | quote}}
-            - name: "CELLBASE_DATABASES_MONGODB_USER"
-              value: {{ .Values.mongodb.user | quote }}
             - name: "CELLBASE_DATABASES_MONGODB_PASSWORD"
               valueFrom:
                 secretKeyRef:
                   name: {{ include "cellbase.secretName" . }}
                   key: password
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_SSL"
-              value: {{ .Values.mongodb.ssl | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE"
-              value: {{ .Values.mongodb.authenticationDatabase | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
-              value: {{ .Values.mongodb.authenticationMechanism | quote }}
+          envFrom:
+            - configMapRef:
+              name: {{ include "configMapEnv.name" . }}
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
           volumeMounts:
