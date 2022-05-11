@@ -7,8 +7,8 @@ metadata:
 data:
   k8s.yml: |
     {{ include "cellbase.labels" . | nindent 4 }}
-  {{- if ( ne (len (.Files.Glob "conf/**.{xml,yml,yaml}")) 0) }}
-  {{- (.Files.Glob "conf/**.{xml,yml,yaml}").AsConfig | nindent 2 }}
+  {{- if ( ne (len (.Files.Glob "conf/*")) 0) }}
+    {{- (.Files.Glob "conf/*").AsConfig | nindent 2 }}
   {{- end }}
 ---
 apiVersion: v1

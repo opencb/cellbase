@@ -241,8 +241,7 @@ function deployCellbase() {
     mkdir "$CELLBASE_CHART"
     mkdir "$CELLBASE_CHART"/conf
     cp -r charts/cellbase/* "${CELLBASE_CHART:?}"
-    cp -r "${CELLBASE_CONF_DIR:?}"/*.yml "$CELLBASE_CHART"/conf
-    cp -r "${CELLBASE_CONF_DIR:?}"/log4j2.*.xml "$CELLBASE_CHART"/conf
+    cp -r "${CELLBASE_CONF_DIR:?}"/* "$CELLBASE_CHART"/conf
   else
     CELLBASE_CHART=charts/cellbase/
   fi
