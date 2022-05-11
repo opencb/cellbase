@@ -179,7 +179,7 @@ function deployCertManager() {
   # Update your local Helm chart repository cache
   helm repo update
 
-  NAME="cellbase-cert-manager${NAME_SUFFIX}"
+  NAME="cert-manager"
   echo " Deploy CERT-MANAGER ${NAME}"
   CERT_MANAGER_VERSION="${CERT_MANAGER_VERSION:-1.8.0}"
   # Install the cert-manager Helm chart
@@ -251,7 +251,7 @@ function deployCellbase() {
     --set "kubeContext=${K8S_CONTEXT}" \
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest-${DATE}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
   fi
 }
 
