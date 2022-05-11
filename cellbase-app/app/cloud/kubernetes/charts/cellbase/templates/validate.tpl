@@ -4,8 +4,6 @@
     {{ fail "Wrong Chart.AppVersion. Attempting to execute HELM from cellbase/cellbase-app/app/cloud/kubernetes"  }}
 {{ end }}
 
-{{ if .Values.mongodb.deploy.enabled }}
-    {{ if ne .Values.mongodb.replicaSet .Values.mongodb.deploy.name}}
-        {{ fail "Wrong Values.mongodb.replicaSet is diferent from Values.mongodb.deploy.name"  }}
-    {{ end }}
+{{ if and (not .Values.mongodb.deploy.enabled) (eq .Values.mongodb.replicaSet "") }}
+    {{ fail "Make sure you have completed Values.mongodb.replicaSet if Values.mongodb.deploy.enable is false"  }}
 {{ end }}
