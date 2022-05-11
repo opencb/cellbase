@@ -697,7 +697,8 @@ public class VariantAnnotationCalculator {
                         consequenceType3.setSequenceOntologyTerms(soTerms);
 
                         // Flag these transcripts as already updated for this variant
-                        flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId());
+                        flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId(),
+                                Arrays.asList(variant0, variant1));
 
                         variant2DisplayCTNeedsUpdate = true;
 
@@ -745,8 +746,8 @@ public class VariantAnnotationCalculator {
                     consequenceType2.setSequenceOntologyTerms(soTerms);
 
                     // Flag these transcripts as already updated for this variant
-                    flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
-                    flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
+                    flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId(), Arrays.asList((variant1)));
+                    flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId(), Arrays.asList((variant0)));
 
                     variant0DisplayCTNeedsUpdate = true;
                     variant1DisplayCTNeedsUpdate = true;
@@ -771,24 +772,25 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
+    private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId, List<Variant> phasedVariants) {
         Map<String, AdditionalAttribute> additionalAttributesMap = variant.getAnnotation().getAdditionalAttributes();
         if (additionalAttributesMap == null) {
             additionalAttributesMap = new HashMap<>();
             AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
-            transcriptsSet.put(ensemblTranscriptId, null);
+            transcriptsSet.put(ensemblTranscriptId, VariantAnnotationUtils.buildVariantIds(phasedVariants));
             additionalAttribute.setAttribute(transcriptsSet);
             additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
             variant.getAnnotation().setAdditionalAttributes(additionalAttributesMap);
         } else if (additionalAttributesMap.get("phasedTranscripts") == null) {
             AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
-            transcriptsSet.put(ensemblTranscriptId, null);
+            transcriptsSet.put(ensemblTranscriptId, VariantAnnotationUtils.buildVariantIds(phasedVariants));
             additionalAttribute.setAttribute(transcriptsSet);
             additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
         } else {
-            additionalAttributesMap.get("phasedTranscripts").getAttribute().put(ensemblTranscriptId, null);
+            additionalAttributesMap.get("phasedTranscripts").getAttribute().put(ensemblTranscriptId,
+                    VariantAnnotationUtils.buildVariantIds(phasedVariants));
         }
     }
 

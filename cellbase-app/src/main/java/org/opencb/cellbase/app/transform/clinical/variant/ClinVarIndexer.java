@@ -66,6 +66,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private int numberGermlineRecords = 0;
     private int numberNoDiseaseTrait = 0;
     private int numberMultipleInheritanceModels = 0;
+    private static final String RCVIDS = "rcvIds";
+    private static final String SCVIDS = "scvIds";
     private static final Set<ModeOfInheritance> DOMINANT_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.monoallelic,
             ModeOfInheritance.monoallelic_maternally_imprinted,
@@ -213,7 +215,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
             throws RocksDBException, IOException {
 
-        // More than one variant being returned from the normalisatio process would mean it's and MNV which has been
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
         // decomposed
         List<String> normalisedVariantStringList = getNormalisedVariantString(
                 alleleLocationData.getSequenceLocation().getChromosome(),
@@ -232,8 +234,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     clinicalHaplotypeString = StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR);
                 }
 
+                // get VCV ID
+                String vcvId = getVcvId(publicSet);
+
                 // parse RCVs
-                String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+                String rcvAccession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
                 String clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
                         .getClinicalSignificance()
                         .getDescription();
@@ -241,12 +246,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
                         .getReviewStatus().name();
                 List<ObservationSet> getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
-                        clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
-                        reviewStatusName, getObservedIn);
+                        clinicalHaplotypeString, traitsToEfoTermsMap, rcvAccession, clinicalSignficanceDescription,
+                        reviewStatusName, getObservedIn, vcvId);
+
+                List<String> scvAccessions = new ArrayList<>();
 
                 // parse SCVs
                 for (MeasureTraitType measureTraitType : publicSet.getClinVarAssertion()) {
-                    accession = measureTraitType.getClinVarAccession().getAcc();
+                    String scvAccession = measureTraitType.getClinVarAccession().getAcc();
                     clinicalSignficanceDescription
                             = StringUtils.join(measureTraitType.getClinicalSignificance().getDescription(),
                             CLINICAL_SIGNIFICANCE_SEPARATOR);
@@ -254,16 +261,62 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     reviewStatusName = getReviewStatusIfPresent(measureTraitType);
                     getObservedIn = measureTraitType.getObservedIn();
                     addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
-                            clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
-                            reviewStatusName, getObservedIn);
+                            clinicalHaplotypeString, traitsToEfoTermsMap, scvAccession, clinicalSignficanceDescription,
+                            reviewStatusName, getObservedIn, vcvId);
+                    scvAccessions.add(scvAccession);
                 }
 
+                if (StringUtils.isNotEmpty(vcvId)) {
+                    // add SCVs and RCVs to VCV entry
+                    addAdditionalProperties(variantAnnotation, vcvId, rcvAccession, scvAccessions);
+                }
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
             return true;
         }
 
         return false;
+    }
+
+    private String getVcvId(PublicSetType publicSet) {
+        if (publicSet.getReferenceClinVarAssertion() == null || publicSet.getReferenceClinVarAssertion().getMeasureSet() == null
+                || publicSet.getReferenceClinVarAssertion().getMeasureSet().getID() == null) {
+            return null;
+        }
+        return publicSet.getReferenceClinVarAssertion().getMeasureSet().getID().toString();
+    }
+
+    private void addAdditionalProperties(VariantAnnotation variantAnnotation, String vcvId, String rcvAccession,
+                                         List<String> scvAccessions) {
+        List<Property> properties = getTraitAssociation(variantAnnotation, vcvId).getAdditionalProperties();
+        boolean hasRCVIds = false;
+        boolean hasSCVIds = false;
+        for (Property property : properties) {
+            if (RCVIDS.equals(property.getName())) {
+                hasRCVIds = true;
+                property.setValue(property.getValue() + "," + rcvAccession);
+            }
+            if (SCVIDS.equals(property.getName())) {
+                hasSCVIds = true;
+                property.setValue(property.getValue() + "," + String.join(",", scvAccessions));
+            }
+        }
+        if (!hasRCVIds) {
+            properties.add(new Property(null, RCVIDS, rcvAccession));
+        }
+        if (!hasSCVIds) {
+            properties.add(new Property(null, SCVIDS, String.join(",", scvAccessions)));
+        }
+        getTraitAssociation(variantAnnotation, vcvId).setAdditionalProperties(properties);
+    }
+
+    private EvidenceEntry getTraitAssociation(VariantAnnotation variantAnnotation, String vcvId) {
+        for (EvidenceEntry evidenceEntry: variantAnnotation.getTraitAssociation()) {
+            if (vcvId.equals(evidenceEntry.getId())) {
+                return evidenceEntry;
+            }
+        }
+        return null;
     }
 
     private String getReviewStatusIfPresent(MeasureTraitType measureTraitType) {
@@ -355,10 +408,13 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, String clinicalHaplotypeString,
                                Map<String, EFO> traitsToEfoTermsMap, String accession,
                                String clinicalSignficanceDescription, String reviewStatusName,
-                               List<ObservationSet> getObservedIn)
+                               List<ObservationSet> getObservedIn, String vcvId)
         throws JsonProcessingException {
 
-        List<Property> additionalProperties = new ArrayList<>(3);
+        List<Property> additionalProperties = new ArrayList<>();
+        if (StringUtils.isNotEmpty(vcvId)) {
+            additionalProperties.add(new Property(null, "vcvIds", vcvId));
+        }
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
 //        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 

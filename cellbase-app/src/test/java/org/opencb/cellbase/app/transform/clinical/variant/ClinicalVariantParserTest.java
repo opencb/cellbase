@@ -63,6 +63,8 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
     }
 
+
+
     @Test
     public void testUnexpectedAccession() throws Exception {
         cleanUp();
@@ -80,7 +82,30 @@ public class ClinicalVariantParserTest {
         assertEquals("G", variant.getReference());
         assertEquals("A", variant.getAlternate());
 
+        // variant should have list of SCVs and RCVs and VCVs
+        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000007529");
+        assertEquals(4, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("7109", getValueByName(evidenceEntry, "vcvIds"));
+
+        evidenceEntry = getEvidenceEntryByAccession(variant, "SCV000053488");
+        assertEquals(4, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("7109", getValueByName(evidenceEntry, "vcvIds"));
+
+        evidenceEntry = getEvidenceEntryByAccession(variant, "7109");
+        assertEquals(4, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("RCV000007529", getValueByName(evidenceEntry, "rcvIds"));
+        assertEquals("SCV000053488", getValueByName(evidenceEntry, "scvIds"));
     }
+
+    private String getValueByName(EvidenceEntry evidenceEntry, String name) {
+        for (Property property : evidenceEntry.getAdditionalProperties()) {
+            if (property.getName().equals(name)) {
+                return property.getValue();
+            }
+        }
+        return null;
+    }
+
 
     @Test
     public void testReallyLongVariant() throws Exception {

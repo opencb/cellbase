@@ -24,7 +24,9 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -794,6 +796,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
 
 
+
+
     }
 
     @Test
@@ -869,14 +873,14 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
 
-    @Test
-    public void testAnnotationGrch37() throws Exception {
-        // threw a NULL pointer exception
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
-                .getAnnotationByVariant(new Variant("9:34648830:A:N"), queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-    }
+//    @Test
+//    public void testAnnotationGrch37() throws Exception {
+//        // threw a NULL pointer exception
+//        QueryOptions queryOptions = new QueryOptions("useCache", false);
+//        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+//                .getAnnotationByVariant(new Variant("9:34648830:A:N"), queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//    }
 
     @Test
     public void testHgvsAnnotationGrch37() throws Exception {
@@ -1981,8 +1985,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant1, queryOptions);
 
-        List<String> hgvs = queryResult.getResult().get(0).getHgvs();
-        assertEquals("test", hgvs);
+        assertEquals(14,new HashSet<String>(queryResult.getResult().get(0).getHgvs()).size());
 
     }
 
@@ -2083,6 +2086,102 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertTrue(hasClinVar(variantTraitAssociation, "251327"));
     }
 
+    private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
+    private static final String VARIANT_STRING_FORMAT = "\\+";
+
+    private Variant parseVariant(String variantString) {
+        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
+
+        VariantBuilder variantBuilder;
+        if (variantStringPartArray.length > 0) {
+            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
+            // Either 1 or 3 parts expected variant+GT+PS
+            if (variantStringPartArray.length == 3) {
+                List<String> formatList = new ArrayList<>(2);
+                // If phase set tag is not provided not phase data is added at all to the Variant object
+                if (!variantStringPartArray[2].isEmpty()) {
+                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
+                    List<String> sampleData = new ArrayList<>(2);
+                    sampleData.add(variantStringPartArray[2]);
+                    // Genotype field might be empty - just PS would be added to Variant object in that case
+                    if (!variantStringPartArray[1].isEmpty()) {
+                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
+                        sampleData.add(variantStringPartArray[1]);
+                    }
+                    variantBuilder.setFormat(formatList);
+                    variantBuilder.setSamplesData(Collections.singletonList(sampleData));
+                }
+            } else if (variantStringPartArray.length > 3) {
+                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+            }
+        } else {
+            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+        }
+
+        return variantBuilder.build();
+    }
+
+    @Test
+    public void testKPVPMNVs() throws Exception {
+
+//        chr19:13025339:C:A+1|1+999 - synonymous
+//        chr19:13025341:G:T+1|1+999 - synonymous
+
+        initGrch38();
+
+        VariantBuilder variantBuilder = new VariantBuilder("19",
+                13025339,
+                13025339,
+                "C",
+                "A");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("999", "1|1")));
+        Variant variant1 = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("19",
+                13025341,
+                13025341,
+                "G",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("999", "1|1")));
+        Variant variant2 = variantBuilder.build();
+
+        List<Variant> variantList = new ArrayList<>();
+        variantList.add(variant1);
+        variantList.add(variant2);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate, clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", true);
+
+        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
+
+        assertEquals(2, queryResult.size());
+
+        VariantAnnotation v1 = queryResult.get(0).getResult().get(0);
+        VariantAnnotation v2 = queryResult.get(1).getResult().get(0);
+
+        assertEquals("missense_variant", v1.getDisplayConsequenceType());
+        assertEquals("missense_variant", v2.getDisplayConsequenceType());
+
+        Map<String, String> additionalAttributes1 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
+        Map<String, String> additionalAttributes2 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
+
+        System.out.println(additionalAttributes1);
+
+        assertEquals(12, additionalAttributes1.size());
+        assertEquals(12, additionalAttributes2.size());
+    }
 
     private boolean hasClinVarAccession(List<EvidenceEntry> traitAssociation, String accession) {
         for (EvidenceEntry evidenceEntry : traitAssociation) {
