@@ -19,12 +19,15 @@ data:
   CELLBASE_HOME: "/opt/cellbase"
   CELLBASE_DATABASES_MONGODB_HOST: {{ include "mongodbHosts" . | toString | quote}}
   CELLBASE_DATABASES_MONGODB_USER: {{ .Values.mongodb.user | quote }}
-  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_ENABLED: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_INVALID_CERTIFICATES_ALLOWED: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_INVALID_HOSTNAME_ALLOWED: {{ .Values.mongodb.ssl | quote }}
   CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE: {{ .Values.mongodb.authenticationDatabase | quote }}
   CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM: {{ .Values.mongodb.authenticationMechanism | quote }}
   CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET: {{ if .Values.mongodb.deploy.enabled }} 
                                                     {{- .Values.mongodb.deploy.name | quote }} 
                                                   {{ else }} 
-                                                    {{- .Values.mongodb.replicaSet | quote }} 
+                                                    {{- .Values.mongodb.replicaSet | quote }}  
+                                                    
                                                   {{ end }}     
 
