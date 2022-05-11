@@ -2089,44 +2089,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
     private static final String VARIANT_STRING_FORMAT = "\\+";
 
-    private Variant parseVariant(String variantString) {
-        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
-
-        VariantBuilder variantBuilder;
-        if (variantStringPartArray.length > 0) {
-            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
-            // Either 1 or 3 parts expected variant+GT+PS
-            if (variantStringPartArray.length == 3) {
-                List<String> formatList = new ArrayList<>(2);
-                // If phase set tag is not provided not phase data is added at all to the Variant object
-                if (!variantStringPartArray[2].isEmpty()) {
-                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
-                    List<String> sampleData = new ArrayList<>(2);
-                    sampleData.add(variantStringPartArray[2]);
-                    // Genotype field might be empty - just PS would be added to Variant object in that case
-                    if (!variantStringPartArray[1].isEmpty()) {
-                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
-                        sampleData.add(variantStringPartArray[1]);
-                    }
-                    variantBuilder.setFormat(formatList);
-                    variantBuilder.setSamplesData(Collections.singletonList(sampleData));
-                }
-            } else if (variantStringPartArray.length > 3) {
-                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
-                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
-                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
-            }
-        } else {
-            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
-                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
-                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
-        }
-
-        return variantBuilder.build();
-    }
-
     @Test
-    public void testKPVPMNVs() throws Exception {
+    public void testMNVAdditionalProperties() throws Exception {
 
 //        chr19:13025339:C:A+1|1+999 - synonymous
 //        chr19:13025341:G:T+1|1+999 - synonymous
