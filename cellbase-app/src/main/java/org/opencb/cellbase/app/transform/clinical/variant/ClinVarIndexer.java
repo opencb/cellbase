@@ -307,7 +307,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (!hasSCVIds) {
             properties.add(new Property(null, SCVIDS, String.join(",", scvAccessions)));
         }
-        getTraitAssociation(variantAnnotation, vcvId).setAdditionalProperties(properties);
     }
 
     private EvidenceEntry getTraitAssociation(VariantAnnotation variantAnnotation, String vcvId) {
