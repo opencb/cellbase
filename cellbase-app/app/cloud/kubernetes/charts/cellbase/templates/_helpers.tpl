@@ -67,6 +67,10 @@ Create the name of the service account to use
 {{ include "cellbase.fullname" . }}-conf
 {{- end -}}
 
+{{- define "configMapEnv.name" -}}
+{{ include "cellbase.fullname" . }}-env-conf
+{{- end -}}
+
 {{- define "cellbase.secretName" -}}
 {{- if .Values.cellbase.secretName -}}
 {{ .Values.cellbase.secretName }}
