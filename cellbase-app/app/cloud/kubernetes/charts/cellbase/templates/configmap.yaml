@@ -7,6 +7,29 @@ metadata:
 data:
   k8s.yml: |
     {{ include "cellbase.labels" . | nindent 4 }}
-  {{- if ( ne (len (.Files.Glob "conf/**.{xml,yml,yaml}")) 0) }}
-  {{- (.Files.Glob "conf/**.{xml,yml,yaml}").AsConfig | nindent 2 }}
+  {{- if ( ne (len (.Files.Glob "conf/*")) 0) }}
+    {{- (.Files.Glob "conf/*").AsConfig | nindent 2 }}
   {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "configMapEnv.name" . }}
+  labels:
+    {{- include "cellbase.labels" . | nindent 4 }}
+data:
+  CELLBASE_HOME: "/opt/cellbase"
+  CELLBASE_DATABASES_MONGODB_HOST: {{ include "mongodbHosts" . | toString | quote}}
+  CELLBASE_DATABASES_MONGODB_USER: {{ .Values.mongodb.user | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_ENABLED: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_INVALID_CERTIFICATES_ALLOWED: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_INVALID_HOSTNAME_ALLOWED: {{ .Values.mongodb.ssl | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE: {{ .Values.mongodb.authenticationDatabase | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM: {{ .Values.mongodb.authenticationMechanism | quote }}
+  CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET: {{ if .Values.mongodb.deploy.enabled }} 
+                                                    {{- .Values.mongodb.deploy.name | quote }} 
+                                                  {{ else }} 
+                                                    {{- .Values.mongodb.replicaSet | quote }}  
+                                                    
+                                                  {{ end }}     
+

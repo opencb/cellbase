@@ -38,22 +38,14 @@ spec:
           - "cd /data && /opt/cellbase/bin/cellbase-admin.sh --version"
         #  - "cd /data && /opt/cellbase/bin/cellbase-admin.sh download --species hsapiens --assembly GRCh38 --data all --outdir /data/"
           env:
-            - name: "CELLBASE_HOME"
-              value: "/opt/cellbase"
-            - name: "CELLBASE_DATABASES_MONGODB_HOST"
-              value: {{ include "mongodbHosts" . | toString | quote}}
-            - name: "CELLBASE_DATABASES_MONGODB_USER"
-              value: {{ .Values.mongodb.user | quote }}
             - name: "CELLBASE_DATABASES_MONGODB_PASSWORD"
-              value: {{ .Values.mongodb.password | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_SSL"
-              value: {{ .Values.mongodb.ssl | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE"
-              value: {{ .Values.mongodb.authenticationDatabase | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_MECHANISM"
-              value: {{ .Values.mongodb.authenticationMechanism | quote }}
-            - name: "CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET"
-              value: { { .Values.mongodb.replicaSet | quote } }
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cellbase.secretName" . }}
+                  key: password
+          envFrom:
+            - configMapRef:
+              name: {{ include "configMapEnv.name" . }}           
           resources:
             {{- toYaml .Values.load.resources | nindent 12 }}
           volumeMounts:

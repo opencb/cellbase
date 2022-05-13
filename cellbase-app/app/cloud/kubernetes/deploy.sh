@@ -179,16 +179,20 @@ function deployCertManager() {
   # Update your local Helm chart repository cache
   helm repo update
 
+  NAME="cert-manager"
+  echo " Deploy CERT-MANAGER ${NAME}"
+  CERT_MANAGER_VERSION="${CERT_MANAGER_VERSION:-1.8.0}"
   # Install the cert-manager Helm chart
-  helm upgrade cert-manager jetstack/cert-manager \
+  helm upgrade ${NAME} jetstack/cert-manager \
     --install \
-    --version 1.4.0 \
     --kube-context "${K8S_CONTEXT}" --namespace "${K8S_NAMESPACE}"  \
-    --set installCRDs=true \
-    --set nodeSelector."kubernetes\.io/os"=linux \
-    --set webhook.nodeSelector."kubernetes\.io/os"=linux \
-    --set cainjector.nodeSelector."kubernetes\.io/os"=linux \
+    --version ${CERT_MANAGER_VERSION} \
+    -f charts/cert-manager/values.yaml \
     --values "${HELM_VALUES_FILE}"
+  
+  if [ $DRY_RUN == "false" ]; then
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
+  fi
 }
 
 
@@ -209,6 +213,10 @@ function deployNginx() {
     -f charts/nginx/values.yaml \
     --values "${HELM_VALUES_FILE}" \
     --install --wait --timeout 10m ${HELM_OPTS}
+  
+  if [ $DRY_RUN == "false" ]; then
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
+  fi
 }
 
 function deployMongodbOperator() {
@@ -224,7 +232,7 @@ function deployMongodbOperator() {
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
 
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest${FILE_NAME_SUFFIX}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
   fi
 }
 
@@ -241,8 +249,7 @@ function deployCellbase() {
     mkdir "$CELLBASE_CHART"
     mkdir "$CELLBASE_CHART"/conf
     cp -r charts/cellbase/* "${CELLBASE_CHART:?}"
-    cp -r "${CELLBASE_CONF_DIR:?}"/*.yml "$CELLBASE_CHART"/conf
-    cp -r "${CELLBASE_CONF_DIR:?}"/log4j2.*.xml "$CELLBASE_CHART"/conf
+    cp -r "${CELLBASE_CONF_DIR:?}"/* "$CELLBASE_CHART"/conf
   else
     CELLBASE_CHART=charts/cellbase/
   fi
@@ -252,7 +259,7 @@ function deployCellbase() {
     --set "kubeContext=${K8S_CONTEXT}" \
     --install --wait --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" --timeout 10m ${HELM_OPTS}
   if [ $DRY_RUN == "false" ]; then
-    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest-${DATE}.yaml"
+    helm get manifest "${NAME}" --kube-context "${K8S_CONTEXT}" -n "${K8S_NAMESPACE}" >"${OUTPUT_DIR}/helm-${NAME}-manifest.yaml"
   fi
 }
 
