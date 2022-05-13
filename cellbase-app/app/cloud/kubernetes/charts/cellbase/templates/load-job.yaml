@@ -45,7 +45,7 @@ spec:
                   key: password
           envFrom:
             - configMapRef:
-              name: {{ include "configMapEnv.name" . }}           
+                name: {{ include "configMapEnv.name" . }}           
           resources:
             {{- toYaml .Values.load.resources | nindent 12 }}
           volumeMounts:
