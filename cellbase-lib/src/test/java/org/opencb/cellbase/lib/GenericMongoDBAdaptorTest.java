@@ -82,7 +82,7 @@ public class GenericMongoDBAdaptorTest {
     }
 
     protected void updateDataRelease(int dataRelease, String data, List<Path> sources) throws CellBaseException, JsonProcessingException {
-        cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY).update(dataRelease, data, sources);
+        cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY).update(dataRelease, data, data, sources);
     }
 
     protected void createEmptyCollection(String data, int dataRelease) {

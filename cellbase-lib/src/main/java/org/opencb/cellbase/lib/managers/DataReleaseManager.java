@@ -121,24 +121,24 @@ public class DataReleaseManager extends AbstractManager {
         return null;
     }
 
-    public void update(int release, String data, List<Path> dataSourcePaths) {
+    public void update(int release, String collection, String data, List<Path> dataSourcePaths) {
         DataRelease currDataRelease = get(release);
         if (currDataRelease != null) {
             // Update collections
-            currDataRelease.getCollections().put(data, CellBaseDBAdaptor.buildCollectionName(data, release));
+            currDataRelease.getCollections().put(collection, CellBaseDBAdaptor.buildCollectionName(collection, release));
 
             // Check sources
-            List<DataReleaseSource> newSources = new ArrayList<>();
-            // First, remove previous sources for the data loaded
-            if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
-                for (DataReleaseSource source : currDataRelease.getSources()) {
-                    if (StringUtils.isNotEmpty(source.getData()) && !source.getData().equals(data)) {
-                        newSources.add(source);
+            if (StringUtils.isNotEmpty(data) && CollectionUtils.isNotEmpty(dataSourcePaths)) {
+                List<DataReleaseSource> newSources = new ArrayList<>();
+                // First, remove previous sources for the data loaded
+                if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
+                    for (DataReleaseSource source : currDataRelease.getSources()) {
+                        if (StringUtils.isNotEmpty(source.getData()) && !source.getData().equals(data)) {
+                            newSources.add(source);
+                        }
                     }
                 }
-            }
-            // Second, add new sources
-            if (CollectionUtils.isNotEmpty(dataSourcePaths)) {
+                // Second, add new sources
                 ObjectMapper jsonObjectMapper = new ObjectMapper();
                 ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
 
@@ -154,9 +154,10 @@ public class DataReleaseManager extends AbstractManager {
                         }
                     }
                 }
-            }
-            if (CollectionUtils.isNotEmpty(newSources)) {
-                currDataRelease.setSources(newSources);
+
+                if (CollectionUtils.isNotEmpty(newSources)) {
+                    currDataRelease.setSources(newSources);
+                }
             }
 
             // Update data release in the database

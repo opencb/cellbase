@@ -64,7 +64,7 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
         int release = dataRelease == null ? 0 : dataRelease;
         if (!collectionMap.containsKey(release)) {
             // If the data release is invalid, throw an exception
-            String msg = "Data not found in release " + release + " not found!";
+            String msg = "Data not found in release " + release + ". " + collectionMap.toString();
             logger.error(msg);
             throw new CellBaseException(msg);
         }

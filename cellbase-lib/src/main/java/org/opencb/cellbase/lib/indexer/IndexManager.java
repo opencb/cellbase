@@ -102,7 +102,7 @@ public class IndexManager {
                 mongoDBIndexUtils.createIndexes(collection, indexes.get(key), dropIndexesFirst);
                 logger.info("Loaded index for {} ", collection);
             } else {
-                logger.error("Could not create index for colleciton {}: no defined index was found", collection);
+                logger.error("Could not create index for collection {}: no defined index was found", collection);
             }
         }
     }

@@ -139,13 +139,15 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
 
                             // Create index
+                            createIndex("genome_info");
                             createIndex("genome_sequence");
 
                             // Update release (collection and sources)
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("genomeVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "genome_info", EtlCommons.GENOME_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "genome_sequence", null, null);
                             break;
                         }
                         case EtlCommons.GENE_DATA: {
@@ -165,7 +167,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("disgenetVersion.json"),
                                     input.resolve("gnomadVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "gene", EtlCommons.GENE_DATA, sources);
                             break;
                         }
                         case EtlCommons.REFSEQ_DATA: {
@@ -174,6 +176,13 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                             // Create index
                             createIndex("refseq");
+
+                            // Update release (collection and sources)
+                            List<Path> sources = new ArrayList<>(Arrays.asList(
+                                    input.resolve("refseqVersion.json")
+
+                            ));
+                            dataReleaseManager.update(dataRelease, "refseq", EtlCommons.REFSEQ_DATA, sources);
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
@@ -183,7 +192,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
                             // Load data
-                            loadIfExists(input.resolve("cadd.json.gz"), "cadd");
+                            loadIfExists(input.resolve("cadd.json.gz"), "variation_functional_score");
 
                             // Create index
                             createIndex("variation_functional_score");
@@ -192,7 +201,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("caddVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "variation_functional_score", EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA,
+                                    sources);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -207,7 +217,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("revelVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
+                                    EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
                             break;
                         }
                         case EtlCommons.CONSERVATION_DATA: {
@@ -216,23 +227,20 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.REGULATION_DATA: {
-                            // Load data (regulatory region)
+                            // Load data (regulatory region and regulatory PFM))
                             loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
 
                             // Create index
                             createIndex("regulatory_region");
+                            createIndex("regulatory_pfm");
 
                             // Update release (collection and sources)
                             List<Path> sources = new ArrayList<>(Arrays.asList(
                                     input.resolve("ensemblRegulationVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
-
-                            // Load data (regulatory PFM)
-                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
-
-                            // Create index
-                            createIndex("regulatory_pfm");
+                            dataReleaseManager.update(dataRelease, "regulatory_region", EtlCommons.REGULATION_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "regulatory_pfm", null, null);
                             break;
                         }
                         case EtlCommons.PROTEIN_DATA: {
@@ -247,7 +255,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("uniprotVersion.json"),
                                     input.resolve("interproVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "protein", EtlCommons.PROTEIN_DATA, sources);
                             break;
                         }
 //                        case EtlCommons.PPI_DATA:
@@ -286,7 +294,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve(EtlCommons.GO_VERSION_FILE),
                                     input.resolve(EtlCommons.DO_VERSION_FILE)
                             ));
-                            dataReleaseManager.update(dataRelease, loadOption, sources);
+                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.OBO_DATA, sources);
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -408,7 +416,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             List<Path> sources = new ArrayList<>(Arrays.asList(
                     input.resolve("ensemblVariationVersion.json")
             ));
-            dataReleaseManager.update(dataRelease, "variation", sources);
+            dataReleaseManager.update(dataRelease, "variation", EtlCommons.VARIATION_DATA, sources);
 
             // Custom update required e.g. population freqs loading
         } else {
@@ -438,7 +446,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 input.resolve("phastConsVersion.json"),
                 input.resolve("phyloPVersion.json")
         ));
-        dataReleaseManager.update(dataRelease, "conservation", sources);
+        dataReleaseManager.update(dataRelease, "conservation", EtlCommons.CONSERVATION_DATA, sources);
     }
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
@@ -455,6 +463,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Create index
         createIndex("protein_functional_prediction");
+
+        // Update release (collection and sources)
+        dataReleaseManager.update(dataRelease, "protein_functional_prediction", null, null);
     }
 
     private void loadClinical() throws FileNotFoundException {
@@ -463,7 +474,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             try {
                 // Load data
                 logger.info("Loading '{}' ...", path);
-                loadRunner.load(path, EtlCommons.CLINICAL_VARIANTS_DATA, dataRelease);
+                loadRunner.load(path, "clinical_variants", dataRelease);
 
                 // Create index
                 createIndex("clinical_variants");
@@ -474,7 +485,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve("cosmicVersion.json"),
                         input.resolve("gwasVersion.json")
                 ));
-                dataReleaseManager.update(dataRelease, "clinical_variants", sources);
+                dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANTS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
@@ -490,7 +501,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             try {
                 // Load data
                 logger.debug("Loading '{}' ...", path);
-                loadRunner.load(path, EtlCommons.REPEATS_DATA, dataRelease);
+                loadRunner.load(path, "repeats", dataRelease);
 
                 // Create index
                 createIndex("repeats");
@@ -501,7 +512,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve(EtlCommons.GSD_VERSION_FILE),
                         input.resolve(EtlCommons.WM_VERSION_FILE)
                 ));
-                dataReleaseManager.update(dataRelease, "repeats", sources);
+                dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
@@ -522,9 +533,6 @@ public class LoadCommandExecutor extends CommandExecutor {
         // SpliceAI scores
         loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY));
 
-        /////////// for purpose
-        System.exit(-1);
-
         // Create index
         createIndex("splice_score");
 
@@ -533,7 +541,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME),
                 input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_VERSION_FILENAME)
         ));
-        dataReleaseManager.update(dataRelease, EtlCommons.SPLICE_SCORE_DATA, sources);
+        dataReleaseManager.update(dataRelease, "splice_score", EtlCommons.SPLICE_SCORE_DATA, sources);
     }
 
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,
@@ -545,7 +553,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         // Load from JSON files
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(spliceFolder.resolve(entry.getFileName()), EtlCommons.SPLICE_SCORE_DATA, dataRelease);
+            loadRunner.load(spliceFolder.resolve(entry.getFileName()), "splice_score", dataRelease);
         }
     }
 

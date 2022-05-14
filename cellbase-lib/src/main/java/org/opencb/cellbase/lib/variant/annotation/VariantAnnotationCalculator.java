@@ -153,7 +153,7 @@ public class VariantAnnotationCalculator {
 
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
-        logger.debug("Annotating  batch");
+        logger.debug("Annotating batch");
         parseQueryParam(queryOptions);
 
         if (variantList == null || variantList.isEmpty()) {
