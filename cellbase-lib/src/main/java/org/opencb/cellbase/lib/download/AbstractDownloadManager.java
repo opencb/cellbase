@@ -159,14 +159,14 @@ public class AbstractDownloadManager {
         return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
     }
 
-    protected void saveVersionData(String data, String source, String version, String date, List<String> url, Path outputFilePath)
+    protected void saveVersionData(String data, String name, String version, String date, List<String> url, Path outputFilePath)
             throws IOException {
         Map<String, Object> versionDataMap = new HashMap<>();
         versionDataMap.put("data", data);
-        versionDataMap.put("source", source);
+        versionDataMap.put("name", name);
         versionDataMap.put("version", version);
-        versionDataMap.put("downloadDate", date);
-        versionDataMap.put("uRL", url);
+        versionDataMap.put("date", date);
+        versionDataMap.put("url", url);
 
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);

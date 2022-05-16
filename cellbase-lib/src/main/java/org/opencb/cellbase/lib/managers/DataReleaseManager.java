@@ -132,22 +132,30 @@ public class DataReleaseManager extends AbstractManager {
                 List<DataReleaseSource> newSources = new ArrayList<>();
                 // First, remove previous sources for the data loaded
                 if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
-                    for (DataReleaseSource source : currDataRelease.getSources()) {
-                        if (StringUtils.isNotEmpty(source.getData()) && !source.getData().equals(data)) {
-                            newSources.add(source);
-                        }
-                    }
+                    newSources.addAll(currDataRelease.getSources());
                 }
                 // Second, add new sources
                 ObjectMapper jsonObjectMapper = new ObjectMapper();
                 ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
 
-                List<DataReleaseSource> sources = new ArrayList<>();
                 for (Path dataSourcePath : dataSourcePaths) {
                     if (dataSourcePath.toFile().exists()) {
                         try {
                             DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-                            newSources.add(dataReleaseSource);
+
+                            boolean found = false;
+                            for (DataReleaseSource source : currDataRelease.getSources()) {
+                                if (StringUtils.isNotEmpty(dataReleaseSource.getData())
+                                        && dataReleaseSource.getData().equals(source.getData())
+                                        && StringUtils.isNotEmpty(dataReleaseSource.getName())
+                                        && dataReleaseSource.getName().equals(source.getName())) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                newSources.add(dataReleaseSource);
+                            }
                         } catch (IOException e) {
                             logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
                                     + e.getMessage());
@@ -172,9 +180,9 @@ public class DataReleaseManager extends AbstractManager {
 
         if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
             // TODO: use native functions
-            List<Map<String, String>> tmp = new ArrayList<>();
+            List<Map<String, Object>> tmp = new ArrayList<>();
             for (DataReleaseSource source : dataRelase.getSources()) {
-                Map<String, String> map = new HashMap<>();
+                Map<String, Object> map = new HashMap<>();
                 if (StringUtils.isNotEmpty(source.getData())) {
                     map.put("data", source.getData());
                 }
@@ -184,7 +192,7 @@ public class DataReleaseManager extends AbstractManager {
                 if (StringUtils.isNotEmpty(source.getVersion())) {
                     map.put("version", source.getVersion());
                 }
-                if (StringUtils.isNotEmpty(source.getUrl())) {
+                if (CollectionUtils.isNotEmpty(source.getUrl())) {
                     map.put("url", source.getUrl());
                 }
                 if (StringUtils.isNotEmpty(source.getDate())) {

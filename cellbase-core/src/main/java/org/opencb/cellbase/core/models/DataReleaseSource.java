@@ -16,22 +16,24 @@
 
 package org.opencb.cellbase.core.models;
 
+import java.util.List;
+
 public class DataReleaseSource {
     private String name;
     private String version;
     private String data;
-    private String url;
     private String date;
+    private List<String> url;
 
     public DataReleaseSource() {
     }
 
-    public DataReleaseSource(String name, String version, String data, String url, String date) {
+    public DataReleaseSource(String name, String version, String data, String date, List<String> url) {
         this.name = name;
         this.version = version;
         this.data = data;
-        this.url = url;
         this.date = date;
+        this.url = url;
     }
 
     @Override
@@ -40,8 +42,8 @@ public class DataReleaseSource {
         sb.append("name='").append(name).append('\'');
         sb.append(", version='").append(version).append('\'');
         sb.append(", data='").append(data).append('\'');
-        sb.append(", url='").append(url).append('\'');
         sb.append(", date='").append(date).append('\'');
+        sb.append(", url=").append(url);
         sb.append('}');
         return sb.toString();
     }
@@ -73,21 +75,21 @@ public class DataReleaseSource {
         return this;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public DataReleaseSource setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
     public String getDate() {
         return date;
     }
 
     public DataReleaseSource setDate(String date) {
         this.date = date;
+        return this;
+    }
+
+    public List<String> getUrl() {
+        return url;
+    }
+
+    public DataReleaseSource setUrl(List<String> url) {
+        this.url = url;
         return this;
     }
 }
