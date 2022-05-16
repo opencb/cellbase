@@ -53,8 +53,9 @@ public class MongoDBAdaptor {
 
     public MongoDBAdaptor(MongoDataStore mongoDataStore) {
         this.mongoDataStore = mongoDataStore;
+        this.objectMapper = new ObjectMapper();
 
-        this.init();
+        this.logger = LoggerFactory.getLogger(this.getClass().toString());
     }
 
 //    @Deprecated
@@ -65,10 +66,10 @@ public class MongoDBAdaptor {
 ////        initSpeciesAssembly(species, assembly);
 //    }
 
-    private void init() {
-        logger = LoggerFactory.getLogger(this.getClass().toString());
-        objectMapper = new ObjectMapper();
-    }
+//    private void init() {
+//        logger = LoggerFactory.getLogger(this.getClass().toString());
+//        objectMapper = new ObjectMapper();
+//    }
 
 //    private void initSpeciesAssembly(String species, String assembly) {
 //        if (species != null && !species.equals("")) {
