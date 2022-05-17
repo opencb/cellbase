@@ -21,6 +21,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -35,7 +36,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
     public ConsequenceTypeCNVGainCalculator() { }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
+                                     QueryOptions queryOptions) throws CellBaseException {
         parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;

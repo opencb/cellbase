@@ -32,7 +32,8 @@ public class RegulatoryManager extends AbstractManager implements AggregationApi
     }
 
     @Deprecated
-    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();

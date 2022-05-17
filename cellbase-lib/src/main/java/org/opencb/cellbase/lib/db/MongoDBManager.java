@@ -163,7 +163,7 @@ public class MongoDBManager {
 
     public String getDatabaseName(String species, String assembly) {
         if (StringUtils.isEmpty(species) || StringUtils.isEmpty(assembly)) {
-            throw new InvalidParameterException("Species and assembly is required");
+            throw new InvalidParameterException("Species and assembly are required");
         }
 
         String cleanAssembly = assembly
@@ -229,6 +229,8 @@ public class MongoDBManager {
 
     private String getDataResponseTime(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        // TODO: check and get the default data release
+        int dataRelease = 0;
         GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(mongoDatastore);
         try {
             GeneQuery geneQuery = new GeneQuery();
@@ -241,6 +243,9 @@ public class MongoDBManager {
                 return null;
             }
         } catch (MongoTimeoutException e) {
+            e.printStackTrace();
+            return null;
+        } catch (CellBaseException e) {
             e.printStackTrace();
             return null;
         }

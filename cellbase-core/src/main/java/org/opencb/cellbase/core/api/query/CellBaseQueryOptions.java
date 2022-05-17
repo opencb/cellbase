@@ -55,8 +55,8 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.facet = facet;
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
-                                List<String> includes, List<String> excludes) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, List<String> includes,
+                                List<String> excludes) {
         super(includes, excludes);
 
         this.limit = limit;

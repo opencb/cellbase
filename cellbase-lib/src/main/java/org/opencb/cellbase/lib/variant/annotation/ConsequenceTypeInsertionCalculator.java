@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -49,7 +50,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
-                                     QueryOptions queryOptions) {
+                                     QueryOptions queryOptions) throws CellBaseException {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
@@ -197,7 +198,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    protected void solveCodingNegativeTranscript() {
+    protected void solveCodingNegativeTranscript() throws CellBaseException {
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
@@ -285,7 +286,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantEnd > transcript.getGenomicCodingEnd()) {
             if (transcript.getEnd() > transcript.getGenomicCodingEnd()
                     || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
@@ -311,7 +313,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveCodingExonVariantInNegativeTranscript(String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         if (cdnaVariantStart != -1) {  // Insertion
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
             if (cdnaVariantStart < (cdnaCodingStart + 2) && !transcript.unconfirmedStart()) {
@@ -387,7 +389,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart,
-                                                 Integer cdnaVariantEnd) {
+                                                 Integer cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
         if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
@@ -562,7 +564,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    protected void solveCodingPositiveTranscript() {
+    protected void solveCodingPositiveTranscript() throws CellBaseException {
 
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
@@ -656,7 +658,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+            throws CellBaseException {
         if (variantStart < transcript.getGenomicCodingStart()) {
             if (transcript.getStart() < transcript.getGenomicCodingStart()
                     || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
@@ -679,7 +682,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveCodingExonVariantInPositiveTranscript(String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
         if (cdnaVariantStart != -1) {
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -751,7 +754,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
     }
 
-    private void solveStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart) {
+    private void solveStopCodonPositiveInsertion(String transcriptSequence, Integer cdnaCodingStart, Integer cdnaVariantStart)
+            throws CellBaseException {
         // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates:
         // cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
         Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3;

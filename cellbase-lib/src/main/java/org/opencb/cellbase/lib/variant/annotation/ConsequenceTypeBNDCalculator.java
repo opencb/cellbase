@@ -22,6 +22,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -40,7 +41,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 
     @Override
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
-                                     boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) {
+                                     boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) throws CellBaseException {
         parseQueryParam(queryOptions);
 
         List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, overlapsRegulatoryRegion);
@@ -74,7 +75,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     private List<ConsequenceType> runBreakend(Variant currentVariant, List<Gene> geneList,
-                                              boolean[] overlapsRegulatoryRegion) {
+                                              boolean[] overlapsRegulatoryRegion) throws CellBaseException {
         variant = currentVariant;
         variantStart = getStart(variant);
         variantEnd = getEnd(variant);

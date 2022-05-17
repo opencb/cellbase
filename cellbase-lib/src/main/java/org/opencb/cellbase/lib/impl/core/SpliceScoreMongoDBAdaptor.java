@@ -21,17 +21,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.core.SpliceScoreAlternate;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
+public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
     public SpliceScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -42,10 +44,16 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
     private void init() {
         logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection(EtlCommons.SPLICE_SCORE_DATA);
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.SPLICE_SCORE_DATA);
     }
 
-    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate) {
+    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate)
+            throws CellBaseException {
+        return getScores(chromosome, position, reference, alternate, 0);
+    }
+
+    public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate, int dataRelease)
+            throws CellBaseException {
         long dbTimeStart = System.currentTimeMillis();
 
         String ref = StringUtils.isEmpty(reference) ? "-" : reference;
@@ -59,6 +67,7 @@ public class SpliceScoreMongoDBAdaptor extends MongoDBAdaptor {
 
         final String id = chromosome + ":" + position + ":" + ref + ":" + alt;
 
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
 
         List<SpliceScore> results = new ArrayList<>();

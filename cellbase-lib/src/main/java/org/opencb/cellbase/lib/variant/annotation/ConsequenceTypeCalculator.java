@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -49,6 +50,7 @@ public abstract class ConsequenceTypeCalculator {
     protected Transcript transcript;
     protected Variant variant;
     protected GenomeManager genomeManager;
+    protected int dataRelease;
     protected Boolean imprecise = true;
     protected int svExtraPadding = 0;
     protected int cnvExtraPadding = 0;
@@ -60,7 +62,7 @@ public abstract class ConsequenceTypeCalculator {
     protected static final int NO_EXON_OVERLAP = 0;
 
     public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList,
-                                              boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions);
+                                              boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) throws CellBaseException;
 
     protected void parseQueryParam(QueryOptions queryOptions) {
         imprecise = queryOptions.get(IMPRECISE) != null ? (Boolean) queryOptions.get(IMPRECISE) : true;
@@ -89,7 +91,7 @@ public abstract class ConsequenceTypeCalculator {
         }
     }
 
-    protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) {
+    protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) throws CellBaseException {
         switch (transcript.getBiotype()) {
             /**
              * Coding biotypes
@@ -125,7 +127,7 @@ public abstract class ConsequenceTypeCalculator {
         }
     }
 
-    protected void solveNegativeTranscript(List<ConsequenceType> consequenceTypeList) {
+    protected void solveNegativeTranscript(List<ConsequenceType> consequenceTypeList) throws CellBaseException {
         switch (transcript.getBiotype()) {
             /**
              * Coding biotypes
@@ -163,7 +165,7 @@ public abstract class ConsequenceTypeCalculator {
 
     protected abstract void solveNonCodingNegativeTranscript();
 
-    protected abstract void solveCodingNegativeTranscript();
+    protected abstract void solveCodingNegativeTranscript() throws CellBaseException;
 
     protected char[] getReverseComplementaryCodon(String transcriptSequence, int modifiedCodonStart) {
         char[] reverseCodon = (new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
@@ -178,7 +180,7 @@ public abstract class ConsequenceTypeCalculator {
 
     protected abstract void solveNonCodingPositiveTranscript();
 
-    protected abstract void solveCodingPositiveTranscript();
+    protected abstract void solveCodingPositiveTranscript() throws CellBaseException;
 
     protected int setCdsAndProteinPosition(int cdnaVariantPosition, int firstCdsPhase, int cdnaCodingStart) {
         if (cdnaVariantPosition != -1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
@@ -328,7 +330,8 @@ public abstract class ConsequenceTypeCalculator {
     protected int updateNegativeInsertionCodonArrays(String reverseTranscriptSequence,
                                                      char[] formattedReferenceCodon1Array,
                                                      int reverseTranscriptSequencePosition, int modifiedCodonPosition,
-                                                     char[] formattedModifiedCodonArray, char[] modifiedCodonArray) {
+                                                     char[] formattedModifiedCodonArray, char[] modifiedCodonArray)
+            throws CellBaseException {
         for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
             if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
                 int genomicCoordinate = transcript.getStart()
@@ -337,7 +340,7 @@ public abstract class ConsequenceTypeCalculator {
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                        .get(genomeManager.getGenomicSequence(query, new QueryOptions())
+                        .get(genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease)
                                 .getResults().get(0).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
@@ -356,8 +359,8 @@ public abstract class ConsequenceTypeCalculator {
 
     protected int updatePositiveInsertionCodonArrays(String transcriptSequence, char[] modifiedCodonArray,
                                                      int transcriptSequencePosition, int modifiedCodonPosition,
-                                                     char[] formattedReferenceCodonArray,
-                                                     char[] formattedModifiedCodonArray) {
+                                                     char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray)
+            throws CellBaseException {
         for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
             if (transcriptSequencePosition >= transcriptSequence.length()) {
                 int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
@@ -367,7 +370,7 @@ public abstract class ConsequenceTypeCalculator {
                 Query query = new Query(ParamConstants.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
-                modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions())
+                modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease)
                         .getResults().get(0).getSequence().charAt(0);
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);

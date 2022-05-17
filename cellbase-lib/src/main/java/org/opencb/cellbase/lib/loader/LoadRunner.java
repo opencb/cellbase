@@ -64,13 +64,20 @@ public class LoadRunner {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    @Deprecated
     public void load(Path filePath, String data) throws ClassNotFoundException, NoSuchMethodException, InstantiationException,
             IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException, IOException {
-        load(filePath, data, null, null);
+        load(filePath, data, 0, null, null);
     }
 
-    public void load(Path filePath, String data, String field, String[] innerFields) throws ClassNotFoundException,
-            NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException,
+    public void load(Path filePath, String data, int dataRelease) throws ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ExecutionException, InterruptedException,
+            IOException {
+        load(filePath, data, dataRelease, null, null);
+    }
+
+    public void load(Path filePath, String data, int dataRelease, String field, String[] innerFields)
+            throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException,
             ExecutionException, InterruptedException, IOException {
         try {
 
@@ -90,11 +97,10 @@ public class LoadRunner {
             // One CellBaseLoader is created for each thread in 'numThreads' variable
             List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numThreads);
             for (int i = 0; i < numThreads; i++) {
-                // Java reflection is used to create the CellBase data loaders for a specific database engine.
                 cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                        .getConstructor(BlockingQueue.class, String.class, String.class, String.class, String[].class,
-                                CellBaseConfiguration.class)
-                        .newInstance(blockingQueue, data, database, field, innerFields, cellBaseConfiguration));
+                        .getConstructor(BlockingQueue.class, String.class, Integer.class, String.class, String.class,
+                                String[].class, CellBaseConfiguration.class)
+                        .newInstance(blockingQueue, data, dataRelease, database, field, innerFields, cellBaseConfiguration));
                 logger.debug("CellBase loader thread '{}' created", i);
             }
 

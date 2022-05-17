@@ -44,6 +44,8 @@ public class CellBaseManagerFactory {
     private Map<String, OntologyManager> ontologyManagers;
     private FileManager fileManager;
 
+    private Map<String, DataReleaseManager> dataReleaseManagers;
+
     private Logger logger;
 
     public CellBaseManagerFactory(CellBaseConfiguration configuration) {
@@ -61,15 +63,16 @@ public class CellBaseManagerFactory {
         repeatsManagers = new HashMap<>();
         tfManagers = new HashMap<>();
         ontologyManagers = new HashMap<>();
+        dataReleaseManagers = new HashMap<>();
 
         System.out.println("In CellBaseManagerFactory");
     }
 
-    @Deprecated
     private String getMultiKey(String species, String assembly) {
         return species + "_" + assembly;
     }
 
+    @Deprecated
     private String getMultiKey(String species, String assembly, String resource) {
         return species + "_" + assembly + "_" + resource;
     }
@@ -325,4 +328,22 @@ public class CellBaseManagerFactory {
         return ontologyManagers.get(multiKey);
     }
 
+    public DataReleaseManager getDataRelesaseManager(String species) throws CellBaseException {
+        if (species == null) {
+            throw new CellBaseException("Species is required.");
+        }
+        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+        return getDataReleaseManager(species, assembly.getName());
+    }
+
+    public DataReleaseManager getDataReleaseManager(String species, String assembly) throws CellBaseException {
+        String multiKey = getMultiKey(species, assembly);
+        if (!dataReleaseManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
+            }
+            dataReleaseManagers.put(multiKey, new DataReleaseManager(species, assembly, configuration));
+        }
+        return dataReleaseManagers.get(multiKey);
+    }
 }

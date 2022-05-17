@@ -62,7 +62,12 @@ public class CellBaseMain {
             } else {
                 switch (parsedCommand) {
                     case "variant-annotation":
-                        commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
+                        try {
+                            commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
+                        } catch (CellBaseException e) {
+                            System.err.println("Error executing variant-annotation: " + e.getMessage());
+                            System.exit(1);
+                        }
                         break;
                     default:
                         break;
@@ -74,11 +79,10 @@ public class CellBaseMain {
                     commandExecutor.loadCellBaseConfiguration();
                     commandExecutor.execute();
                 } catch (IOException | URISyntaxException | CellBaseException e) {
-                    commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
+                    System.err.println("Error reading CellBase configuration: " + e.getMessage());
                     System.exit(1);
                 }
             }
         }
     }
-
 }

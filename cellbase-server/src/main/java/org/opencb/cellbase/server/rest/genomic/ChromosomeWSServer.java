@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -38,6 +37,8 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.List;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 /**
  * @author imedina
  */
@@ -48,14 +49,13 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     private GenomeManager genomeManager;
 
-    public ChromosomeWSServer(@PathParam("apiVersion")
-                              @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                      defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                              @PathParam("species")
-                              @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                              @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                              @DefaultValue("")
-                              @QueryParam("assembly") String assembly,
+    public ChromosomeWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                              @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                              @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                      String assembly,
+                              @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
+                              @QueryParam("dataRelease") int dataRelease,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -66,12 +66,13 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         if (StringUtils.isEmpty(assembly)) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
+
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION,
+    @ApiOperation(httpMethod = "GET", value = DATA_MODEL_DESCRIPTION,
             response = Chromosome.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Chromosome.class);
@@ -80,32 +81,32 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getAll() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             logger.info("/search GenomeQuery: {}", query.toString());
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -134,21 +135,22 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
             response = Chromosome.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING")
     })
-    public Response getChromosomes(@PathParam("chromosomes") @ApiParam(name = "chromosomes", value = ParamConstants.CHROMOSOMES,
-                                                required = true) String chromosomes) {
+    public Response getChromosomes(@PathParam("chromosomes") @ApiParam(name = "chromosomes", value = CHROMOSOMES,
+            required = true) String chromosomes) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes,
+                    query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

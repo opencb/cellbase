@@ -22,6 +22,7 @@ import org.opencb.cellbase.lib.managers.XrefManager;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 
 /**
@@ -36,15 +37,20 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     public void setUp() throws Exception {
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
+
+        createDataRelease();
+        dataRelease = 1;
+
         Path path = Paths.get(getClass().getResource("/xref/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", dataRelease);
+        updateDataRelease(dataRelease, "gene", Collections.emptyList());
     }
 
     @Test
     public void contains() throws Exception {
-//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37");
-        XrefManager xrefManager = cellBaseManagerFactory.getXrefManager("hsapiens", "GRCh38");
+//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37", dataRelease);
+        XrefManager xrefManager = cellBaseManagerFactory.getXrefManager(SPECIES, ASSEMBLY);
 //        CellBaseDataResult xrefs = xRefDBAdaptor.contains("BRCA2", new QueryOptions());
 //        Set<String> reference = new HashSet<>(Arrays.asList("ENSG00000185515", "ENSG00000139618", "ENSG00000107949",
 //                "ENSG00000083093", "ENSG00000170037"));

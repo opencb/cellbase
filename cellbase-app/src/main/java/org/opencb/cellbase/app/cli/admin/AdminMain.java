@@ -63,6 +63,9 @@ public class AdminMain {
                     case "build":
                         commandExecutor = new BuildCommandExecutor(cliOptionsParser.getBuildCommandOptions());
                         break;
+                    case "data-release":
+                        commandExecutor = new DataReleaseCommandExecutor(cliOptionsParser.getDataReleaseCommandOptions());
+                        break;
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;

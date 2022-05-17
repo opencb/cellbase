@@ -58,11 +58,12 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return geneDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source) {
-        return geneDBAdaptor.info(ids, query, source);
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease)
+            throws CellBaseException {
+        return geneDBAdaptor.info(ids, query, source, dataRelease);
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) {
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) throws CellBaseException {
         // get the coordinates for the gene
         CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);
         // get the sequences for those coordinates
@@ -70,12 +71,12 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
             List<Gene> results = geneCellBaseDataResult.getResults();
             Gene gene = results.get(0);
             Region region = new Region(gene.getChromosome(), gene.getStart(), gene.getEnd());
-            return genomeDBAdaptor.getSequence(region, query.toQueryOptions());
+            return genomeDBAdaptor.getSequence(region, query.toQueryOptions(), query.getDataRelease());
         }
         return null;
     }
 
-    public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) {
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) throws CellBaseException {
         List<CellBaseDataResult<GenomeSequenceFeature>> sequences = new ArrayList<>();
         for (GeneQuery query : queries) {
             sequences.add(getSequence(query));
@@ -83,18 +84,19 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
         return sequences;
     }
 
-    public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) {
+    public List<CellBaseDataResult<TranscriptTfbs>> getTfbs(GeneQuery query) throws CellBaseException {
         List<CellBaseDataResult<TranscriptTfbs>> geneQueryResults = new ArrayList<>();
         for (String gene : query.getIds()) {
-            CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions());
+            CellBaseDataResult<TranscriptTfbs> geneQueryResult = geneDBAdaptor.getTfbs(gene, query.toQueryOptions(),
+                    query.getDataRelease());
             geneQueryResult.setId(gene);
             geneQueryResults.add(geneQueryResult);
         }
         return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions) {
-        return geneDBAdaptor.startsWith(query, queryOptions);
+    public CellBaseDataResult<Gene> startsWith(String query, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
+        return geneDBAdaptor.startsWith(query, queryOptions, dataRelease);
     }
 
 }

@@ -31,7 +31,8 @@ public class RepeatsManager extends AbstractManager implements AggregationApi<Re
         this(species, null, configuration);
     }
 
-    public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();

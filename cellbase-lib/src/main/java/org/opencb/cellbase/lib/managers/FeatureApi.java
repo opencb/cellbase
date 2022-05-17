@@ -16,12 +16,13 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +31,13 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
 
     CellBaseCoreDBAdaptor<Q, T> getDBAdaptor();
 
-    default CellBaseDataResult<T> search(Q query) throws QueryException, IllegalAccessException {
+    default CellBaseDataResult<T> search(Q query) throws QueryException, IllegalAccessException, CellBaseException {
         query.setDefaults();
         query.validate();
         return getDBAdaptor().query(query);
     }
 
-    default List<CellBaseDataResult<T>> search(List<Q> queries) throws QueryException, IllegalAccessException {
+    default List<CellBaseDataResult<T>> search(List<Q> queries) throws QueryException, IllegalAccessException, CellBaseException {
         List<CellBaseDataResult<T>> results = new ArrayList<>();
         for (Q query : queries) {
             results.add(getDBAdaptor().query(query));
@@ -44,16 +45,17 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
         return results;
     }
 
-    default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
-        return getDBAdaptor().info(ids, queryOptions);
+    default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
+        return getDBAdaptor().info(ids, queryOptions, dataRelease);
     }
 
-    default CellBaseDataResult<String> distinct(Q query) {
+    default CellBaseDataResult<String> distinct(Q query) throws CellBaseException {
         query.setCount(Boolean.FALSE);
         return getDBAdaptor().distinct(query);
     }
 
-    default CellBaseIterator<T> iterator(Q query) {
+    default CellBaseIterator<T> iterator(Q query) throws CellBaseException {
         return getDBAdaptor().iterator(query);
     }
 }

@@ -18,7 +18,6 @@ package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -33,6 +32,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 /**
  * Created by imedina on 04/08/15.
  */
@@ -43,17 +44,17 @@ public class SpeciesWSServer extends GenericRestWSServer {
 
     private GenomeManager genomeManager;
 
-    public SpeciesWSServer(@PathParam("apiVersion")
-                           @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                           @PathParam("species")
-                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                           @DefaultValue("")
-                           @QueryParam("assembly") String assembly,
+    public SpeciesWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                           @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                           @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                   String assembly,
+                           @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
+                                   int dataRelease,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
+
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
@@ -62,15 +63,15 @@ public class SpeciesWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getSpeciesInfo() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

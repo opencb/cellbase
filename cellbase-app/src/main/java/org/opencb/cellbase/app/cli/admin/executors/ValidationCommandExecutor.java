@@ -25,7 +25,6 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.validation.VEPVariant;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -42,7 +41,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class ValidationCommandExecutor extends CommandExecutor {
 
@@ -74,7 +72,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
         VariantAnnotationCalculator variantAnnotationCalculator = null;
         try {
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
-                    validationCommandOptions.assembly, cellbaseManagerFactory);
+                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, cellbaseManagerFactory);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;
@@ -163,7 +161,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
             matchWriter.close();
 
             writeResultsSummary(resultsWriter);
-        } catch (IOException | InterruptedException | ExecutionException | IllegalAccessException | QueryException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

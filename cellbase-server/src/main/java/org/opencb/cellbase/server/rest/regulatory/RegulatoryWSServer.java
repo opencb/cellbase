@@ -18,9 +18,8 @@ package org.opencb.cellbase.server.rest.regulatory;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.api.RegulationQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -34,6 +33,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 @Path("/{apiVersion}/{species}/regulatory")
 @Produces("text/plain")
 @Api(value = "Regulation", description = "Gene expression regulation RESTful Web Services API")
@@ -41,20 +42,20 @@ public class RegulatoryWSServer extends GenericRestWSServer {
 
     private RegulatoryManager regulatoryManager;
 
-    public RegulatoryWSServer(@PathParam("apiVersion")
-                              @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                      defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
-                              @PathParam("species")
-                              @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                              @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
-                              @DefaultValue("")
-                              @QueryParam("assembly") String assembly,
+    public RegulatoryWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
+            defaultValue = DEFAULT_VERSION) String apiVersion,
+                              @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
+                              @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
+                                      String assembly,
+                              @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
+                              @QueryParam("dataRelease") int dataRelease,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
+
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
     }
 
@@ -64,11 +65,11 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             value = "Get a unique list of values for a given field.")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
-                    value = ParamConstants.REGION_DESCRIPTION,
+                    value = REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
 
             @ApiImplicitParam(name = "featureType",
-                    value = ParamConstants.REGULATION_FEATURE_TYPES,
+                    value = REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
@@ -89,7 +90,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             response = String.class, responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
-                    value = ParamConstants.REGION_DESCRIPTION,
+                    value = REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureTypes() {
@@ -108,10 +109,10 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves a list of available regulatory feature classes",
             response = String.class, responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
+            @ApiImplicitParam(name = "region", value = REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
-                    value = ParamConstants.REGULATION_FEATURE_TYPES,
+                    value = REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureClasses() {
@@ -131,28 +132,28 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             value = "Retrieves all regulatory elements", response = RegulatoryFeature.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+            @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
+            @ApiImplicitParam(name = "region", value = REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
-                    value = ParamConstants.REGULATION_FEATURE_TYPES,
+                    value = REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
     public Response getAll() {

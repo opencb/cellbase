@@ -9,6 +9,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
@@ -39,16 +40,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void init() throws Exception {
-        clearDB(GRCH37_DBNAME);
+        dataRelease = 1;
+
+        clearDB(CELLBASE_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/hgvs/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", dataRelease);
         path = Paths.get(getClass()
                 .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
+        loadRunner.load(path, "genome_sequence", dataRelease);
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
         geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
-        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"));
+        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"), dataRelease);
 //        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 
@@ -511,7 +514,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
      * NB: THESE ARE GRCH37 TRANSCRIPTS!
      */
     @Test
-    public void testTranscriptHgvs() throws QueryException, IllegalAccessException {
+    public void testTranscriptHgvs() throws QueryException, IllegalAccessException, CellBaseException {
 
         // Invalid characters in alternate allele ("TBS") - should not break the code, no transcript hgvs should be
         // returned
@@ -701,7 +704,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    private List<String> getVariantHgvs(Variant variant) throws QueryException, IllegalAccessException {
+    private List<String> getVariantHgvs(Variant variant) throws QueryException, IllegalAccessException, CellBaseException {
         GeneQuery query = new GeneQuery();
         Region region = new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
         query.setRegions(Collections.singletonList(region));

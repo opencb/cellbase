@@ -31,7 +31,8 @@ public class TfbsManager extends AbstractManager implements AggregationApi<TfbsQ
         this(species, null, configuration);
     }
 
-    public TfbsManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public TfbsManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();

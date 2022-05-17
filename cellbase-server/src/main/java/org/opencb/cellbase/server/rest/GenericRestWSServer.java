@@ -164,6 +164,25 @@ public class GenericRestWSServer implements IWSServer {
         checkVersion();
     }
 
+//    protected DataRelease getDataRelease(String species, String assembly, int release, CellBaseConfiguration cellBaseConfiguration)
+//            throws CellBaseException {
+//        ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
+//        if (release == 0) {
+//            return releaseManager.getDefault();
+//        } else {
+//            return releaseManager.get(release);
+//        }
+//
+//    }
+
+    protected int getDataRelease() throws CellBaseException {
+        if (uriParams.containsKey("dataRelease")) {
+            return Integer.parseInt(uriParams.get("dataRelease"));
+        }
+        // It means to use the default data release
+        return 0;
+    }
+
     /**
      * If limit is empty, then set to be 10. If limit is set, check that it is less than maximum allowed limit.
      *

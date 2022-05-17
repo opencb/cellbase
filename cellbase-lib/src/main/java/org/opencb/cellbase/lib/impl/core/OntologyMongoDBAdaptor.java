@@ -23,12 +23,14 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -36,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
+public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
     private static final GenericDocumentComplexConverter<OntologyTerm> CONVERTER;
 
@@ -53,22 +55,26 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     private void init() {
         logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("ontology");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("ontology");
     }
 
     @Override
-    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) {
+    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
+
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         for (String id : ids) {
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
@@ -85,8 +91,9 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(OntologyQuery query) {
+    public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
@@ -96,10 +103,11 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     }
 
     @Override
-    public CellBaseDataResult groupBy(OntologyQuery query) {
+    public CellBaseDataResult groupBy(OntologyQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return groupBy(bsonQuery, query, "name");
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
     public Bson parseQuery(OntologyQuery query) {
@@ -107,8 +115,10 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
-                Object value = entry.getValue();
-                createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                if (!"dataRelease".equals(dotNotationName)) {
+                    Object value = entry.getValue();
+                    createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();

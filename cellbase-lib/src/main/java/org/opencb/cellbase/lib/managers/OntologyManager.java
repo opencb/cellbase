@@ -31,7 +31,8 @@ public class OntologyManager extends AbstractManager implements AggregationApi<O
         this(species, null, configuration);
     }
 
-    public OntologyManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public OntologyManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();

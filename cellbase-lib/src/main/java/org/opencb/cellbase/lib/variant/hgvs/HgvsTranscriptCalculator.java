@@ -21,6 +21,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -50,28 +51,32 @@ public class HgvsTranscriptCalculator {
     private static final String DUP = "dup";
     private static final int MINIMUM_NEIGHBOURING_SEQUENCE_SIZE = 100;
     private final GenomeManager genomeManager;
+    private final int dataRelease;
 
     /**
      * Constructor.
      *
+     * @param genomeManager Genome manager
+     * @param dataRelease Data release
      * @param variant variant of interest. Can be SNV, DEL or INS
      * @param transcript transcript containing variant
-     * @param genomeManager database connection used for querying sequences
      * @param geneId ensembl gene id
      */
-    public HgvsTranscriptCalculator(GenomeManager genomeManager, Variant variant, Transcript transcript, String geneId) {
+    public HgvsTranscriptCalculator(GenomeManager genomeManager, int dataRelease, Variant variant, Transcript transcript, String geneId) {
         this.variant = variant;
         this.transcript = transcript;
         this.transcriptUtils =  new TranscriptUtils(transcript);
         this.geneId = geneId;
         this.genomeManager = genomeManager;
+        this.dataRelease = dataRelease;
     }
 
     /**
      * Generates cdna HGVS names from an SNV.
      * @return HGVS string for this transcript
+     * @throws CellBaseException CellBase exception
      */
-    public String calculate() {
+    public String calculate() throws CellBaseException {
         // Check reference and alternate alleles do not contain unexpected characters
         if (!HgvsCalculator.isValid(this.variant)) {
             return null;
@@ -155,7 +160,7 @@ public class HgvsTranscriptCalculator {
         return allele.toString();
     }
 
-    private String calculateInsertionHgvsString() {
+    private String calculateInsertionHgvsString() throws CellBaseException {
         buildingComponents = new BuildingComponents();
 
         // Additional normalization required for insertions
@@ -233,7 +238,7 @@ public class HgvsTranscriptCalculator {
         }
     }
 
-    private String calculateDeletionHgvsString() {
+    private String calculateDeletionHgvsString() throws CellBaseException {
         buildingComponents = new BuildingComponents();
 
         // Additional normalization required for insertions
@@ -428,14 +433,14 @@ public class HgvsTranscriptCalculator {
     }
 
     private BuildingComponents.MutationType genomicInsertionHgvsNormalize(Variant variant, Transcript transcript,
-                                                                          Variant normalizedVariant) {
+                                                                          Variant normalizedVariant) throws CellBaseException {
         // Get genomic sequence around the lesion.
         int neighbouringSequenceSize = Math.max(MINIMUM_NEIGHBOURING_SEQUENCE_SIZE, variant.getAlternate().length());
         int start = Math.max(variant.getStart() - neighbouringSequenceSize, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + neighbouringSequenceSize + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+        String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
@@ -489,14 +494,15 @@ public class HgvsTranscriptCalculator {
         return BuildingComponents.MutationType.INSERTION;
     }
 
-    private String transcriptDeletionHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
+    private String transcriptDeletionHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant)
+            throws CellBaseException {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - MINIMUM_NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + MINIMUM_NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
         Query query = new Query("region", variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence
-                = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+                = genomeManager.getGenomicSequence(query, new QueryOptions(), dataRelease).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());

@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -53,7 +54,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<VariantQuery, Variant> {
+public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<VariantQuery, Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -64,7 +65,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             = new PopulationFrequencyPhasedQueryManager();
 
 
-    private MongoDBCollection caddDBCollection;
+    private Map<Integer, MongoDBCollection> caddDBCollectionByRelease;
 
     public VariantMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -75,8 +76,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     private void init() {
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("variation");
-        caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("variation");
+        caddDBCollectionByRelease = buildCollectionByReleaseMap("variation_functional_score");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -87,24 +88,26 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return null;
     }
 
-    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options, int dataRelease)
+            throws CellBaseException {
         if (query.getString(ParamConstants.QueryParams.REGION.key()) != null) {
             Region region = Region.parseRegion(query.getString(ParamConstants.QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(query);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options, mongoDBCollection);
         }
         return null;
     }
 
     //    @Override
-    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields, int dataRelease) throws CellBaseException {
         CellBaseDataResult<Long> nLoadedObjects = null;
         switch (field) {
             case POP_FREQUENCIES_FIELD:
-                nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList);
+                nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList, dataRelease);
                 break;
             case ANNOTATION_FIELD:
-                nLoadedObjects = updateAnnotation((List<Document>) objectList, innerFields);
+                nLoadedObjects = updateAnnotation((List<Document>) objectList, innerFields, dataRelease);
                 break;
             default:
                 logger.error("Invalid field {}: no action implemented for updating this field.", field);
@@ -113,17 +116,19 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return nLoadedObjects;
     }
 
-    public CellBaseDataResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query, int dataRelease) throws CellBaseException {
         Bson document = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult(mongoDBCollection.count(document));
     }
 
-    public CellBaseDataResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field, int dataRelease) throws CellBaseException {
         Bson document = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult(mongoDBCollection.distinct(field, document));
     }
 
-    public CellBaseDataResult<Variant> get(Query query, QueryOptions inputOptions) {
+    public CellBaseDataResult<Variant> get(Query query, QueryOptions inputOptions, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
 
@@ -134,6 +139,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, options));
     }
 
@@ -153,44 +159,49 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return options;
     }
 
-    public List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
+    public List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options, int dataRelease) {
         return null;
     }
 
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult(mongoDBCollection.find(bson, options));
     }
 
-    public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
+    public Iterator<Variant> iterator(Query query, QueryOptions inputOptions, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new VariantMongoDBIterator(mongoDBCollection.nativeQuery().find(bson, options));
     }
 
-    public Iterator nativeIterator(Query query, QueryOptions options) {
+    public Iterator nativeIterator(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
-    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options, int dataRelease) throws CellBaseException {
         Objects.requireNonNull(action);
-        Iterator iterator = nativeIterator(query, options);
+        Iterator iterator = nativeIterator(query, options, dataRelease);
         while (iterator.hasNext()) {
             action.accept(iterator.next());
         }
     }
 
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, field, "name", options);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        return groupBy(bsonQuery, field, "name", options, mongoDBCollection);
     }
 
-    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, fields, "name", options);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        return groupBy(bsonQuery, fields, "name", options, mongoDBCollection);
     }
 
     @Deprecated
@@ -240,6 +251,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                     case "region":
                         createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
+                    case VariantQuery.DATA_RELEASE:
                     case "svType":
                         // don't do anything, this is parsed later
                         break;
@@ -408,7 +420,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         }
     }
 
-    private CellBaseDataResult<Long> updateAnnotation(List<Document> variantDocumentList, String[] innerFields) {
+    private CellBaseDataResult<Long> updateAnnotation(List<Document> variantDocumentList, String[] innerFields, int dataRelease)
+            throws CellBaseException {
         List<Bson> queries = new ArrayList<>(variantDocumentList.size());
         List<Bson> updates = new ArrayList<>(variantDocumentList.size());
 
@@ -444,6 +457,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             QueryOptions options = new QueryOptions("upsert", false);
             options.put("multi", false);
             try {
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
             } catch (BulkWriteException e) {
                 throw e;
@@ -461,7 +475,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     }
 
-    private CellBaseDataResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {
+    private CellBaseDataResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList, int dataRelease)
+            throws CellBaseException {
         List<Bson> queries = new ArrayList<>(variantDocumentList.size());
         List<Bson> updates = new ArrayList<>(variantDocumentList.size());
 //        CellBaseDataResult<Long> longCellBaseDataResult = null;
@@ -498,6 +513,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             QueryOptions options = new QueryOptions("upsert", true);
             options.put("multi", false);
             try {
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
             } catch (BulkWriteException e) {
                 throw e;
@@ -531,7 +547,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         dbObject.put("_chunkIds", chunkIds);
     }
 
-    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions) {
+    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         String chromosome = variant.getChromosome();
         int position = variant.getStart();
         String reference = variant.getReference();
@@ -542,8 +559,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 //                .and("chromosome").is(chromosome)
 //                .and("start").is(position);
 //        System.out.println(chunkId);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(caddDBCollectionByRelease, dataRelease);
         CellBaseDataResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
-                new Document(builder.get().toMap()), queryOptions, caddDBCollection);
+                new Document(builder.get().toMap()), queryOptions, mongoDBCollection);
 
 //        System.out.println("result = " + result);
 
@@ -632,14 +650,17 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
      * Created an specific method for pop freqs here since in this case phase is managed at the Pop. freq level.
      * @param variants list of Variant objects to query
      * @param queryOptions query options, e.g. phased={true, false}
+     * @param dataRelease release of the data (aka, version)
      * @return list of CellBaseDataResult of Variant objects, each of which contains the query result of each variant in the
      * input list ("variants"). Positions within the list of CellBaseDataResult must always correspond to the position Variant
      * objects occupy in the "variants" query list.
+     * @throws CellBaseException CellBase exception
      */
-    public List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions) {
+    public List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions,
+                                                                             int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getByVariant(variant, queryOptions));
+            results.add(getByVariant(variant, queryOptions, dataRelease));
         }
 
         if (queryOptions.get(ParamConstants.QueryParams.PHASE.key()) != null && queryOptions.getBoolean(
@@ -650,7 +671,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return results;
     }
 
-    CellBaseDataResult getByVariant(Variant variant, QueryOptions options) {
+    CellBaseDataResult getByVariant(Variant variant, QueryOptions options, int dataRelease) throws CellBaseException {
         Query query;
 //        if (VariantType.CNV.equals(variant.getType())) {
 
@@ -690,24 +711,25 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
                     .append(ParamConstants.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(ParamConstants.QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
-        return get(query, options);
+        return get(query, options, dataRelease);
     }
 
-    private List<CellBaseDataResult> getByVariant(List<Variant> variants, QueryOptions options) {
+    private List<CellBaseDataResult> getByVariant(List<Variant> variants, QueryOptions options, int dataRelease) throws CellBaseException {
         List<CellBaseDataResult> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getByVariant(variant, options));
+            results.add(getByVariant(variant, options, dataRelease));
         }
         return results;
     }
 
     @Override
-    public CellBaseIterator<Variant> iterator(VariantQuery query) {
+    public CellBaseIterator<Variant> iterator(VariantQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         VariantConverter converter = new VariantConverter();
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -728,14 +750,16 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         for (String id : ids) {
             Bson projection = getProjection(queryOptions);
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
             Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<Variant>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
+            results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
         }
         return results;
     }

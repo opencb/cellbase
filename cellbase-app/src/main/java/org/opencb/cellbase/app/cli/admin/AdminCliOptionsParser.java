@@ -33,6 +33,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
+    private DataReleaseCommandOptions dataReleaseCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
@@ -47,6 +48,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
+        dataReleaseCommandOptions = new DataReleaseCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
@@ -56,6 +58,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
+        jCommander.addCommand("data-release", dataReleaseCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
@@ -121,6 +124,22 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     }
 
+    @Parameters(commandNames = {"data-release"}, commandDescription = "Manage data releases in order to support multiple versions of data")
+    public class DataReleaseCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        public String database;
+
+        @Parameter(names = {"--create"}, description = "Create a new data release", arity = 0)
+        public boolean create;
+
+        @Parameter(names = {"--set-active"}, description = "Set the release active by default", arity = 1)
+        public int activeByDefault;
+    }
+
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
     public class LoadCommandOptions {
 
@@ -131,6 +150,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score. 'all' loads everything",
                 required = true, arity = 1)
         public String data;
+
+        @Parameter(names = {"--data-release"}, description = "Data release where the data will be loaded, if this is not provided or"
+                + " is zero, then the active release by default will be used", arity = 1)
+        public int dataRelease;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded, e.g. "
                 + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
@@ -256,6 +279,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
         public String assembly = "GRCh38";
 
+        @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter to 0", required = false, arity = 1)
+        public int dataRelease = 0;
+
         @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
         public String inputFile;
 
@@ -299,6 +325,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     public BuildCommandOptions getBuildCommandOptions() {
         return buildCommandOptions;
+    }
+
+    public DataReleaseCommandOptions getDataReleaseCommandOptions() {
+        return dataReleaseCommandOptions;
     }
 
     public LoadCommandOptions getLoadCommandOptions() {

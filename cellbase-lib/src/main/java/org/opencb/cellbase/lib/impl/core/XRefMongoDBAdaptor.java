@@ -22,6 +22,7 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.XrefQuery;
@@ -30,6 +31,7 @@ import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -41,7 +43,7 @@ import java.util.Map;
 /**
  * Created by imedina on 07/12/15.
  */
-public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
+public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
     public XRefMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -51,23 +53,25 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     private void init() {
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("gene");
     }
 
     @Override
-    public CellBaseIterator<Xref> iterator(XrefQuery query) {
+    public CellBaseIterator<Xref> iterator(XrefQuery query) throws CellBaseException {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Xref>> results = new ArrayList<>();
         for (String id : ids) {
-            XrefQuery query = getInfoQuery(queryOptions);
+            XrefQuery query = getInfoQuery(queryOptions, dataRelease);
             query.setIds(Collections.singletonList(id));
             CellBaseIterator<Xref> iterator = iterator(query);
             List<Xref> xrefs = new ArrayList<>();
@@ -80,13 +84,14 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         return results;
     }
 
-    private XrefQuery getInfoQuery(ProjectionQueryOptions queryOptions) {
+    private XrefQuery getInfoQuery(ProjectionQueryOptions queryOptions, int dataRelease) {
         XrefQuery xrefQuery;
         if (queryOptions == null) {
             xrefQuery = new XrefQuery();
         } else {
             xrefQuery = (XrefQuery) queryOptions;
         }
+        xrefQuery.setDataRelease(dataRelease);
         return xrefQuery;
     }
 
@@ -147,6 +152,9 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         break;
                     case "dbname":
                         createAndOrQuery(value, "transcripts.xrefs.dbName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

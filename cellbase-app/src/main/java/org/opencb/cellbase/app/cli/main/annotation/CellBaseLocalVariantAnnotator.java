@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli.main.annotation;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -50,7 +51,8 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         return true;
     }
 
-    public void run(List<Variant> variantList) throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
+    public void run(List<Variant> variantList) throws InterruptedException, ExecutionException, QueryException, IllegalAccessException,
+            CellBaseException {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
 
         // getAnnotationByVariantList will not create new Variant objects but modify the ones passed as parameters - no

@@ -17,6 +17,8 @@
 package org.opencb.cellbase.lib.loader;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,8 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final BlockingQueue<List<String>> blockingQueue;
     protected String data;
+    protected int dataRelease;
+    protected DataReleaseManager dataReleaseManager;
     protected String database;
 
     protected String field;
@@ -42,15 +46,17 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
     protected final Logger logger;
 
-
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, CellBaseConfiguration configuration) {
-        this(blockingQueue, data, database, null, null, configuration);
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, String database,
+                          CellBaseConfiguration configuration) throws CellBaseException {
+        this(blockingQueue, data, dataRelease, database, null, null, configuration);
     }
 
-    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, String field,
-                          String[] innerFields, CellBaseConfiguration configuration) {
+    public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, int dataRelease, String database, String field,
+                          String[] innerFields, CellBaseConfiguration configuration)
+            throws CellBaseException {
         this.blockingQueue = blockingQueue;
         this.data = data;
+        this.dataRelease = dataRelease;
         this.database = database;
         this.field = field;
         this.innerFields = innerFields;
@@ -66,16 +72,17 @@ public abstract class CellBaseLoader implements Callable<Integer> {
             }
         }
 
+        dataReleaseManager = new DataReleaseManager(this.database, this.cellBaseConfiguration);
+
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
     public abstract void init() throws LoaderException;
 
     @Override
-    public abstract Integer call();
+    public abstract Integer call() throws LoaderException;
 
     public abstract void createIndex(String data) throws LoaderException;
 
-    public abstract void close();
-
+    public abstract void close() throws LoaderException;
 }

@@ -29,7 +29,8 @@ public class XrefManager extends AbstractManager implements FeatureApi {
         this(species, null, configuration);
     }
 
-    public XrefManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public XrefManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();

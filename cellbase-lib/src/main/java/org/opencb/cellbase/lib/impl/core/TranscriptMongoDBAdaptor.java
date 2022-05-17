@@ -30,6 +30,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
@@ -46,9 +47,9 @@ import java.util.*;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
+public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
 
-    private MongoDBCollection refseqCollection = null;
+    private Map<Integer, MongoDBCollection> refseqCollectionByRelease = null;
 
     private static final GenericDocumentComplexConverter<Transcript> CONVERTER;
 
@@ -63,29 +64,33 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     private void init() {
-        mongoDBCollection = mongoDataStore.getCollection("gene");
-        refseqCollection = mongoDataStore.getCollection("refseq");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("gene");
+        refseqCollectionByRelease = buildCollectionByReleaseMap("refseq");
     }
 
     @Override
-    public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
+    public CellBaseIterator<Transcript> iterator(TranscriptQuery query) throws CellBaseException {
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         MongoDBIterator<Transcript> iterator;
         if (query.getSource() != null && !query.getSource().isEmpty() && "RefSeq".equalsIgnoreCase(query.getSource().get(0))) {
-            iterator = refseqCollection.iterator(pipeline, CONVERTER, queryOptions);
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(refseqCollectionByRelease, query.getDataRelease());
+            iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
         } else {
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
             iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
         }
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions) {
-        return info(ids, projectionQueryOptions, null);
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease)
+            throws CellBaseException {
+        return info(ids, projectionQueryOptions, null, dataRelease);
     }
 
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source) {
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source,
+                                                     int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
@@ -106,8 +111,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             List<Bson> pipeline = unwindAndMatchTranscripts(bson, queryOptions);
             MongoDBIterator<Transcript> iterator;
             if (StringUtils.isNotEmpty(source) && ParamConstants.QueryParams.REFSEQ.key().equalsIgnoreCase(source)) {
-                iterator = refseqCollection.iterator(pipeline, CONVERTER, queryOptions);
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(refseqCollectionByRelease, dataRelease);
+                iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
             } else {
+                MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 iterator = mongoDBCollection.iterator(pipeline, CONVERTER, queryOptions);
             }
 
@@ -150,10 +157,11 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         return Arrays.asList(match, include, unwind, match2, project);
     }
 
-    public CellBaseDataResult<Long> count(TranscriptQuery query) {
+    public CellBaseDataResult<Long> count(TranscriptQuery query) throws CellBaseException {
         List<Bson> projections = unwind(query);
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
         projections.add(group);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult(mongoDBCollection.aggregate(projections, null));
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();
@@ -167,16 +175,18 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) {
+    public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return groupBy(bsonQuery, query, "name");
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(TranscriptQuery query) {
+    public CellBaseDataResult<String> distinct(TranscriptQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
@@ -213,7 +223,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                         andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
                     case "source":
-                        // do nothing
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

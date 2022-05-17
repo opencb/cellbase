@@ -16,11 +16,19 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.BsonDocument;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -28,33 +36,43 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.List;
 
-/**
- * Created by fjlopez on 07/06/16.
- */
-@Deprecated
-public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private MongoDBCollection mongoDBCollection;
 
-    public MetaMongoDBAdaptor(MongoDataStore mongoDataStore) {
+    private final String DATA_RELEASE_COLLECTION_NAME = "data_release";
+
+    public ReleaseMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
 
         init();
     }
 
-
     private void init() {
-        logger.debug("MetaMongoDBAdaptor: in 'constructor'");
-        mongoDBCollection = mongoDataStore.getCollection("metadata");
+        logger.debug("ReleaseMongoDBAdaptor: in 'constructor'");
+        mongoDBCollection = mongoDataStore.getCollection(DATA_RELEASE_COLLECTION_NAME);
     }
 
-    public CellBaseDataResult getAll() {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), new QueryOptions()));
+    public CellBaseDataResult<DataRelease> getAll() {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null, DataRelease.class, new QueryOptions()));
+    }
+
+    public DataResult insert(DataRelease dataRelease) throws JsonProcessingException {
+        Document document = Document.parse(new ObjectMapper().writeValueAsString(dataRelease));
+        return mongoDBCollection.insert(document, QueryOptions.empty());
+    }
+
+    public void update(int release, String field, Object value) {
+        Bson query = Filters.eq("release", release);
+        Document projection = new Document(field, true);
+        Bson update = Updates.set(field, value);
+        QueryOptions queryOptions = new QueryOptions("replace", true);
+        mongoDBCollection.findAndUpdate(query, projection, null, update, queryOptions);
     }
 
     @Override
     public CellBaseDataResult query(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+        return null;
     }
 
     @Override
@@ -66,7 +84,6 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
-
 
     @Override
     public CellBaseDataResult<Long> count(AbstractQuery query) {

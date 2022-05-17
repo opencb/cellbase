@@ -44,7 +44,8 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         this(species, null, configuration);
     }
 
-    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) throws CellBaseException {
+    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellBaseException {
         super(species, assembly, configuration);
 
         this.init();
@@ -60,15 +61,16 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
     }
 
 
-    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {
-        return genomeDBAdaptor.getGenomeInfo(queryOptions);
+    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions, int dataRelease) throws CellBaseException {
+        return genomeDBAdaptor.getGenomeInfo(queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
+    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId, int dataRelease)
+            throws CellBaseException {
         List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
         List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
         for (String chromosome : chromosomeList) {
-            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
+            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions, dataRelease);
             queryResult.setId(chromosome);
             queryResults.add(queryResult);
         }
@@ -80,11 +82,12 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
      *
      * @param query The genome query. Should have regions populated
      * @return sequence for each region
+     * @throws CellBaseException CellBase exception
      */
-    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(GenomeQuery query) {
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(GenomeQuery query) throws CellBaseException {
         List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = new ArrayList<>();
         for (Region region : query.getRegions()) {
-            queryResults.add(genomeDBAdaptor.getSequence(region, query.toQueryOptions()));
+            queryResults.add(genomeDBAdaptor.getSequence(region, query.toQueryOptions(), query.getDataRelease()));
         }
 
         for (int i = 0; i < query.getRegions().size(); i++) {
@@ -94,11 +97,12 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
     }
 
     @Deprecated
-    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions, int dataRelease)
+            throws CellBaseException {
         List<Region> regionList = Region.parseRegions(regions);
         List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = new ArrayList<>();
         for (Region region : regionList) {
-            queryResults.add(genomeDBAdaptor.getSequence(region, queryOptions));
+            queryResults.add(genomeDBAdaptor.getSequence(region, queryOptions, dataRelease));
         }
 
         for (int i = 0; i < regionList.size(); i++) {
@@ -108,53 +112,62 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
     }
 
     @Deprecated
-    public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand) {
+    public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand,
+                                                                 int dataRelease) throws CellBaseException {
         query.put(ParamConstants.QueryParams.REGION.key(), regions);
         query.put("strand", strand);
-        CellBaseDataResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+        CellBaseDataResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions, dataRelease);
         queryResult.setId(regions);
         return queryResult;
     }
 
-    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, List<Region> regionList) {
-        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);
+    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, List<Region> regionList,
+                                                                               int dataRelease) throws CellBaseException {
+        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions,
+                dataRelease);
         return queryResultList;
     }
 
-    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, String regions) {
+    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, String regions, int dataRelease)
+            throws CellBaseException {
         List<Region> regionList = Region.parseRegions(regions);
-        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);
+        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions,
+                dataRelease);
         for (int i = 0; i < regionList.size(); i++) {
             queryResultList.get(i).setId(regions);
         }
         return queryResultList;
     }
 
-    public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options) {
-        return genomeDBAdaptor.getAllScoresByRegionList(regionList, options);
+    public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options, int dataRelease)
+            throws CellBaseException {
+        return genomeDBAdaptor.getAllScoresByRegionList(regionList, options, dataRelease);
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions) {
-        return genomeDBAdaptor.getSequence(region, queryOptions);
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
+        return genomeDBAdaptor.getSequence(region, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
-        return genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
+        return genomeDBAdaptor.getGenomicSequence(query, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
-        return genomeDBAdaptor.getCytobands(region, queryOptions);
+    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions, int dataRelease) throws CellBaseException {
+        return genomeDBAdaptor.getCytobands(region, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions, int dataRelease)
+            throws CellBaseException {
         List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = new ArrayList<>(regionList.size());
         for (Region region : regionList) {
-            cellBaseDataResultList.add(getCytobands(region, queryOptions));
+            cellBaseDataResultList.add(getCytobands(region, queryOptions, dataRelease));
         }
         return cellBaseDataResultList;
     }
 
-    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList) {
-        return getCytobands(regionList, null);
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, int dataRelease) throws CellBaseException {
+        return getCytobands(regionList, null, dataRelease);
     }
 }

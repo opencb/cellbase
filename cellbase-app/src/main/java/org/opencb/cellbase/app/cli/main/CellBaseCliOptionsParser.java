@@ -71,6 +71,9 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be read", required = false, arity = 1)
         public String assembly = null;
 
+        @Parameter(names = {"--data-release"}, description = "Data release. To use the default data relese, please, set this parameter to 0", required = false, arity = 1)
+        public int dataRelease = 0;
+
         @Parameter(names = {"-l", "--local"}, description = "Database credentials for local annotation are read from configuration.json file", required = false, arity = 0)
         public boolean local;
 

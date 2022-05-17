@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -33,6 +32,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantManagerTest extends GenericMongoDBAdaptorTest {
@@ -46,61 +47,62 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
+        int release = 1;
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        clearDB(GRCH37_DBNAME);
+        clearDB(CELLBASE_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
+        loadRunner.load(path, "gene", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
+        loadRunner.load(path, "genome_sequence", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
-        loadRunner.load(path, "regulatory_region");
+        loadRunner.load(path, "regulatory_region", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein");
+        loadRunner.load(path, "protein", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
+        loadRunner.load(path, "protein_functional_prediction", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
+        loadRunner.load(path, "protein_functional_prediction", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
+        loadRunner.load(path, "protein_functional_prediction", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction");
+        loadRunner.load(path, "protein_functional_prediction", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
-        loadRunner.load(path, "variation");
+        loadRunner.load(path, "variation", release);
         path = Paths.get(getClass()
                 .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info");
+        loadRunner.load(path, "genome_info", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats");
+        loadRunner.load(path, "repeats", release);
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants");
-        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
-                cellBaseManagerFactory);
+        loadRunner.load(path, "clinical_variants", release);
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease, cellBaseManagerFactory);
 
         path = Paths.get(getClass()
                 .getResource("/hgvs/gene.test.json.gz").toURI());
@@ -115,13 +117,13 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT");
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
         assertEquals(1, results.getResults().size());
     }
 
     @Test
     public void testHgvs() throws Exception {
-        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG");
+        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease);
         assertEquals(5, results.get(0).getResults().size());
     }
 }

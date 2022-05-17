@@ -25,16 +25,20 @@ import com.mongodb.ErrorCategory;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.bulk.BulkWriteError;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -45,6 +49,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
 
 /**
  * Created by parce on 18/02/15.
@@ -69,28 +74,27 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at", "in", "on"));
 
-    private MongoDBAdaptorFactory dbAdaptorFactory;
+//    private MongoDBAdaptorFactory dbAdaptorFactory;
 
     private MongoDBManager mongoDBManager;
     private MongoDBCollection mongoDBCollection;
-
+    private DataReleaseManager dataReleaseManager;
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
-    private String collectionName;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
-        this(queue, data, database, null, null, null);
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database)
+            throws CellBaseException {
+        this(queue, data, dataRelease, database, null, null, null);
     }
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
-                                 String[] innerFields, CellBaseConfiguration cellBaseConfiguration) {
-        super(queue, data, database, field, innerFields, cellBaseConfiguration);
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database,
+                                 String field, String[] innerFields, CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
+        super(queue, data, dataRelease, database, field, innerFields, cellBaseConfiguration);
         if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
-
 
     @Override
     public void init() throws LoaderException {
@@ -104,7 +108,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         mongoDBManager = new MongoDBManager(cellBaseConfiguration);
         MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore(database);
 
-        collectionName = getCollectionName(data);
+        String collectionName = getCollectionName();
         mongoDBCollection = mongoDataStore.getCollection(collectionName);
         logger.debug("Connection to MongoDB datastore '{}' created, collection '{}' is used",
                 mongoDataStore.getDatabaseName(), collectionName);
@@ -113,171 +117,53 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
-
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDataStore);
-
-
-        // This is not currently used and should no longer be used. To be soon removed
-//        dbAdaptor = getDBAdaptor(data);
+        try {
+            dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(releaseManager.get(dataRelease), mongoDataStore);
+        } catch (CellBaseException e) {
+            throw new LoaderException(e);
+        }
     }
 
-//    @Deprecated
-//    private CellBaseCoreDBAdaptor getDBAdaptor(String data) throws LoaderException, CellbaseException {
-//        String[] databaseParts = database.split("_");
-//        String species = databaseParts[1];
-////        String assembly = databaseParts[2];
-//        CellBaseCoreDBAdaptor dbAdaptor;
-//        switch (data) {
-//            case "genome_info":
-////                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "genome_sequence":
-////                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "gene":
-////                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "variation":
-//                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
-//                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
-//                // method will soon be remove
-//                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
-//                dbAdaptor = null;
-//                break;
-//            case "svs":
-//                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
-//                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
-//                // method will soon be remove
-//                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
-//                break;
-//            case "cadd":
-//////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "regulatory_region":
-////                dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "protein":
-////                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "protein_protein_interaction":
-////                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-////            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
-////            // TODO: ProteinDBAdaptors, that's why there isn't one yet
-//            case "protein_functional_prediction":
-//                dbAdaptor = null;
-////                collectionName = "protein_functional_prediction";
-//                break;
-//            case "conservation":
-////                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
-//                dbAdaptor = null;
-//                break;
-//            case "clinical_variants":
-//                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
-//                break;
-//            case "repeats":
-//                dbAdaptor = null;
-////                collectionName = "protein_functional_prediction";
-//                break;
-//            case "metadata":
-//                dbAdaptor = null;
-////                collectionName = "protein_functional_prediction";
-//                break;
-//            case "regulatory_pfm":
-//                dbAdaptor = null;
-//                break;
-//            case "ontology":
-//                dbAdaptor = null;
-//                break;
-//            default:
-//                throw new LoaderException("Unknown data to load: '" + data + "'");
-//        }
-//
-//        return dbAdaptor;
-//    }
+    private String getCollectionName() throws LoaderException {
+        String collection = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
 
-    // TODO: use adaptors within MongoDBCellBaseLoader, avoid using mongoDBCollection and remove this method
-    private String getCollectionName(String data) throws LoaderException {
-        String collection;
-        switch (data) {
-            case "genome_info":
-                collection = "genome_info";
-                break;
-            case "genome_sequence":
-                collection = "genome_sequence";
-                break;
-            case "gene":
-                collection = "gene";
-                break;
-            case "refseq":
-                collection = "refseq";
-                break;
-            case "variation":
-                collection = "variation";
-                break;
-            case "svs":
-                collection = "variation";
-                break;
-            case "cadd":
-                collection = "variation_functional_score";
-                break;
-            case "missense_variation_functional_score":
-                collection = "missense_variation_functional_score";
-                break;
-            case "regulatory_region":
-                collection = "regulatory_region";
-                break;
-            case "protein":
-                collection = "protein";
-                break;
-            case "protein_protein_interaction":
-                collection = "protein_protein_interaction";
-                break;
-            case "protein_functional_prediction":
-                collection = "protein_functional_prediction";
-                break;
-            case "conservation":
-                collection = "conservation";
-                break;
-            case "clinical":
-                collection = "clinical";
-                break;
-            case "clinical_variants":
-                collection = CLINICAL_VARIANTS_COLLECTION;
-                break;
-            case "metadata":
-                collection = "metadata";
-                break;
-            case "repeats":
-                collection = "repeats";
-                break;
-            case "regulatory_pfm":
-                collection = "regulatory_pfm";
-                break;
-            case "ontology":
-                collection = "ontology";
-                break;
-            case "splice_score":
-                collection = "splice_score";
-                break;
-            default:
-                throw new LoaderException("Unknown data to load: '" + data + "'");
+        // Sanity check
+        if (dataReleaseManager == null) {
+            try {
+                dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
+            } catch (CellBaseException e) {
+                throw new LoaderException(e);
+            }
+        }
+        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
+        if (CollectionUtils.isEmpty(result.getResults())) {
+            throw new LoaderException("No data releases are available for database " + database);
+        }
+        List<Integer> releases = result.getResults().stream().map(dr -> dr.getRelease()).collect(Collectors.toList());
+        if (!releases.contains(dataRelease)) {
+            throw new LoaderException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
+                    + " are: " + StringUtils.join(releases, ","));
+        }
+        for (DataRelease dr : result.getResults()) {
+            if (dr.getRelease() == dataRelease) {
+                if (dr.getCollections().containsKey(data)) {
+                    String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
+                    if (dr.getCollections().get(data).equals(collectionName)) {
+                        throw new LoaderException("Impossible load data " + data + " with release " + dataRelease + " since it"
+                                + " has already been done.");
+                    }
+                }
+            }
+            break;
         }
 
         return collection;
     }
 
     private void getChunkSizes() {
-        if (collectionName != null) {
-            switch (collectionName) {
+        if (data != null) {
+            switch (data) {
                 case "genome_sequence":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE};
                     break;
@@ -308,43 +194,44 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Override
-    public Integer call() {
+    public Integer call() throws LoaderException {
         if (field != null) {
-            return prepareBatchAndUpdate();
+            throw new LoaderException("Parameter 'field' is not supported yet!!");
+//            return prepareBatchAndUpdate();
         } else {
             return prepareBatchAndLoad();
         }
     }
 
-    private int prepareBatchAndUpdate() {
-        int numLoadedObjects = 0;
-        boolean finished = false;
-        while (!finished) {
-            try {
-                List<String> batch = blockingQueue.take();
-                if (batch == LoadRunner.POISON_PILL) {
-                    finished = true;
-                } else {
-                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
-                    for (String jsonLine : batch) {
-                        Document dbObject = Document.parse(jsonLine);
-                        dbObjectsBatch.add(dbObject);
-                    }
-
-                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
-//                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
-                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
-                    numLoadedObjects += numUpdates;
-                }
-            } catch (InterruptedException e) {
-                logger.error("Loader thread interrupted: " + e.getMessage());
-            } catch (Exception e) {
-                logger.error("Error Loading batch: " + e.getMessage());
-            }
-        }
-        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
-        return numLoadedObjects;
-    }
+//    private int prepareBatchAndUpdate() {
+//        int numLoadedObjects = 0;
+//        boolean finished = false;
+//        while (!finished) {
+//            try {
+//                List<String> batch = blockingQueue.take();
+//                if (batch == LoadRunner.POISON_PILL) {
+//                    finished = true;
+//                } else {
+//                    List<Document> dbObjectsBatch = new ArrayList<>(batch.size());
+//                    for (String jsonLine : batch) {
+//                        Document dbObject = Document.parse(jsonLine);
+//                        dbObjectsBatch.add(dbObject);
+//                    }
+//
+//                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
+////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+//                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
+//                    numLoadedObjects += numUpdates;
+//                }
+//            } catch (InterruptedException e) {
+//                logger.error("Loader thread interrupted: " + e.getMessage());
+//            } catch (Exception e) {
+//                logger.error("Error Loading batch: " + e.getMessage());
+//            }
+//        }
+//        logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
+//        return numLoadedObjects;
+//    }
 
     private int prepareBatchAndLoad() {
         int numLoadedObjects = 0;
@@ -359,7 +246,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     for (String jsonLine : batch) {
                         Document document = Document.parse(jsonLine);
                         addChunkId(document);
-                        if ("variation".equals(collectionName)) {
+                        if ("variation".equals(data)) {
                             addVariantIndex(document);
                         }
                         addClinicalPrivateFields(document);
@@ -381,7 +268,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     private void addClinicalPrivateFields(Document document) throws JsonProcessingException, FileFormatException {
-        if (collectionName.equals(CLINICAL_VARIANTS_COLLECTION)) {
+        if (data.equals(CLINICAL_VARIANTS_COLLECTION)) {
             Document annotationDocument = (Document) document.get("annotation");
             List<String> featureXrefs = getFeatureXrefsFromClinicalVariants(annotationDocument);
             if (!featureXrefs.isEmpty()) {
@@ -729,7 +616,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Override
-    public void close() {
+    public void close() throws LoaderException {
         mongoDBManager.close();
     }
 

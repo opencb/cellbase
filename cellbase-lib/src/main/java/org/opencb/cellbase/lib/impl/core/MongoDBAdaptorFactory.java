@@ -28,13 +28,17 @@ public class MongoDBAdaptorFactory {
         this.mongoDatastore = mongoDatastore;
     }
 
-
     public GenomeMongoDBAdaptor getGenomeDBAdaptor() {
         return new GenomeMongoDBAdaptor(mongoDatastore);
     }
 
+    @Deprecated
     public MetaMongoDBAdaptor getMetaDBAdaptor() {
         return new MetaMongoDBAdaptor(mongoDatastore);
+    }
+
+    public ReleaseMongoDBAdaptor getReleaseDBAdaptor() {
+        return new ReleaseMongoDBAdaptor(mongoDatastore);
     }
 
     public GeneMongoDBAdaptor getGeneDBAdaptor() {

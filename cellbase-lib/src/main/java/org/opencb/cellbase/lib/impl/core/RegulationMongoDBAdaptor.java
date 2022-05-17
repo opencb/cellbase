@@ -22,6 +22,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -29,6 +30,7 @@ import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -39,7 +41,7 @@ import java.util.Map;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<RegulationQuery, RegulatoryFeature> {
+public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<RegulationQuery, RegulatoryFeature> {
 
     private static final GenericDocumentComplexConverter<RegulatoryFeature> CONVERTER;
 
@@ -56,7 +58,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     private void init() {
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("regulatory_region");
     }
 
     public Bson parseQuery(RegulationQuery query) {
@@ -68,6 +70,9 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                 switch (dotNotationName) {
                     case "region":
                         createRegionQuery(query, value, MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
+                        break;
+                    case "dataRelease":
+                        // Do nothing
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -87,23 +92,24 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public CellBaseIterator<RegulatoryFeature> iterator(RegulationQuery query) {
+    public CellBaseIterator<RegulatoryFeature> iterator(RegulationQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        MongoDBIterator<RegulatoryFeature> iterator
-                = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBIterator<RegulatoryFeature> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<RegulatoryFeature>> info(List<String> ids, ProjectionQueryOptions queryOptions) {
+    public List<CellBaseDataResult<RegulatoryFeature>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(RegulationQuery query) {
+    public CellBaseDataResult<String> distinct(RegulationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
     @Override
