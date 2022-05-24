@@ -135,12 +135,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                         + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
             }
 
-            // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
-//            if (this.gwasFile != null) {
-//                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
-//                cosmicIndexer.index();
-//            }
-
             // IARC TP53
             if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null
                     && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
@@ -167,6 +161,30 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             } else {
                 logger.warn("The HGMD file {} is missing. Skipping HGMD data.", hgmdFile);
             }
+
+            // GWAS catalog
+            if (gwasFile != null && Files.exists(gwasFile)) {
+                if (dbsnpFile != null && Files.exists(dbsnpFile)) {
+                    Path tabixFile = Paths.get(dbsnpFile.toAbsolutePath() + ".tbi");
+                    if (tabixFile != null && Files.exists(tabixFile)) {
+                        GwasIndexer gwasIndexer = new GwasIndexer(gwasFile, dbsnpFile, genomeSequenceFilePath, assembly, rdb);
+                        gwasIndexer.index();
+                    } else {
+                        logger.warn("The dbSNP tabix file {} is missing. Skipping GWAS catalog data.", tabixFile);
+                    }
+                } else {
+                    logger.warn("The dbSNP file {} is missing. Skipping GWAS catalog data.", dbsnpFile);
+                }
+            } else {
+                logger.warn("The GWAS catalog file {} is missing. Skipping GWAS catalog data.", gwasFile);
+            }
+
+            // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
+//            if (this.gwasFile != null) {
+//                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
+//                cosmicIndexer.index();
+//            }
+
 
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
