@@ -82,7 +82,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
                 + "variation, variation_functional_score, regulation, protein, conservation, "
-                + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
+                + "clinical_variants, repeats, svs, pubmed and 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)

@@ -83,6 +83,8 @@ public class EtlCommons {
     public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
     public static final String HGMD_DATA = "hgmd";
 
+    public static final String PUBMED_DATA = "pubmed";
+
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
 

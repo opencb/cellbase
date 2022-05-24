@@ -88,4 +88,9 @@ public class Downloader {
         MissenseScoresDownloadManager manager = new MissenseScoresDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadPubMed() throws IOException, CellBaseException, InterruptedException {
+        PubMedDownloadManager manager = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }
