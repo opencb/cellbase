@@ -97,7 +97,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, genome_info, "
                 + "gene, variation, variation_functional_score, regulation, protein, ppi, conservation, drug, "
-                + "clinical_variants, repeats, svs, splice_score. 'all' builds everything.", required = true, arity = 1)
+                + "clinical_variants, repeats, svs, splice_score, pubmed. 'all' builds everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)

@@ -160,6 +160,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.SPLICE_SCORE_DATA:
                             parser = buildSplice();
                             break;
+                        case EtlCommons.PUBMED_DATA:
+                            parser = buildPubMed();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -392,5 +395,16 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(spliceOutputFolder);
         return new SpliceBuilder(spliceInputFolder, serializer);
+    }
+
+    private CellBaseBuilder buildPubMed() throws IOException {
+        Path pubmedInputFolder = downloadFolder.resolve(EtlCommons.PUBMED_DATA);
+        Path pubmedOutputFolder = buildFolder.resolve(EtlCommons.PUBMED_DATA);
+        if (!pubmedOutputFolder.toFile().exists()) {
+            pubmedOutputFolder.toFile().mkdirs();
+        }
+
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pubmedOutputFolder);
+        return new PubMedBuilder(pubmedInputFolder, serializer);
     }
 }
