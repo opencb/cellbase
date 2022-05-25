@@ -16,8 +16,10 @@
 
 package org.opencb.cellbase.app.cli.admin.executors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
 public class DataReleaseCommandExecutor extends CommandExecutor {
@@ -48,7 +50,10 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
             DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
             if (dataReleaseCommandOptions.create) {
-                dataReleaseManager.createRelease();
+                DataRelease dataRelease = dataReleaseManager.createRelease();
+                System.out.println("\nData release " + dataRelease.getRelease() + " was created.");
+                System.out.println("Data release description (in JSON format):");
+                System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.activeByDefault > 0) {
                 dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
             }
@@ -59,7 +64,7 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
 
     private void checkParameters() {
         if (dataReleaseCommandOptions.create && dataReleaseCommandOptions.activeByDefault > 0) {
-            logger.error("Input parameters usage. Please, select only one action: --create or --set-active");
+            logger.error("Input parameters usage. Please, select only one option: --create or --set-active");
         }
     }
 }
