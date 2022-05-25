@@ -79,7 +79,7 @@ public class CellBaseMain {
                     commandExecutor.loadCellBaseConfiguration();
                     commandExecutor.execute();
                 } catch (IOException | URISyntaxException | CellBaseException e) {
-                    System.err.println("Error reading CellBase configuration: " + e.getMessage());
+                    System.err.println("Error: " + e.getMessage());
                     System.exit(1);
                 }
             }

@@ -78,7 +78,7 @@ public class DataReleaseManager extends AbstractManager {
             // Create the first release, collections and sources are empty
             lastRelease = new DataRelease()
                     .setRelease(1)
-                    .setActiveByDefault(true)
+                    .setActiveByDefault(false)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
         } else {
@@ -130,36 +130,29 @@ public class DataReleaseManager extends AbstractManager {
             // Check sources
             if (StringUtils.isNotEmpty(data) && CollectionUtils.isNotEmpty(dataSourcePaths)) {
                 List<DataReleaseSource> newSources = new ArrayList<>();
-                // First, remove previous sources for the data loaded
-                if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
-                    newSources.addAll(currDataRelease.getSources());
-                }
-                // Second, add new sources
+
+                // First, add new data sources
+                Set<String> sourceSet = new HashSet<>();
                 ObjectMapper jsonObjectMapper = new ObjectMapper();
                 ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
-
                 for (Path dataSourcePath : dataSourcePaths) {
                     if (dataSourcePath.toFile().exists()) {
                         try {
                             DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-
-                            boolean found = false;
-                            for (DataReleaseSource source : currDataRelease.getSources()) {
-                                if (StringUtils.isNotEmpty(dataReleaseSource.getData())
-                                        && dataReleaseSource.getData().equals(source.getData())
-                                        && StringUtils.isNotEmpty(dataReleaseSource.getName())
-                                        && dataReleaseSource.getName().equals(source.getName())) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                newSources.add(dataReleaseSource);
-                            }
+                            newSources.add(dataReleaseSource);
+                            sourceSet.add(dataReleaseSource.getData() + "__" + dataReleaseSource.getName());
                         } catch (IOException e) {
                             logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
                                     + e.getMessage());
                         }
+                    }
+                }
+
+                // Second, add previous data sources if necessary (to avoid duplicated sources)
+                for (DataReleaseSource source : currDataRelease.getSources()) {
+                    String key = source.getData() + "__" + source.getName();
+                    if (!sourceSet.contains(key)) {
+                        newSources.add(source);
                     }
                 }
 
