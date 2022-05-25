@@ -136,6 +136,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--create"}, description = "Create a new data release", arity = 0)
         public boolean create;
 
+        @Parameter(names = {"--list"}, description = "List the data releases present in the database", arity = 0)
+        public boolean list;
+
         @Parameter(names = {"--set-active"}, description = "Set the release active by default", arity = 1)
         public int activeByDefault;
     }

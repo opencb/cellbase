@@ -20,7 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
+
+import java.util.List;
 
 public class DataReleaseCommandExecutor extends CommandExecutor {
 
@@ -43,10 +46,9 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
      * Execute one of the selected actions according to the input parameters.
      */
     public void execute() {
-
-        checkParameters();
-
         try {
+            checkParameters();
+
             DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
             if (dataReleaseCommandOptions.create) {
@@ -56,6 +58,11 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
                 System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.activeByDefault > 0) {
                 dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
+            } else if (dataReleaseCommandOptions.list) {
+                CellBaseDataResult<DataRelease> dataReleases = dataReleaseManager.getReleases();
+                System.out.println("\nNumber of data releases: " + dataReleases.getResults().size());
+                System.out.println("List of data releases (in JSON format):");
+                System.out.println(new ObjectMapper().writerFor(List.class).writeValueAsString(dataReleases.getResults()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,8 +70,18 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() {
-        if (dataReleaseCommandOptions.create && dataReleaseCommandOptions.activeByDefault > 0) {
-            logger.error("Input parameters usage. Please, select only one option: --create or --set-active");
+        int opts = 0;
+        if (dataReleaseCommandOptions.create) {
+            opts++;
+        }
+        if (dataReleaseCommandOptions.list) {
+            opts++;
+        }
+        if (dataReleaseCommandOptions.activeByDefault > 0) {
+            opts++;
+        }
+        if (opts > 1) {
+            throw new IllegalArgumentException("Please, select only one of these input parameters: create, list or set-active");
         }
     }
 }
