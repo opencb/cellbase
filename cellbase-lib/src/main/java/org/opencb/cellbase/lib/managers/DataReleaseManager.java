@@ -204,14 +204,14 @@ public class DataReleaseManager extends AbstractManager {
         }
     }
 
-    public void activeByDefault(int release) throws JsonProcessingException {
+    public DataRelease activeByDefault(int release) throws JsonProcessingException {
         // Gel all releases and check if the input release exists
         DataRelease prevActive = null;
         DataRelease newActive = null;
         CellBaseDataResult<DataRelease> releaseResult = getReleases();
         if (CollectionUtils.isEmpty(releaseResult.getResults())) {
             // Nothing to do, maybe exception or warning
-            return;
+            return null;
         }
         for (DataRelease dataRelease : releaseResult.getResults()) {
             if (dataRelease.isActiveByDefault()) {
@@ -222,7 +222,7 @@ public class DataReleaseManager extends AbstractManager {
         }
         if (prevActive != null && newActive != null && newActive.getRelease() == prevActive.getRelease()) {
             // Nothing to do
-            return;
+            return newActive;
         }
 
         // Change active by default
@@ -234,6 +234,7 @@ public class DataReleaseManager extends AbstractManager {
             newActive.setActiveByDefault(true);
             releaseDBAdaptor.update(newActive.getRelease(), "activeByDefault", newActive.isActiveByDefault());
         }
+        return newActive;
     }
 
     public String getMaintenanceFlagFile() {

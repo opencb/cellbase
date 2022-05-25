@@ -57,7 +57,14 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
                 System.out.println("Data release description (in JSON format):");
                 System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.activeByDefault > 0) {
-                dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
+                DataRelease dataRelease = dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
+                if (dataRelease != null) {
+                    System.out.println("\nThe data release " + dataRelease.getRelease() + " is the active one.");
+                    System.out.println("Data release description (in JSON format):");
+                    System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
+                } else {
+                    logger.error("It could not set to active the data release " + dataReleaseCommandOptions.activeByDefault);
+                }
             } else if (dataReleaseCommandOptions.list) {
                 CellBaseDataResult<DataRelease> dataReleases = dataReleaseManager.getReleases();
                 System.out.println("\nNumber of data releases: " + dataReleases.getResults().size());
