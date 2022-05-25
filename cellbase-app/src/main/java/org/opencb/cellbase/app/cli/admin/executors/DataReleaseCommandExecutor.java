@@ -52,11 +52,20 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
             DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
             if (dataReleaseCommandOptions.create) {
+                // Create release
                 DataRelease dataRelease = dataReleaseManager.createRelease();
                 System.out.println("\nData release " + dataRelease.getRelease() + " was created.");
                 System.out.println("Data release description (in JSON format):");
                 System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.activeByDefault > 0) {
+                // Set-active release
+                CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
+                for (DataRelease dr : results.getResults()) {
+                    if (dr.isActiveByDefault() && dr.getRelease() == dataReleaseCommandOptions.activeByDefault) {
+                        logger.info("Data release " + dataReleaseCommandOptions.activeByDefault + " is already active");
+                        return;
+                    }
+                }
                 DataRelease dataRelease = dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
                 if (dataRelease != null) {
                     System.out.println("\nThe data release " + dataRelease.getRelease() + " is the active one.");
@@ -66,6 +75,7 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
                     logger.error("It could not set to active the data release " + dataReleaseCommandOptions.activeByDefault);
                 }
             } else if (dataReleaseCommandOptions.list) {
+                // List releases
                 CellBaseDataResult<DataRelease> dataReleases = dataReleaseManager.getReleases();
                 System.out.println("\nNumber of data releases: " + dataReleases.getResults().size());
                 System.out.println("List of data releases (in JSON format):");
