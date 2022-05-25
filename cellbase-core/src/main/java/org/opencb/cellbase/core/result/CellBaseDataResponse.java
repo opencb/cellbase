@@ -143,16 +143,15 @@ public class CellBaseDataResponse<T> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataResponse{");
+        final StringBuilder sb = new StringBuilder("CellBaseDataResponse{");
         sb.append("apiVersion='").append(apiVersion).append('\'');
         sb.append(", time=").append(time);
-        sb.append(", evemts=").append(events);
+        sb.append(", events=").append(events);
         sb.append(", params=").append(params);
         sb.append(", responses=").append(responses);
         sb.append('}');
         return sb.toString();
     }
-
 
     public String getApiVersion() {
         return apiVersion;
