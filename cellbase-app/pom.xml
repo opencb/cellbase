@@ -150,6 +150,11 @@
                                     <arg value="${project.basedir}/../cellbase-client/src/main/R"/>
                                     <arg value="${build.dir}/clients"/>
                                 </exec>
+                                <exec executable="sed">
+                                    <arg value="-i"/>
+                                    <arg value="s/PYCELLBASE_VERSION/${pycellbase.version}/"/>
+                                    <arg value="${build.dir}/clients/python/setup.py"/>
+                                </exec>
 
                                 <echo>Copying to ${build.dir}/conf</echo>
                                 <exec executable="cp">
