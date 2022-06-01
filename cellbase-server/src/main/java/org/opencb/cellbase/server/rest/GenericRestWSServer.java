@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
+    protected int dataRelease = 0;
     protected String species;
 
     protected Query query;
@@ -77,8 +78,6 @@ public class GenericRestWSServer implements IWSServer {
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
     protected long startTime;
     protected static Logger logger;
-
-    protected int defaultDataRelease = 0;
 
     /**
      * Loading properties file just one time to be more efficient. All methods
@@ -171,16 +170,22 @@ public class GenericRestWSServer implements IWSServer {
         if (!DONT_CHECK_SPECIES.equals(species)) {
             // Prepare data release (do we need to get the default one?)
             if (StringUtils.isEmpty(uriParams.get("dataRelease")) || uriParams.get("dataRelease").equals("0")) {
-                if (defaultDataRelease == 0) {
+                if (dataRelease == 0) {
                     if (StringUtils.isNotEmpty(assembly)) {
                         DataReleaseManager releaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
                         DataRelease dr = releaseManager.getDefault();
                         if (dr != null) {
-                            defaultDataRelease = dr.getRelease();
+                            dataRelease = dr.getRelease();
                         }
                     }
                 }
-                uriParams.put("dataRelease", String.valueOf(defaultDataRelease));
+//                uriParams.put("dataRelease", String.valueOf(defaultDataRelease));
+            } else {
+                try {
+                    dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
+                } catch (NumberFormatException e) {
+                    throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "': " + e.getMessage());
+                }
             }
         }
     }
@@ -190,7 +195,7 @@ public class GenericRestWSServer implements IWSServer {
             return Integer.parseInt(uriParams.get("dataRelease"));
         }
         // It means to use the default data release
-        return defaultDataRelease;
+        return dataRelease;
     }
 
     /**
@@ -290,6 +295,7 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
+        queryResponse.setDataRelease(dataRelease);
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -321,6 +327,7 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
+        queryResponse.setDataRelease(dataRelease);
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);
