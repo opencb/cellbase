@@ -119,8 +119,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 indexManager = new IndexManager(database, indexFile, configuration);
             }
 
-            for (int i = 0; i < loadOptions.length; i++) {
-                String loadOption = loadOptions[i];
+            for (String loadOption : loadOptions) {
                 try {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA: {
@@ -168,10 +167,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("refseq");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("refseqVersion.json")
-
-                            ));
+                            List<Path> sources = new ArrayList<>(
+                                    Collections.singletonList(input.resolve("refseqVersion.json")));
                             dataReleaseManager.update(dataRelease, "refseq", EtlCommons.REFSEQ_DATA, sources);
                             break;
                         }
@@ -188,11 +185,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("variation_functional_score");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("caddVersion.json")
-                            ));
-                            dataReleaseManager.update(dataRelease, "variation_functional_score", EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA,
-                                    sources);
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("caddVersion.json")));
+                            dataReleaseManager.update(dataRelease, "variation_functional_score",
+                                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, sources);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -204,9 +199,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("missense_variation_functional_score");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("revelVersion.json")
-                            ));
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("revelVersion.json")));
                             dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
                                     EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
                             break;
@@ -226,9 +219,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("regulatory_pfm");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("ensemblRegulationVersion.json")
-                            ));
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("ensemblRegulationVersion.json")));
                             dataReleaseManager.update(dataRelease, "regulatory_region", EtlCommons.REGULATION_DATA, sources);
                             dataReleaseManager.update(dataRelease, "regulatory_pfm", null, null);
                             break;

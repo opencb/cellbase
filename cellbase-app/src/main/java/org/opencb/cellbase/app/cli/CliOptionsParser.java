@@ -51,36 +51,33 @@ public abstract class CliOptionsParser {
     }
 
     public class GeneralOptions {
-
         @Parameter(names = {"-h", "--help"}, description = "Display this help and exit", help = true)
         public boolean help;
 
         @Parameter(names = {"--version"}, description = "Display the version and exit")
         public boolean version;
-
     }
 
     public class CommonCommandOptions {
-
         @Parameter(names = {"-h", "--help"}, description = "Display this help and exit", help = true)
         public boolean help;
 
-        @Parameter(names = {"-L", "--log-level"}, description = "Set the logging level, accepted values are: debug, info, warn, error and fatal", required = false, arity = 1)
+        @Parameter(names = {"-L", "--log-level"}, arity = 1,
+                description = "Set the logging level, accepted values are: debug, info, warn, error and fatal")
         public String logLevel = "info";
 
-        @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json or configuration.yml file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.yml for an example", required = false, arity = 1)
+        @Parameter(names = {"-C", "--config"}, arity = 1,
+                description = "Path to CellBase configuration.yml file")
         public String conf;
-
     }
 
     public class SpeciesAndAssemblyCommandOptions {
-
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens' or hsapiens",
-                required = true, arity = 1)
+        @Parameter(names = {"-s", "--species"}, required = true, arity = 1,
+                description = "Name of the species to be downloaded, valid formats include 'Homo sapiens' or hsapiens")
         public String species;
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used",
-                arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, arity = 1,
+                description = "Name of the assembly, if empty the first assembly in configuration.yml will be used")
         public String assembly;
     }
 
