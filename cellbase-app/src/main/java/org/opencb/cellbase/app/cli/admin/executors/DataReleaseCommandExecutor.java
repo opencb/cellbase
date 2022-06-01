@@ -57,22 +57,22 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
                 System.out.println("\nData release " + dataRelease.getRelease() + " was created.");
                 System.out.println("Data release description (in JSON format):");
                 System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
-            } else if (dataReleaseCommandOptions.activeByDefault > 0) {
+            } else if (dataReleaseCommandOptions.active > 0) {
                 // Set-active release
                 CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
                 for (DataRelease dr : results.getResults()) {
-                    if (dr.isActiveByDefault() && dr.getRelease() == dataReleaseCommandOptions.activeByDefault) {
-                        logger.info("Data release " + dataReleaseCommandOptions.activeByDefault + " is already active");
+                    if (dr.isActive() && dr.getRelease() == dataReleaseCommandOptions.active) {
+                        logger.info("Data release " + dataReleaseCommandOptions.active + " is already active");
                         return;
                     }
                 }
-                DataRelease dataRelease = dataReleaseManager.activeByDefault(dataReleaseCommandOptions.activeByDefault);
+                DataRelease dataRelease = dataReleaseManager.active(dataReleaseCommandOptions.active);
                 if (dataRelease != null) {
                     System.out.println("\nThe data release " + dataRelease.getRelease() + " is the active one.");
                     System.out.println("Data release description (in JSON format):");
                     System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
                 } else {
-                    logger.error("It could not set to active the data release " + dataReleaseCommandOptions.activeByDefault);
+                    logger.error("It could not set to active the data release " + dataReleaseCommandOptions.active);
                 }
             } else if (dataReleaseCommandOptions.list) {
                 // List releases
@@ -94,7 +94,7 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
         if (dataReleaseCommandOptions.list) {
             opts++;
         }
-        if (dataReleaseCommandOptions.activeByDefault > 0) {
+        if (dataReleaseCommandOptions.active > 0) {
             opts++;
         }
         if (opts > 1) {

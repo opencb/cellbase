@@ -366,7 +366,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         int lastDataRelease = 0;
         int defaultDataRelease = 0;
         for (DataRelease dataRelease : dataReleaseResults.getResults()) {
-            if (dataRelease.isActiveByDefault()) {
+            if (dataRelease.isActive()) {
                 defaultDataRelease = dataRelease.getRelease();
             }
             if (dataRelease.getRelease() > lastDataRelease) {

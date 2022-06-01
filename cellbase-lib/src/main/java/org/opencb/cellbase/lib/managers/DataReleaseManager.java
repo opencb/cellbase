@@ -78,7 +78,7 @@ public class DataReleaseManager extends AbstractManager {
             // Create the first release, collections and sources are empty
             lastRelease = new DataRelease()
                     .setRelease(1)
-                    .setActiveByDefault(false)
+                    .setActive(false)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
         } else {
@@ -86,7 +86,7 @@ public class DataReleaseManager extends AbstractManager {
             if (MapUtils.isNotEmpty(lastRelease.getCollections())) {
                 // Increment the release number, only if the previous release has collections
                 lastRelease.setRelease(lastRelease.getRelease() + 1)
-                        .setActiveByDefault(false)
+                        .setActive(false)
                         .setDate(sdf.format(new Date()));
                 // Write it to the database
                 releaseDBAdaptor.insert(lastRelease);
@@ -113,7 +113,7 @@ public class DataReleaseManager extends AbstractManager {
         CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
             for (DataRelease dataRelease : result.getResults()) {
-                if (dataRelease.isActiveByDefault()) {
+                if (dataRelease.isActive()) {
                     return dataRelease;
                 }
             }
@@ -197,7 +197,7 @@ public class DataReleaseManager extends AbstractManager {
         }
     }
 
-    public DataRelease activeByDefault(int release) throws JsonProcessingException {
+    public DataRelease active(int release) throws JsonProcessingException {
         // Gel all releases and check if the input release exists
         DataRelease prevActive = null;
         DataRelease newActive = null;
@@ -207,7 +207,7 @@ public class DataReleaseManager extends AbstractManager {
             return null;
         }
         for (DataRelease dataRelease : releaseResult.getResults()) {
-            if (dataRelease.isActiveByDefault()) {
+            if (dataRelease.isActive()) {
                 prevActive = dataRelease;
             } else if (dataRelease.getRelease() == release) {
                 newActive = dataRelease;
@@ -220,12 +220,12 @@ public class DataReleaseManager extends AbstractManager {
 
         // Change active by default
         if (prevActive != null) {
-            prevActive.setActiveByDefault(false);
-            releaseDBAdaptor.update(prevActive.getRelease(), "activeByDefault", prevActive.isActiveByDefault());
+            prevActive.setActive(false);
+            releaseDBAdaptor.update(prevActive.getRelease(), "active", prevActive.isActive());
         }
         if (newActive != null) {
-            newActive.setActiveByDefault(true);
-            releaseDBAdaptor.update(newActive.getRelease(), "activeByDefault", newActive.isActiveByDefault());
+            newActive.setActive(true);
+            releaseDBAdaptor.update(newActive.getRelease(), "active", newActive.isActive());
         }
         return newActive;
     }

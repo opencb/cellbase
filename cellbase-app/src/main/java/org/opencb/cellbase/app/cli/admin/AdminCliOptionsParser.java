@@ -139,8 +139,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--list"}, description = "List the data releases present in the database", arity = 0)
         public boolean list;
 
-        @Parameter(names = {"--set-active"}, description = "Set the release active by default", arity = 1)
-        public int activeByDefault;
+        @Parameter(names = {"--set-active"}, description = "Set the data release active", arity = 1)
+        public int active;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")

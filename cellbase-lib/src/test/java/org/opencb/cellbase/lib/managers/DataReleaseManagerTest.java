@@ -27,11 +27,11 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         DataReleaseManager dataReleaseManager = new DataReleaseManager(CELLBASE_DBNAME, cellBaseConfiguration);
         DataRelease firstRelease = dataReleaseManager.createRelease();
         if (firstRelease != null) {
-            dataReleaseManager.activeByDefault(firstRelease.getRelease());
+            dataReleaseManager.active(firstRelease.getRelease());
         }
         DataRelease secondRelease = dataReleaseManager.createRelease();
         if (secondRelease != null) {
-            dataReleaseManager.activeByDefault(secondRelease.getRelease());
+            dataReleaseManager.active(secondRelease.getRelease());
         }
     }
 
