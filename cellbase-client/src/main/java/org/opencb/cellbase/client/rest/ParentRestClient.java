@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +34,7 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.Event;
-import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,6 +144,12 @@ public class ParentRestClient<T> {
                 return consequenceType;
             }
         }
+
+        @JsonAlias("transcriptAnnotationFlags")
+        List<String> getTranscriptFlags();
+
+        @JsonIgnore
+        List<String> getTranscriptAnnotationFlags();
     }
 
 // end points have been removed
