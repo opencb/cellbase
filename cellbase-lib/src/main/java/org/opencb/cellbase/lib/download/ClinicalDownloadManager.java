@@ -62,15 +62,15 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
             logger.info("Downloading clinical information ...");
 
+            String url;
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
             Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
             Files.createDirectories(clinicalFolder);
-
             logger.info("\t\tDownloading ClinVar files ...");
 
             List<String> clinvarUrls = new ArrayList<>(3);
-            String url = configuration.getDownload().getClinvar().getHost();
+            url = configuration.getDownload().getClinvar().getHost();
 
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString()));
             clinvarUrls.add(url);
@@ -96,7 +96,6 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString()));
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
                     Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
-
 
 //            List<String> hgvsList = getDocmHgvsList();
 //            if (!hgvsList.isEmpty()) {

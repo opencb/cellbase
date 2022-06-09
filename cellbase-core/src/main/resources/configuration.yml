@@ -126,9 +126,8 @@ download:
   genomicSuperDups:
     host: http://hgdownload.cse.ucsc.edu/goldenPath
   gwasCatalog:
-#    host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv
-    host: http://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/gwas-catalog-associations_ontology-annotated.tsv
-    version: 1.0.2
+    host: http://resources.opencb.org/opencb/cellbase/data/gwas/gwas_catalog_v1.0.2-associations_e106_r2022-05-17.tsv
+    version: "1.0.2 associations_e106_r2022-05-17"
   hpo:
     host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
   disgenet:
