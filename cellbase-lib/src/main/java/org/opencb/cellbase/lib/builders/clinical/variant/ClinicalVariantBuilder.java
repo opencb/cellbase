@@ -179,13 +179,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 logger.warn("The GWAS catalog file {} is missing. Skipping GWAS catalog data.", gwasFile);
             }
 
-            // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
-//            if (this.gwasFile != null) {
-//                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
-//                cosmicIndexer.index();
-//            }
-
-
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();
@@ -206,16 +199,15 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         logger.info("Reading from RocksDB index and serializing to {}.json.gz", serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            VariantAnnotation variantAnnotation = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
-//            List<EvidenceEntry> evidenceEntryList = mapper.readValue(rocksIterator.value(), List.class);
             Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
-//            VariantAnnotation variantAnnotation = new VariantAnnotation();
-//            variantAnnotation.setTraitAssociation(evidenceEntryList);
-            variant.setAnnotation(variantAnnotation);
-            serializer.serialize(variant);
-            counter++;
-            if (counter % 10000 == 0) {
-                logger.info("{} written", counter);
+            if (variant != null) {
+                VariantAnnotation variantAnnotation = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
+                variant.setAnnotation(variantAnnotation);
+                serializer.serialize(variant);
+                counter++;
+                if (counter % 10000 == 0) {
+                    logger.info("{} written", counter);
+                }
             }
         }
         serializer.close();
@@ -223,12 +215,17 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
     }
 
     private Variant parseVariantFromVariantId(String variantId) {
-        String[] parts = variantId.split(":", -1); // -1 to include empty fields
-        if (parts[1].contains("-")) {
-            String[] pos = parts[1].split("-");
-            return new Variant(parts[0].trim(), Integer.parseInt(pos[0].trim()), Integer.parseInt(pos[1].trim()), parts[2], parts[3]);
-        } else {
-            return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
+        try {
+            String[] parts = variantId.split(":", -1); // -1 to include empty fields
+            if (parts[1].contains("-")) {
+                String[] pos = parts[1].split("-");
+                return new Variant(parts[0].trim(), Integer.parseInt(pos[0].trim()), Integer.parseInt(pos[1].trim()), parts[2], parts[3]);
+            } else {
+                return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
+            }
+        } catch (Exception e) {
+            logger.warn(e.getMessage() + ". Impossible to create the variant object from the variant ID: " + variantId);
+            return null;
         }
     }
 
