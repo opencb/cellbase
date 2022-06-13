@@ -58,21 +58,23 @@ public class GwasIndexer extends ClinicalIndexer {
     public void index() throws RocksDBException, IOException {
         logger.info("Parsing GWAS catalog file ...");
 
+        BufferedReader inputReader = null;
+        TabixReader dbsnpTabixReader = null;
+
         try {
             logger.info("Opening GWAS catalog file " + gwasFile + " ...");
-            BufferedReader inputReader = new BufferedReader(new FileReader(gwasFile.toFile()));
+            inputReader = new BufferedReader(new FileReader(gwasFile.toFile()));
 
             logger.info("Ignoring GWAS catalog file header line ...");
-            inputReader.readLine();
+            String line = inputReader.readLine();
 
             Map<String, GwasAssociation> gwasMap = new HashMap<>();
             logger.info("Opening dbSNP tabix file " + dbSnpTabixFile + " ...");
-            TabixReader dbsnpTabixReader = new TabixReader(dbSnpTabixFile.toString());
+            dbsnpTabixReader = new TabixReader(dbSnpTabixFile.toString());
 
             long processedGwasLines = 0;
 
             logger.info("Parsing GWAS catalog file ...");
-            String line;
             while ((line = inputReader.readLine()) != null) {
                 if (!line.isEmpty()) {
                     processedGwasLines++;
@@ -119,6 +121,13 @@ public class GwasIndexer extends ClinicalIndexer {
         } catch (RocksDBException | IOException  e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing GWAS catalog file");
             throw e;
+        } finally {
+            if (inputReader != null) {
+                inputReader.close();
+            }
+            if (dbsnpTabixReader != null) {
+                dbsnpTabixReader.close();
+            }
         }
     }
 
