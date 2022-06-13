@@ -23,7 +23,7 @@ import java.util.Map;
 public class DataRelease {
     private int release;
     private String date;
-    private boolean activeByDefault;
+    private boolean active;
     private Map<String, String> collections;
     private List<DataReleaseSource> sources;
 
@@ -32,11 +32,10 @@ public class DataRelease {
         this.sources = Collections.emptyList();
     }
 
-    public DataRelease(int release, String date, boolean activeByDefault, Map<String, String> collections,
-                       List<DataReleaseSource> sources) {
+    public DataRelease(int release, String date, boolean active, Map<String, String> collections, List<DataReleaseSource> sources) {
         this.release = release;
         this.date = date;
-        this.activeByDefault = activeByDefault;
+        this.active = active;
         this.collections = collections;
         this.sources = sources;
     }
@@ -46,7 +45,7 @@ public class DataRelease {
         final StringBuilder sb = new StringBuilder("DataRelease{");
         sb.append("release=").append(release);
         sb.append(", date='").append(date).append('\'');
-        sb.append(", activeByDefault=").append(activeByDefault);
+        sb.append(", active=").append(active);
         sb.append(", collections=").append(collections);
         sb.append(", sources=").append(sources);
         sb.append('}');
@@ -71,12 +70,12 @@ public class DataRelease {
         return this;
     }
 
-    public boolean isActiveByDefault() {
-        return activeByDefault;
+    public boolean isActive() {
+        return active;
     }
 
-    public DataRelease setActiveByDefault(boolean activeByDefault) {
-        this.activeByDefault = activeByDefault;
+    public DataRelease setActive(boolean active) {
+        this.active = active;
         return this;
     }
 

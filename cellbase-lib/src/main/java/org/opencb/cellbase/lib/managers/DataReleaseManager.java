@@ -78,7 +78,7 @@ public class DataReleaseManager extends AbstractManager {
             // Create the first release, collections and sources are empty
             lastRelease = new DataRelease()
                     .setRelease(1)
-                    .setActiveByDefault(true)
+                    .setActive(false)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
         } else {
@@ -86,7 +86,7 @@ public class DataReleaseManager extends AbstractManager {
             if (MapUtils.isNotEmpty(lastRelease.getCollections())) {
                 // Increment the release number, only if the previous release has collections
                 lastRelease.setRelease(lastRelease.getRelease() + 1)
-                        .setActiveByDefault(false)
+                        .setActive(false)
                         .setDate(sdf.format(new Date()));
                 // Write it to the database
                 releaseDBAdaptor.insert(lastRelease);
@@ -113,7 +113,7 @@ public class DataReleaseManager extends AbstractManager {
         CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
             for (DataRelease dataRelease : result.getResults()) {
-                if (dataRelease.isActiveByDefault()) {
+                if (dataRelease.isActive()) {
                     return dataRelease;
                 }
             }
@@ -130,36 +130,29 @@ public class DataReleaseManager extends AbstractManager {
             // Check sources
             if (StringUtils.isNotEmpty(data) && CollectionUtils.isNotEmpty(dataSourcePaths)) {
                 List<DataReleaseSource> newSources = new ArrayList<>();
-                // First, remove previous sources for the data loaded
-                if (CollectionUtils.isNotEmpty(currDataRelease.getSources())) {
-                    newSources.addAll(currDataRelease.getSources());
-                }
-                // Second, add new sources
+
+                // First, add new data sources
+                Set<String> sourceSet = new HashSet<>();
                 ObjectMapper jsonObjectMapper = new ObjectMapper();
                 ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
-
                 for (Path dataSourcePath : dataSourcePaths) {
                     if (dataSourcePath.toFile().exists()) {
                         try {
                             DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-
-                            boolean found = false;
-                            for (DataReleaseSource source : currDataRelease.getSources()) {
-                                if (StringUtils.isNotEmpty(dataReleaseSource.getData())
-                                        && dataReleaseSource.getData().equals(source.getData())
-                                        && StringUtils.isNotEmpty(dataReleaseSource.getName())
-                                        && dataReleaseSource.getName().equals(source.getName())) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                newSources.add(dataReleaseSource);
-                            }
+                            newSources.add(dataReleaseSource);
+                            sourceSet.add(dataReleaseSource.getData() + "__" + dataReleaseSource.getName());
                         } catch (IOException e) {
                             logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
                                     + e.getMessage());
                         }
+                    }
+                }
+
+                // Second, add previous data sources if necessary (to avoid duplicated sources)
+                for (DataReleaseSource source : currDataRelease.getSources()) {
+                    String key = source.getData() + "__" + source.getName();
+                    if (!sourceSet.contains(key)) {
+                        newSources.add(source);
                     }
                 }
 
@@ -204,17 +197,17 @@ public class DataReleaseManager extends AbstractManager {
         }
     }
 
-    public void activeByDefault(int release) throws JsonProcessingException {
+    public DataRelease active(int release) throws JsonProcessingException {
         // Gel all releases and check if the input release exists
         DataRelease prevActive = null;
         DataRelease newActive = null;
         CellBaseDataResult<DataRelease> releaseResult = getReleases();
         if (CollectionUtils.isEmpty(releaseResult.getResults())) {
             // Nothing to do, maybe exception or warning
-            return;
+            return null;
         }
         for (DataRelease dataRelease : releaseResult.getResults()) {
-            if (dataRelease.isActiveByDefault()) {
+            if (dataRelease.isActive()) {
                 prevActive = dataRelease;
             } else if (dataRelease.getRelease() == release) {
                 newActive = dataRelease;
@@ -222,18 +215,19 @@ public class DataReleaseManager extends AbstractManager {
         }
         if (prevActive != null && newActive != null && newActive.getRelease() == prevActive.getRelease()) {
             // Nothing to do
-            return;
+            return newActive;
         }
 
         // Change active by default
         if (prevActive != null) {
-            prevActive.setActiveByDefault(false);
-            releaseDBAdaptor.update(prevActive.getRelease(), "activeByDefault", prevActive.isActiveByDefault());
+            prevActive.setActive(false);
+            releaseDBAdaptor.update(prevActive.getRelease(), "active", prevActive.isActive());
         }
         if (newActive != null) {
-            newActive.setActiveByDefault(true);
-            releaseDBAdaptor.update(newActive.getRelease(), "activeByDefault", newActive.isActiveByDefault());
+            newActive.setActive(true);
+            releaseDBAdaptor.update(newActive.getRelease(), "active", newActive.isActive());
         }
+        return newActive;
     }
 
     public String getMaintenanceFlagFile() {

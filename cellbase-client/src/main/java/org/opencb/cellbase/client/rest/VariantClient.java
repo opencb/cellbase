@@ -90,7 +90,7 @@ public final class VariantClient extends FeatureClient<Variant> {
                     Collections.singletonList(variants.get(i)), 1));
         }
 
-        return new CellBaseDataResponse<>(configuration.getVersion(), annotations.getTime(), null,
+        return new CellBaseDataResponse<>(configuration.getVersion(), 0, annotations.getTime(), null,
                 new ObjectMap(options), annotatedVariants);
     }
 

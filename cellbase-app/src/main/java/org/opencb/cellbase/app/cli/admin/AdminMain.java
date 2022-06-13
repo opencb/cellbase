@@ -91,7 +91,7 @@ public class AdminMain {
                     commandExecutor.loadCellBaseConfiguration();
                     commandExecutor.execute();
                 } catch (IOException | URISyntaxException | CellBaseException e) {
-                    commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
+                    commandExecutor.getLogger().error("Error: " + e.getMessage());
                     System.exit(1);
                 }
             }

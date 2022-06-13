@@ -17,7 +17,6 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -43,7 +42,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 03/02/15.
@@ -85,15 +83,6 @@ public class LoadCommandExecutor extends CommandExecutor {
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
-        if (loadCommandOptions.dataRelease >= 0) {
-            if (loadCommandOptions.dataRelease == 0) {
-                logger.warn("Since the parameter data-release is zero, the active release by default will be used");
-            }
-            dataRelease = loadCommandOptions.dataRelease;
-        } else {
-            throw new IllegalArgumentException("The input paremeter 'data-release' must be greater or equal to 0. To use the active"
-                    + " release by default, set this parameter to 0");
-        }
         if (loadCommandOptions.field != null) {
             field = loadCommandOptions.field;
         }
@@ -116,6 +105,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         dataReleaseManager = new DataReleaseManager(database, configuration);
 
         checkParameters();
+        logger.info("Loading in data release " + dataRelease);
 
         if (loadCommandOptions.data != null) {
             // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
@@ -129,8 +119,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 indexManager = new IndexManager(database, indexFile, configuration);
             }
 
-            for (int i = 0; i < loadOptions.length; i++) {
-                String loadOption = loadOptions[i];
+            for (String loadOption : loadOptions) {
                 try {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA: {
@@ -178,10 +167,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("refseq");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("refseqVersion.json")
-
-                            ));
+                            List<Path> sources = new ArrayList<>(
+                                    Collections.singletonList(input.resolve("refseqVersion.json")));
                             dataReleaseManager.update(dataRelease, "refseq", EtlCommons.REFSEQ_DATA, sources);
                             break;
                         }
@@ -198,11 +185,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("variation_functional_score");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("caddVersion.json")
-                            ));
-                            dataReleaseManager.update(dataRelease, "variation_functional_score", EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA,
-                                    sources);
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("caddVersion.json")));
+                            dataReleaseManager.update(dataRelease, "variation_functional_score",
+                                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, sources);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -214,9 +199,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("missense_variation_functional_score");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("revelVersion.json")
-                            ));
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("revelVersion.json")));
                             dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
                                     EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
                             break;
@@ -236,9 +219,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             createIndex("regulatory_pfm");
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("ensemblRegulationVersion.json")
-                            ));
+                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("ensemblRegulationVersion.json")));
                             dataReleaseManager.update(dataRelease, "regulatory_region", EtlCommons.REGULATION_DATA, sources);
                             dataReleaseManager.update(dataRelease, "regulatory_pfm", null, null);
                             break;
@@ -369,29 +350,39 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Check data release
-        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
-        if (CollectionUtils.isEmpty(result.getResults())) {
+        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
+        if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available for database " + database);
         }
-        List<Integer> releases = result.getResults().stream().map(dr -> dr.getRelease()).collect(Collectors.toList());
-        if (!releases.contains(dataRelease)) {
-            throw new IllegalArgumentException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
-                    + " are: " + StringUtils.join(releases, ","));
-        }
-        for (DataRelease dr : result.getResults()) {
-            if (dr.getRelease() == dataRelease) {
-                for (String loadOption : loadOptions) {
-                    if (dr.getCollections().containsKey(loadOption)) {
-                        String collectionName = CellBaseDBAdaptor.buildCollectionName(loadOption, dataRelease);
-                        if (dr.getCollections().get(loadOption).equals(collectionName)) {
-                            throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
-                                    + " has already been done.");
-                        }
-                    }
-                }
-                break;
+        int lastDataRelease = 0;
+        int defaultDataRelease = 0;
+        for (DataRelease dataRelease : dataReleaseResults.getResults()) {
+            if (dataRelease.isActive()) {
+                defaultDataRelease = dataRelease.getRelease();
+            }
+            if (dataRelease.getRelease() > lastDataRelease) {
+                lastDataRelease = dataRelease.getRelease();
             }
         }
+        if (lastDataRelease == defaultDataRelease) {
+            throw new CellBaseException("Loading data in the active data release (" + defaultDataRelease + ") is not permitted.");
+        }
+        dataRelease = lastDataRelease;
+
+//        for (DataRelease dr : dataReleaseResults.getResults()) {
+//            if (dr.getRelease() == dataRelease) {
+//                for (String loadOption : loadOptions) {
+//                    if (dr.getCollections().containsKey(loadOption)) {
+//                        String collectionName = CellBaseDBAdaptor.buildCollectionName(loadOption, dataRelease);
+//                        if (dr.getCollections().get(loadOption).equals(collectionName)) {
+//                           throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
+//                                    + " has already been done.");
+//                        }
+//                    }
+//                }
+//                break;
+//            }
+//        }
     }
 
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,

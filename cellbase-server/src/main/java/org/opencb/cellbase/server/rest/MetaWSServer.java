@@ -118,8 +118,8 @@ public class MetaWSServer extends GenericRestWSServer {
                                    @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
                                    @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
                                            String assembly,
-                                   @ApiParam(name = "onlyDefault", value = "Set to true if you only want to get the default data relaease")
-                                       @QueryParam("onlyDefault") @DefaultValue("false") boolean onlyDefault) {
+                                   @ApiParam(name = "onlyActive", value = "Set to true if you only want to get the active data relaease")
+                                       @QueryParam("onlyActive") @DefaultValue("false") boolean onlyActive) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -133,9 +133,9 @@ public class MetaWSServer extends GenericRestWSServer {
             }
             DataReleaseManager dataReleaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
             CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
-            if (onlyDefault) {
+            if (onlyActive) {
                 for (DataRelease release : result.getResults()) {
-                    if (release.isActiveByDefault()) {
+                    if (release.isActive()) {
                         return createOkResponse(new CellBaseDataResult<>(result.getId(), result.getTime(), result.getEvents(), 1,
                                 Collections.singletonList(release), 1));
                     }

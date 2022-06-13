@@ -31,9 +31,11 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -60,10 +62,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
+    protected int dataRelease = 0;
     protected String species;
 
     protected Query query;
-//    protected QueryOptions queryOptions;
+    //    protected QueryOptions queryOptions;
     private static final int MAX_RECORDS = 5000;
     protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
@@ -154,6 +157,7 @@ public class GenericRestWSServer implements IWSServer {
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
 
         // assembly isn't needed in the query, only in the database connection which we already have.
+        String assembly = uriParams.get("assembly");
         if (uriParams.get("assembly") != null) {
             uriParams.remove("assembly");
         }
@@ -162,25 +166,36 @@ public class GenericRestWSServer implements IWSServer {
 
         // check version. species is validated later
         checkVersion();
-    }
 
-//    protected DataRelease getDataRelease(String species, String assembly, int release, CellBaseConfiguration cellBaseConfiguration)
-//            throws CellBaseException {
-//        ReleaseManager releaseManager = new ReleaseManager(species, assembly, cellBaseConfiguration);
-//        if (release == 0) {
-//            return releaseManager.getDefault();
-//        } else {
-//            return releaseManager.get(release);
-//        }
-//
-//    }
+        if (!DONT_CHECK_SPECIES.equals(species)) {
+            // Prepare data release (do we need to get the default one?)
+            if (StringUtils.isEmpty(uriParams.get("dataRelease")) || uriParams.get("dataRelease").equals("0")) {
+                if (dataRelease == 0) {
+                    if (StringUtils.isNotEmpty(assembly)) {
+                        DataReleaseManager releaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
+                        DataRelease dr = releaseManager.getDefault();
+                        if (dr != null) {
+                            dataRelease = dr.getRelease();
+                        }
+                    }
+                }
+//                uriParams.put("dataRelease", String.valueOf(defaultDataRelease));
+            } else {
+                try {
+                    dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
+                } catch (NumberFormatException e) {
+                    throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "': " + e.getMessage());
+                }
+            }
+        }
+    }
 
     protected int getDataRelease() throws CellBaseException {
         if (uriParams.containsKey("dataRelease")) {
             return Integer.parseInt(uriParams.get("dataRelease"));
         }
         // It means to use the default data release
-        return 0;
+        return dataRelease;
     }
 
     /**
@@ -280,6 +295,7 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
+        queryResponse.setDataRelease(dataRelease);
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -311,6 +327,7 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
+        queryResponse.setDataRelease(dataRelease);
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);

@@ -26,6 +26,7 @@ import java.util.List;
 public class CellBaseDataResponse<T> {
 
     private String apiVersion;
+    private int dataRelease;
     private int time;
     private List<Event> events;
     private ObjectMap params;
@@ -35,11 +36,13 @@ public class CellBaseDataResponse<T> {
     }
 
     public CellBaseDataResponse(ObjectMap params, List<CellBaseDataResult<T>> responses) {
-        this("", -1, Collections.emptyList(), params, responses);
+        this("", 0, -1, Collections.emptyList(), params, responses);
     }
 
-    public CellBaseDataResponse(String apiVersion, int time, List<Event> events, ObjectMap params, List<CellBaseDataResult<T>> responses) {
+    public CellBaseDataResponse(String apiVersion, int dataRelease, int time, List<Event> events, ObjectMap params,
+                                List<CellBaseDataResult<T>> responses) {
         this.apiVersion = apiVersion;
+        this.dataRelease = dataRelease;
         this.time = time;
         this.params = params;
         this.responses = responses;
@@ -143,16 +146,16 @@ public class CellBaseDataResponse<T> {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataResponse{");
+        final StringBuilder sb = new StringBuilder("CellBaseDataResponse{");
         sb.append("apiVersion='").append(apiVersion).append('\'');
+        sb.append(", dataRelease=").append(dataRelease);
         sb.append(", time=").append(time);
-        sb.append(", evemts=").append(events);
+        sb.append(", events=").append(events);
         sb.append(", params=").append(params);
         sb.append(", responses=").append(responses);
         sb.append('}');
         return sb.toString();
     }
-
 
     public String getApiVersion() {
         return apiVersion;
@@ -163,6 +166,15 @@ public class CellBaseDataResponse<T> {
         return this;
     }
 
+    public int getDataRelease() {
+        return dataRelease;
+    }
+
+    public CellBaseDataResponse<T> setDataRelease(int dataRelease) {
+        this.dataRelease = dataRelease;
+        return this;
+    }
+
     public int getTime() {
         return time;
     }
@@ -170,6 +182,22 @@ public class CellBaseDataResponse<T> {
     public CellBaseDataResponse<T> setTime(int time) {
         this.time = time;
         return this;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public CellBaseDataResponse<T> setEvents(List<Event> events) {
+        this.events = events;
+        return this;
+    }
+
+    public void addEvent(Event event) {
+        if (events == null) {
+            events = new ArrayList<>();
+        }
+        events.add(event);
     }
 
     public ObjectMap getParams() {
@@ -188,20 +216,5 @@ public class CellBaseDataResponse<T> {
     public CellBaseDataResponse<T> setResponses(List<CellBaseDataResult<T>> responses) {
         this.responses = responses;
         return this;
-    }
-
-    public List<Event> getEvents() {
-        return events;
-    }
-
-    public void setEvents(List<Event> events) {
-        this.events = events;
-    }
-
-    public void addEvent(Event event) {
-        if (events == null) {
-            events = new ArrayList<>();
-        }
-        events.add(event);
     }
 }
