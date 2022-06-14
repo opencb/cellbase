@@ -1728,7 +1728,6 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-//            try {
             while (!clinicalFuture.isDone()) {
                 Thread.sleep(1);
             }
@@ -1739,6 +1738,11 @@ public class VariantAnnotationCalculator {
                     CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
                     if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
                         variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalCellBaseDataResult));
+                        // Add GWAS info
+                        GwasAssociation gwas = clinicalCellBaseDataResult.getResults().get(0).getAnnotation().getGwas();
+                        if (gwas != null) {
+                            variantAnnotationList.get(i).setGwas(gwas);
+                        }
                     }
                 }
             }

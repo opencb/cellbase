@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
@@ -29,12 +30,14 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     private static final String CLINVAR_NAME = "ClinVar";
+    private static final String GWAS_NAME = "GWAS catalog";
     private static final String IARCTP53_NAME = "IARC TP53 Database";
 
 
@@ -59,12 +62,15 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
             logger.info("Downloading clinical information ...");
 
+            String url;
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
             Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
             Files.createDirectories(clinicalFolder);
+            logger.info("\t\tDownloading ClinVar files ...");
+
             List<String> clinvarUrls = new ArrayList<>(3);
-            String url = configuration.getDownload().getClinvar().getHost();
+            url = configuration.getDownload().getClinvar().getHost();
 
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString()));
             clinvarUrls.add(url);
@@ -82,6 +88,14 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             clinvarUrls.add(url);
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
+
+            // Gwas catalog
+            logger.info("\t\tDownloading GWAS catalog file ...");
+            DownloadProperties.URLProperties gwasCatalog = configuration.getDownload().getGwasCatalog();
+            url = gwasCatalog.getHost();
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString()));
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
+                    Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
 
 //            List<String> hgvsList = getDocmHgvsList();
 //            if (!hgvsList.isEmpty()) {

@@ -20,6 +20,8 @@ package org.opencb.cellbase.core.common.clinical.gwas;
  * Created by lcruz on 26/05/14.
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ public class Gwas extends ClinicalVariant {
     private Float riskAlleleFrequency;
     private String cnv;
     private List<GwasStudy> studies;
+
 
     public Gwas(String chromosome, Integer start, Integer end, String reference, String alternate, String region,
                 String reportedGenes, String mappedGene, String upstreamGeneId, String downstreamGeneId, String snpGeneIds,
@@ -95,6 +98,9 @@ public class Gwas extends ClinicalVariant {
         this.studies = other.studies;
     }
 
+    public String toJson() throws JsonProcessingException {
+        return new ObjectMapper().writer().writeValueAsString(this);
+    }
     // ---------------------------------- GETTERS / SETTERS ------------------------------
 
     public String getRegion() {
