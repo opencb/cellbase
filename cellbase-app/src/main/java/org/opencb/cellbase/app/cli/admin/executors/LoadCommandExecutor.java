@@ -578,7 +578,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                createIndex(EtlCommons.PUBMED_DATA);
 
                 // Update release (collection and sources)
-                List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILE));
+                List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
                 dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {

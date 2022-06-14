@@ -120,7 +120,7 @@ public class EtlCommons {
     public static final String GO_VERSION_FILE = "goVersion.json";
     public static final String DO_VERSION_FILE = "doVersion.json";
     public static final String HGMD_FILE = "hgmd.vcf";
-    public static final String PUBMED_VERSION_FILE = "pubmedVersion.json";
+    public static final String PUBMED_VERSION_FILENAME = "pubmedVersion.json";
 
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";

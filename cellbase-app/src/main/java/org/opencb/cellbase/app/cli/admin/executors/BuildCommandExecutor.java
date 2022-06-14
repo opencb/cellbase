@@ -404,6 +404,13 @@ public class BuildCommandExecutor extends CommandExecutor {
             pubmedOutputFolder.toFile().mkdirs();
         }
 
+        logger.info("Copying PubMed version file...");
+        if (pubmedInputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(pubmedInputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME),
+                    pubmedOutputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pubmedOutputFolder);
         return new PubMedBuilder(pubmedInputFolder, serializer);
     }

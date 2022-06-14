@@ -54,27 +54,22 @@ public class PubMedBuilder extends CellBaseBuilder {
             if (file.isFile() && (file.getName().endsWith("gz") || file.getName().endsWith("xml"))) {
                 String name = file.getName().split("\\.")[0];
 
-                logger.info("Parsing PubMed file {} ...", file.getName());
 
                 ObjectWriter objectWriter = new ObjectMapper().writerFor(PubmedArticle.class);
                 PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) PubMedParser.loadXMLInfo(file.getAbsolutePath());
 
                 List<Object> objects = pubmedArticleSet.getPubmedArticleOrPubmedBookArticle();
+                logger.info("Parsing PubMed file {} of {} articles ...", file.getName(), objects.size());
+                int counter = 0;
                 for (Object object : objects) {
                     PubmedArticle pubmedArticle = (PubmedArticle) object;
                     fileSerializer.serialize(pubmedArticle, name);
+                    if (++counter % 2000 == 0) {
+                        logger.info("\t\t" + counter + " articles");
+                    }
                 }
-//
-//
-//
-//                try (BufferedWriter out = FileUtils.newBufferedWriter(jsonPath)) {
-//                    List<Object> objects = pubmedArticleSet.getPubmedArticleOrPubmedBookArticle();
-//                    for (Object object : objects) {
-//                        PubmedArticle pubmedArticle = (PubmedArticle) object;
-//                        out.write(objectWriter.writeValueAsString(pubmedArticle));
-//                        out.write("\n");
-//                    }
-//                }
+                fileSerializer.close();
+                logger.info("\t\tDone: " + counter + " articles.");
             }
         }
 
