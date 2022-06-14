@@ -575,7 +575,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                     }
                 }
                 // Create index
-//                createIndex(EtlCommons.PUBMED_DATA);
+                createIndex(EtlCommons.PUBMED_DATA);
 
                 // Update release (collection and sources)
                 List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
