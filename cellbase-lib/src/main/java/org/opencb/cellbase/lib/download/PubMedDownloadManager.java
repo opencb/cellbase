@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.download;
 
-import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -47,9 +46,7 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
         String url = configuration.getDownload().getPubmed().getHost();
         String regexp = configuration.getDownload().getPubmed().getFiles().get(0);
         String[] name = regexp.split("[\\[\\]]");
-        System.out.println(StringUtils.join(name, " ---- "));
         String[] split = name[1].split("\\.\\.");
-        System.out.println(StringUtils.join(split, " ---- "));
         int start = Integer.valueOf(split[0]);
         int end = Integer.valueOf(split[1]);
         int padding = Integer.valueOf(split[2]);
@@ -60,6 +57,7 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> list = new ArrayList<>();
         for (int i = start; i <= end; i++) {
             String filename = name[0] + String.format("%0" + padding + "d", i) + name[2];
+            logger.info("\tDownloading file " + filename);
             list.add(downloadFile(url + "/" + filename, pubmedFolder.resolve(filename).toString()));
         }
         return list;
