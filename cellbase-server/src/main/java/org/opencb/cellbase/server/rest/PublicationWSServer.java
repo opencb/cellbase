@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
-import org.opencb.biodata.formats.pubmed.generated.PubmedArticle;
+import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.PublicationQuery;
 import org.opencb.cellbase.core.api.query.QueryException;

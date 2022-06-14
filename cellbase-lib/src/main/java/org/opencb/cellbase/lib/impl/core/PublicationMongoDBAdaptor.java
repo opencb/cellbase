@@ -21,7 +21,7 @@ import com.mongodb.client.model.Filters;
 import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.formats.pubmed.generated.PubmedArticle;
+import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.cellbase.core.api.PublicationQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;

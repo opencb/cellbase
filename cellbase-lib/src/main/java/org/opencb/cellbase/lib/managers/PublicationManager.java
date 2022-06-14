@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.biodata.formats.pubmed.generated.PubmedArticle;
+import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.cellbase.core.api.PublicationQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
