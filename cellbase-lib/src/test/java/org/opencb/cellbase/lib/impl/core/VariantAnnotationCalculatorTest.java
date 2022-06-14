@@ -31,10 +31,8 @@ import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -1143,7 +1141,38 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+
     @Test
+    public void testClinicalAnnotationGwas() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant1 = new Variant("5", 112136975, "GAG", "G");
+        Variant variant2 = new Variant("11", 64577375, "G", "GGGGGC");
+        List<Variant> variants = new ArrayList<>();
+        variants.add(variant1);
+        variants.add(variant2);
+
+        List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariantList(variants, queryOptions);
+
+
+        assertEquals(Integer.valueOf(112136974), cellBaseDataResult.get(0).getResults().get(0).getStart());
+        assertEquals("AG", cellBaseDataResult.get(0).getResults().get(0).getReference());
+        assertEquals("", cellBaseDataResult.get(0).getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.get(0).getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult.get(0), "RCV000000829"));
+
+        assertEquals("33462484", cellBaseDataResult.get(0).getResults().get(0).getGwas().getStudies().get(0).getPubmedid());
+        assertEquals(Double.valueOf(0.0497), cellBaseDataResult.get(0).getResults().get(0).getGwas().getStudies().get(0).getTraits().get(0).getScores().get(0).getOrBeta());
+
+        assertNull(cellBaseDataResult.get(1).getResults().get(0).getGwas());
+
+    }
+
+
+        @Test
     public void testClinicalAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
