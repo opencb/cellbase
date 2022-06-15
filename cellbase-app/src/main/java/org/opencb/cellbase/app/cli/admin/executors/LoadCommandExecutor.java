@@ -81,7 +81,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA};
+                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
@@ -300,6 +300,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.SPLICE_SCORE_DATA: {
                             // Load data, create index and update release
                             loadSpliceScores();
+                            break;
+                        }
+                        case EtlCommons.PUBMED_DATA: {
+                            // Load data, create index and update release
+                            loadPubMed();
                             break;
                         }
                         default:
@@ -554,6 +559,33 @@ public class LoadCommandExecutor extends CommandExecutor {
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(spliceFolder.resolve(entry.getFileName()), "splice_score", dataRelease);
+        }
+    }
+
+    private void loadPubMed() {
+        Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
+
+        if (Files.exists(pubmedPath)) {
+            try {
+                // Load data
+                for (File file : pubmedPath.toFile().listFiles()) {
+                    if (file.isFile() && (file.getName().endsWith("gz"))) {
+                        logger.info("Loading file '{}'", file.getName());
+                        loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
+                    }
+                }
+                // Create index
+                createIndex(EtlCommons.PUBMED_DATA);
+
+                // Update release (collection and sources)
+                List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
+                dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
+            }
+        } else {
+            logger.warn("PubMed folder {} not found", pubmedPath.toString());
         }
     }
 

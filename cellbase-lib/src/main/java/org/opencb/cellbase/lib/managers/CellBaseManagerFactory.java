@@ -43,6 +43,7 @@ public class CellBaseManagerFactory {
     private MetaManager metaManager;
     private Map<String, OntologyManager> ontologyManagers;
     private FileManager fileManager;
+    private PublicationManager publicationManager;
 
     private Map<String, DataReleaseManager> dataReleaseManagers;
 
@@ -345,5 +346,19 @@ public class CellBaseManagerFactory {
             dataReleaseManagers.put(multiKey, new DataReleaseManager(species, assembly, configuration));
         }
         return dataReleaseManagers.get(multiKey);
+    }
+//    public OntologyManager getOntologyManager(String species) throws CellBaseException {
+//        if (species == null) {
+//            throw new CellBaseException("Species is required.");
+//        }
+//        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+//        return getOntologyManager(species, assembly.getName());
+//    }
+
+    public PublicationManager getPublicationManager() throws CellBaseException {
+        if (publicationManager == null) {
+            publicationManager = new PublicationManager(configuration);
+        }
+        return publicationManager;
     }
 }

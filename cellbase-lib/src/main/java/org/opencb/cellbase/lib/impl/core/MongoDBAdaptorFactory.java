@@ -87,6 +87,10 @@ public class MongoDBAdaptorFactory {
         return new SpliceScoreMongoDBAdaptor(mongoDatastore);
     }
 
+    public PublicationMongoDBAdaptor getPublicationMongoDBAdaptor() {
+        return new PublicationMongoDBAdaptor(mongoDatastore);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MongoDBAdaptorFactory{");

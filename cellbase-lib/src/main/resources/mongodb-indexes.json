@@ -127,3 +127,5 @@
 
 {"collection": "splice_score", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "splice_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
+
+{"collection": "pubmed", "fields": {"medlineCitation.pmid.content": 1}, "options": {"background": true}}

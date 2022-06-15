@@ -72,6 +72,7 @@ public class DownloadProperties {
     private URLProperties doidObo;
     private URLProperties goAnnotation;
     private URLProperties revel;
+    private URLProperties pubmed;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -462,6 +463,15 @@ public class DownloadProperties {
 
     public DownloadProperties setRevel(URLProperties revel) {
         this.revel = revel;
+        return this;
+    }
+
+    public URLProperties getPubmed() {
+        return pubmed;
+    }
+
+    public DownloadProperties setPubmed(URLProperties pubmed) {
+        this.pubmed = pubmed;
         return this;
     }
 

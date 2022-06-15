@@ -154,6 +154,10 @@ download:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   revel:
     host: https://rothsj06.u.hpc.mssm.edu/revel_grch38_all_chromosomes.csv.zip
+  pubmed:
+    host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
+    files:
+      - pubmed22n[1..1114..4].xml.gz
 species:
   vertebrates:
     - id: hsapiens

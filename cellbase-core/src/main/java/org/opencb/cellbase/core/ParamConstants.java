@@ -392,4 +392,11 @@ public class ParamConstants {
 
     public static final String CELLTYPE = "Type of cell.";
 
+    // ---------------------------------------------
+
+    public static final String PUBLICATION_ID_DESCRIPTION = "Comma separated list of publication ids, e.g. 61736,61737";
+    public static final String PUBLICATION_AUTHOR_DESCRIPTION = "Comma separated list of author names";
+    public static final String PUBLICATION_TITLE_DESCRIPTION = "Comma separated list of words in the title";
+    public static final String PUBLICATION_KEYWORD_DESCRIPTION = "Comma separated list of keywords";
+    public static final String PUBLICATION_ABSTRACT_DESCRIPTION = "Comma separated list of words in the abstract";
 }
