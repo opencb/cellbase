@@ -114,7 +114,7 @@ public class GwasIndexer extends ClinicalIndexer {
                     variantAnnotation.setXrefs(xrefs);
                 }
 
-                variantAnnotation.setGwas(entry.getValue());
+                variantAnnotation.setGwas(Collections.singletonList(entry.getValue()));
                 rdb.put(entry.getKey().getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
             this.printSummary(processedGwasLines, gwasMap);

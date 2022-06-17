@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.variant.annotation;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
@@ -1171,7 +1171,7 @@ public class VariantAnnotationCalculator {
     }
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
-            List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
+        List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
                 "transcripts.proteinId", "transcripts.chromosome", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence",
                 "transcripts.proteinSequence", "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
@@ -1739,8 +1739,8 @@ public class VariantAnnotationCalculator {
                     if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
                         variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalCellBaseDataResult));
                         // Add GWAS info
-                        GwasAssociation gwas = clinicalCellBaseDataResult.getResults().get(0).getAnnotation().getGwas();
-                        if (gwas != null) {
+                        List<GwasAssociation> gwas = clinicalCellBaseDataResult.getResults().get(0).getAnnotation().getGwas();
+                        if (CollectionUtils.isNotEmpty(gwas)) {
                             variantAnnotationList.get(i).setGwas(gwas);
                         }
                     }
