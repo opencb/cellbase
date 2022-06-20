@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cellbase-core</artifactId>
-    <version>${cellbase.version}</version>
+    <version>${project.parent.version}</version>
     <packaging>jar</packaging>
 
     <dependencies>

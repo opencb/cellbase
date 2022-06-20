@@ -22,8 +22,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>5.2.0-SNAPSHOT</cellbase.version>
-        <pycellbase.version>${cellbase.version}</pycellbase.version>
+        <pycellbase.version>${project.version}</pycellbase.version>
         <java-common-libs.version>4.4.0-SNAPSHOT</java-common-libs.version>
         <biodata.version>2.4.0-SNAPSHOT</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
@@ -103,12 +102,12 @@
             <dependency>
                 <groupId>org.opencb.cellbase</groupId>
                 <artifactId>cellbase-core</artifactId>
-                <version>${cellbase.version}</version>
+                <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.cellbase</groupId>
                 <artifactId>cellbase-lib</artifactId>
-                <version>${cellbase.version}</version>
+                <version>${project.parent.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
@@ -357,7 +356,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <CELLBASE.WAR.NAME>cellbase-${cellbase.version}</CELLBASE.WAR.NAME>
+                <CELLBASE.WAR.NAME>cellbase-${project.version}</CELLBASE.WAR.NAME>
                 <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>

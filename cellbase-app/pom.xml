@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cellbase-app</artifactId>
-    <version>${cellbase.version}</version>
+    <version>${project.parent.version}</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -22,12 +22,12 @@
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-client</artifactId>
-            <version>${cellbase.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-server</artifactId>
-            <version>${cellbase.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

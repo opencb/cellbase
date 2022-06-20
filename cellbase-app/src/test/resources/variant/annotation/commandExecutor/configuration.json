@@ -1,6 +1,6 @@
 {
 	"version": "v5",
-	"apiVersion": "${cellbase.version}",
+	"apiVersion": "${project.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"maintenanceFlagFile": "/tmp/maintenance",
 	"maintainerContact": "javier.lopez@genomicsengland.co.uk",
