@@ -130,14 +130,17 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        @Parameter(names = {"--db", "--database"}, description = "Database name", required = true, arity = 1)
         public String database;
 
         @Parameter(names = {"--create"}, description = "Create a new data release", arity = 0)
         public boolean create;
 
-        @Parameter(names = {"--set-active"}, description = "Set the release active by default", arity = 1)
-        public int activeByDefault;
+        @Parameter(names = {"--list"}, description = "List the data releases present in the database", arity = 0)
+        public boolean list;
+
+        @Parameter(names = {"--set-active"}, description = "Set the data release active", arity = 1)
+        public int active;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
@@ -151,16 +154,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"--data-release"}, description = "Data release where the data will be loaded, if this is not provided or"
-                + " is zero, then the active release by default will be used", arity = 1)
-        public int dataRelease;
-
-        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded, e.g. "
-                + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
-                + "--fields parameter).", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, required = true, arity = 1,
+                description = "Input directory with the JSON data models to be loaded, e.g. "
+                        + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
+                        + "--fields parameter).")
         public String input;
 
-        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        @Parameter(names = {"--db", "--database"}, description = "Database name", required = true, arity = 1)
         public String database;
 
         @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. "
@@ -204,7 +204,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "--fields parameter).", required = true, arity = 1)
         public String input;
 
-        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
+        @Parameter(names = {"--db", "--database"}, description = "Database name", required = true, arity = 1)
         public String database;
 
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
@@ -230,7 +230,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 arity = 1)
         public String data;
 
-        @Parameter(names = {"--database"}, description = "Database name.", required = true, arity = 1)
+        @Parameter(names = {"--db", "--database"}, description = "Database name.", required = true, arity = 1)
         public String database;
 
         @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
