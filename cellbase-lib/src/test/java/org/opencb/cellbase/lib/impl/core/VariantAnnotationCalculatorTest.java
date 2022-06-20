@@ -1157,15 +1157,14 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariantList(variants, queryOptions);
 
-
         assertEquals(Integer.valueOf(112136974), cellBaseDataResult.get(0).getResults().get(0).getStart());
         assertEquals("AG", cellBaseDataResult.get(0).getResults().get(0).getReference());
         assertEquals("", cellBaseDataResult.get(0).getResults().get(0).getAlternate());
         assertNotNull(cellBaseDataResult.get(0).getResults().get(0).getTraitAssociation());
         assertTrue(containsAccession(cellBaseDataResult.get(0), "RCV000000829"));
 
-        assertEquals("33462484", cellBaseDataResult.get(0).getResults().get(0).getGwas().getStudies().get(0).getPubmedid());
-        assertEquals(Double.valueOf(0.0497), cellBaseDataResult.get(0).getResults().get(0).getGwas().getStudies().get(0).getTraits().get(0).getScores().get(0).getOrBeta());
+        assertEquals("33462484", cellBaseDataResult.get(0).getResults().get(0).getGwas().get(0).getStudies().get(0).getPubmedid());
+        assertEquals(Double.valueOf(0.0497), cellBaseDataResult.get(0).getResults().get(0).getGwas().get(0).getStudies().get(0).getTraits().get(0).getScores().get(0).getOrBeta());
 
         assertNull(cellBaseDataResult.get(1).getResults().get(0).getGwas());
 
