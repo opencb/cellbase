@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - release-5.0.x
+      - release-*
   workflow_dispatch:
 
 jobs:
@@ -25,17 +25,11 @@ jobs:
         with:
           fetch-depth: '10'
       - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '8'
           cache: 'maven'
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven
       - name: Start MongoDB v${{ matrix.mongodb }}
         uses: supercharge/mongodb-github-action@1.7.0
         with:
@@ -59,7 +53,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
     needs: test
     with:
-      cli: python3 ./build/cloud/docker/docker-build.py push --images base,rest
+      cli: python3 ./build/cloud/docker/docker-build.py push --images base
     secrets:
       DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
