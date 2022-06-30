@@ -106,7 +106,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             logger.info("/search GenomeQuery: {}", query.toString());
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -149,8 +149,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             required = true) String chromosomes) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes,
-                    query.getDataRelease());
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

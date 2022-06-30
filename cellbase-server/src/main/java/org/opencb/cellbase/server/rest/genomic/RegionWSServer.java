@@ -513,7 +513,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults
-                    = genomeManager.getConservation(query.toQueryOptions(), regions, query.getDataRelease());
+                    = genomeManager.getConservation(query.toQueryOptions(), regions, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

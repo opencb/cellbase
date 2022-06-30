@@ -133,7 +133,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query,
-                    query.getDataRelease());
+                    getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

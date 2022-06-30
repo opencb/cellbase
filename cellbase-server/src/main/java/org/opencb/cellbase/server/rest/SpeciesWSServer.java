@@ -71,7 +71,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
     public Response getSpeciesInfo() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), query.getDataRelease());
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
