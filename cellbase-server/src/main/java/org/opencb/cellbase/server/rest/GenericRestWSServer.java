@@ -200,6 +200,13 @@ public class GenericRestWSServer implements IWSServer {
         // It means to use the default data release
         return defaultDataRelease;
     }
+    protected int getDataReleaseUsed() throws CellBaseException {
+        int dataRelease = getDataRelease();
+        if (dataRelease == 0) {
+            return defaultDataRelease;
+        }
+        return dataRelease;
+    }
 
     /**
      * If limit is empty, then set to be 10. If limit is set, check that it is less than maximum allowed limit.
@@ -298,7 +305,11 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setDataRelease(defaultDataRelease);
+        try {
+            queryResponse.setDataRelease(getDataReleaseUsed());
+        } catch (CellBaseException ex) {
+            logger.warn("Impossible to set the data release used in the query response", e);
+        }
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -330,7 +341,11 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setDataRelease(defaultDataRelease);
+        try {
+            queryResponse.setDataRelease(getDataReleaseUsed());
+        } catch (CellBaseException e) {
+            logger.warn("Impossible to set the data release used in the query response", e);
+        }
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);
