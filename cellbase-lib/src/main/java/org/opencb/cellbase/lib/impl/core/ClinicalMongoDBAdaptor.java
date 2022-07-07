@@ -202,6 +202,9 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "dataRelease":
+                        // Do nothing
+                        break;
                     case "region":
                         createRegionQuery(query, value, andBsonList);
                         break;
