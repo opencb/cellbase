@@ -362,7 +362,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 source = geneQuery.getSource().get(0);
             }
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery, source,
-                    geneQuery.getDataRelease());
+                    getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -392,7 +392,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 source = geneQuery.getSource().get(0);
             }
 
-            CellBaseDataResult<Gene> queryResults = geneManager.startsWith(gene, geneQuery.toQueryOptions(), geneQuery.getDataRelease());
+            CellBaseDataResult<Gene> queryResults = geneManager.startsWith(gene, geneQuery.toQueryOptions(), getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -34,6 +34,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
@@ -62,7 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
-    protected int dataRelease = 0;
+    protected int defaultDataRelease = 0;
     protected String species;
 
     protected Query query;
@@ -167,34 +168,43 @@ public class GenericRestWSServer implements IWSServer {
         // check version. species is validated later
         checkVersion();
 
+        // Check data release and retrieve the default data release
         if (!DONT_CHECK_SPECIES.equals(species)) {
             // Prepare data release (do we need to get the default one?)
             if (StringUtils.isEmpty(uriParams.get("dataRelease")) || uriParams.get("dataRelease").equals("0")) {
-                if (dataRelease == 0) {
+                if (defaultDataRelease == 0) {
+                    if (StringUtils.isEmpty(assembly)) {
+                        assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, species, assembly).getAssembly();
+                    }
                     if (StringUtils.isNotEmpty(assembly)) {
                         DataReleaseManager releaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
                         DataRelease dr = releaseManager.getDefault();
                         if (dr != null) {
-                            dataRelease = dr.getRelease();
+                            defaultDataRelease = dr.getRelease();
                         }
                     }
-                }
-//                uriParams.put("dataRelease", String.valueOf(defaultDataRelease));
-            } else {
-                try {
-                    dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
-                } catch (NumberFormatException e) {
-                    throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "': " + e.getMessage());
                 }
             }
         }
     }
 
     protected int getDataRelease() throws CellBaseException {
-        if (uriParams.containsKey("dataRelease")) {
-            return Integer.parseInt(uriParams.get("dataRelease"));
+        if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
+            try {
+                int dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
+                return dataRelease;
+            } catch (NumberFormatException e) {
+                throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
+            }
         }
         // It means to use the default data release
+        return defaultDataRelease;
+    }
+    protected int getDataReleaseUsed() throws CellBaseException {
+        int dataRelease = getDataRelease();
+        if (dataRelease == 0) {
+            return defaultDataRelease;
+        }
         return dataRelease;
     }
 
@@ -295,7 +305,11 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setDataRelease(dataRelease);
+        try {
+            queryResponse.setDataRelease(getDataReleaseUsed());
+        } catch (CellBaseException ex) {
+            logger.warn("Impossible to set the data release used in the query response", e);
+        }
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -327,7 +341,11 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setDataRelease(dataRelease);
+        try {
+            queryResponse.setDataRelease(getDataReleaseUsed());
+        } catch (CellBaseException e) {
+            logger.warn("Impossible to set the data release used in the query response", e);
+        }
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);

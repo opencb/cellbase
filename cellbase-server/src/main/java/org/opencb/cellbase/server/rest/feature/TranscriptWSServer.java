@@ -104,7 +104,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 source = query.getSource().get(0);
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")), query,
-                    source, query.getDataRelease());
+                    source, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
