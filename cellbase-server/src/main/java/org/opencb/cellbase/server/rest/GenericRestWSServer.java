@@ -287,9 +287,9 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    protected Response createErrorResponse(Exception e) {
+    protected Response createErrorResponse(String msg) {
         // First we print the exception in Server logs
-        logger.error("Catch error: " + e.getMessage(), e);
+        logger.error("Catch error: " + msg);
 
         // Now we prepare the response to client
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
@@ -297,12 +297,12 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setApiVersion(version);
         queryResponse.setDataRelease(dataRelease);
 //        queryResponse.setParams(new ObjectMap(queryOptions));
-        queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
+        queryResponse.addEvent(new Event(Event.Type.ERROR, msg));
 
         CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
         List<Event> events = new ArrayList<>();
 //        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
-        events.add(new Event(Event.Type.ERROR, e.toString()));
+        events.add(new Event(Event.Type.ERROR, msg));
         queryResponse.setEvents(events);
         queryResponse.setResponses(Arrays.asList(result));
         logQuery(ERROR);
@@ -313,13 +313,12 @@ public class GenericRestWSServer implements IWSServer {
                 .build();
     }
 
+    protected Response createErrorResponse(Exception e) {
+        return createErrorResponse(e.toString());
+    }
+
     protected Response createErrorResponse(String method, String errorMessage) {
-        try {
-            logQuery(ERROR);
-            return buildResponse(Response.ok(Collections.singletonMap("[ERROR] " + method, errorMessage), MediaType.APPLICATION_JSON_TYPE));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
+        return createErrorResponse(method + ": " + errorMessage);
     }
 
     protected Response createOkResponse(Object obj) {
