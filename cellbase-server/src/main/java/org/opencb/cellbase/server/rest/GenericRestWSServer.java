@@ -287,9 +287,9 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    protected Response createErrorResponse(String msg) {
+    protected Response createErrorResponse(Exception e) {
         // First we print the exception in Server logs
-        logger.error("Catch error: " + msg);
+        logger.error("Catch error: " + e.getMessage(), e);
 
         // Now we prepare the response to client
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
@@ -297,12 +297,12 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setApiVersion(version);
         queryResponse.setDataRelease(dataRelease);
 //        queryResponse.setParams(new ObjectMap(queryOptions));
-        queryResponse.addEvent(new Event(Event.Type.ERROR, msg));
+        queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
         CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
         List<Event> events = new ArrayList<>();
 //        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
-        events.add(new Event(Event.Type.ERROR, msg));
+        events.add(new Event(Event.Type.ERROR, e.toString()));
         queryResponse.setEvents(events);
         queryResponse.setResponses(Arrays.asList(result));
         logQuery(ERROR);
@@ -313,12 +313,8 @@ public class GenericRestWSServer implements IWSServer {
                 .build();
     }
 
-    protected Response createErrorResponse(Exception e) {
-        return createErrorResponse(e.toString());
-    }
-
     protected Response createErrorResponse(String method, String errorMessage) {
-        return createErrorResponse(method + ": " + errorMessage);
+        return createErrorResponse(new CellBaseException(method + ": " + errorMessage));
     }
 
     protected Response createOkResponse(Object obj) {
