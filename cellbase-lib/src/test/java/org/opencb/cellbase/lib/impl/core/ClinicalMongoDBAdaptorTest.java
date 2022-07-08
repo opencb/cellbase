@@ -20,13 +20,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.conversions.Bson;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
@@ -50,6 +55,22 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ClinicalMongoDBAdaptorTest() throws IOException {
+    }
+
+    @Test
+    public void parseQueryTest() throws CellBaseException {
+        ClinicalManager manager = cellBaseManagerFactory.getClinicalManager("hsapiens");
+        ClinicalMongoDBAdaptor dbAdaptor = (ClinicalMongoDBAdaptor) manager.getDBAdaptor();
+        ClinicalVariantQuery query = new ClinicalVariantQuery();
+        query.setId("12370");
+        query.setDataRelease(1);
+        Bson bson = dbAdaptor.parseQuery(query);
+        System.out.println(query);
+        System.out.println(bson);
+        if (bson.toString().contains("dataRelease")) {
+            Assertions.fail("Error parsing clinical variant query, the filter 'dataRelease' has to be remove from the BSON document:" +
+                    bson);
+        }
     }
 
     @Test
