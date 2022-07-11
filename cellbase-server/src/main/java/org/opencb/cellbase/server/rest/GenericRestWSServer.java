@@ -328,13 +328,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected Response createErrorResponse(String method, String errorMessage) {
-        try {
-            logQuery(ERROR);
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)),
-                    MediaType.APPLICATION_JSON_TYPE));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
+        return createErrorResponse(new CellBaseException(method + ": " + errorMessage));
     }
 
     protected Response createOkResponse(Object obj) {
