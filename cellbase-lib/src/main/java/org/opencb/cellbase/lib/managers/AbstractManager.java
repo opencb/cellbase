@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AbstractManager {
+public class AbstractManager implements AutoCloseable {
 
     protected String species;
     protected String assembly;
@@ -88,5 +88,10 @@ public class AbstractManager {
             queries.add(q);
         }
         return queries;
+    }
+
+    @Override
+    public void close()  {
+        mongoDBManager.close();
     }
 }

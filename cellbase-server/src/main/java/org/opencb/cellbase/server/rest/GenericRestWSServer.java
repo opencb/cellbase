@@ -177,7 +177,7 @@ public class GenericRestWSServer implements IWSServer {
                         assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, species, assembly).getAssembly();
                     }
                     if (StringUtils.isNotEmpty(assembly)) {
-                        DataReleaseManager releaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
+                        DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
                         DataRelease dr = releaseManager.getDefault();
                         if (dr != null) {
                             defaultDataRelease = dr.getRelease();
