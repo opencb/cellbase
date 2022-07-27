@@ -57,7 +57,6 @@ public class GeneWSServer extends GenericRestWSServer {
     private TranscriptManager transcriptManager;
     private VariantManager variantManager;
     private ProteinManager proteinManager;
-    private TfbsManager tfbsManager;
 
     public GeneWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -77,10 +76,9 @@ public class GeneWSServer extends GenericRestWSServer {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
         geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-//        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-//        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-//        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
-//        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
     }
 
     @GET
