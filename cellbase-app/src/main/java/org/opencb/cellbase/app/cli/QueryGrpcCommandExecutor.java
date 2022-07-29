@@ -58,7 +58,6 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
     public void execute() {
 
         channel = ManagedChannelBuilder.forAddress(queryGrpcCommandOptions.host, queryGrpcCommandOptions.port)
-                .usePlaintext(true)
                 .build();
 
         Map<String, String> query = createQueryMap();

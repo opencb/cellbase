@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 

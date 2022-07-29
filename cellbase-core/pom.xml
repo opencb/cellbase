@@ -38,6 +38,13 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util-ajax</artifactId>
+            <version>9.3.24.v20180605</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

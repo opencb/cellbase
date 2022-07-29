@@ -537,7 +537,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void checkParameters() throws IOException {
 
         // Get reference genome
-        if (org.apache.commons.lang.StringUtils.isNotBlank(variantAnnotationCommandOptions.referenceFasta)) {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(variantAnnotationCommandOptions.referenceFasta)) {
             referenceFasta = Paths.get(variantAnnotationCommandOptions.referenceFasta);
             FileUtils.checkFile(referenceFasta);
         }
