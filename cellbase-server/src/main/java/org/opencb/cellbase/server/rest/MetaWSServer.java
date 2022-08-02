@@ -131,7 +131,7 @@ public class MetaWSServer extends GenericRestWSServer {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
-            DataReleaseManager dataReleaseManager = new DataReleaseManager(species, assembly, cellBaseConfiguration);
+            DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
             CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
             if (onlyActive) {
                 for (DataRelease release : result.getResults()) {
