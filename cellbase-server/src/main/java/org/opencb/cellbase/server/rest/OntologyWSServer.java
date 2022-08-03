@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mortbay.util.ajax.JSON;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;

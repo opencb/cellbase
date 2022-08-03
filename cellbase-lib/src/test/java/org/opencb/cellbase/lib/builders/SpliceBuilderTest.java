@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.Test;
-import org.mortbay.util.ajax.JSON;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;

@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.collections4.map.HashedMap;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.lib.EtlCommons;
