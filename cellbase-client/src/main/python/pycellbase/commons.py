@@ -125,10 +125,16 @@ def _fetch(session, host, version, species, category, subcategory, resource,
 
         try:
             json_obj = r.json()
+
+            # TODO Remove deprecated response and result in future release. Added for backwards compatibility
             if 'response' in json_obj:
-                response = json_obj['response']
-            else:
-                return json_obj
+                json_obj['responses'] = json_obj['response']
+            for query_result in json_obj['responses']:
+                if 'result' in query_result:
+                    query_result['results'] = query_result['result']
+
+            response = json_obj['responses']
+
         except ValueError:
             msg = 'Bad JSON format retrieved from server'
             raise ValueError(msg)
