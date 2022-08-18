@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.api;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.utils.BioUtils;
 import org.opencb.cellbase.core.ParamConstants;

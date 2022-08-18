@@ -35,6 +35,10 @@
             <!--<artifactId>bionetdb-core</artifactId>-->
             <!--<version>${bionetdb.version}</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util-ajax</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
