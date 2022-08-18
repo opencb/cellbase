@@ -202,6 +202,9 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "dataRelease":
+                        // Do nothing
+                        break;
                     case "region":
                         createRegionQuery(query, value, andBsonList);
                         break;
@@ -391,6 +394,10 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                         .append(ParamConstants.QueryParams.ALTERNATE.key(), variant.getAlternate());
             }
 
+            // Add data release to query
+            if (!query.containsKey(AbstractQuery.DATA_RELEASE)) {
+                query.put(AbstractQuery.DATA_RELEASE, dataRelease);
+            }
         }
 
         CellBaseDataResult<Variant> queryResult = get(query, options);

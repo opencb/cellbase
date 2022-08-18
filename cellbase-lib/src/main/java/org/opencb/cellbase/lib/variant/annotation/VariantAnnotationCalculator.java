@@ -330,10 +330,20 @@ public class VariantAnnotationCalculator {
                                 .setRoleInCancer(new ArrayList<>())
                                 .setModeOfInheritance(new ArrayList<>())
                                 .setSyndromes(cancerAssociation.getSyndromes())
-                                .setTissues(cancerAssociation.getTissues())
-                                .setMutationTypes(cancerAssociation.getMutationTypes())
+                                .setTissues(new ArrayList<>())
+                                .setMutationTypes(new ArrayList<>())
                                 .setTranslocationPartners(cancerAssociation.getTranslocationPartners())
                                 .build();
+                        if (cancerAssociation.getTissues() != null) {
+                            build.setTissues(cancerAssociation.getTissues().stream()
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList()));
+                        }
+                        if (cancerAssociation.getMutationTypes() != null) {
+                            build.setMutationTypes(cancerAssociation.getMutationTypes().stream()
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList()));
+                        }
                         if (cancerAssociation.getRoleInCancer() != null) {
                             build.setRoleInCancer(cancerAssociation.getRoleInCancer().stream().map(Enum::name)
                                     .collect(Collectors.toList()));

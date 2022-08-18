@@ -86,7 +86,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
-            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query, query.getDataRelease());
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
