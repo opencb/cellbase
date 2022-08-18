@@ -61,7 +61,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
     needs: test
     with:
-      cli: putohn3 ./clients/python/python-build.sh push
+      cli: python3 ./clients/python/python-build.sh push
       artifact: build-folder
     secrets:
       PYPI_TWINE_USER: ${{ secrets.PYPI_TWINE_USER }}
