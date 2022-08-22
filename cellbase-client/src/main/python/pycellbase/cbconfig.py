@@ -71,7 +71,7 @@ class ConfigClient(object):
     def _format_url(url):
         """"Formats URL strings"""
         if not (url.startswith('http://') or url.startswith('https://')):
-            url = 'http://' + url
+            url = 'http://' + url.rstrip('/')
         return url
 
     def _get_available_host(self, hosts):
