@@ -37,6 +37,14 @@ jobs:
       - name: Build with Maven
         run: mvn -T 2 clean install -DskipTests -Dcheckstyle.skip
 
+  sonar:
+    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
+    needs: test
+    with:
+      sonarProjectKey: opencb_cellbase
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: test
@@ -61,7 +69,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
     needs: test
     with:
-      cli: python3 ./clients/python/python-build.sh push
+      cli: bash ./clients/python/python-build.sh push
       artifact: build-folder
     secrets:
       PYPI_TWINE_USER: ${{ secrets.PYPI_TWINE_USER }}
