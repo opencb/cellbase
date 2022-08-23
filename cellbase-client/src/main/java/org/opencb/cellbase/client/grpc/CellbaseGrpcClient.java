@@ -17,7 +17,7 @@ public class CellbaseGrpcClient {
 
     public CellbaseGrpcClient(String host, int port) {
         this.channel = ManagedChannelBuilder.forAddress(host, port)
-                .usePlaintext(true)
+                .usePlaintext()
                 .build();
 
         clients = new HashMap<>();
