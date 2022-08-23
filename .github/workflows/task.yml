@@ -12,14 +12,6 @@ jobs:
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
 
-  sonar:
-    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
-    needs: build
-    with:
-      sonarProjectKey: opencb_cellbase
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   test:
     name: CellBase Test
     runs-on: ubuntu-20.04
@@ -44,6 +36,14 @@ jobs:
           mongodb-replica-set: rs-test
       - name: Build with Maven
         run: mvn -T 2 clean install -DskipTests -Dcheckstyle.skip
+
+  sonar:
+    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
+    needs: test
+    with:
+      sonarProjectKey: opencb_cellbase
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy-docker:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
