@@ -1187,9 +1187,7 @@ public class VariantAnnotationCalculator {
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
                 "transcripts.exons.cdsEnd", "transcripts.exons.sequence", "transcripts.exons.phase",
-                "transcripts.exons.exonNumber", "mirna.matures", "mirna.sequence", "mirna.matures.cdnaStart",
-                "transcripts.exons.genomicCodingStart", "transcripts.exons.genomicCodingEnd",
-                "mirna.matures.cdnaEnd"));
+                "transcripts.exons.exonNumber", "mirna", "transcripts.exons.genomicCodingStart", "transcripts.exons.genomicCodingEnd"));
 
         if (annotatorSet.contains("expression")) {
             includeGeneFields.add("annotation.expression");
@@ -1205,7 +1203,6 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("mirnaTargets")) {
             includeGeneFields.add("annotation.targets");
-            includeGeneFields.add("mirna.matures.id");
         }
         if (annotatorSet.contains("cancerGeneAssociation")) {
             includeGeneFields.add("annotation.cancerAssociations");
