@@ -187,7 +187,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         Bson bsonDocument = parseQuery(query);
         logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Deprecated

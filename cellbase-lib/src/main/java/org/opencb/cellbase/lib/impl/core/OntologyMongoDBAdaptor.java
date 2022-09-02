@@ -94,7 +94,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Override

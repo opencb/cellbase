@@ -129,7 +129,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     public CellBaseDataResult<String> distinct(GeneQuery geneQuery) throws CellBaseException {
         Bson bsonDocument = parseQuery(geneQuery);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
     @Override

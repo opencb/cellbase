@@ -96,7 +96,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
     public CellBaseDataResult<String> distinct(PublicationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     @Override

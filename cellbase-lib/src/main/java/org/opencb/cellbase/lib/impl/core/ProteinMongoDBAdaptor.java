@@ -331,7 +331,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     public CellBaseDataResult<String> distinct(ProteinQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
 //    public Iterator nativeIterator(Query query, QueryOptions options) {
