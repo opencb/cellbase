@@ -2,12 +2,14 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -480,7 +482,18 @@ public class HgvsTranscriptCalculator {
         int end = variant.getStart() + MINIMUM_NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
+
+        QueryResult<GenomeSequenceFeature> queryResult = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions());
+        if (queryResult.getResult() == null || queryResult.getResult().size() == 0) {
+            String msg = new StringBuilder().append("Error calculating HGVSc for ").append(variant.toJson())
+                    .append(". No sequence found for ")
+                    .append(variant.getChromosome()).append(":").append(start).append("-").append(end)
+                    .append(". Query attempted was: ").append(query.toJson())
+                    .append(". Transcript: " + transcript.getId())
+                    .toString();
+            throw new RuntimeException(msg);
+        }
+        String genomicSequence = queryResult.getResult().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
