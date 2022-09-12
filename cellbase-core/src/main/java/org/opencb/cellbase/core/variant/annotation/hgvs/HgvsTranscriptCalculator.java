@@ -422,7 +422,18 @@ public class HgvsTranscriptCalculator {
         int end = variant.getStart() + neighbouringSequenceSize + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
+
+        QueryResult<GenomeSequenceFeature> queryResult = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions());
+        if (queryResult.getResult() == null || queryResult.getResult().size() == 0) {
+            String msg = new StringBuilder().append("Error calculating HGVSc for ").append(variant.toJson())
+                    .append(". No sequence found for ")
+                    .append(variant.getChromosome()).append(":").append(start).append("-").append(end)
+                    .append(". Query attempted was: ").append(query.toJson())
+                    .append(". Transcript: " + transcript.getId())
+                    .toString();
+            throw new RuntimeException(msg);
+        }
+        String genomicSequence = queryResult.getResult().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
