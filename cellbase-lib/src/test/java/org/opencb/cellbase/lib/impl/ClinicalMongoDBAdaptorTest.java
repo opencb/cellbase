@@ -7,7 +7,7 @@ import org.bson.Document;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.eclipse.jetty.util.ajax.JSON;
+import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
