@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.buildVariantId;
+
 /**
  * Calculates HGVS protein string based on variant and transcript.
  */
@@ -91,8 +93,7 @@ public class HgvsProteinCalculator {
                     return null;
                 }
             default:
-                // TODO throw an error?
-                logger.error("Don't know how to handle this variant of type {}", variant.getType());
+                logger.warn("Don't know how to handle this variant of type {}", variant.getType());
                 return null;
         }
     }
@@ -279,16 +280,16 @@ public class HgvsProteinCalculator {
 
                 // Build the new inserted sequence = split codon + alternate allele
                 if (refCodon.length() < positionAtCodon) {
-                    logger.error("INVALID VARIANT 3: positionAtCodon:" + positionAtCodon + " refCodon:" + refCodon + " variantId:"
-                            + getVariantId(variant));
+                    logger.warn("INVALID VARIANT 3: positionAtCodon:" + positionAtCodon + " refCodon:" + refCodon + " variantId:"
+                            + buildVariantId(variant));
                     return null;
                 }
                 String insSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
 
                 // need inserted sequence to be divisible by 3 to predict AAs later
                 if (insSequence.length() % 3 > 0) {
-                    logger.error("INVALID VARIANT 1: insSequence:" + insSequence + " refCodon:" + refCodon + " variantId:"
-                            + getVariantId(variant));
+                    logger.warn("INVALID VARIANT 1: insSequence:" + insSequence + " refCodon:" + refCodon + " variantId:"
+                            + buildVariantId(variant));
                     // append NTs until sequence has enough codons
                     insSequence = insSequence + refCodon.substring(0, (3 - insSequence.length() % 3));
                 }
@@ -321,7 +322,7 @@ public class HgvsProteinCalculator {
                 }
 
                 if (StringUtils.isEmpty(refAa)) {
-                    logger.error("INVALID VARAINT 2: empty refAa :: " + getVariantId(variant));
+                    logger.warn("INVALID VARAINT 2: empty refAa :: " + buildVariantId(variant));
                 }
 
                 // Check if the the original amino acid is kept
@@ -432,8 +433,8 @@ public class HgvsProteinCalculator {
             // keep moving to the right (3' Rule) while the first amino acid deleted equals the first one after deletion,
             // Example: check 11:6390701:-:CTGGCGCTGGCG
             if (transcript.getProteinSequence().length() < aminoacidPosition) {
-                logger.error("INVALID VARIANT 4: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
-                        + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
+                logger.warn("INVALID VARIANT 4: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
+                        + transcript.getProteinSequence().length() + " variantId:" + buildVariantId(variant));
                 return null;
             }
             String aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
@@ -444,8 +445,8 @@ public class HgvsProteinCalculator {
                 aminoacids.add(VariantAnnotationUtils.TO_LONG_AA.get(aaAfterInsertion));
                 codedAminoacids.add(aaAfterInsertion);
                 if (aminoacidPosition <= 0 || transcript.getProteinSequence().length() < aminoacidPosition) {
-                    logger.error("INVALID VARIANT 5: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
-                            + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
+                    logger.warn("INVALID VARIANT 5: aminoacidPosition:" + aminoacidPosition + " transcript.getProteinSequence().length():"
+                            + transcript.getProteinSequence().length() + " variantId:" + buildVariantId(variant));
                     return null;
                 }
                 aaAfterInsertion = transcript.getProteinSequence().substring(aminoacidPosition - 1, aminoacidPosition);
@@ -675,7 +676,7 @@ public class HgvsProteinCalculator {
                     newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon - 1)
                         + lastAffectedCodon.substring(positionAtCodon - 1); // GA + C = GAC
                 } else {
-                    logger.error("Couldn't calculate HGVSp for " + variant.getId());
+                    logger.warn("Couldn't calculate HGVSp for " + variant.getId());
                     return null;
                 }
 
@@ -814,9 +815,9 @@ public class HgvsProteinCalculator {
         if (leftAminoAcidPosition < 1 || rightAminoAcidPosition < 1 || transcript.getProteinSequence() == null
                 || transcript.getProteinSequence().length() < leftAminoAcidPosition
                 || transcript.getProteinSequence().length() < rightAminoAcidPosition) {
-            logger.error("INVALID VARIANT 6: leftAminoAcidPosition:" + leftAminoAcidPosition + " rightAminoAcidPosition "
+            logger.warn("INVALID VARIANT 6: leftAminoAcidPosition:" + leftAminoAcidPosition + " rightAminoAcidPosition "
                     + rightAminoAcidPosition + " transcript" + ".getProteinSequence().length():"
-                    + transcript.getProteinSequence().length() + " variantId:" + getVariantId(variant));
+                    + transcript.getProteinSequence().length() + " variantId:" + buildVariantId(variant));
             return null;
         }
         String leftCodedAa = transcript.getProteinSequence().substring(leftAminoAcidPosition - 1, leftAminoAcidPosition);
@@ -900,7 +901,7 @@ public class HgvsProteinCalculator {
         String alternateCdnaSeq = transcriptUtils.getAlternateCdnaSequence(variant);
 
         if (alternateCdnaSeq == null) {
-            logger.error("INVALID VARIANT 7: variantId:" + getVariantId(variant));
+            logger.warn("INVALID VARIANT 7: variantId:" + buildVariantId(variant));
             return null;
         }
         int codonIndex = transcript.getCdnaCodingStart() - 1;
@@ -931,7 +932,7 @@ public class HgvsProteinCalculator {
             currentAaIndex++;
             codonIndex += 3;
 
-            logger.info("NON-ATG START: " + getVariantId(variant));
+            logger.debug("NON-ATG START: " + buildVariantId(variant));
         }
 
 
@@ -972,7 +973,8 @@ public class HgvsProteinCalculator {
                     if (firstDiffIndex == -1) {
                         String longAA = VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa);
                         if (StringUtils.isEmpty(longAA)) {
-                            logger.error("Invalid AA found: " + referenceCodedAa + " for variant " + variant.getId());
+                            logger.warn("Invalid AA found: " + referenceCodedAa + " for variant "
+                                    + buildVariantId(variant));
                             return null;
                         }
                         firstReferencedAa = StringUtils.capitalize(longAA.toLowerCase());
@@ -1077,9 +1079,6 @@ public class HgvsProteinCalculator {
         return proteinIds;
     }
 
-    private String getVariantId(Variant variant) {
-        return  variant.getChromosome() + ":" + variant.getStart() + "-" + variant.getEnd() + ":" + variant.getReference() + ":"
-                + variant.getAlternate();
-    }
+
 
 }

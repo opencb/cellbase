@@ -601,6 +601,11 @@ public class VariantAnnotationUtils {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
+    public static String buildVariantId(Variant variant) {
+        return buildVariantId(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                variant.getAlternate());
+    }
+
     public static String buildVariantId(String chromosome, int start, String reference, String alternate) {
         StringBuilder stringBuilder = new StringBuilder();
 

@@ -2,16 +2,19 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.COMPLEMENTARY_NT;
+import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.buildVariantId;
 
 /**
  * Calculates HGVS string based on variant, transcript and gene.
@@ -420,7 +423,20 @@ public class HgvsTranscriptCalculator {
         int end = variant.getStart() + neighbouringSequenceSize + variant.getAlternate().length(); // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
+
+        QueryResult<GenomeSequenceFeature> queryResult = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions());
+        // to log information for IndexOutOfBounds exception when query returns no results
+        // Exception is still unhandled!
+        if (queryResult.getResult() == null || queryResult.getResult().size() == 0) {
+            String msg = new StringBuilder().append("Error calculating HGVSc. ")
+                    .append(". No sequence found for ")
+                    .append(buildVariantId(variant))
+                    .append(". Query attempted was: ").append(query.toJson())
+                    .append(". Transcript: " + transcript.getId())
+                    .toString();
+            LOGGER.error(msg);
+        }
+        String genomicSequence = queryResult.getResult().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
@@ -480,7 +496,19 @@ public class HgvsTranscriptCalculator {
         int end = variant.getStart() + MINIMUM_NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
+        QueryResult<GenomeSequenceFeature> queryResult = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions());
+        // to log information for IndexOutOfBounds exception when query returns no results
+        // Exception is still unhandled!
+        if (queryResult.getResult() == null || queryResult.getResult().size() == 0) {
+            String msg = new StringBuilder().append("Error calculating HGVSc. ")
+                    .append(". No sequence found for ")
+                    .append(buildVariantId(variant))
+                    .append(". Query attempted was: ").append(query.toJson())
+                    .append(". Transcript: " + transcript.getId())
+                    .toString();
+            LOGGER.error(msg);
+        }
+        String genomicSequence = queryResult.getResult().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());
