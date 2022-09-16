@@ -30,14 +30,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-util-ajax</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>org.opencb.bionetdb</groupId>-->
             <!--<artifactId>bionetdb-core</artifactId>-->

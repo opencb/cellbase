@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
-import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
