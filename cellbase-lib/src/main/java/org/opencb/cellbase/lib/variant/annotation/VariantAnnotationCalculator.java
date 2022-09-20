@@ -585,6 +585,26 @@ public class VariantAnnotationCalculator {
                     }
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(variant.getAnnotation().getConsequenceTypes()));
+
+                    // Update HGVS inside the consequence type (if HGVS are provided)
+                    if (CollectionUtils.isNotEmpty(variantAnnotation.getHgvs())) {
+                        for (ConsequenceType consequenceType : consequenceTypeList) {
+                            List<String> selectedHgvs = new ArrayList<>();
+                            for (String hgvs : variantAnnotation.getHgvs()) {
+                                if (hgvs.startsWith(consequenceType.getTranscriptId())) {
+                                    // ENST
+                                    selectedHgvs.add(hgvs);
+                                } else if (consequenceType.getProteinVariantAnnotation() != null
+                                        && hgvs.startsWith(consequenceType.getProteinVariantAnnotation().getProteinId())) {
+                                    // ENSP
+                                    selectedHgvs.add(hgvs);
+                                }
+                            }
+                            if (CollectionUtils.isNotEmpty(selectedHgvs)) {
+                                consequenceType.setHgvs(selectedHgvs);
+                            }
+                        }
+                    }
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", variant);
@@ -1171,7 +1191,7 @@ public class VariantAnnotationCalculator {
     }
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
-            List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
+        List<String> includeGeneFields = new ArrayList<>(Arrays.asList("name", "id", "chromosome", "start", "end", "transcripts.id",
                 "transcripts.proteinId", "transcripts.chromosome", "transcripts.start", "transcripts.end", "transcripts.cdnaSequence",
                 "transcripts.proteinSequence", "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
