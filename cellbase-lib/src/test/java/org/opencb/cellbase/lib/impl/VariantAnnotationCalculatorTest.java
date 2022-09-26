@@ -2145,6 +2145,60 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         assertEquals(12, additionalAttributes1.size());
         assertEquals(12, additionalAttributes2.size());
+
+        variantBuilder = new VariantBuilder("1",
+                101239033,
+                101239033,
+                "TC",
+                "CT");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("999", "1|1")));
+        Variant variant3 = variantBuilder.build();
+
+        queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
+
+    }
+
+    @Test
+    public void testMNVtranscripts() throws Exception {
+
+//        chr19:13025339:C:A+1|1+999 - synonymous
+//        chr19:13025341:G:T+1|1+999 - synonymous
+
+        initGrch38();
+
+
+        VariantBuilder variantBuilder = new VariantBuilder("1",
+                101239033,
+                101239033,
+                "TC",
+                "CT");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("999", "1|1")));
+        Variant variant1 = variantBuilder.build();
+
+        List<Variant> variantList = new ArrayList<>();
+        variantList.add(variant1);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate, clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", true);
+
+        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
+
+        assertEquals(1, queryResult.size());
+
+        VariantAnnotation v1 = queryResult.get(0).getResult().get(0);
+        assertEquals("missense_variant", v1.getDisplayConsequenceType());
+        Map<String, String> additionalAttributes1 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
+
+        assertEquals(3, additionalAttributes1.size());
+
     }
 
     private boolean hasClinVarAccession(List<EvidenceEntry> traitAssociation, String accession) {
