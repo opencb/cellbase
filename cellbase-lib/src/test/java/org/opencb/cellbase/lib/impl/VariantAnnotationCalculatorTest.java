@@ -2197,7 +2197,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals("missense_variant", v1.getDisplayConsequenceType());
         Map<String, String> additionalAttributes1 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
 
-        assertEquals(3, additionalAttributes1.size());
+        // 3 transcripts but only 1 is protein coding
+        assertEquals(1, additionalAttributes1.size());
 
     }
 
