@@ -592,12 +592,15 @@ public class VariantAnnotationCalculator {
                             List<String> selectedHgvs = new ArrayList<>();
                             for (String hgvs : variantAnnotation.getHgvs()) {
                                 if (consequenceType.getTranscriptId() != null && hgvs.startsWith(consequenceType.getTranscriptId())) {
-                                    // ENST
+                                    // Add Transcript ID
                                     selectedHgvs.add(hgvs);
-                                } else if (consequenceType.getProteinVariantAnnotation() != null
-                                        && hgvs.startsWith(consequenceType.getProteinVariantAnnotation().getProteinId())) {
-                                    // ENSP
-                                    selectedHgvs.add(hgvs);
+                                } else {
+                                    // Add Protein ID
+                                    if (consequenceType.getProteinVariantAnnotation() != null
+                                            && consequenceType.getProteinVariantAnnotation().getProteinId() != null
+                                            && hgvs.startsWith(consequenceType.getProteinVariantAnnotation().getProteinId())) {
+                                        selectedHgvs.add(hgvs);
+                                    }
                                 }
                             }
                             if (CollectionUtils.isNotEmpty(selectedHgvs)) {
