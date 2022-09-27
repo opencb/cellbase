@@ -75,7 +75,7 @@ public class VariantAnnotationCalculator {
     private Boolean checkAminoAcidChange = false;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
-    private static HgvsCalculator hgvsCalculator;
+    private HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
