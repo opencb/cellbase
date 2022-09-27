@@ -591,8 +591,8 @@ public class VariantAnnotationCalculator {
                         for (ConsequenceType consequenceType : consequenceTypeList) {
                             List<String> selectedHgvs = new ArrayList<>();
                             for (String hgvs : variantAnnotation.getHgvs()) {
-                                // Add Transcript ID
-                                if (hgvs.startsWith(consequenceType.getTranscriptId())) {
+                                if (consequenceType.getTranscriptId() != null && hgvs.startsWith(consequenceType.getTranscriptId())) {
+                                    // Add Transcript ID
                                     selectedHgvs.add(hgvs);
                                 } else {
                                     // Add Protein ID
