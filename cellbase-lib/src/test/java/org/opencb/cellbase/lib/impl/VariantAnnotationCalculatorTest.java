@@ -1966,6 +1966,27 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testMissingClinVar() throws Exception {
+
+        Variant variant1 = new Variant("19:11216263:A:AGATTGTAAAGATAAGAGCGAT");
+        //Variant variant1 = new Variant("19:11216245:C:CCGACTGCAAGGACAAATCTGA");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "hgvs");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant1, queryOptions);
+
+        List<String> hgvs = queryResult.getResult().get(0).getHgvs();
+        assertEquals(14, hgvs.size());
+
+    }
+
+    @Test
     public void testClinicalVariantsGrch38() throws Exception {
 
         initGrch38();
