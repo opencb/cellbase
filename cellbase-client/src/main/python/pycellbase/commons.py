@@ -147,9 +147,9 @@ def _fetch(session, host, version, species, category, subcategory, resource,
             if query_id is not None:
                 for index, res in enumerate(response):
                     id_index = current_id_indexes[index]
-                    final_response[id_index]['result'] += res['result']
+                    final_response[id_index]['results'] += res['results']
             else:
-                final_response[0]['result'] += response[0]['result']
+                final_response[0]['results'] += response[0]['results']
 
         if query_id is not None:
             # Checking which ids are completely retrieved
