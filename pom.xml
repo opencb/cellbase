@@ -22,8 +22,8 @@
     </modules>
 
     <properties>
-        <pycellbase.version>5.2.6-SNAPSHOT</pycellbase.version>
-        <java-common-libs.version>4.4.2</java-common-libs.version>
+	<pycellbase.version>${project.version}</pycellbase.version>
+        <java-common-libs.version>4.4.3-SNAPSHOT</java-common-libs.version>
         <biodata.version>2.4.0</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.11.4</jackson.version>
