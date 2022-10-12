@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.mongodb.util.JSON;
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -55,6 +55,70 @@ public class ClinicalVariantBuilderTest {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
+
+    private void initGrch38()  throws Exception  {
+        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant/grch38").toURI());
+        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(), Paths.get("/tmp/clinicalVariant4").toFile());
+        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant4");
+
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.fai").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.fai").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gzi").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz.gzi").toFile());
+
+        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh38.90.dna.primary_assembly.chr13.fa.gz");
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh38",  serializer)).parse();
+    }
+
+    @Test
+    public void testUnexpectedAccession() throws Exception {
+        cleanUp();
+
+        initGrch38();
+
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(6, parsedVariantList.size());
+
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "209047");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("7", variant.getChromosome());
+        assertEquals(Integer.valueOf(117530975), variant.getStart());
+        assertEquals("G", variant.getReference());
+        assertEquals("A", variant.getAlternate());
+
+        // variant should have list of SCVs and RCVs and VCVs
+        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000007529");
+        System.out.println(evidenceEntry);
+        assertEquals(5, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("7109", getValueByName(evidenceEntry, "vcvIds"));
+
+        evidenceEntry = getEvidenceEntryByAccession(variant, "SCV000053488");
+        assertEquals(5, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("7109", getValueByName(evidenceEntry, "vcvIds"));
+
+        evidenceEntry = getEvidenceEntryByAccession(variant, "7109");
+        assertEquals(4, evidenceEntry.getAdditionalProperties().size());
+        assertEquals("RCV000007529", getValueByName(evidenceEntry, "rcvIds"));
+        assertEquals("SCV000053488", getValueByName(evidenceEntry, "scvIds"));
+    }
+
+    private String getValueByName(EvidenceEntry evidenceEntry, String name) {
+        for (Property property : evidenceEntry.getAdditionalProperties()) {
+            if (property.getName().equals(name)) {
+                return property.getValue();
+            }
+        }
+        return null;
+    }
+
 
     @Test
     public void noNormaliseTest() throws Exception {
@@ -799,10 +863,10 @@ public class ClinicalVariantBuilderTest {
 //        }
 //    }
 
-    @Test
-    public void testVariant() {
-        Variant v = new Variant("1", 2000, 2100, "A", "<DEL>");
-        System.out.println(v.toStringSimple());
-    }
+//    @Test
+//    public void testVariant() {
+//        Variant v = new Variant("1", 2000, 2100, "A", "<DEL>");
+//        System.out.println(v.toStringSimple());
+//    }
 
 }
