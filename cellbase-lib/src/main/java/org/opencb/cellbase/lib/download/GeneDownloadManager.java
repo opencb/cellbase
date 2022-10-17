@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.DockerUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -45,6 +46,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
+    private static String dockerImage;
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
 
@@ -61,6 +63,8 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     public GeneDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
+
+        dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
     }
 
     @Override
@@ -84,6 +88,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
+//        runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
     }
@@ -308,5 +313,23 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
 
         return downloadFiles;
+    }
+
+    private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {
+        // TODO skip if we already have these data
+        logger.info("Downloading gene extra info ...");
+
+        if ("true".equals(System.getenv("CELLBASE_BUILD_DOCKER"))) {
+            final String outputLog = downloadLogFolder + "/gene_extra_info.log";
+            EtlCommons.runCommandLineProcess(null, "/opt/cellbase/gene_extra_info.pl",
+                    Arrays.asList("--outdir", geneFolder.toAbsolutePath().toString()),
+                    outputLog);
+        } else {
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
+                    "/ensembl-data");
+            String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --outdir /ensembl-data";
+
+            DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
+        }
     }
 }

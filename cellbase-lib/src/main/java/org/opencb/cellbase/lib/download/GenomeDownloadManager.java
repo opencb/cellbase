@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.DockerUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,6 +51,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 //        downloadFiles.addAll(downloadRepeats());
 
         // cytobands
+        runGenomeInfo();
         return downloadFiles;
     }
 
@@ -209,5 +211,27 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             return downloadFiles;
         }
         return null;
+    }
+
+    public void runGenomeInfo() throws IOException, InterruptedException {
+        logger.info("Downloading genome info ...");
+
+        // TODO don't run this if file already exists
+
+        String outputFolder = downloadFolder.getParent().toAbsolutePath().toString() + "/generated_json/";
+
+        if ("true".equals(System.getenv("CELLBASE_BUILD_DOCKER"))) {
+            String outputLog = downloadLogFolder + "/genome_info.log";
+            EtlCommons.runCommandLineProcess(null, "/opt/cellbase/genome_info.pl",
+                    Arrays.asList("--outdir", outputFolder),
+                    outputLog);
+        } else {
+            String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
+
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(outputFolder, "/ensembl-data");
+            String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
+
+            DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
+        }
     }
 }
