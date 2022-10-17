@@ -515,7 +515,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     public CellBaseDataResult<String> distinct(GenomeQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(genomeInfoMongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
     @Override
