@@ -348,7 +348,7 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        if (annotatorSet.contains("cancerHotspot")) {
+        if (annotatorSet.contains("cancerHotspots")) {
             variantAnnotation.setCancerHotspots(new ArrayList<>());
             Set<String> visited = new HashSet<>();
             for (Gene gene : geneList) {
@@ -377,6 +377,7 @@ public class VariantAnnotationCalculator {
                                         .setCancerTypeCount(cancerHotspot.getCancerTypeCount())
                                         .setOrganCount(cancerHotspot.getOrganCount())
                                         .setSource(cancerHotspot.getSource())
+                                        .setVariants(new ArrayList<>())
                                         .build();
                                 if (cancerHotspot.getVariants() != null) {
                                     cancerHotspotVariantAnnotation.setVariants(cancerHotspot
@@ -1186,7 +1187,7 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
-                    "cancerGeneAssociation", "populationFrequencies", "repeats", "cytoband", "hgvs"));
+                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1222,6 +1223,9 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("cancerGeneAssociation")) {
             includeGeneFields.add("annotation.cancerAssociations");
+        }
+        if (annotatorSet.contains("cancerHotspots")) {
+            includeGeneFields.add("annotation.cancerHotspots");
         }
         return includeGeneFields;
     }
