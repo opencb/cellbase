@@ -31,6 +31,7 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -2028,6 +2029,18 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         updateDataRelease(dataRelease, "regulatory_region", Collections.emptyList());
 
         // Create empty collection
+        createEmptyCollection("protein", dataRelease);
+        updateDataRelease(dataRelease, "protein", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("missense_variation_functional_score", dataRelease);
+        updateDataRelease(dataRelease, "missense_variation_functional_score", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("protein_functional_prediction", dataRelease);
+        updateDataRelease(dataRelease, "protein_functional_prediction", Collections.emptyList());
+
+        // Create empty collection
         createEmptyCollection("refseq", dataRelease);
         updateDataRelease(dataRelease, "refseq", Collections.emptyList());
 
@@ -2058,21 +2071,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //        chr19:13025339:C:A+1|1+999 - synonymous
 //        chr19:13025341:G:T+1|1+999 - synonymous
 
-//        initGrch38();
-
-        VariantBuilder variantBuilder = new VariantBuilder("19",
-                13025339,
-                13025339,
-                "C",
-                "A");
-        Variant variant1 = variantBuilder.build();
-
-        variantBuilder = new VariantBuilder("19",
-                13025341,
-                13025341,
-                "G",
-                "T");
-        Variant variant2 = variantBuilder.build();
+        Variant variant1 = parseVariant("chr19:13025339:C:A+1|1+999");
+        Variant variant2 = parseVariant("chr19:13025341:G:T+1|1+999");
 
         List<Variant> variantList = new ArrayList<>();
         variantList.add(variant1);
@@ -2087,7 +2087,6 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("phased", true);
         queryOptions.put("dataRelease", 1);
 
-
         List<CellBaseDataResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
                 queryOptions);
 
@@ -2095,10 +2094,6 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         VariantAnnotation v1 = queryResult.get(0).getResults().get(0);
         VariantAnnotation v2 = queryResult.get(1).getResults().get(0);
-
-
-
-
 
         assertEquals("missense_variant", v1.getDisplayConsequenceType());
         assertEquals("missense_variant", v2.getDisplayConsequenceType());
@@ -2110,5 +2105,43 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         assertEquals(12, additionalAttributes1.size());
         assertEquals(12, additionalAttributes2.size());
+    }
+
+    private Variant parseVariant(String variantString) {
+        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
+
+        VariantBuilder variantBuilder;
+        if (variantStringPartArray.length > 0) {
+            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
+            // Either 1 or 3 parts expected variant+GT+PS
+            if (variantStringPartArray.length == 3) {
+                List<String> formatList = new ArrayList<>(2);
+                // If phase set tag is not provided not phase data is added at all to the Variant object
+                if (!variantStringPartArray[2].isEmpty()) {
+                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
+                    List<String> sampleData = new ArrayList<>(2);
+                    sampleData.add(variantStringPartArray[2]);
+                    // Genotype field might be empty - just PS would be added to Variant object in that case
+                    if (!variantStringPartArray[1].isEmpty()) {
+                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
+                        sampleData.add(variantStringPartArray[1]);
+                    }
+                    variantBuilder.setSampleDataKeys(formatList);
+                    SampleEntry sampleEntry = new SampleEntry();
+                    sampleEntry.setData(sampleData);
+                    variantBuilder.setSamples(Collections.singletonList(sampleEntry));
+                }
+            } else if (variantStringPartArray.length > 3) {
+                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+            }
+        } else {
+            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+        }
+
+        return variantBuilder.build();
     }
 }
