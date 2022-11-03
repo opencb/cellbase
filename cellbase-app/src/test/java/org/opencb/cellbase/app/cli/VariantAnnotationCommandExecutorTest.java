@@ -965,4 +965,50 @@ public class VariantAnnotationCommandExecutorTest {
         return variantAnnotationCommandOptions;
     }
 
+    @Test
+    public void testFilter() throws Exception {
+        cleanUp();
+
+        // Set up annotation CLI options: NOTE checkAminoAcidChange is NOT enabled
+        CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
+                = new CellBaseCliOptionsParser().getVariantAnnotationCommandOptions();
+        variantAnnotationCommandOptions.assembly = "GRCh37";
+
+        variantAnnotationCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor").toString();
+        variantAnnotationCommandOptions.input
+                = resourcesFolder.resolve("commandExecutor/proteinChangeMatch/proband.duprem.atomic.left.split.vcf.gz").toString();
+        variantAnnotationCommandOptions.output = OUTPUT_FILENAME;
+        variantAnnotationCommandOptions.local = true;
+        variantAnnotationCommandOptions.species = "hsapiens";
+        variantAnnotationCommandOptions.filter = "PASS";
+        // Annotate
+        VariantAnnotationCommandExecutor variantAnnotationCommandExecutor
+                = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+
+        variantAnnotationCommandExecutor.execute();
+        // Load annotated variants
+        List<Variant> variantList = loadResult();
+
+        // one variant has the PASS filter
+        assertEquals(1, variantList.size());
+
+        variantAnnotationCommandOptions.filter = "BAD FILTER";
+        variantAnnotationCommandExecutor = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        variantList = loadResult();
+
+        // one variant has the PASS filter. there should be no results!
+        assertEquals(0, variantList.size());
+
+        variantAnnotationCommandOptions.filter = null;
+        variantAnnotationCommandExecutor = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        variantList = loadResult();
+
+        // no filter 1 results
+        assertEquals(1, variantList.size());
+    }
 }
