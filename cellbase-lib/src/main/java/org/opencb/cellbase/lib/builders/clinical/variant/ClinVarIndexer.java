@@ -447,7 +447,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             additionalProperties.add(new Property(null, "vcvIds", vcvId));
         }
         // TODO this needs to come from the config
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, "2022.10", "2022-10");
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, "2022.11", "2022-11");
 //        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(
