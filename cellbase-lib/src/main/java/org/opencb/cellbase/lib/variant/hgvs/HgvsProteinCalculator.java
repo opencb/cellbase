@@ -801,6 +801,12 @@ public class HgvsProteinCalculator {
             }
         }
 
+        if (leftAminoAcidPosition == 0 || rightAminoAcidPosition > transcript.getProteinSequence().length()) {
+            logger.warn("HGVSp value not calculated for {}", VariantAnnotationUtils.buildVariantId(variant.getChromosome(),
+                    variant.getStart(), variant.getReference(), variant.getAlternate()));
+            return null;
+        }
+
         // Get position and flanking amino acids
         String leftCodedAa = transcript.getProteinSequence().substring(leftAminoAcidPosition - 1, leftAminoAcidPosition);
         String leftAa = VariantAnnotationUtils.TO_LONG_AA.get(leftCodedAa);
@@ -948,8 +954,12 @@ public class HgvsProteinCalculator {
                     // Keep the first amino acid changed, including a premature STOP codon
                     if (firstDiffIndex == -1) {
                         if (!referenceCodedAa.equals("*")) {
-                            firstReferencedAa = StringUtils
-                                    .capitalize(VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa).toLowerCase());
+                            String longAA = VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa);
+                            if (StringUtils.isEmpty(longAA)) {
+                                logger.error("aa not found for {} for transcript {}", referenceCodedAa, transcript.getId());
+                                return null;
+                            }
+                            firstReferencedAa = StringUtils.capitalize(longAA.toLowerCase());
                             firstAlternateAa = StringUtils.capitalize(alternateAa.toLowerCase());
                             firstDiffIndex = currentAaIndex;
                         } else {
