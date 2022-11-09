@@ -119,7 +119,8 @@ public class HgvsProteinCalculator {
     }
 
     private HgvsProtein calculateSnvHgvs() {
-        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
+        if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()
+                || StringUtils.isEmpty(transcript.getCdnaSequence())) {
             return null;
         }
 
