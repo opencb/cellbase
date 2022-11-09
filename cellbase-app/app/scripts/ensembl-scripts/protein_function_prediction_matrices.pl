@@ -95,8 +95,18 @@ my ($translation, $seq, $md5seq, @preds, @all_predictions);
 ## selecting chromosomes	######################################
 ##################################################################
 my @chromosomes;
-if ($chrom eq 'all') {
+if ($chrom eq 'all' or $chrom eq 'show-all') {
 	@chromosomes = @{$slice_adaptor->fetch_all('chromosome')};
+	if ($chrom eq 'show-all') {
+		my @c = ();
+		foreach my $chr(@chromosomes) {
+			push @c,$chr->seq_region_name;
+		}
+		my %c   = map { $_ => 1 } @c;
+		@c = keys %c;
+		print "All chromosomes: ".join(',',sort { $a <=> $b } @c)."\n";
+		exit 0;
+	}
 } else {
 	my @chr_ids = split(",", $chrom);
 	foreach my $id(@chr_ids) {
