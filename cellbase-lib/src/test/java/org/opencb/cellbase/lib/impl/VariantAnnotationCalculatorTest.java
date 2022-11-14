@@ -2036,11 +2036,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("imprecise", true);
         queryOptions.put("phased", false);
 
+        // long variant
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(longVariant, queryOptions);
         assertEquals(27, queryResult.getResult().get(0).getConsequenceTypes().size());
 
+        // short variant
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(shortVariant, queryOptions);
+        assertEquals(17, queryResult.getResult().get(0).getConsequenceTypes().size());
+
         queryOptions.put("cnvExtraPadding", 10000);
 
+        // short variant with padding
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(shortVariant, queryOptions);
         assertEquals(27, queryResult.getResult().get(0).getConsequenceTypes().size());
     }
