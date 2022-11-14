@@ -1983,9 +1983,6 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("imprecise", true);
         queryOptions.put("phased", false);
 
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant1, queryOptions);
-
-        assertEquals(14,new HashSet<String>(queryResult.getResult().get(0).getHgvs()).size());
 
     }
 
@@ -2020,6 +2017,39 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+    @Test
+    // long variant should have same annotations as short variant + cnvPadding
+    public void testCNVExtraPadding() throws Exception {
+
+        initGrch38();
+
+        // short variant
+        Variant shortVariant = new Variant("chr17:43087248-43087249:<CNV>");
+        // long variant
+        Variant longVariant = new Variant("chr17:43087248-43098506:<CNV>");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate ,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        // long variant
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator.getAnnotationByVariant(longVariant, queryOptions);
+        assertEquals(27, queryResult.getResult().get(0).getConsequenceTypes().size());
+
+        // short variant
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(shortVariant, queryOptions);
+        assertEquals(17, queryResult.getResult().get(0).getConsequenceTypes().size());
+
+        queryOptions.put("cnvExtraPadding", 10000);
+
+        // short variant with padding
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(shortVariant, queryOptions);
+        assertEquals(27, queryResult.getResult().get(0).getConsequenceTypes().size());
+    }
 
     // threw an exception
     @Test
