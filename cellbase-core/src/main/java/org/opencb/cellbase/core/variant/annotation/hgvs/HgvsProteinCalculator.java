@@ -92,7 +92,7 @@ public class HgvsProteinCalculator {
                 }
             default:
                 // TODO throw an error?
-                logger.error("Don't know how to handle this variant of type {}", variant.getType());
+                logger.warn("Can't generate HGVS for variant type {}", variant.getType());
                 return null;
         }
     }
@@ -972,7 +972,9 @@ public class HgvsProteinCalculator {
                     if (firstDiffIndex == -1) {
                         String longAA = VariantAnnotationUtils.TO_LONG_AA.get(referenceCodedAa);
                         if (StringUtils.isEmpty(longAA)) {
-                            logger.error("Invalid AA found: " + referenceCodedAa + " for variant " + variant.getId());
+                            logger.info("Invalid AA found: " + referenceCodedAa + " for variant "
+                                    + variant.getChromosome() + ":" + variant.getStart() + "-" + variant.getEnd()
+                                    + ":" + variant.getReference() + ":" + variant.getAlternate());
                             return null;
                         }
                         firstReferencedAa = StringUtils.capitalize(longAA.toLowerCase());

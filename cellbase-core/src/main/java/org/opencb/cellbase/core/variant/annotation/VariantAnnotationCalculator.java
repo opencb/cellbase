@@ -75,7 +75,7 @@ public class VariantAnnotationCalculator {
     private Boolean checkAminoAcidChange = false;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
-    private static HgvsCalculator hgvsCalculator;
+    private HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
@@ -452,7 +452,7 @@ public class VariantAnnotationCalculator {
                             .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
                                     .getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
-                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
+                    logger.warn("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {

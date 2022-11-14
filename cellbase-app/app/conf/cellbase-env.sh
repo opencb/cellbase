@@ -14,7 +14,7 @@ fi
 export JAVA_HEAP="10G"
 export CELLBASE_LOG_DIR=${CELLBASE_LOG_DIR}
 export CELLBASE_LOG_LEVEL=${CELLBASE_LOG_LEVEL:-"INFO"}
-export CELLBASE_LOG_CONFIG="log4j2.file.xml"
+export CELLBASE_LOG_CONFIG="log4j2.xml"
 
 #Set log4j properties file
 export JAVA_OPTS="${JAVA_OPTS} -Dlog4j2.configurationFile=${BASEDIR}/${CELLBASE_LOG_CONFIG}"

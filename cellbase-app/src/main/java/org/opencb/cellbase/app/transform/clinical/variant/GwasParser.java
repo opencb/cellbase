@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
 import htsjdk.tribble.readers.TabixReader;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
