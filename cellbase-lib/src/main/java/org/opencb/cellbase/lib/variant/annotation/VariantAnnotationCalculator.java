@@ -587,8 +587,8 @@ public class VariantAnnotationCalculator {
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true, QueryOptions.empty(),
-                            dataRelease);
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true,
+                            new QueryOptions().append("imprecise", imprecise).append("cnvExtraPadding", cnvExtraPadding), dataRelease);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(variant, variantBuffer, dataRelease);

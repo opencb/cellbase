@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.result.QueryResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -1955,6 +1956,39 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //            }
 //            vepFileIndex++;
 //        }
+    }
+
+    @Test
+    // long variant should have same annotations as short variant + cnvPadding
+    public void testCNVExtraPadding() throws Exception {
+
+        // short variant
+        Variant shortVariant = new Variant("chr17:43087248-43087249:<CNV>");
+        // long variant
+        Variant longVariant = new Variant("chr17:43087248-43098506:<CNV>");
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate ,clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", true);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", false);
+
+        // long variant
+        CellBaseDataResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(longVariant, queryOptions);
+        assertEquals(27, consequenceTypeResult.getNumResults());
+
+        // short variant
+        consequenceTypeResult = variantAnnotationCalculator.getAllConsequenceTypesByVariant(shortVariant, queryOptions);
+        assertEquals(27, consequenceTypeResult.getNumResults());
+
+        queryOptions.put("cnvExtraPadding", 10000);
+
+        // short variant with padding
+        consequenceTypeResult = variantAnnotationCalculator.getAllConsequenceTypesByVariant(shortVariant, queryOptions);
+        assertEquals(27, consequenceTypeResult.getNumResults());
     }
 
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,

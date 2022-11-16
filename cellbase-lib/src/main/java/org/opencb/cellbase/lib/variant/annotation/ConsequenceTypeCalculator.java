@@ -32,6 +32,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opencb.biodata.models.variant.avro.VariantType;
 
 import java.util.*;
 
@@ -73,7 +74,9 @@ public abstract class ConsequenceTypeCalculator {
     }
 
     protected int getStart(int extraPadding) {
-        if (imprecise && variant.getSv() != null) {
+        if (imprecise && VariantType.CNV.equals(variant.getType())) {
+            return variant.getStart() - extraPadding;
+        } else if (imprecise && variant.getSv() != null) {
             return variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() - extraPadding
                     : variant.getStart();
         } else {
@@ -83,7 +86,9 @@ public abstract class ConsequenceTypeCalculator {
     }
 
     protected int getEnd(int extraPadding) {
-        if (imprecise && variant.getSv() != null) {
+        if (imprecise && VariantType.CNV.equals(variant.getType())) {
+            return variant.getEnd() + extraPadding;
+        } else if (imprecise && variant.getSv() != null) {
             return variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + extraPadding
                     : variant.getEnd();
         } else {
