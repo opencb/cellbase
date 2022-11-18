@@ -362,7 +362,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, String clinicalHaplotypeString,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, "2022.02", "2022-02");
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, "2022.11", "2022-11");
         // Create a set to avoid situations like germline;germline;germline
         List<AlleleOrigin> alleleOrigin = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
