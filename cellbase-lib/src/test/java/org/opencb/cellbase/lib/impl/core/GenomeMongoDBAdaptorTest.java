@@ -21,19 +21,24 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Chromosome;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
+import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -140,5 +145,16 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         for (int i = 0; i < cellBaseDataResultList.get(1).getNumResults(); i++) {
             assertEquals(names2[i], cellBaseDataResultList.get(1).getResults().get(i).getName());
         }
+    }
+
+
+    @Test
+    public void testQueryBuilder() throws CellBaseException {
+
+        List<Region> regions = new ArrayList<Region>();
+        regions.add(new Region("1", 1, 1999));
+
+        List<CellBaseDataResult<Score>> list = genomeManager.getAllScoresByRegionList(regions, QueryOptions.empty(), dataRelease);
+        System.out.println(list.size());
     }
 }

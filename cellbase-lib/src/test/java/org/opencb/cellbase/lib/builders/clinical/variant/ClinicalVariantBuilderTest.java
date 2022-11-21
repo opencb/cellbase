@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.mongodb.util.JSON;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;

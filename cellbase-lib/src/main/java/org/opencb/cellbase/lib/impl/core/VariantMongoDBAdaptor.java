@@ -16,9 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.BulkWriteException;
-import com.mongodb.MongoClient;
-import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
@@ -138,7 +135,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions options = addVariantPrivateExcludeOptions(new QueryOptions(inputOptions));
 //        options = addPrivateExcludeOptions(options);
 
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, options));
     }
@@ -166,7 +163,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult(mongoDBCollection.find(bson, options));
     }
@@ -456,12 +453,12 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             logger.info("updating object");
             QueryOptions options = new QueryOptions("upsert", false);
             options.put("multi", false);
-            try {
+//            try {
                 MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
-            } catch (BulkWriteException e) {
-                throw e;
-            }
+//            } catch (BulkWriteException e) {
+//                throw e;
+//            }
             logger.info("{} object updated", bulkWriteResult.first().getModifiedCount());
 
             CellBaseDataResult<Long> longCellBaseDataResult = new CellBaseDataResult<>(bulkWriteResult.getId(),
@@ -512,12 +509,12 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             logger.info("updating object");
             QueryOptions options = new QueryOptions("upsert", true);
             options.put("multi", false);
-            try {
+//            try {
                 MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
                 bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
-            } catch (BulkWriteException e) {
-                throw e;
-            }
+//            } catch (BulkWriteException e) {
+//                throw e;
+//            }
             logger.info("{} object updated", bulkWriteResult.first().getUpserts().size() + bulkWriteResult.first().getModifiedCount());
 
             CellBaseDataResult<Long> longCellBaseDataResult = new CellBaseDataResult<>(bulkWriteResult.getId(),
@@ -555,13 +552,20 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         String alternate = variant.getAlternate();
 
         String chunkId = getChunkIdPrefix(chromosome, position, MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
-        QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
+        // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+        //QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
+        Document document = new Document().append("_chunkIds", chunkId);
+
+        // commented by IM (9/2/16)
 //                .and("chromosome").is(chromosome)
 //                .and("start").is(position);
 //        System.out.println(chunkId);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(caddDBCollectionByRelease, dataRelease);
+        // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//        CellBaseDataResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
+//                new Document(builder.get().toMap()), queryOptions, mongoDBCollection);
         CellBaseDataResult result = executeQuery(chromosome + "_" + position + "_" + reference + "_" + alternate,
-                new Document(builder.get().toMap()), queryOptions, mongoDBCollection);
+                document, queryOptions, mongoDBCollection);
 
 //        System.out.println("result = " + result);
 
@@ -728,7 +732,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         VariantConverter converter = new VariantConverter();
-        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("query: {}", bson.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);

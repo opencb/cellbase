@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;

@@ -16,8 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
-import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -243,18 +241,30 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
                 region.setEnd(region.getStart() + 10000);
             }
 
-            QueryBuilder builder;
+            // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+            //QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
+            Document document = new Document();
             int regionChunkStart = getChunkId(region.getStart(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
             int regionChunkEnd = getChunkId(region.getEnd(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
             if (regionChunkStart == regionChunkEnd) {
-                builder = QueryBuilder.start("_chunkIds")
-                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
-                                MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
+                // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//                builder = QueryBuilder.start("_chunkIds")
+//                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
+//                                MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
+                document.append("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(),
+                        MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
             } else {
-                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
-                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                document.append("chromosome", region.getChromosome())
+                        .append("end", new Document("$gte", region.getStart()))
+                        .append("start", new Document("$lte", region.getEnd()));
             }
-            queries.add(new Document(builder.get().toMap()));
+            // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//            queries.add(new Document(builder.get().toMap()));
+            queries.add(document);
+
             ids.add(region.toString());
         }
 
@@ -332,26 +342,38 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
             }
 
             /****/
-            QueryBuilder builder;
+            // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//            QueryBuilder builder;
+            Document document = new Document();
             int regionChunkStart = getChunkId(region.getStart(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
             int regionChunkEnd = getChunkId(region.getEnd(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
             if (regionChunkStart == regionChunkEnd) {
-                builder = QueryBuilder.start("_chunkIds")
-                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
-                                MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
+                // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//                builder = QueryBuilder.start("_chunkIds")
+//                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
+//                                MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
+                document.append("_chunkIds", getChunkIdPrefix(region.getChromosome(), region.getStart(),
+                        MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
             } else {
+                // commented by Sullivan (8/6/20)
 //                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
 //                    integerChunkIds.add(chunkId);
 //                }
 //    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
 //                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
-                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
-                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+
+                // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+//                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+                document.append("chromosome", region.getChromosome())
+                        .append("end", new Document("$gte", region.getStart()))
+                        .append("start", new Document("$lte", region.getEnd()));
             }
             /****/
 
-
-            queries.add(new Document(builder.get().toMap()));
+            // commented by JT (18/11/22), QueryBuilder is not supported anymore by mongodb
+//            queries.add(new Document(builder.get().toMap()));
+            queries.add(document);
             ids.add(region.toString());
 
 //            logger.debug(builder.get().toString());
@@ -433,7 +455,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     @Deprecated
     public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.debug("query: {}", bson.toBsonDocument() .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
@@ -506,7 +528,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     @Override
     public CellBaseDataResult groupBy(GenomeQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        logger.info("query: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("query: {}", bsonQuery.toBsonDocument() .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }

@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.google.common.base.Splitter;
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -135,7 +134,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     @Override
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) throws CellBaseException {
         Bson bsonQuery = parseQuery(geneQuery);
-        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument() .toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return groupBy(bsonQuery, geneQuery, "name", mongoDBCollection);
     }

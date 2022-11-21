@@ -26,9 +26,11 @@ import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 
 import java.io.IOException;
 import java.nio.file.Path;
