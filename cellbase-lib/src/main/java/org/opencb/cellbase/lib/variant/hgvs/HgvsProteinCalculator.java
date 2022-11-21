@@ -449,7 +449,8 @@ public class HgvsProteinCalculator {
                 }
             }
 
-            if (aminoacidPosition == 0) {
+            if (aminoacidPosition <= 1) {
+                // start is 0 or 1 and left AA can't be calculated
                 return null;
             }
 
