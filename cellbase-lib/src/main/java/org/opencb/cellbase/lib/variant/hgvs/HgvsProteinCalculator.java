@@ -449,6 +449,10 @@ public class HgvsProteinCalculator {
                 }
             }
 
+            if (aminoacidPosition == 0) {
+                return null;
+            }
+
             // Get position and flanking amino acids
             int codonIndex = aminoacidPosition - 1;
             String leftCodedAa = transcript.getProteinSequence().substring(codonIndex - 1, codonIndex);
@@ -660,7 +664,7 @@ public class HgvsProteinCalculator {
 
                 // Check is deletion include STOP codon
                 // TODO check this implementation
-                if (aminoacidPosition + deletionAaLength > transcript.getProteinSequence().length()) {
+                if (aminoacidPosition + deletionAaLength > transcript.getProteinSequence().length() || positionAtCodon < 1) {
 //                    return calculateFrameshiftHgvs();
                     return null;
                 }
@@ -904,6 +908,7 @@ public class HgvsProteinCalculator {
             }
         } else {
             if (transcript.getProteinSequence().startsWith("M")
+                    && alternateCdnaSeq.length() >= transcript.getCdnaCodingStart() + 3
                     && !"ATG".equals(alternateCdnaSeq.substring(transcript.getCdnaCodingStart(), transcript.getCdnaCodingStart() + 3))) {
                 /*
                     First codon is NOT ATG but protein sequence starts with M. This is due to Ensembl curation. From Ensembl:

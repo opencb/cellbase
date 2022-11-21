@@ -291,7 +291,7 @@ public class TranscriptUtils {
 
         // Genomic to cDNA
         int variantCdsPosition = HgvsCalculator.getCdsStart(transcript, variant.getStart());
-        int cdnaVariantIndex = cdsToCdna(variantCdsPosition) - 1;
+        int cdnaVariantIndex = Math.max(cdsToCdna(variantCdsPosition) - 1, 0);
 
         switch (variant.getType()) {
             case SNV:
