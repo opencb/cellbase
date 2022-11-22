@@ -581,7 +581,7 @@ public class VariantAnnotationCalculator {
                     //     variants are not normalized the user should always select normalize=true.
                     variantAnnotation.setHgvs(hgvsCalculator.run(variant, affectedGenes, false));
                 } catch (VariantNormalizerException e) {
-                    logger.error("Unable to normalize variant {}. Leaving empty HGVS.", variant.toString());
+                    logger.warn("Unable to normalize variant {}. Leaving empty HGVS.", variant.toString());
                 }
             }
 
@@ -596,11 +596,11 @@ public class VariantAnnotationCalculator {
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(variant.getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
-                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
+                    logger.warn("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", variant);
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {
-                    logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
+                    logger.warn("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", variant);
                     e.printStackTrace();
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());

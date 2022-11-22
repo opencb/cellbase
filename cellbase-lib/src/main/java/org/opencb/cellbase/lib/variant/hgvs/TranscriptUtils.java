@@ -106,7 +106,7 @@ public class TranscriptUtils {
     }
 
     public String getCodon(int codonPosition) {
-        if (codonPosition > 0) {
+        if (codonPosition > 0 && StringUtils.isNotEmpty(transcript.getCdnaSequence())) {
             int cdsCodonStart = ((codonPosition - 1) * 3) + 1;
             if (hasUnconfirmedStart()) {
                 // firstCodonPhase is 1. Codon 4 starts at position 8:
@@ -279,6 +279,10 @@ public class TranscriptUtils {
      * @return Alternate cDNA sequence caulculated.
      */
     protected String getAlternateCdnaSequence(Variant variant) {
+        if (StringUtils.isEmpty(transcript.getCdnaSequence())) {
+            return null;
+        }
+
         if (variant.getEnd() < transcript.getGenomicCodingStart() || variant.getStart() > transcript.getGenomicCodingEnd()) {
             return transcript.getCdnaSequence();
         }
