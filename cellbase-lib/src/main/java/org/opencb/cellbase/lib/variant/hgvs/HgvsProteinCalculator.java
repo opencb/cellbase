@@ -299,6 +299,10 @@ public class HgvsProteinCalculator {
                 String refCodon = transcriptUtils.getCodon(codonPosition);
                 String refAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), refCodon);
 
+                if (positionAtCodon == 0 || refCodon.length() == 0) {
+                    return null;
+                }
+
                 // Build the new inserted sequence = split codon + alternate allele
                 String insSequence = refCodon.substring(0, positionAtCodon - 1) + alternate + refCodon.substring(positionAtCodon - 1);
 
@@ -673,12 +677,20 @@ public class HgvsProteinCalculator {
                 // Get the new codon created after the deletion
                 String firstAffectedCodon = transcriptUtils.getCodon(aminoacidPosition);    // GAC
                 String lastAffectedCodon = transcriptUtils.getCodon(aminoacidPosition + deletionAaLength);  // CGC
+
+                if (StringUtils.isEmpty(firstAffectedCodon) || StringUtils.isEmpty(lastAffectedCodon)) {
+//                    return calculateFrameshiftHgvs();
+                    return null;
+                }
+
                 String newAlternateCodon = firstAffectedCodon.substring(0, positionAtCodon - 1)
                         + lastAffectedCodon.substring(positionAtCodon - 1); // GA + C = GAC
 
                 String firstAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), firstAffectedCodon);
                 String lastAffectedAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), lastAffectedCodon);
                 String newAlternateAa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), newAlternateCodon);
+
+
 
                 // Check special case when a new STOP codon is inserted
                 if (newAlternateAa.equalsIgnoreCase("STOP")) {
