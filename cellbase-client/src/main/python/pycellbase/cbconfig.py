@@ -5,9 +5,8 @@ from retrying import retry
 
 _DEFAULT_CONFIG = {
     "species": "hsapiens",
-    "version": "v4",
-    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase",
-                       "https://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
+    "version": "v5",
+    "rest": {"hosts": ["https://ws.zettagenomics.com/cellbase"]}
 }
 
 

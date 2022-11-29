@@ -8,8 +8,8 @@ import gzip
 from pycellbase.cbclient import ConfigClient
 from pycellbase.cbclient import CellBaseClient
 
-_DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
-_DEFAULT_API_VERSION = 'v4'
+_DEFAULT_HOST = 'https://ws.zettagenomics.com/cellbase'
+_DEFAULT_API_VERSION = 'v5'
 _DEFAULT_SPECIES = 'hsapiens'
 _DEFAULT_ASSEMBLY = 'GRCh38'
 # Reference sequence notation
@@ -25,26 +25,24 @@ _ANNOT = {
     'consequences': {
         'id': 'CBCT',
         'cellbase_key': 'consequenceTypes',
-        'desc': 'consequences annotations',
-        'parseable': ['geneName', 'ensemblGeneId', 'ensemblTranscriptId',
-                      'strand', 'biotype'],
-        'non-parseable': ['transcriptAnnotationFlags', 'so_accesion:so_name']
+        'desc': 'Consequence types',
+        'parseable': ['geneId', 'transcriptId', 'strand', 'biotype'],
+        'non-parseable': ['transcriptFlags', 'so_accesion:so_name']
     },
     'clinvar': {
         'id': 'CBCV',
         'cellbase_key': None,
         'desc': 'ClinVar data',
-        'parseable': ['accession', 'clinicalSignificance', 'reviewStatus'],
-        'non-parseable': ['traits', 'geneNames']
+        'parseable': ['id'],
+        'non-parseable': ['alleleOrigin', 'additionalProperties', 'heritableTraits', 'xrefs']
     },
     'cosmic': {
         'id': 'CBCO',
         'cellbase_key': None,
         'desc': 'COSMIC data',
-        'parseable': ['mutationId', 'primarySite', 'siteSubtype',
-                      'primaryHistology', 'histologySubtype', 'tumourOrigin',
-                      'geneName', 'mutationSomaticStatus'],
-        'non-parseable': []
+        'parseable': ['id'],
+        'non-parseable': ['alleleOrigin', 'additionalProperties', 'somaticInformation',
+                          'heritableTraits', 'xrefs']
     },
     'gene_traits': {
         'id': 'CBGT',
@@ -58,19 +56,19 @@ _ANNOT = {
         'id': 'CBGD',
         'cellbase_key': 'geneDrugInteraction',
         'desc': 'Gene drug interactions',
-        'parseable': ['source', 'geneName', 'drugName', 'studyType'],
+        'parseable': ['source', 'geneName', 'drugName', 'chemblId'],
         'non-parseable': []
     },
     'conservation_scores': {
         'id': 'CBCS',
         'cellbase_key': 'conservation',
-        'desc': 'conservation_scores scores',
+        'desc': 'Conservation scores',
         'parseable': ['source', 'score'],
-        'non-parseable': ['traits', 'geneNames']
+        'non-parseable': []
     },
     'population_frequencies': {
         'id': 'CBPF',
-        'cellbase_key': '',
+        'cellbase_key': 'populationFrequencies',
         'desc': 'Population frequencies',
         'parseable': ['study', 'population', 'refAllele', 'altAllele',
                       'refAlleleFreq', 'altAlleleFreq', 'refHomGenotypeFreq',
@@ -124,19 +122,12 @@ def _parse_xref(subparser):
     _parse_config(xref_parser)
 
     xref_parser.add_argument(
-        'input_fpath', help='IDs file path'
+        'input',
+        help='input file path or comma-separated string\n(e.g. "BRCA1")'
     )
     xref_parser.add_argument(
         '-o', '--output', dest='output_fpath', default=sys.stdout,
         help='output file path (default: stdout)'
-    )
-
-    inex_group = xref_parser.add_mutually_exclusive_group()
-    inex_group.add_argument(
-        '--include', dest='include', help='include databases'
-    )
-    inex_group.add_argument(
-        '--exclude', dest='exclude', help='exclude databases'
     )
 
 
@@ -293,14 +284,6 @@ def _get_species_list(cbc, assembly):
     return sorted(sps)
 
 
-def _get_databases_list(cbc, assembly):
-    """Return all available databases for xrefs in CellBase"""
-    xc = cbc.get_xref_client()
-    databases = xc.get_dbnames(assembly=assembly)[0]['result']
-    dbs = [database for database in databases]
-    return sorted(dbs)
-
-
 def _filter_databases(databases, include=None, exclude=None):
     """Filter a list of databases given an inclusion/exclusion list"""
     dbs = []
@@ -327,12 +310,8 @@ def _filter_databases(databases, include=None, exclude=None):
     return databases
 
 
-def convert_ids(input_fpath, output_fpath, cellbase_client, assembly,
-                databases):
+def convert_ids(input_data, output_fpath, cellbase_client, assembly):
     """Prints all IDs for a given a file with one ID per line"""
-
-    if not databases:
-        return
 
     # Getting xref client
     xc = cellbase_client.get_xref_client()
@@ -343,36 +322,51 @@ def convert_ids(input_fpath, output_fpath, cellbase_client, assembly,
     else:
         output_fhand = open(output_fpath, 'w')
 
-    # Writing header
-    output_fhand.write('\t'.join([db for db in databases]) + '\n')
+    # Creating input generator
+    input_fhand = None
+    if os.path.isfile(input_data):
+        input_fhand = open(input_data, 'r')
+        input_gen = ([line.rstrip()] for line in input_fhand)
+    else:
+        input_data = input_data.split(',')
+        input_gen = [i for i in input_data]
 
     # Querying CellBase and writing results
-    with open(input_fpath, 'r') as input_fhand:
-        for line in input_fhand:
-            query = line.rstrip()
-            response = xc.get_xref(query,
-                                   assembly=assembly,
-                                   limit=5000)
-            for query_response in response:
-                ids = {}
-                id_list = []
+    dbs = []
+    all_ids = []
+    for query in input_gen:
+        response = xc.get_info(query, assembly=assembly, debug=True)
+        for query_response in response:
+            ids = {}
+            id_list = []
 
-                # Skipping if ID is not found in CellBase
-                if not query_response['result']:
-                    msg = 'ID not found in CellBase: "' + str(query) + '"'
-                    logging.warning(msg)
-                    continue
+            # Skipping if ID is not found in CellBase
+            if 'result' in query_response:
+                query_response['results'] = query_response.pop('result')
+            if not query_response['results']:
+                msg = 'ID not found in CellBase: "' + str(query) + '"'
+                logging.warning(msg)
+                continue
 
-                # Getting list of all IDs
-                for item in query_response['result']:
-                    ids.setdefault(item['dbName'], []).append(item['id'])
-                    id_list = [set(ids[db]) if db in ids else ['.']
-                               for db in databases]
+            # Getting list of all IDs
+            for item in query_response['results']:
+                if item['dbName'] not in dbs:
+                    dbs.append(item['dbName'])
+                ids.setdefault(item['dbName'], []).append(item['id'])
+            all_ids.append({query_response['id']: ids})
 
-                # Writing output
-                if id_list:
-                    id_list = [';'.join(id_group) for id_group in id_list]
-                    output_fhand.write('\t'.join(id_list) + '\n')
+    # Writing output
+    if all_ids:
+        # Writing header
+        output_fhand.write('\t'.join(['QUERY'] + [db for db in dbs]) + '\n')
+        for ids in all_ids:
+            line = []
+            for query in ids:
+                line.append(query)
+                line += ['|'.join(list(set(ids[query][db])))
+                         if db in ids[query] else '.'
+                         for db in dbs]
+            print('\t'.join(line))
 
     output_fhand.close()
 
@@ -388,7 +382,9 @@ def _get_hgvs(query, cellbase_client, ref_seq_type, assembly):
         hgvs_list = []
 
         # Getting list of all hgvs notations
-        for hgvs in query_response['result'][0]['hgvs']:
+        if 'result' in query_response:
+            query_response['results'] = query_response.pop('result')
+        for hgvs in query_response['results'][0]['hgvs']:
             hgvs_list.append(hgvs)
 
         # Setting up list to filter hgvs notations
@@ -480,15 +476,15 @@ def get_annotation(result, include):
 
     # Consequences annotation
     if 'consequences' in include:
-        if 'consequencesTypes' in result and result['consequencesTypes']:
+        if 'consequenceTypes' in result and result['consequenceTypes']:
             conseqs = []
-            for ct in result['consequencesTypes']:
+            for ct in result['consequenceTypes']:
                 conseq = []
                 for field in _ANNOT['consequences']['parseable']:
                     conseq.append(str(ct[field]) if field in ct else '')
 
-                if 'transcriptAnnotationFlags' in ct:
-                    conseq.append('&'.join(ct['transcriptAnnotationFlags']))
+                if 'transcriptFlags' in ct:
+                    conseq.append('&'.join(ct['transcriptFlags']))
                 else:
                     conseq.append('')
 
@@ -506,37 +502,56 @@ def get_annotation(result, include):
 
     # ClinVar
     if 'clinvar' in include:
-        if ('variantTraitAssociation' in result and
-                result['variantTraitAssociation']):
-            vta = result['variantTraitAssociation']
-            if 'clinvar' in vta and vta['clinvar']:
-                vtraits = []
-                for clinvar in vta['clinvar']:
+        if 'traitAssociation' in result and result['traitAssociation']:
+            clinvar_traits = []
+            for vta in result['traitAssociation']:
+                if vta['source']['name'] == 'clinvar':
                     vtrait = []
                     for field in _ANNOT['clinvar']['parseable']:
-                        vtrait.append(str(clinvar[field])
-                                      if field in clinvar else '')
+                        vtrait.append(str(vta[field])
+                                      if field in vta else '')
 
-                    if 'traits' in clinvar:
-                        vtrait.append('&'.join(clinvar['traits']))
+                    if 'alleleOrigin' in vta and vta['alleleOrigin']:
+                        vtrait.append('&'.join(vta['alleleOrigin']))
                     else:
                         vtrait.append('')
 
-                    if 'geneNames' in clinvar:
-                        vtrait.append('&'.join(clinvar['geneNames']))
+                    if 'additionalProperties' in vta and vta['additionalProperties']:
+                        aps = []
+                        for ap in vta['additionalProperties']:
+                            name = ap['name'].replace(', ', '_').replace(' ', '_')
+                            value = ap['value'].replace(', ', '_').replace(' ', '_')
+                            aps.append(':'.join([name, value]))
+                        vtrait.append(','.join(aps))
                     else:
                         vtrait.append('')
 
-                    vtraits.append('|'.join(vtrait))
-                annotation.append('{key}={value}'.format(
-                    key=_ANNOT['clinvar']['id'], value=','.join(vtraits)
-                ))
+                    if 'heritableTraits' in vta and vta['heritableTraits']:
+                        hts = []
+                        for ht in vta['heritableTraits']:
+                            hts.append(ht['trait'].replace(', ', '_').replace(' ', '_').replace('|', '&'))
+                        vtrait.append('&'.join(hts))
+                    else:
+                        vtrait.append('')
+
+                    if 'genomicFeatures' in vta and vta['genomicFeatures']:
+                        gfs = []
+                        for gf in vta['genomicFeatures']:
+                            gfs.append(gf['xrefs']['symbol'])
+                        vtrait.append('&'.join(gfs))
+                    else:
+                        vtrait.append('')
+
+                    clinvar_traits.append('|'.join(vtrait))
+
+            annotation.append('{key}={value}'.format(
+                key=_ANNOT['clinvar']['id'], value=','.join(clinvar_traits)
+            ))
 
     # COSMIC
     if 'cosmic' in include:
-        if ('variantTraitAssociation' in result and
-                result['variantTraitAssociation']):
-            vta = result['variantTraitAssociation']
+        if 'traitAssociation' in result and result['traitAssociation']:
+            vta = result['traitAssociation']
             if 'cosmic' in vta and vta['cosmic']:
                 annotation.append('{key}={value}'.format(
                     key=_ANNOT['cosmic']['id'],
@@ -544,6 +559,63 @@ def get_annotation(result, include):
                         vta, 'cosmic', _ANNOT['cosmic']['parseable']
                     )
                 ))
+
+    if 'cosmic' in include:
+        if 'traitAssociation' in result and result['traitAssociation']:
+            cosmic_traits = []
+            for vta in result['traitAssociation']:
+                if vta['source']['name'] == 'cosmic':
+                    vtrait = []
+                    for field in _ANNOT['cosmic']['parseable']:
+                        vtrait.append(str(vta[field])
+                                      if field in vta else '')
+
+                    if 'alleleOrigin' in vta and vta['alleleOrigin']:
+                        vtrait.append('&'.join(vta['alleleOrigin']))
+                    else:
+                        vtrait.append('')
+
+                    if 'somaticInformation' in vta and vta['somaticInformation']:
+                        sis = []
+                        for si in vta['somaticInformation']:
+                            name = si.replace(', ', '_').replace(' ', '_')
+                            value = vta['somaticInformation'][si].replace(', ', '_').replace(' ', '_')
+                            sis.append(':'.join([name, value]))
+                        vtrait.append(','.join(sis))
+                    else:
+                        vtrait.append('')
+
+                    if 'additionalProperties' in vta and vta['additionalProperties']:
+                        aps = []
+                        for ap in vta['additionalProperties']:
+                            name = ap['name'].replace(', ', '_').replace(' ', '_')
+                            value = ap['value'].replace(', ', '_').replace(' ', '_')
+                            aps.append(':'.join([name, value]))
+                        vtrait.append(','.join(aps))
+                    else:
+                        vtrait.append('')
+
+                    if 'heritableTraits' in vta and vta['heritableTraits']:
+                        hts = []
+                        for ht in vta['heritableTraits']:
+                            hts.append(ht['trait'].replace(', ', '_').replace(' ', '_').replace('|', '&'))
+                        vtrait.append('&'.join(hts))
+                    else:
+                        vtrait.append('')
+
+                    if 'genomicFeatures' in vta and vta['genomicFeatures']:
+                        gfs = []
+                        for gf in vta['genomicFeatures']:
+                            gfs.append(gf['xrefs']['symbol'])
+                        vtrait.append('&'.join(gfs))
+                    else:
+                        vtrait.append('')
+
+                    cosmic_traits.append('|'.join(vtrait))
+
+            annotation.append('{key}={value}'.format(
+                key=_ANNOT['cosmic']['id'], value=','.join(cosmic_traits)
+            ))
 
     # Removing whitespaces
     for index, annot in enumerate(annotation):
@@ -597,7 +669,7 @@ def _get_vcf_batches(vcf_fhand):
             continue
 
         # Return batch every 800 variants
-        if len(variants) == 800:
+        if len(variants) == 100:
             yield split_lines, variants
             variants = []
 
@@ -638,8 +710,7 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
     # Querying CellBase
     input_fhand.seek(0)
     for vcf_line_batch, variant_batch in _get_vcf_batches(input_fhand):
-        response = vc.get_annotation(variant_batch, assembly=assembly,
-                                     method='post')
+        response = vc.get_annotation(variant_batch, assembly=assembly)
         while response:
             line_split = vcf_line_batch.pop(0)
             res = response.pop(0)
@@ -649,7 +720,9 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
                 output_fhand.write('\t'.join(line_split) + '\n')
                 continue
             # Getting formatted annotation
-            annotation = get_annotation(res['result'][0], include)
+            if 'result' in res:
+                res['results'] = res.pop('result')
+            annotation = get_annotation(res['results'][0], include)
             # Writing
             line_split[7] = ';'.join([line_split[7]] + annotation)
             output_fhand.write('\t'.join(line_split) + '\n')
@@ -680,10 +753,7 @@ def main():
     _set_logger(args.verbosity)
 
     # Setting up PyCellBase clients
-    cc = ConfigClient(
-        {"species": _DEFAULT_SPECIES, "version": _DEFAULT_API_VERSION,
-         "rest": {"hosts": [_DEFAULT_HOST]}}
-    )
+    cc = ConfigClient()
 
     # Overriding config
     if args.config is not None:
@@ -701,21 +771,10 @@ def main():
     cbc = CellBaseClient(cc)
 
     if args.which == 'xref':
-        # Getting available databases
-        databases = _get_databases_list(cbc, assembly)
-
-        # Filtering databases with include and exclude
-        include = args.include.split(',') if args.include is not None else None
-        exclude = args.exclude.split(',') if args.exclude is not None else None
-        databases = _filter_databases(databases, include=include,
-                                      exclude=exclude)
-
-        # Converting IDs
-        convert_ids(input_fpath=args.input_fpath,
+        convert_ids(input_data=args.input,
                     output_fpath=args.output_fpath,
                     cellbase_client=cbc,
-                    assembly=assembly,
-                    databases=databases)
+                    assembly=assembly)
     if args.which == 'hgvs':
         calculate_hgvs(input_data=args.input,
                        output_fpath=args.output_fpath,
