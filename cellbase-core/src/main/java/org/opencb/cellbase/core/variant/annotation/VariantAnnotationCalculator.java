@@ -1088,7 +1088,7 @@ public class VariantAnnotationCalculator {
             case MNV:
                 return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
             case CNV:
-                if (variant.getSv().getCopyNumber() == null) {
+                if (variant.getSv().getCopyNumber() == null || variant.getSv().getCopyNumber() == 2) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
                     return new ConsequenceTypeCNVGainCalculator();
