@@ -165,6 +165,27 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         }
     }
 
+    /**
+     * This method has been added to make CB 5.1 compatible with CB 5.2 (which adds gwas).
+     * TODO This must be removed in CB 6
+     * @param queryOptions
+     * @return queryOptions modified
+     */
+    private QueryOptions excludeAnnotationGwas(QueryOptions queryOptions) {
+        if (queryOptions == null) {
+            queryOptions = QueryOptions.empty();
+        }
+        if (!queryOptions.containsKey(QueryOptions.INCLUDE)) {
+            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
+                String excludeString = queryOptions.getString(QueryOptions.EXCLUDE);
+                queryOptions.put(QueryOptions.EXCLUDE, excludeString + ",annotation.gwas");
+            } else {
+                queryOptions.put(QueryOptions.EXCLUDE, "annotation.gwas");
+            }
+        }
+        return queryOptions;
+    }
+
     private QueryOptions parseQueryOptions(QueryOptions options, Query query) {
         if (options != null && !options.isEmpty()) {
             QueryOptions parsedQueryOptions = new QueryOptions(options);
