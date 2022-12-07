@@ -92,6 +92,8 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
+    private static final int MAX_VARIANT_LENGTH = 5000;
+
     public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
             throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
@@ -1279,6 +1281,9 @@ public class VariantAnnotationCalculator {
             case CNV:
             case COPY_NUMBER_GAIN:
             case COPY_NUMBER:
+                if (variant.getReference().length() > MAX_VARIANT_LENGTH || variant.getAlternate().length() > MAX_VARIANT_LENGTH) {
+                    return null;
+                }
                 if (variant.getSv().getCopyNumber() == null || variant.getSv().getCopyNumber() == 2) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
@@ -1410,6 +1415,9 @@ public class VariantAnnotationCalculator {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+        if (consequenceTypeCalculator == null) {
+            return Collections.emptyList();
+        }
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
                 overlapsRegulatoryRegion, queryOptions);
         if (variant.getType() == VariantType.SNV
