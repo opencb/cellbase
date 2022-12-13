@@ -1200,10 +1200,9 @@ public class VariantAnnotationCalculator {
                 "transcripts.proteinSequence", "transcripts.strand", "transcripts.cdsLength", "transcripts.flags", "transcripts.biotype",
                 "transcripts.genomicCodingStart", "transcripts.genomicCodingEnd", "transcripts.cdnaCodingStart",
                 "transcripts.cdnaCodingEnd", "transcripts.exons.start", "transcripts.exons.cdsStart", "transcripts.exons.end",
-                "transcripts.exons.cdsEnd", "transcripts.exons.sequence", "transcripts.exons.phase",
-                "transcripts.exons.exonNumber", "mirna.matures", "mirna.sequence", "mirna.matures.cdnaStart",
-                "transcripts.exons.genomicCodingStart", "transcripts.exons.genomicCodingEnd",
-                "mirna.matures.cdnaEnd"));
+                "transcripts.exons.cdsEnd", "transcripts.exons.genomicCodingStart", "transcripts.exons.genomicCodingEnd",
+                "transcripts.exons.sequence", "transcripts.exons.phase", "transcripts.exons.exonNumber", "mirna.sequence",
+                "mirna.matures.cdnaStart", "mirna.matures.cdnaEnd"));
 
         if (annotatorSet.contains("expression")) {
             includeGeneFields.add("annotation.expression");
