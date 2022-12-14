@@ -152,10 +152,10 @@ species:
     - id: hsapiens
       scientificName: Homo sapiens
       assemblies:
-        #     - ensemblVersion: '82_37'
-        #       name: GRCh37
         - ensemblVersion: '104_38'
           name: GRCh38
+        - ensemblVersion: '82_37'
+          name: GRCh37
       data:
         - clinical_variants
         - conservation
