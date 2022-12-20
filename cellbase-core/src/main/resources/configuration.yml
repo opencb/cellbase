@@ -3,7 +3,7 @@ version: "v5"
 apiVersion: "${cellbase.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
-maintainerContact: javier.lopez@genomicsengland.co.uk
+maintainerContact: ignacio.medina@zettagenomics.com
 logLevel: "INFO"
 logDir: "./logs"
 # where to output the logs
