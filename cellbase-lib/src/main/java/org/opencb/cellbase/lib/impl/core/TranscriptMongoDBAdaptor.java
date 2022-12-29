@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
@@ -177,7 +176,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     @Override
     public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
@@ -185,9 +184,9 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     @Override
     public CellBaseDataResult<String> distinct(TranscriptQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
-        logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
     @Deprecated
@@ -211,7 +210,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
                     case "region":
                     case "transcripts.id":
                         if (!visited) {
-                           // parse region and ID at the same time
+                            // parse region and ID at the same time
                             createRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
                             visited = true;
                         }

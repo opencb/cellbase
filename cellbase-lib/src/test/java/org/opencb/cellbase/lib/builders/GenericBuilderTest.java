@@ -17,9 +17,10 @@
 package org.opencb.cellbase.lib.builders;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
+import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -64,8 +65,9 @@ public class GenericBuilderTest<T> {
         return objectList;
     }
 
-    protected T parseObject(String jsonString) {
-        return jsonObjectMapper.convertValue(JSON.parse(jsonString), clazz);
+    protected T parseObject(String jsonString) throws JsonProcessingException {
+        return jsonObjectMapper.convertValue(jsonObjectMapper
+                .readerFor(VariantAvro.class).readValue(jsonString), clazz);
     }
 
 }
