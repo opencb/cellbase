@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -117,7 +116,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         logger.debug("queryOptions: {}", options.toJson());
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
@@ -126,7 +125,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         logger.debug("queryOptions: {}", options.toJson());
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }

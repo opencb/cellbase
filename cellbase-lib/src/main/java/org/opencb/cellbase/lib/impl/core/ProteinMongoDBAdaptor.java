@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.apache.commons.lang3.StringUtils;
@@ -27,11 +26,11 @@ import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -316,14 +315,14 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     @Override
     public CellBaseDataResult<Entry> groupBy(ProteinQuery query) {
         Bson bsonQuery = parseQuery(query);
-        logger.info("proteinQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("proteinQuery: {}", bsonQuery.toBsonDocument().toJson());
         return groupBy(bsonQuery, query, "name");
     }
 
     @Override
     public CellBaseDataResult<String> distinct(ProteinQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
 //    public Iterator nativeIterator(Query query, QueryOptions options) {

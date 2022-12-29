@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -87,7 +86,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     @Override
     public CellBaseDataResult<String> distinct(OntologyQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
     @Override
@@ -98,7 +97,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     @Override
     public CellBaseDataResult groupBy(OntologyQuery query) {
         Bson bsonQuery = parseQuery(query);
-        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
         return groupBy(bsonQuery, query, "name");
     }
 

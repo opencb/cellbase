@@ -19,7 +19,6 @@ package org.opencb.cellbase.app.cli;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -882,7 +881,8 @@ public class VariantAnnotationCommandExecutorTest {
                 if (line.startsWith("#") || line.trim().isEmpty()) {
                     continue;
                 }
-                variantList.add(new Variant(jsonObjectMapper.convertValue(JSON.parse(line), VariantAvro.class)));
+                variantList.add(new Variant(jsonObjectMapper.convertValue(jsonObjectMapper
+                        .readerFor(VariantAvro.class).readValues(line), VariantAvro.class)));
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -104,7 +104,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     @Override
     public CellBaseDataResult<String> distinct(RegulationQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
     @Override
     public CellBaseDataResult<Long> count(RegulationQuery query) {

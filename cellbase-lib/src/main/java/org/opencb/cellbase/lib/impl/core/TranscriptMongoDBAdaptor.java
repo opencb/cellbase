@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
@@ -169,15 +168,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     @Override
     public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) {
         Bson bsonQuery = parseQuery(query);
-        logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument().toJson());
         return groupBy(bsonQuery, query, "name");
     }
 
     @Override
     public CellBaseDataResult<String> distinct(TranscriptQuery query) {
         Bson bsonDocument = parseQuery(query);
-        logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument().toJson());
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
     @Deprecated
@@ -201,7 +200,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                     case "region":
                     case "transcripts.id":
                         if (!visited) {
-                           // parse region and ID at the same time
+                            // parse region and ID at the same time
                             createRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
                             visited = true;
                         }

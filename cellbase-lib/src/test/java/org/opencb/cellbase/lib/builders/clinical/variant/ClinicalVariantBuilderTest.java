@@ -20,14 +20,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.mongodb.util.JSON;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -35,21 +34,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 07/10/16.
@@ -702,7 +691,9 @@ public class ClinicalVariantBuilderTest {
                 if (line.startsWith("#") || line.trim().isEmpty()) {
                     continue;
                 }
-                variantList.add(new Variant(jsonObjectMapper.convertValue(JSON.parse(line), VariantAvro.class)));
+//                variantList.add(new Variant(jsonObjectMapper.convertValue(JSON.parse(line), VariantAvro.class)));
+                variantList.add(new Variant(jsonObjectMapper.convertValue(jsonObjectMapper
+                        .readerFor(VariantAvro.class).readValue(line), VariantAvro.class)));
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -22,10 +22,10 @@ import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.CustomAnnotationPhasedQueryManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -145,8 +145,8 @@ public class VcfVariantAnnotator implements VariantAnnotator {
                 Variant variant1 = mapper.readValue(dbContent, Variant.class);
 
                 customAnnotationCellBaseDataResult.setResults(Collections.singletonList(variant1));
-                customAnnotationCellBaseDataResult.setNumTotalResults(1);
                 customAnnotationCellBaseDataResult.setNumResults(1);
+                customAnnotationCellBaseDataResult.setNumMatches(1);
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();

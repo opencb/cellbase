@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -127,8 +127,8 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
                 flagVisitedVariant(variantKey, variant1);
 
                 populationFrequencyCellBaseDataResult.setResults(Collections.singletonList(variant1));
-                populationFrequencyCellBaseDataResult.setNumTotalResults(1);
                 populationFrequencyCellBaseDataResult.setNumResults(1);
+                populationFrequencyCellBaseDataResult.setNumMatches(1);
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
