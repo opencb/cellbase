@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -125,7 +124,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         logger.debug("queryOptions: {}", options.toJson());
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
@@ -137,7 +136,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("query: {}", bson.toBsonDocument().toJson());
         logger.debug("queryOptions: {}", options.toJson());
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
@@ -163,6 +162,27 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         while (iterator.hasNext()) {
             action.accept(iterator.next());
         }
+    }
+
+    /**
+     * This method has been added to make CB 5.1 compatible with CB 5.2 (which adds gwas).
+     * TODO This must be removed in CB 6
+     * @param queryOptions
+     * @return queryOptions modified
+     */
+    private QueryOptions excludeAnnotationGwas(QueryOptions queryOptions) {
+        if (queryOptions == null) {
+            queryOptions = QueryOptions.empty();
+        }
+        if (!queryOptions.containsKey(QueryOptions.INCLUDE)) {
+            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
+                String excludeString = queryOptions.getString(QueryOptions.EXCLUDE);
+                queryOptions.put(QueryOptions.EXCLUDE, excludeString + ",annotation.gwas");
+            } else {
+                queryOptions.put(QueryOptions.EXCLUDE, "annotation.gwas");
+            }
+        }
+        return queryOptions;
     }
 
     private QueryOptions parseQueryOptions(QueryOptions options, Query query) {

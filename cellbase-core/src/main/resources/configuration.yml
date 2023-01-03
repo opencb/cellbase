@@ -3,7 +3,7 @@ version: "v5"
 apiVersion: "${project.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
-maintainerContact: javier.lopez@genomicsengland.co.uk
+maintainerContact: ignacio.medina@zettagenomics.com
 logLevel: "INFO"
 logDir: "./logs"
 # where to output the logs
@@ -163,10 +163,10 @@ species:
     - id: hsapiens
       scientificName: Homo sapiens
       assemblies:
-        #     - ensemblVersion: '82_37'
-        #       name: GRCh37
         - ensemblVersion: '104_38'
           name: GRCh38
+        - ensemblVersion: '82_37'
+          name: GRCh37
       data:
         - clinical_variants
         - conservation
