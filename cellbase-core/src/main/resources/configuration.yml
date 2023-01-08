@@ -24,7 +24,9 @@ databases:
       readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
       replicaSet: "${CELLBASE.DB.MONGODB.REPLICASET}"
       connectionsPerHost: 20
-      sslEnabled: false
+      sslEnabled: true
+      sslInvalidCertificatesAllowed: true
+      sslInvalidHostnameAllowed: true
       enableSharding: false
   neo4j:
     hsapiens:
