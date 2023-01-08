@@ -85,6 +85,10 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;
 
+    @QueryParameter(id = "annotation.cancerAssociations.roleInCancer", alias = {"roleInCancer"})
+    private LogicalList<String> annotationRoleInCancer;
+
+
     public GeneQuery() {
     }
 
@@ -131,6 +135,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append(", annotationConstraints=").append(annotationConstraints);
         sb.append(", annotationTargets=").append(annotationTargets);
         sb.append(", mirnas=").append(mirnas);
+        sb.append(", annotationRoleInCancer=").append(annotationRoleInCancer);
         sb.append('}');
         return sb.toString();
     }
@@ -321,6 +326,15 @@ public class GeneQuery extends AbstractQuery {
 
     public GeneQuery setSource(List<String> source) {
         this.source = source;
+        return this;
+    }
+
+    public LogicalList<String> getAnnotationRoleInCancer() {
+        return annotationRoleInCancer;
+    }
+
+    public GeneQuery setAnnotationRoleInCancer(LogicalList<String> annotationRoleInCancer) {
+        this.annotationRoleInCancer = annotationRoleInCancer;
         return this;
     }
 
