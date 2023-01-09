@@ -50,6 +50,7 @@
 {"collection": "gene", "fields": {"annotation.constraints.value": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.cancerAssociations.roleInCancer": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 

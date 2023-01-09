@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.apache.commons.lang3.StringUtils;
@@ -322,7 +321,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     @Override
     public CellBaseDataResult<Entry> groupBy(ProteinQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        logger.info("proteinQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("proteinQuery: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
@@ -331,7 +330,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     public CellBaseDataResult<String> distinct(ProteinQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
 //    public Iterator nativeIterator(Query query, QueryOptions options) {

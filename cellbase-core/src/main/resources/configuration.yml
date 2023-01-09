@@ -3,7 +3,7 @@ version: "v5"
 apiVersion: "${project.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
-maintainerContact: javier.lopez@genomicsengland.co.uk
+maintainerContact: ignacio.medina@zettagenomics.com
 logLevel: "INFO"
 logDir: "./logs"
 # where to output the logs
@@ -25,7 +25,9 @@ databases:
       readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
       replicaSet: "${CELLBASE.DB.MONGODB.REPLICASET}"
       connectionsPerHost: 20
-      sslEnabled: false
+      sslEnabled: true
+      sslInvalidCertificatesAllowed: true
+      sslInvalidHostnameAllowed: true
       enableSharding: false
   neo4j:
     hsapiens:
@@ -153,7 +155,7 @@ download:
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   revel:
-    host: https://rothsj06.u.hpc.mssm.edu/revel_grch38_all_chromosomes.csv.zip
+    host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
   pubmed:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
     files:
@@ -163,10 +165,10 @@ species:
     - id: hsapiens
       scientificName: Homo sapiens
       assemblies:
-        #     - ensemblVersion: '82_37'
-        #       name: GRCh37
         - ensemblVersion: '104_38'
           name: GRCh38
+        - ensemblVersion: '82_37'
+          name: GRCh37
       data:
         - clinical_variants
         - conservation
