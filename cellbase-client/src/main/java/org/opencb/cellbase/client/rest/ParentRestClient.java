@@ -32,6 +32,7 @@ import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
+import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.*;
@@ -59,6 +60,7 @@ public class ParentRestClient<T> {
 
     protected final String species;
     protected final String assembly;
+    protected final String dataRelease;
     protected final Client client;
 
     // TODO: Should this be final?
@@ -84,12 +86,18 @@ public class ParentRestClient<T> {
 
     @Deprecated
     public ParentRestClient(ClientConfiguration configuration) {
-        this(configuration.getDefaultSpecies(), null, configuration);
+        this(configuration.getDefaultSpecies(), null, null, configuration);
     }
 
+    @Deprecated
     public ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
+        this(species, assembly, null, configuration);
+    }
+
+    public ParentRestClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
         this.species = species;
         this.assembly = assembly;
+        this.dataRelease = dataRelease;
         this.configuration = configuration;
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
@@ -98,6 +106,18 @@ public class ParentRestClient<T> {
         client.property(ClientProperties.READ_TIMEOUT, configuration.getRest().getTimeout());
 
         logger.debug("Configure read timeout : " + configuration.getRest().getTimeout() + "ms");
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public String getAssembly() {
+        return assembly;
+    }
+
+    public String getDataRelease() {
+        return dataRelease;
     }
 
     static {
@@ -421,9 +441,15 @@ public class ParentRestClient<T> {
             if (assembly != null && StringUtils.isEmpty(queryOptions.getString("assembly"))) {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
+            if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_RELEASE))) {
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+            }
         } else {
             if (assembly != null) {
                 callUrl = callUrl.queryParam("assembly", assembly);
+            }
+            if (dataRelease != null) {
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
             }
         }
 
