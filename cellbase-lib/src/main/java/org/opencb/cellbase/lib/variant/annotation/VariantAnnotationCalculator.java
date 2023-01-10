@@ -358,7 +358,7 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        if (annotatorSet.contains("cancerHotspot")) {
+        if (annotatorSet.contains("cancerHotspots")) {
             variantAnnotation.setCancerHotspots(new ArrayList<>());
             Set<String> visited = new HashSet<>();
             for (Gene gene : geneList) {
@@ -387,6 +387,7 @@ public class VariantAnnotationCalculator {
                                         .setCancerTypeCount(cancerHotspot.getCancerTypeCount())
                                         .setOrganCount(cancerHotspot.getOrganCount())
                                         .setSource(cancerHotspot.getSource())
+                                        .setVariants(new ArrayList<>())
                                         .build();
                                 if (cancerHotspot.getVariants() != null) {
                                     cancerHotspotVariantAnnotation.setVariants(cancerHotspot
@@ -595,6 +596,29 @@ public class VariantAnnotationCalculator {
                     }
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(variant.getAnnotation().getConsequenceTypes()));
+
+                    // Update HGVS inside the consequence type (if HGVS are provided)
+                    if (CollectionUtils.isNotEmpty(variantAnnotation.getHgvs())) {
+                        for (ConsequenceType consequenceType : consequenceTypeList) {
+                            List<String> selectedHgvs = new ArrayList<>();
+                            for (String hgvs : variantAnnotation.getHgvs()) {
+                                if (consequenceType.getTranscriptId() != null && hgvs.startsWith(consequenceType.getTranscriptId())) {
+                                    // Add Transcript ID
+                                    selectedHgvs.add(hgvs);
+                                } else {
+                                    // Add Protein ID
+                                    if (consequenceType.getProteinVariantAnnotation() != null
+                                            && consequenceType.getProteinVariantAnnotation().getProteinId() != null
+                                            && hgvs.startsWith(consequenceType.getProteinVariantAnnotation().getProteinId())) {
+                                        selectedHgvs.add(hgvs);
+                                    }
+                                }
+                            }
+                            if (CollectionUtils.isNotEmpty(selectedHgvs)) {
+                                consequenceType.setHgvs(selectedHgvs);
+                            }
+                        }
+                    }
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", variant);
@@ -1173,7 +1197,7 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
-                    "cancerGeneAssociation", "populationFrequencies", "repeats", "cytoband", "hgvs"));
+                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1207,6 +1231,9 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("cancerGeneAssociation")) {
             includeGeneFields.add("annotation.cancerAssociations");
         }
+        if (annotatorSet.contains("cancerHotspots")) {
+            includeGeneFields.add("annotation.cancerHotspots");
+        }
         return includeGeneFields;
     }
 
@@ -1222,13 +1249,6 @@ public class VariantAnnotationCalculator {
         }
         return geneList;
     }
-
-//    private List<Gene> getGenesInRange(String chromosome, int start, int end, String includeFields) {
-//        QueryOptions queryOptions = new QueryOptions("include", includeFields);
-//
-//        return geneManager.getByRegion(new Region(chromosome, Math.max(1, start - 5000),
-//                        end + 5000), queryOptions).getResults();
-//    }
 
     private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
         if (consequenceType.getCodon() == null) {
@@ -1676,8 +1696,6 @@ public class VariantAnnotationCalculator {
         @Override
         public List<CellBaseDataResult<Score>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-//            List<CellBaseDataResult> variantFunctionalScoreCellBaseDataResultList =
-//                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
             logger.debug("Query variant functional score");
             List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResultList =
                     variantManager.getFunctionalScoreVariant(variantList, queryOptions, dataRelease);
@@ -1707,12 +1725,6 @@ public class VariantAnnotationCalculator {
     }
 
     class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
-        //        private static final String CLINVAR = "clinvar";
-//        private static final String COSMIC = "cosmic";
-//        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
-//        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
-//        private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
-//        private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
         private List<Gene> batchGeneList;
         private QueryOptions queryOptions;

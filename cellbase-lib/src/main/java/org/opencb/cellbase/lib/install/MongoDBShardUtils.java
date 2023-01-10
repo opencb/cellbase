@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.install;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;

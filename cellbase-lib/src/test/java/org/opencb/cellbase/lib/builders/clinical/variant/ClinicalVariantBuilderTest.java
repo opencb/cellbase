@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.mongodb.util.JSON;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -692,7 +691,9 @@ public class ClinicalVariantBuilderTest {
                 if (line.startsWith("#") || line.trim().isEmpty()) {
                     continue;
                 }
-                variantList.add(new Variant(jsonObjectMapper.convertValue(JSON.parse(line), VariantAvro.class)));
+//                variantList.add(new Variant(jsonObjectMapper.convertValue(JSON.parse(line), VariantAvro.class)));
+                variantList.add(new Variant(jsonObjectMapper.convertValue(jsonObjectMapper
+                        .readerFor(VariantAvro.class).readValue(line), VariantAvro.class)));
             }
         } catch (IOException e) {
             e.printStackTrace();

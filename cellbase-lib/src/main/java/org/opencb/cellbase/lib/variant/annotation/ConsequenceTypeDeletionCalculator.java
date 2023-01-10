@@ -179,6 +179,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 // First place where protein variant annotation is added to the Consequence type,
                 // must create the ProteinVariantAnnotation object
                 ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setProteinId(transcript.getProteinId());
                 proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
                 consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
@@ -291,6 +292,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 // First place where protein variant annotation is added to the Consequence type,
                 // must create the ProteinVariantAnnotation object
                 ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setProteinId(transcript.getProteinId());
                 proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
                 consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
             }
