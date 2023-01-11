@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>5.2.8</version>
+    <version>5.2.9-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
