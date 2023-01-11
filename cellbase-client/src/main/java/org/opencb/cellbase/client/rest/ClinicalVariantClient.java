@@ -29,8 +29,8 @@ import java.io.IOException;
  * Created by fjlopez on 07/07/17.
  */
 public class ClinicalVariantClient extends ParentRestClient<Variant> {
-    public ClinicalVariantClient(String species, String assembly, ClientConfiguration configuration) {
-        super(species, assembly, configuration);
+    public ClinicalVariantClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, configuration);
 
         this.clazz = Variant.class;
 

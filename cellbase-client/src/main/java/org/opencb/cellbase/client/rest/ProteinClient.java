@@ -30,8 +30,8 @@ import java.util.List;
  */
 public class ProteinClient extends FeatureClient<Entry> {
 
-    public ProteinClient(String species, String assembly, ClientConfiguration configuration) {
-        super(species, assembly, configuration);
+    public ProteinClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, configuration);
 
         this.clazz = Entry.class;
 
