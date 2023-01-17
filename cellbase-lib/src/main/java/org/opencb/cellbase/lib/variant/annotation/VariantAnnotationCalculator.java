@@ -84,7 +84,7 @@ public class VariantAnnotationCalculator {
     private String consequenceTypeSource = null;
     private String enable = null;
 
-    private static HgvsCalculator hgvsCalculator;
+    private HgvsCalculator hgvsCalculator;
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();

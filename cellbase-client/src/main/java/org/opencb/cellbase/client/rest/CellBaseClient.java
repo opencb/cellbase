@@ -28,8 +28,9 @@ import java.util.function.Supplier;
  */
 public class CellBaseClient {
 
-    private String species;
-    private String assembly;
+    private final String species;
+    private final String assembly;
+    private final String dataRelease;
     private ClientConfiguration clientConfiguration;
 
     private final Map<String, ParentRestClient> clients;
@@ -44,12 +45,16 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(String species, String assembly, ClientConfiguration clientConfiguration) {
+        this(species, assembly, null, clientConfiguration);
+    }
 
+    public CellBaseClient(String species, String assembly, String dataRelease, ClientConfiguration clientConfiguration) {
         if (StringUtils.isBlank(species)) {
             throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
         }
         this.species = species;
         this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
+        this.dataRelease = StringUtils.isEmpty(dataRelease) ? null : dataRelease;
         if (clientConfiguration != null && clientConfiguration.getRest() != null
                 && clientConfiguration.getRest().getHosts() != null
                 && !clientConfiguration.getRest().getHosts().isEmpty()
@@ -64,11 +69,11 @@ public class CellBaseClient {
     }
 
     public GeneClient getGeneClient() {
-        return getClient("GENE", () -> new GeneClient(species, assembly, clientConfiguration));
+        return getClient("GENE", () -> new GeneClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, clientConfiguration));
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, dataRelease, clientConfiguration));
     }
 
 //    public VariationClient getVariationClient() {
@@ -76,27 +81,27 @@ public class CellBaseClient {
 //    }
 
     public VariantClient getVariantClient() {
-        return getClient("VARIANT", () -> new VariantClient(species, assembly, clientConfiguration));
+        return getClient("VARIANT", () -> new VariantClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, clientConfiguration));
+        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, clientConfiguration));
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public MetaClient getMetaClient() {
-        return getClient("META", () -> new MetaClient(species, assembly, clientConfiguration));
+        return getClient("META", () -> new MetaClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public ClinicalVariantClient getClinicalClient() {
-        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, clientConfiguration));
+        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     public GenericClient getGenericClient() {
-        return getClient("GENERIC", () -> new GenericClient(species, assembly, clientConfiguration));
+        return getClient("GENERIC", () -> new GenericClient(species, assembly, dataRelease, clientConfiguration));
     }
 
     @SuppressWarnings("unchecked")
@@ -116,23 +121,30 @@ public class CellBaseClient {
         return sb.toString();
     }
 
-
     public String getSpecies() {
         return species;
     }
 
-    public CellBaseClient setSpecies(String species) {
-        this.species = species;
-        return this;
+//    public CellBaseClient setSpecies(String species) {
+//        this.species = species;
+//        return this;
+//    }
+
+    public String getAssembly() {
+        return assembly;
+    }
+
+    public String getDataRelease() {
+        return dataRelease;
     }
 
     public ClientConfiguration getClientConfiguration() {
         return clientConfiguration;
     }
 
-    public CellBaseClient setClientConfiguration(ClientConfiguration clientConfiguration) {
-        this.clientConfiguration = clientConfiguration;
-        return this;
-    }
+//    public CellBaseClient setClientConfiguration(ClientConfiguration clientConfiguration) {
+//        this.clientConfiguration = clientConfiguration;
+//        return this;
+//    }
 
 }

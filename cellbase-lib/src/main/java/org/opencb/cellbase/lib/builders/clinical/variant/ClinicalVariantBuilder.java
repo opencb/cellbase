@@ -55,7 +55,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
     private final Path hgmdFile;
     private boolean normalize = true;
 
-
     public ClinicalVariantBuilder(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
                                   String assembly, CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),

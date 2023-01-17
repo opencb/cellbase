@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.models;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DataReleaseSource {
     private String name;
@@ -91,5 +92,26 @@ public class DataReleaseSource {
     public DataReleaseSource setUrl(List<String> url) {
         this.url = url;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DataReleaseSource that = (DataReleaseSource) o;
+        return Objects.equals(name, that.name)
+                && Objects.equals(version, that.version)
+                && Objects.equals(data, that.data)
+                && Objects.equals(date, that.date)
+                && Objects.equals(url, that.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, version, data, date, url);
     }
 }

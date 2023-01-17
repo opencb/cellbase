@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.models;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class DataRelease {
     private int release;
@@ -95,5 +96,26 @@ public class DataRelease {
     public DataRelease setSources(List<DataReleaseSource> sources) {
         this.sources = sources;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DataRelease that = (DataRelease) o;
+        return release == that.release
+                && active == that.active
+                && Objects.equals(date, that.date)
+                && Objects.equals(collections, that.collections)
+                && Objects.equals(sources, that.sources);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(release, date, active, collections, sources);
     }
 }

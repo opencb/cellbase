@@ -33,8 +33,8 @@ import java.io.IOException;
 @Deprecated
 public class VariationClient extends FeatureClient<Variant> {
 
-    public VariationClient(String species, String assembly, ClientConfiguration configuration) {
-        super(species, assembly, configuration);
+    public VariationClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, configuration);
         this.clazz = Variant.class;
 
         this.category = "feature";
