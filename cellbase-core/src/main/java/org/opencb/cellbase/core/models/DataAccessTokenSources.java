@@ -16,6 +16,12 @@
 
 package org.opencb.cellbase.core.models;
 
+import org.apache.commons.collections4.MapUtils;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DataAccessTokenSources {
@@ -29,6 +35,33 @@ public class DataAccessTokenSources {
     public DataAccessTokenSources(String version, Map<String, Long> sources) {
         this.version = version;
         this.sources = sources;
+    }
+
+    private static DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+
+    public static DateFormat dateFormatter() {
+        return dateFormatter;
+    }
+
+    public static DataAccessTokenSources parse(String input) throws ParseException {
+        DataAccessTokenSources dataSources = new DataAccessTokenSources();
+        Map<String, Long> sources = new HashMap<>();
+        String[] split = input.split(",");
+        for (String source : split) {
+            String[] splits = source.split(":");
+            if (splits.length == 1) {
+                sources.put(splits[0], Long.MAX_VALUE);
+            } else {
+                sources.put(splits[0], dateFormatter.parse(splits[1]).getTime());
+            }
+        }
+
+        dataSources.setVersion("1.0");
+        if (MapUtils.isNotEmpty(sources)) {
+            dataSources.setSources(sources);
+        }
+
+        return dataSources;
     }
 
     @Override

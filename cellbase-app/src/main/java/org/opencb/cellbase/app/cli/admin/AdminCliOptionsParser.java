@@ -34,6 +34,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private DataReleaseCommandOptions dataReleaseCommandOptions;
+    private DataTokenCommandOptions dataTokenCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
@@ -49,6 +50,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         dataReleaseCommandOptions = new DataReleaseCommandOptions();
+        dataTokenCommandOptions = new DataTokenCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
@@ -59,6 +61,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("data-release", dataReleaseCommandOptions);
+        jCommander.addCommand("data-token", dataTokenCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
@@ -141,6 +144,31 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--set-active"}, description = "Set the data release active", arity = 1)
         public int active;
+    }
+
+    @Parameters(commandNames = {"data-token"}, commandDescription = "Manage data access tokens in order to access to restricted/licensed data sources")
+    public class DataTokenCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--create"}, description = "Create a data access token (indicate the 'organization' and the 'data sources')", arity = 0)
+        public boolean create;
+
+        @Parameter(names = {"--organization"}, description = "Organization", arity = 1)
+        public String organization;
+
+        @Parameter(names = {"--data-sources"}, description = "Data sources separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd", arity = 1)
+        public String dataSources;
+
+        @Parameter(names = {"--display"}, description = "Display the token", arity = 0)
+        public boolean display;
+
+        @Parameter(names = {"--token"}, description = "Token to view (use only with --view)", arity = 1)
+        public String token;
+
+        @Parameter(names = {"--secret-key"}, description = "Secret key", arity = 1, required = true, password = true)
+        public String secretKey;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
@@ -329,6 +357,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     public DataReleaseCommandOptions getDataReleaseCommandOptions() {
         return dataReleaseCommandOptions;
+    }
+
+    public DataTokenCommandOptions getDataTokenCommandOptions() {
+        return dataTokenCommandOptions;
     }
 
     public LoadCommandOptions getLoadCommandOptions() {

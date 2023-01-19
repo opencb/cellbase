@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.opencb.cellbase.lib.managers.DataAccessTokenManager.SECRET_KEY_MIN_LENGTH;
 
 public class DataAccessTokenSourcesManagerTest {
 
@@ -27,7 +28,9 @@ public class DataAccessTokenSourcesManagerTest {
 
     @Before
     public void before() {
-        Key key = new SecretKeySpec(TextCodec.BASE64.decode(RandomStringUtils.randomAlphanumeric(50)), SignatureAlgorithm.HS256.getJcaName());
+        String randomStr = RandomStringUtils.randomAlphanumeric(SECRET_KEY_MIN_LENGTH);
+        System.out.println("Secret key = " + randomStr);
+        Key key = new SecretKeySpec(TextCodec.BASE64.decode(randomStr), SignatureAlgorithm.HS256.getJcaName());
         datManager = new DataAccessTokenManager(SignatureAlgorithm.HS256.getValue(), key);
     }
 

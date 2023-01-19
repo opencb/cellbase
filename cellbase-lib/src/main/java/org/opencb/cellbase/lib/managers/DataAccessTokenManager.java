@@ -23,19 +23,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.Key;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.opencb.cellbase.core.models.DataAccessTokenSources.dateFormatter;
 
 public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
     private Key privateKey;
     private Key publicKey;
 
-    private final DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
     private final Logger logger;
 
-    public static final int SECRET_KEY_MIN_LENGTH = 32;
+    public static final int SECRET_KEY_MIN_LENGTH = 50;
 
     public DataAccessTokenManager(String algorithm, Key secretKey) {
         this.algorithm = SignatureAlgorithm.forName(algorithm);
@@ -45,7 +44,7 @@ public class DataAccessTokenManager {
         this.logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
     }
 
-    public String encode(String client, DataAccessTokenSources dat) {
+    public String encode(String organization, DataAccessTokenSources dat) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         Map<String, Object> claims = new HashMap<>();
@@ -55,7 +54,7 @@ public class DataAccessTokenManager {
         }
 
         jwtBuilder.setClaims(claims)
-                .setSubject(client)
+                .setSubject(organization)
                 .setIssuedAt(new Date())
                 .signWith(privateKey, algorithm);
 
@@ -111,14 +110,14 @@ public class DataAccessTokenManager {
         return validSources;
     }
 
-    public String getClient(String token) {
+    public String getOrganization(String token) {
         Jws<Claims> parse = parse(token);
         return parse.getBody().getSubject();
     }
 
     public String getCreationDate(String token) {
         Jws<Claims> parse = parse(token);
-        return formatter.format(parse.getBody().getIssuedAt());
+        return dateFormatter().format(parse.getBody().getIssuedAt());
     }
 
     public void display(String token) {
@@ -126,13 +125,13 @@ public class DataAccessTokenManager {
 
         final StringBuilder sb = new StringBuilder();
         sb.append("Token: ").append(token).append("\n");
-        sb.append("Client: ").append(body.getSubject()).append("\n");
-        sb.append("Issued at: ").append(formatter.format(body.getIssuedAt())).append("\n");
+        sb.append("Organization: ").append(body.getSubject()).append("\n");
+        sb.append("Issued at: ").append(dateFormatter().format(body.getIssuedAt())).append("\n");
         sb.append("Version: ").append(body.get("version")).append("\n");
         sb.append("Sources:\n");
         Map<String, Long> sources = (Map<String, Long>) body.get("sources");
         for (Map.Entry<String, Long> entry : sources.entrySet()) {
-            sb.append("\t- '").append(entry.getKey()).append("' until ").append(formatter.format(entry.getValue())).append("\n");
+            sb.append("\t- '").append(entry.getKey()).append("' until ").append(dateFormatter().format(entry.getValue())).append("\n");
         }
 
         System.out.println(sb);
