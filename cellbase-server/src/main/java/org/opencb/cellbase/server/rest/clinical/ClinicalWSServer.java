@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -70,6 +69,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
             + DOT_NOTATION_NOTE,
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = DATA_TOKEN_PARAM, value = DATA_TOKEN_DESCRIPTION,
+                    required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
@@ -116,7 +117,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
-            CellBaseDataResult<ClinicalVariant> queryResults = clinicalManager.search(query);
+            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
+
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

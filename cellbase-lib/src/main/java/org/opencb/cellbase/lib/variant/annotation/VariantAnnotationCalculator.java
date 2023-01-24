@@ -34,7 +34,6 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
@@ -82,7 +81,6 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
-    private String enable = null;
 
     private HgvsCalculator hgvsCalculator;
 
@@ -92,8 +90,8 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
-            throws CellBaseException {
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease,
+                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
@@ -767,10 +765,6 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
-
-        enable = (queryOptions.get("enable") != null
-                ? (String) queryOptions.get("enable") : "");
-        logger.debug("enable = {}", enable);
     }
 
 //    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
@@ -1767,19 +1761,10 @@ public class VariantAnnotationCalculator {
             }
         }
 
-
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                if (enable.contains("hgmd")) {
-                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
-                } else {
-                    for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
-                        if (entry.getSource() == null || !EtlCommons.HGMD_DATA.equals(entry.getSource().getName())) {
-                            traitAssociations.add(entry);
-                        }
-                    }
-                }
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
             }
             return traitAssociations;
         }

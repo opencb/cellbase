@@ -20,6 +20,8 @@ import java.util.List;
 
 public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
+    public static final String DATA_TOKEN_OPTION_NAME = "dataToken";
+
     @QueryParameter(id = "limit", min = "0")
     protected Integer limit;
 
@@ -38,6 +40,9 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     @QueryParameter(id = "facet")
     protected String facet;
 
+    @QueryParameter(id = "dataToken")
+    protected String dataToken;
+
     public enum Order {
         ASCENDING,
         DESCENDING
@@ -46,17 +51,18 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     public CellBaseQueryOptions() {
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String dataToken) {
         this.limit = limit;
         this.skip = skip;
         this.count = count;
         this.sort = sort;
         this.order = order;
         this.facet = facet;
+        this.dataToken = dataToken;
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, List<String> includes,
-                                List<String> excludes) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String dataToken,
+                                List<String> includes, List<String> excludes) {
         super(includes, excludes);
 
         this.limit = limit;
@@ -65,6 +71,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.sort = sort;
         this.order = order;
         this.facet = facet;
+        this.dataToken = dataToken;
     }
 
     @Override
@@ -76,6 +83,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         sb.append(", sort=").append(sort);
         sb.append(", order=").append(order);
         sb.append(", facet=").append(facet);
+        sb.append(", dataToken=").append(dataToken);
         sb.append(", includes=").append(includes);
         sb.append(", excludes=").append(excludes);
         sb.append('}');
@@ -133,6 +141,15 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     public CellBaseQueryOptions setFacet(String facet) {
         this.facet = facet;
+        return this;
+    }
+
+    public String getDataToken() {
+        return dataToken;
+    }
+
+    public CellBaseQueryOptions setDataToken(String dataToken) {
+        this.dataToken = dataToken;
         return this;
     }
 }

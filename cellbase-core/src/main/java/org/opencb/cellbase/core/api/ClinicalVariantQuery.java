@@ -53,6 +53,9 @@ public class ClinicalVariantQuery extends AbstractQuery {
     @QueryParameter(id = "annotation.traitAssociation.alleleOrigin", alias = {ParamConstants.ALLELE_ORIGIN_PARAM})
     private List<String> alleleOrigins;
 
+    @QueryParameter(id = "dataToken")
+    private String dataToken;
+
     public ClinicalVariantQuery() {
     }
 
@@ -78,6 +81,7 @@ public class ClinicalVariantQuery extends AbstractQuery {
         sb.append(", clinicalSignificances=").append(clinicalSignificances);
         sb.append(", modeInheritances=").append(modeInheritances);
         sb.append(", alleleOrigins=").append(alleleOrigins);
+        sb.append(", dataToken=").append(dataToken);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);
@@ -189,6 +193,14 @@ public class ClinicalVariantQuery extends AbstractQuery {
         return this;
     }
 
+    public String getDataToken() {
+        return dataToken;
+    }
+
+    public ClinicalVariantQuery setDataToken(String dataToken) {
+        this.dataToken = dataToken;
+        return this;
+    }
 
     public static final class ClinicalVariantQueryBuilder {
         protected Integer limit;
@@ -210,6 +222,7 @@ public class ClinicalVariantQuery extends AbstractQuery {
         private List<String> clinicalSignificances;
         private List<String> modeInheritances;
         private List<String> alleleOrigins;
+        private String dataToken;
 
         private ClinicalVariantQueryBuilder() {
         }
@@ -273,6 +286,11 @@ public class ClinicalVariantQuery extends AbstractQuery {
             return this;
         }
 
+        public ClinicalVariantQueryBuilder withDataToken(String dataToken) {
+            this.dataToken = dataToken;
+            return this;
+        }
+
         public ClinicalVariantQueryBuilder withLimit(Integer limit) {
             this.limit = limit;
             return this;
@@ -326,6 +344,7 @@ public class ClinicalVariantQuery extends AbstractQuery {
             clinicalVariantQuery.setClinicalSignificances(clinicalSignificances);
             clinicalVariantQuery.setModeInheritances(modeInheritances);
             clinicalVariantQuery.setAlleleOrigins(alleleOrigins);
+            clinicalVariantQuery.setDataToken(dataToken);
             clinicalVariantQuery.setLimit(limit);
             clinicalVariantQuery.setSkip(skip);
             clinicalVariantQuery.setCount(count);

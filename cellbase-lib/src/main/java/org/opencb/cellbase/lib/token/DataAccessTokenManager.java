@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib.managers;
+package org.opencb.cellbase.lib.token;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.collections4.MapUtils;
-import org.opencb.cellbase.core.models.DataAccessTokenSources;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.*;
 
-import static org.opencb.cellbase.core.models.DataAccessTokenSources.dateFormatter;
+import static org.opencb.cellbase.core.token.DataAccessTokenSources.dateFormatter;
 
 public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
@@ -36,12 +39,16 @@ public class DataAccessTokenManager {
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
 
+    public DataAccessTokenManager(String key) {
+        this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(TextCodec.BASE64.decode(key), SignatureAlgorithm.HS256.getJcaName()));
+    }
+
     public DataAccessTokenManager(String algorithm, Key secretKey) {
         this.algorithm = SignatureAlgorithm.forName(algorithm);
         this.privateKey = secretKey;
         this.publicKey = secretKey;
 
-        this.logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
+        logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
     }
 
     public String encode(String organization, DataAccessTokenSources dat) {
@@ -99,11 +106,13 @@ public class DataAccessTokenManager {
 
     public Set<String> getValidSources(String token) throws IllegalArgumentException {
         Set<String> validSources = new HashSet<>();
-        DataAccessTokenSources dat = decode(token);
-        if (MapUtils.isNotEmpty(dat.getSources())) {
-            for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
-                if (new Date().getTime() <= entry.getValue()) {
-                    validSources.add(entry.getKey());
+        if (StringUtils.isNotEmpty(token)) {
+            DataAccessTokenSources dat = decode(token);
+            if (MapUtils.isNotEmpty(dat.getSources())) {
+                for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
+                    if (new Date().getTime() <= entry.getValue()) {
+                        validSources.add(entry.getKey());
+                    }
                 }
             }
         }
@@ -140,9 +149,4 @@ public class DataAccessTokenManager {
     private Jws<Claims> parse(String token) {
         return Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token);
     }
-
-    //    constructor("x.y.z")
-//    - encode/decode
-//    - hasExpired()
-//    - isCosmicValid()
 }

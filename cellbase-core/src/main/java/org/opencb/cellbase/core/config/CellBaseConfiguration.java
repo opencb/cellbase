@@ -40,6 +40,7 @@ public class CellBaseConfiguration {
     private String maintenanceFlagFile;
     private String maintainerContact;
     private String defaultOutdir;
+    private String tokenKey;
     private Databases databases;
     private DownloadProperties download;
     private SpeciesProperties species;
@@ -183,6 +184,15 @@ public class CellBaseConfiguration {
 
     public void setMaintainerContact(String maintainerContact) {
         this.maintainerContact = maintainerContact;
+    }
+
+    public String getTokenKey() {
+        return tokenKey;
+    }
+
+    public CellBaseConfiguration setTokenKey(String tokenKey) {
+        this.tokenKey = tokenKey;
+        return this;
     }
 
     public Databases getDatabases() {

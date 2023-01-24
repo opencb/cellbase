@@ -25,6 +25,7 @@ import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -33,21 +34,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by fjlopez on 18/09/15.
  */
 public class GenericMongoDBAdaptorTest {
 
-    protected int dataRelease = 1;
+    private DataReleaseManager dataReleaseManager;
+    protected int dataRelease;
 
     private static final String LOCALHOST = "localhost:27017";
     protected static final String SPECIES = "hsapiens";
     protected static final String ASSEMBLY = "grch37";
-    protected static final String API_VERSION = "v4";
+    protected static final String API_VERSION = "v5";
     protected static final String CELLBASE_DBNAME = "cellbase_" + SPECIES + "_" + ASSEMBLY + "_" + API_VERSION;
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
     protected CellBaseConfiguration cellBaseConfiguration;
@@ -75,6 +81,98 @@ public class GenericMongoDBAdaptorTest {
             mongoManager.get(dbName, mongoDBConfiguration);
             mongoManager.drop(dbName);
         }
+    }
+
+    protected void initDB() throws IOException, ExecutionException, ClassNotFoundException,
+            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+            URISyntaxException, CellBaseException {
+        dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
+        dataRelease = dataReleaseManager.createRelease().getRelease();
+
+        Path path = Paths.get(getClass()
+                .getResource("/variant-annotation/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/hgvs/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene", dataRelease);
+        dataReleaseManager.update(dataRelease,"gene", "gene", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence", dataRelease);
+        dataReleaseManager.update(dataRelease,"genome_sequence", "genome_sequence", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
+        loadRunner.load(path, "regulatory_region", dataRelease);
+        dataReleaseManager.update(dataRelease,"regulatory_region", "regulatory_region", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/protein.test.json.gz").toURI());
+        loadRunner.load(path, "protein", dataRelease);
+        dataReleaseManager.update(dataRelease,"protein", "protein", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction", dataRelease);
+        dataReleaseManager.update(dataRelease,"protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation", dataRelease);
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
+        loadRunner.load(path, "variation", dataRelease);
+        dataReleaseManager.update(dataRelease,"variation", "variation", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/genome/genome_info.json").toURI());
+        loadRunner.load(path, "genome_info", dataRelease);
+        dataReleaseManager.update(dataRelease,"genome_info", "genome_info", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/repeats.json.gz").toURI());
+        loadRunner.load(path, "repeats", dataRelease);
+        dataReleaseManager.update(dataRelease,"repeats", "repeats", Collections.emptyList());
+
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/clinical_variants.cosmic.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        dataReleaseManager.update(dataRelease,"clinical_variants", "clinical_variants", Collections.emptyList());
+
     }
 
     protected void createDataRelease() throws CellBaseException, JsonProcessingException {

@@ -41,9 +41,7 @@ import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -59,6 +57,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
+
+    private Set<String> allowedDataSources = new HashSet<>();
 
     public VariantManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, configuration);
@@ -303,4 +303,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return cellBaseDataResults;
     }
 
+    public VariantManager setAllowedDataSources(Set<String> allowedDataSources) {
+        this.allowedDataSources = allowedDataSources;
+        return this;
+    }
 }

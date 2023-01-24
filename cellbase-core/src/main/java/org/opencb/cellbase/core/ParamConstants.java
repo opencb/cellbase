@@ -293,6 +293,8 @@ public class ParamConstants {
             + " Exact text matches will be returned";
 
     // ---------------------------------------------
+    public static final String DATA_TOKEN_DESCRIPTION = "Token to allow access to licensed/restricted data sources";
+    public static final String DATA_TOKEN_PARAM = "dataToken";
 
     public static final String SOURCE_DESCRIPTION = "Comma separated list of database sources of the documents to be returned."
             + " Possible values are clinvar or cosmic";

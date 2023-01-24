@@ -222,6 +222,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "dataToken":
                     case "dataRelease":
                         // Do nothing
                         break;

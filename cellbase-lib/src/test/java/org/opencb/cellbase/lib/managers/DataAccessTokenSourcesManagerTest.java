@@ -1,14 +1,11 @@
 package org.opencb.cellbase.lib.managers;
 
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.cellbase.core.models.DataAccessTokenSources;
+import org.opencb.cellbase.core.token.DataAccessTokenSources;
+import org.opencb.cellbase.lib.token.DataAccessTokenManager;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,7 +17,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.opencb.cellbase.lib.managers.DataAccessTokenManager.SECRET_KEY_MIN_LENGTH;
+import static org.opencb.cellbase.lib.token.DataAccessTokenManager.SECRET_KEY_MIN_LENGTH;
 
 public class DataAccessTokenSourcesManagerTest {
 
@@ -30,8 +27,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void before() {
         String randomStr = RandomStringUtils.randomAlphanumeric(SECRET_KEY_MIN_LENGTH);
         System.out.println("Secret key = " + randomStr);
-        Key key = new SecretKeySpec(TextCodec.BASE64.decode(randomStr), SignatureAlgorithm.HS256.getJcaName());
-        datManager = new DataAccessTokenManager(SignatureAlgorithm.HS256.getValue(), key);
+        datManager = new DataAccessTokenManager(randomStr);
     }
 
     @Test

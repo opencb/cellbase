@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.models;
+package org.opencb.cellbase.core.token;
 
 import org.apache.commons.collections4.MapUtils;
 
