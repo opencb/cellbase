@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.core.api.query.CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME;
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
 
 /**
@@ -81,6 +82,7 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
+    private String dataToken = null;
 
     private HgvsCalculator hgvsCalculator;
 
@@ -501,6 +503,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            queryOptions.add(DATA_TOKEN_OPTION_NAME, dataToken);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
@@ -765,6 +768,10 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
+
+        if (queryOptions.containsKey(DATA_TOKEN_OPTION_NAME)) {
+            dataToken = queryOptions.getString(DATA_TOKEN_OPTION_NAME);
+        }
     }
 
 //    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {

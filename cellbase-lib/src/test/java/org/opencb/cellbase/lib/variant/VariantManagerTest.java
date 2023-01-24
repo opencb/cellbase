@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -54,8 +55,8 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
         clearDB(CELLBASE_DBNAME);
         initDB();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease, cellBaseManagerFactory);
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37");
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, cellBaseManagerFactory);
+        variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
     @Test

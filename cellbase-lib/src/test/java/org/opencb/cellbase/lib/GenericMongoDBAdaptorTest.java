@@ -59,6 +59,9 @@ public class GenericMongoDBAdaptorTest {
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
 
+    protected String HGMD_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6LTU1Njk4MDIyODAwMDAwLCJoZ21kIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlVDQU0iLCJpYXQiOjE2NzQxNTQ0Nzh9.SursjDxHyjxroH9xllPJCOAnGEGLvTLG5pi1mUhIiUQ";
+
+
     protected final LoadRunner loadRunner;
 //    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
@@ -173,6 +176,26 @@ public class GenericMongoDBAdaptorTest {
         loadRunner.load(path, "clinical_variants", dataRelease);
         dataReleaseManager.update(dataRelease,"clinical_variants", "clinical_variants", Collections.emptyList());
 
+        path = Paths.get(getClass()
+                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
+        loadRunner.load(path, "missense_variation_functional_score", dataRelease);
+        dataReleaseManager.update(dataRelease, "missense_variation_functional_score", "missense_variation_functional_score", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("refseq", dataRelease);
+        dataReleaseManager.update(dataRelease, "refseq", "refseq", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("conservation", dataRelease);
+        dataReleaseManager.update(dataRelease, "conservation", "conservation", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("variation_functional_score", dataRelease);
+        dataReleaseManager.update(dataRelease, "variation_functional_score", "variation_functional_score", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("splice_score", dataRelease);
+        dataReleaseManager.update(dataRelease, "splice_score", "splice_score", Collections.emptyList());
     }
 
     protected void createDataRelease() throws CellBaseException, JsonProcessingException {

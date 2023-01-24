@@ -21,6 +21,8 @@ import java.util.List;
 public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     public static final String DATA_TOKEN_OPTION_NAME = "dataToken";
+    public static final String DATA_TOKEN_OPTION_DESCRIPTION = "Data token to get access to licensed/restricted data sources such"
+            + " as COSMIC or HGMD";
 
     @QueryParameter(id = "limit", min = "0")
     protected Integer limit;

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.SpliceScore;
@@ -27,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -41,7 +43,9 @@ import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -57,8 +61,6 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
-
-    private Set<String> allowedDataSources = new HashSet<>();
 
     public VariantManager(String species, CellBaseConfiguration configuration) throws CellBaseException {
         this(species, null, configuration);
@@ -130,7 +132,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
-                                                                              String enable,
+                                                                              String dataToken,
                                                                               int dataRelease)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
@@ -169,8 +171,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (consequenceTypeSource != null) {
             queryOptions.put("consequenceTypeSource", consequenceTypeSource);
         }
-        if (enable != null) {
-            queryOptions.put("enable", enable);
+        if (StringUtils.isNotEmpty(dataToken)) {
+            queryOptions.put(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME, dataToken);
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
@@ -301,10 +303,5 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             cellBaseDataResults.add(getSpliceScoreVariant(variant, dataRelease));
         }
         return cellBaseDataResults;
-    }
-
-    public VariantManager setAllowedDataSources(Set<String> allowedDataSources) {
-        this.allowedDataSources = allowedDataSources;
-        return this;
     }
 }

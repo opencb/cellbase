@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
+import static org.opencb.cellbase.core.api.query.CellBaseQueryOptions.DATA_TOKEN_OPTION_DESCRIPTION;
 
 @Path("/{apiVersion}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
@@ -126,10 +128,10 @@ public class VariantWSServer extends GenericRestWSServer {
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse", hidden = true)
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
-                                                        + "annotate, e.g. "
-                                                        + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                        + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
-                                                        required = true) String variants,
+            + "annotate, e.g. "
+            + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+            + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+            required = true) String variants,
                                                 @QueryParam("normalize")
                                                 @ApiParam(name = "normalize",
                                                         value = "Boolean to indicate whether input variants shall be "
@@ -176,18 +178,18 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         defaultValue = "0", required = false) Integer cnvExtraPadding,
                                                 @QueryParam("checkAminoAcidChange")
                                                 @ApiParam(name = "checkAminoAcidChange",
-                                                value = "true/false to specify whether variant match in the clinical variant collection "
-                                                        + "should also be performed at the aminoacid change level",
-                                                allowableValues = "false,true",
-                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange,
+                                                        value = "true/false to specify whether variant match in the clinical variant"
+                                                        + " collection should also be performed at the aminoacid change level",
+                                                        allowableValues = "false,true",
+                                                        defaultValue = "false", required = false) Boolean checkAminoAcidChange,
                                                 @QueryParam("consequenceTypeSource")
                                                 @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                         + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
                                                         required = false) String consequenceTypeSource,
-                                                @QueryParam("enable")
-                                                @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
-                                                        + " e.g.: hgdm", hidden = true) String enable
-) {
+                                                @QueryParam(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME)
+                                                @ApiParam(name = CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME,
+                                                        value = DATA_TOKEN_OPTION_DESCRIPTION) String dataToken
+    ) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -199,7 +201,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 cnvExtraPadding,
                 checkAminoAcidChange,
                 consequenceTypeSource,
-                enable);
+                dataToken);
     }
 
     @GET
@@ -265,11 +267,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        Boolean checkAminoAcidChange,
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
-                                                            + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
+                                                       + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
                                                        defaultValue = "ensembl", required = false) String consequenceTypeSource,
-                                               @QueryParam("enable")
-                                               @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
-                                                           + " e.g.: hgdm", hidden = true) String enable
+                                               @QueryParam(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME)
+                                               @ApiParam(name = CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME,
+                                                       value = DATA_TOKEN_OPTION_DESCRIPTION) String dataToken
     ) {
         return getAnnotationByVariant(variants,
                 normalize,
@@ -281,7 +283,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 cnvExtraPadding,
                 checkAminoAcidChange,
                 consequenceTypeSource,
-                enable);
+                dataToken);
     }
 
     private Response getAnnotationByVariant(String variants,
@@ -294,7 +296,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Integer cnvExtraPadding,
                                             Boolean checkAminoAcidChange,
                                             String consequenceTypeSource,
-                                            String enable) {
+                                            String dataToken) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
@@ -302,7 +304,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources, enable, getDataRelease());
+                    checkAminoAcidChange, consequenceTypeSources, dataToken, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

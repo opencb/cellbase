@@ -44,8 +44,6 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
     private ObjectMapper jsonObjectMapper;
     private ClinicalManager clinicalManager;
 
-    private String hgmdToken = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6LTU1Njk4MDIyODAwMDAwLCJoZ21kIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlVDQU0iLCJpYXQiOjE2NzQxNTQ0Nzh9.SursjDxHyjxroH9xllPJCOAnGEGLvTLG5pi1mUhIiUQ";
-
     public ClinicalManagerTest() throws IOException {
         super();
     }
@@ -76,7 +74,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setDataToken(hgmdToken);
+        query.setDataToken(HGMD_ACCESS_TOKEN);
 
         CellBaseDataResult<Variant> results = clinicalManager.search(query);
         Assert.assertEquals(1, results.getResults().size());
@@ -129,7 +127,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setDataToken(hgmdToken);
+        query.setDataToken(HGMD_ACCESS_TOKEN);
 
         CellBaseIterator<Variant> iterator = clinicalManager.iterator(query);
         while (iterator.hasNext()) {
