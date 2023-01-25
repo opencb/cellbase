@@ -463,10 +463,15 @@ public class VariantAnnotationUtils {
         }
 
         COMPLEMENTARY_NT.put('A', 'T');
+        COMPLEMENTARY_NT.put('a', 't');
         COMPLEMENTARY_NT.put('C', 'G');
+        COMPLEMENTARY_NT.put('c', 'g');
         COMPLEMENTARY_NT.put('G', 'C');
+        COMPLEMENTARY_NT.put('g', 'c');
         COMPLEMENTARY_NT.put('T', 'A');
+        COMPLEMENTARY_NT.put('t', 'a');
         COMPLEMENTARY_NT.put('N', 'N');
+        COMPLEMENTARY_NT.put('n', 'n');
 
         POLYPHEN_DESCRIPTIONS.put(0, "probably damaging");
         POLYPHEN_DESCRIPTIONS.put(1, "possibly damaging");
