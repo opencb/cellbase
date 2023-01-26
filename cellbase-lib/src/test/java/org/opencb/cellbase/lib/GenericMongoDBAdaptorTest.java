@@ -49,6 +49,7 @@ public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
     protected int dataRelease;
+    protected String token;
 
     private static final String LOCALHOST = "localhost:27017";
     protected static final String SPECIES = "hsapiens";

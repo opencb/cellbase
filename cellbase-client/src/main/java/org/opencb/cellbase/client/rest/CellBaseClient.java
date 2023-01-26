@@ -31,6 +31,7 @@ public class CellBaseClient {
     private final String species;
     private final String assembly;
     private final String dataRelease;
+    private final String token;
     private ClientConfiguration clientConfiguration;
 
     private final Map<String, ParentRestClient> clients;
@@ -45,16 +46,17 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(String species, String assembly, ClientConfiguration clientConfiguration) {
-        this(species, assembly, null, clientConfiguration);
+        this(species, assembly, null, null, clientConfiguration);
     }
 
-    public CellBaseClient(String species, String assembly, String dataRelease, ClientConfiguration clientConfiguration) {
+    public CellBaseClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
         if (StringUtils.isBlank(species)) {
             throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
         }
         this.species = species;
         this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
         this.dataRelease = StringUtils.isEmpty(dataRelease) ? null : dataRelease;
+        this.token = token;
         if (clientConfiguration != null && clientConfiguration.getRest() != null
                 && clientConfiguration.getRest().getHosts() != null
                 && !clientConfiguration.getRest().getHosts().isEmpty()
@@ -69,11 +71,11 @@ public class CellBaseClient {
     }
 
     public GeneClient getGeneClient() {
-        return getClient("GENE", () -> new GeneClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("GENE", () -> new GeneClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
 //    public VariationClient getVariationClient() {
@@ -81,27 +83,27 @@ public class CellBaseClient {
 //    }
 
     public VariantClient getVariantClient() {
-        return getClient("VARIANT", () -> new VariantClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("VARIANT", () -> new VariantClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public MetaClient getMetaClient() {
-        return getClient("META", () -> new MetaClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("META", () -> new MetaClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public ClinicalVariantClient getClinicalClient() {
-        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     public GenericClient getGenericClient() {
-        return getClient("GENERIC", () -> new GenericClient(species, assembly, dataRelease, clientConfiguration));
+        return getClient("GENERIC", () -> new GenericClient(species, assembly, dataRelease, token, clientConfiguration));
     }
 
     @SuppressWarnings("unchecked")
@@ -136,6 +138,10 @@ public class CellBaseClient {
 
     public String getDataRelease() {
         return dataRelease;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public ClientConfiguration getClientConfiguration() {

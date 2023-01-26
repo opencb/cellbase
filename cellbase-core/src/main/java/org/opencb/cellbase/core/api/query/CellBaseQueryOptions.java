@@ -18,11 +18,9 @@ package org.opencb.cellbase.core.api.query;
 
 import java.util.List;
 
-public class CellBaseQueryOptions extends ProjectionQueryOptions {
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
 
-    public static final String DATA_TOKEN_OPTION_NAME = "dataToken";
-    public static final String DATA_TOKEN_OPTION_DESCRIPTION = "Data token to get access to licensed/restricted data sources such"
-            + " as COSMIC or HGMD";
+public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     @QueryParameter(id = "limit", min = "0")
     protected Integer limit;
@@ -42,8 +40,8 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     @QueryParameter(id = "facet")
     protected String facet;
 
-    @QueryParameter(id = "dataToken")
-    protected String dataToken;
+    @QueryParameter(id = DATA_ACCESS_TOKEN)
+    protected String token;
 
     public enum Order {
         ASCENDING,
@@ -53,17 +51,17 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     public CellBaseQueryOptions() {
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String dataToken) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String token) {
         this.limit = limit;
         this.skip = skip;
         this.count = count;
         this.sort = sort;
         this.order = order;
         this.facet = facet;
-        this.dataToken = dataToken;
+        this.token = token;
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String dataToken,
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String token,
                                 List<String> includes, List<String> excludes) {
         super(includes, excludes);
 
@@ -73,7 +71,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.sort = sort;
         this.order = order;
         this.facet = facet;
-        this.dataToken = dataToken;
+        this.token = token;
     }
 
     @Override
@@ -85,7 +83,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         sb.append(", sort=").append(sort);
         sb.append(", order=").append(order);
         sb.append(", facet=").append(facet);
-        sb.append(", dataToken=").append(dataToken);
+        sb.append(", token=").append(token);
         sb.append(", includes=").append(includes);
         sb.append(", excludes=").append(excludes);
         sb.append('}');
@@ -146,12 +144,12 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         return this;
     }
 
-    public String getDataToken() {
-        return dataToken;
+    public String getToken() {
+        return token;
     }
 
-    public CellBaseQueryOptions setDataToken(String dataToken) {
-        this.dataToken = dataToken;
+    public CellBaseQueryOptions setToken(String token) {
+        this.token = token;
         return this;
     }
 }

@@ -47,7 +47,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.core.api.query.CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME;
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
 
 /**
@@ -70,6 +69,7 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private int dataRelease;
+    private String token;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
 
@@ -82,7 +82,6 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
-    private String dataToken = null;
 
     private HgvsCalculator hgvsCalculator;
 
@@ -92,7 +91,7 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease,
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String token,
                                        CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
@@ -103,6 +102,7 @@ public class VariantAnnotationCalculator {
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
         this.dataRelease = dataRelease;
+        this.token = token;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
@@ -503,7 +503,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
-            queryOptions.add(DATA_TOKEN_OPTION_NAME, dataToken);
+            queryOptions.add("token", token);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
@@ -768,10 +768,6 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
-
-        if (queryOptions.containsKey(DATA_TOKEN_OPTION_NAME)) {
-            dataToken = queryOptions.getString(DATA_TOKEN_OPTION_NAME);
-        }
     }
 
 //    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {

@@ -55,19 +55,19 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
         clearDB(CELLBASE_DBNAME);
         initDB();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
         variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
     @Test
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease, token);
         assertEquals(1, results.getResults().size());
     }
 
     @Test
     public void testHgvs() throws Exception {
-        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease);
+        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease, token);
         assertEquals(5, results.get(0).getResults().size());
     }
 }

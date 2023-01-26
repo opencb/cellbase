@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.VariantQuery;
-import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
-import static org.opencb.cellbase.core.api.query.CellBaseQueryOptions.DATA_TOKEN_OPTION_DESCRIPTION;
 
 @Path("/{apiVersion}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
@@ -82,7 +80,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
         try {
-            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, getDataRelease());
+            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, getDataRelease(), getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -97,7 +95,7 @@ public class VariantWSServer extends GenericRestWSServer {
             required = true) String id) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease());
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease(), getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -185,10 +183,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 @QueryParam("consequenceTypeSource")
                                                 @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                         + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
-                                                        required = false) String consequenceTypeSource,
-                                                @QueryParam(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME)
-                                                @ApiParam(name = CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME,
-                                                        value = DATA_TOKEN_OPTION_DESCRIPTION) String dataToken
+                                                        required = false) String consequenceTypeSource
     ) {
 
         return getAnnotationByVariant(variants,
@@ -200,8 +195,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 svExtraPadding,
                 cnvExtraPadding,
                 checkAminoAcidChange,
-                consequenceTypeSource,
-                dataToken);
+                consequenceTypeSource);
     }
 
     @GET
@@ -268,10 +262,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                        + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
-                                                       defaultValue = "ensembl", required = false) String consequenceTypeSource,
-                                               @QueryParam(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME)
-                                               @ApiParam(name = CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME,
-                                                       value = DATA_TOKEN_OPTION_DESCRIPTION) String dataToken
+                                                       defaultValue = "ensembl", required = false) String consequenceTypeSource
     ) {
         return getAnnotationByVariant(variants,
                 normalize,
@@ -282,8 +273,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 svExtraPadding,
                 cnvExtraPadding,
                 checkAminoAcidChange,
-                consequenceTypeSource,
-                dataToken);
+                consequenceTypeSource);
     }
 
     private Response getAnnotationByVariant(String variants,
@@ -295,8 +285,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Integer svExtraPadding,
                                             Integer cnvExtraPadding,
                                             Boolean checkAminoAcidChange,
-                                            String consequenceTypeSource,
-                                            String dataToken) {
+                                            String consequenceTypeSource) {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
@@ -304,7 +293,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources, dataToken, getDataRelease());
+                    checkAminoAcidChange, consequenceTypeSources, getDataRelease(), getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

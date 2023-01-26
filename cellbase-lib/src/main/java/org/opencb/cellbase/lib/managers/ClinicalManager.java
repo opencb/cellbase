@@ -37,6 +37,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
 import static org.opencb.commons.datastore.core.QueryOptions.EXCLUDE;
 import static org.opencb.commons.datastore.core.QueryOptions.INCLUDE;
 
@@ -71,7 +72,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         query.validate();
         CellBaseDataResult<Variant> results = getDBAdaptor().query(query);
 
-        String token = query.getDataToken();
+        String token = query.getToken();
         Set<String> validTokenSources = tokenManager.getValidSources(token);
 
         // Check if is necessary to use the token licensed variant iterator
@@ -98,7 +99,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease);
 
-        String token = queryOptions.getDataToken();
+        String token = queryOptions.getToken();
         Set<String> validTokenSources = tokenManager.getValidSources(token);
 
         // Check if is necessary to use the token licensed variant iterator
@@ -112,7 +113,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     @Override
     public CellBaseIterator<Variant> iterator(ClinicalVariantQuery query) throws CellBaseException {
-        String token = query.getDataToken();
+        String token = query.getToken();
         Set<String> validTokenSources = tokenManager.getValidSources(token);
 
         // Check if is necessary to use the token licensed variant iterator
@@ -126,7 +127,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) throws CellBaseException {
         CellBaseDataResult<Variant> result = clinicalDBAdaptor.nativeGet(query, queryOptions);
 
-        String token = queryOptions.getString(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME);
+        String token = queryOptions.getString(DATA_ACCESS_TOKEN);
         Set<String> validTokenSources = tokenManager.getValidSources(token);
 
         List<String> includes = null;
@@ -186,7 +187,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
                                                           QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
 
-        String token = queryOptions.getString(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME);
+        String token = queryOptions.getString(DATA_ACCESS_TOKEN);
         Set<String> validTokenSources = tokenManager.getValidSources(token);
 
         List<String> includes = null;

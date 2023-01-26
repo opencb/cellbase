@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.SpliceScore;
@@ -28,7 +27,6 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
-import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -89,13 +87,13 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.nativeGet(query, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, int dataRelease)
+    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, int dataRelease, String token)
             throws CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease);
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
+                dataRelease, token, cellbaseManagerFactory);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
@@ -110,13 +108,14 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      *
      * @param variants list of variant strings
      * @param dataRelease data release
+     * @param token data access token
      * @return list of normalised variants
      * @throws CellBaseException if the species is incorrect
      */
-    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, int dataRelease) throws CellBaseException {
+    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, int dataRelease, String token) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
+                dataRelease, token, cellbaseManagerFactory);
         List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
         return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
     }
@@ -132,8 +131,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
-                                                                              String dataToken,
-                                                                              int dataRelease)
+                                                                              int dataRelease,
+                                                                              String token)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
@@ -171,12 +170,9 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (consequenceTypeSource != null) {
             queryOptions.put("consequenceTypeSource", consequenceTypeSource);
         }
-        if (StringUtils.isNotEmpty(dataToken)) {
-            queryOptions.put(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME, dataToken);
-        }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
+                dataRelease, token, cellbaseManagerFactory);
         List<CellBaseDataResult<VariantAnnotation>> queryResults =
                 variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
         return queryResults;

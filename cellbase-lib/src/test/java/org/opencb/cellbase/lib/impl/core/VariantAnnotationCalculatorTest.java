@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -36,15 +35,12 @@ import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
-
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -66,7 +62,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         clearDB(CELLBASE_DBNAME);
         initDB();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
     }
 
     @Test
@@ -653,7 +649,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
         VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
-                cellBaseManagerFactory);
+                token, cellBaseManagerFactory);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
@@ -1051,7 +1047,6 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
         queryOptions.put("normalize", true);
-        queryOptions.put(CellBaseQueryOptions.DATA_TOKEN_OPTION_NAME, HGMD_ACCESS_TOKEN);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator

@@ -58,6 +58,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
+
 @Path("/{version}/{species}")
 @Produces("text/plain")
 public class GenericRestWSServer implements IWSServer {
@@ -200,12 +202,17 @@ public class GenericRestWSServer implements IWSServer {
         // It means to use the default data release
         return defaultDataRelease;
     }
+
     protected int getDataReleaseUsed() throws CellBaseException {
         int dataRelease = getDataRelease();
         if (dataRelease == 0) {
             return defaultDataRelease;
         }
         return dataRelease;
+    }
+
+    protected String getToken() throws CellBaseException {
+        return uriParams.get(DATA_ACCESS_TOKEN);
     }
 
     /**

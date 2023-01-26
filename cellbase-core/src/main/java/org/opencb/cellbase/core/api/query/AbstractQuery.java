@@ -46,6 +46,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     public static final int DEFAULT_SKIP = 0;
 
     public static final String DATA_RELEASE = "dataRelease";
+    public static final String DATA_ACCESS_TOKEN = "token";
 
     // list of fields in this class
     private Map<String, Field> classFields;
@@ -56,8 +57,11 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
 
-    @QueryParameter(id = "dataRelease")
+    @QueryParameter(id = DATA_RELEASE)
     private Integer dataRelease = null;
+
+    @QueryParameter(id = DATA_ACCESS_TOKEN)
+    private String token = null;
 
     public AbstractQuery() {
         init();
@@ -417,6 +421,15 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     public AbstractQuery setDataRelease(Integer dataRelease) {
         this.dataRelease = dataRelease;
+        return this;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public AbstractQuery setToken(String token) {
+        this.token = token;
         return this;
     }
 }

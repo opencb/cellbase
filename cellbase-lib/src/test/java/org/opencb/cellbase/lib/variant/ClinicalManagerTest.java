@@ -74,7 +74,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setDataToken(HGMD_ACCESS_TOKEN);
+        query.setToken(HGMD_ACCESS_TOKEN);
 
         CellBaseDataResult<Variant> results = clinicalManager.search(query);
         Assert.assertEquals(1, results.getResults().size());
@@ -127,7 +127,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setDataToken(HGMD_ACCESS_TOKEN);
+        query.setToken(HGMD_ACCESS_TOKEN);
 
         CellBaseIterator<Variant> iterator = clinicalManager.iterator(query);
         while (iterator.hasNext()) {

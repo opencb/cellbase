@@ -69,8 +69,6 @@ public class ClinicalWSServer extends GenericRestWSServer {
             + DOT_NOTATION_NOTE,
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = DATA_TOKEN_PARAM, value = DATA_TOKEN_DESCRIPTION,
-                    required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
