@@ -22,19 +22,19 @@ import org.opencb.biodata.models.variant.avro.EvidenceEntry;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class DataAccessTokenUtils {
 
     public static boolean checkAllowedDataSources(List<String> includes, List<String> excludes, Set<String> tokenSources) {
-        if (CollectionUtils.isEmpty(tokenSources)) {
-            // cosmic and hgmd must be filtered
-            return true;
-        }
-
         // TODO: check includes/excludes to decide if data sources must be checked/filtered
+
+//        if (CollectionUtils.isEmpty(tokenSources)) {
+//            // cosmic and hgmd must be filtered
+//            return true;
+//        }
+
 //        if (CollectionUtils.isNotEmpty(includes)) {
 //            // Take into account includes
 //            if (includes.contains("annotation"))
@@ -44,29 +44,18 @@ public class DataAccessTokenUtils {
         return true;
     }
 
-    public static Set<String> getValidSources(Set<String> validTokenSources) {
-        Set<String> validSources = new HashSet<>();
-
-        // Licensed data sources
-        //   - clinical: cosmic and hgmd
-        validSources.add("clinvar");
-
-        // Add valid data sources from token
-        if (CollectionUtils.isNotEmpty(validTokenSources)) {
-            validSources.addAll(validTokenSources);
-        }
-        return validSources;
-    }
-
     public static Variant filterDataSources(Variant variant, Set<String> validSources) {
-        if (variant.getAnnotation() != null && CollectionUtils.isNotEmpty(variant.getAnnotation().getTraitAssociation())) {
-            List<EvidenceEntry> filteredTraits = new ArrayList<>();
-            for (EvidenceEntry trait : variant.getAnnotation().getTraitAssociation()) {
-                if (validSources.contains(trait.getSource().getName())) {
-                    filteredTraits.add(trait);
+        if (variant.getAnnotation() != null) {
+            // Filtering clinical data sources
+            if (CollectionUtils.isNotEmpty(variant.getAnnotation().getTraitAssociation())) {
+                List<EvidenceEntry> filteredTraits = new ArrayList<>();
+                for (EvidenceEntry trait : variant.getAnnotation().getTraitAssociation()) {
+                    if (validSources.contains(trait.getSource().getName())) {
+                        filteredTraits.add(trait);
+                    }
                 }
+                variant.getAnnotation().setTraitAssociation(filteredTraits);
             }
-            variant.getAnnotation().setTraitAssociation(filteredTraits);
         }
         return variant;
     }

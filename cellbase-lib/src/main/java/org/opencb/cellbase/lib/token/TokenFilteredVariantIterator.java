@@ -25,9 +25,9 @@ public class TokenFilteredVariantIterator extends CellBaseIterator<Variant> {
 
     private Set<String> validSources;
 
-    public TokenFilteredVariantIterator(CellBaseIterator iterator, Set<String> validTokenSources) {
+    public TokenFilteredVariantIterator(CellBaseIterator iterator, Set<String> validSources) {
         super(iterator);
-        this.validSources = DataAccessTokenUtils.getValidSources(validTokenSources);
+        this.validSources = validSources;
     }
 
     @Override

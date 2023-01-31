@@ -211,7 +211,7 @@ public class GenericRestWSServer implements IWSServer {
         return dataRelease;
     }
 
-    protected String getToken() throws CellBaseException {
+    protected String getToken() {
         return uriParams.get(DATA_ACCESS_TOKEN);
     }
 
@@ -317,6 +317,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException ex) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
+        queryResponse.setToken(getToken());
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -347,6 +348,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException e) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
+        queryResponse.setToken(getToken());
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);

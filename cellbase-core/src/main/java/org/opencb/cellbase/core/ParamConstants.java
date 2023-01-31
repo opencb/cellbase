@@ -115,6 +115,8 @@ public class ParamConstants {
             + " check the web service /metadata/dataReleases in order to know the different data releases and sources, and the default"
             + " data release";
     public static final String DEFAULT_DATA_RELEASE = "0";
+    public static final String DATA_ACCESS_TOKEN_DESCRIPTION = "Data token to allow access to licensed/restricted data sources such as"
+            + " Cosmic or HGMD";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
             + "potentially available assemblies, please refer to: "
             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";

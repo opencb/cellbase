@@ -1044,6 +1044,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedClinicalHGMDAnnotation() throws Exception {
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_ACCESS_TOKEN, cellBaseManagerFactory);
+
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
         queryOptions.put("normalize", true);

@@ -408,11 +408,11 @@ public class ParentRestClient<T> {
                 logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
                 Event event = new Event(Event.Type.ERROR, "CellBase REST error. Skipping id " + idList.get(0));
                 CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), 0, Collections.emptyList(), 0, null, 0);
-                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, 0, Collections.singletonList(event),
+                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), 0, Collections.singletonList(event),
                         new ObjectMap(queryOptions), Collections.singletonList(result));
             }
             List<CellBaseDataResult<U>> cellBaseDataResultList = new LinkedList<>();
-            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, -1, null, queryOptions,
+            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), -1, null, queryOptions,
                     cellBaseDataResultList);
             logger.info("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
