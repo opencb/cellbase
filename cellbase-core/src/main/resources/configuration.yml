@@ -10,8 +10,7 @@ logDir: "./logs"
 # can be "console" or "file", defaults to console
 logOutput: "file"
 # For testing
-#tokenKey: "kK1McXsyceO67cK5eEaXfRGOJycYxS7FG3YWJlAk9GJbrhgMKJ"
-tokenKey: "xPacig89igHSieEnveJEi4KCfdEslhmssC3vui1JJQGgDQ0y8v"
+secretKey: "xPacig89igHSieEnveJEi4KCfdEslhmssC3vui1JJQGgDQ0y8v"
 databases:
   mongodb:
     host: "${CELLBASE.DB.MONGODB.HOST}"

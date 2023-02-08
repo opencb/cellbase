@@ -152,23 +152,14 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--create"}, description = "Create a data access token (indicate the 'organization' and the 'data sources')", arity = 0)
-        public boolean create;
+        @Parameter(names = {"--create-token"}, description = "Create a data access token with the data sources indicated separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd. In addition the 'organization' has to be specified", arity = 1)
+        public String createWithDataSources;
 
-        @Parameter(names = {"--organization"}, description = "Organization", arity = 1)
+        @Parameter(names = {"--organization"}, description = "Organization (to be used with the --create-token parameter)", arity = 1)
         public String organization;
 
-        @Parameter(names = {"--data-sources"}, description = "Data sources separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd", arity = 1)
-        public String dataSources;
-
-        @Parameter(names = {"--display"}, description = "Display the token", arity = 0)
-        public boolean display;
-
-        @Parameter(names = {"--token"}, description = "Token to view (use only with --view)", arity = 1)
-        public String token;
-
-        @Parameter(names = {"--secret-key"}, description = "Secret key", arity = 1, required = true, password = true)
-        public String secretKey;
+        @Parameter(names = {"--view-token"}, description = "Token to view", arity = 1)
+        public String tokenToView;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")

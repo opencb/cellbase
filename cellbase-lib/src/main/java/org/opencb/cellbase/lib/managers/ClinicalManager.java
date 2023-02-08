@@ -58,7 +58,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     private void init() throws CellBaseException {
         clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(new GenomeManager(species, assembly, configuration));
-        tokenManager = new DataAccessTokenManager(configuration.getTokenKey());
+        tokenManager = new DataAccessTokenManager(configuration.getSecretKey());
     }
 
     @Override

@@ -45,54 +45,45 @@ public class DataTokenCommandExecutor extends CommandExecutor {
     public void execute() {
         checkParameters();
 
-        Key key = new SecretKeySpec(TextCodec.BASE64.decode(dataTokenCommandOptions.secretKey), SignatureAlgorithm.HS256.getJcaName());
+        Key key = new SecretKeySpec(TextCodec.BASE64.decode(configuration.getSecretKey()), SignatureAlgorithm.HS256.getJcaName());
         DataAccessTokenManager datManager = new DataAccessTokenManager(SignatureAlgorithm.HS256.getValue(), key);
 
         try {
-            if (dataTokenCommandOptions.create) {
+            if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
                 // Create data token
                 DataAccessTokenSources dataSources = null;
-                dataSources = DataAccessTokenSources.parse(dataTokenCommandOptions.dataSources);
+                dataSources = DataAccessTokenSources.parse(dataTokenCommandOptions.createWithDataSources);
                 String token = datManager.encode(dataTokenCommandOptions.organization, dataSources);
                 System.out.println("Data access token generated:\n" + token);
+            } else if (StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {
+                // View data token
+                datManager.display(dataTokenCommandOptions.tokenToView);
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
 
-        if (dataTokenCommandOptions.display) {
-            // Display token
-            datManager.display(dataTokenCommandOptions.token);
-        }
     }
 
     private void checkParameters() {
-        if (dataTokenCommandOptions.create && dataTokenCommandOptions.display) {
+        if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)
+                && StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {
             throw new IllegalArgumentException("Please, select only one of these input parameters: create or view");
         }
-        if (!dataTokenCommandOptions.create && !dataTokenCommandOptions.display) {
+        if (StringUtils.isEmpty(dataTokenCommandOptions.createWithDataSources)
+                && StringUtils.isEmpty(dataTokenCommandOptions.tokenToView)) {
             throw new IllegalArgumentException("Please, it is mandatory to select one of these input parameters: create or view");
         }
 
         // Check create parameters
-        if (dataTokenCommandOptions.create) {
+        if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
             if (StringUtils.isEmpty(dataTokenCommandOptions.organization)) {
                 throw new IllegalArgumentException("Missing organization");
             }
-            if (StringUtils.isEmpty(dataTokenCommandOptions.dataSources)) {
-                throw new IllegalArgumentException("Missing data sources");
-            }
         }
 
-        // Check view parameters
-        if (dataTokenCommandOptions.display) {
-            if (StringUtils.isEmpty(dataTokenCommandOptions.token)) {
-                throw new IllegalArgumentException("Missing token");
-            }
-        }
-
-        if (StringUtils.isEmpty(dataTokenCommandOptions.secretKey)) {
-            throw new IllegalArgumentException("Missing secret key");
+        if (StringUtils.isEmpty(configuration.getSecretKey())) {
+            throw new IllegalArgumentException("Missing secret key in the CellBase configuration file.");
         }
     }
 }
