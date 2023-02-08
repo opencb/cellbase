@@ -15,11 +15,8 @@ jobs:
 
   test:
     name: CellBase Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
-    strategy:
-      matrix:
-        mongodb: ["4.2"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -30,21 +27,14 @@ jobs:
           distribution: 'temurin'
           java-version: '8'
           cache: 'maven'
-      - name: Start MongoDB v${{ matrix.mongodb }}
+      - name: Start MongoDB v5.0
         uses: supercharge/mongodb-github-action@1.7.0
         with:
-          mongodb-version: ${{ matrix.mongodb }}
+          mongodb-version: 5.0
           mongodb-replica-set: rs-test
       - name: Build with Maven
         run: mvn -T 2 clean install -DskipTests -Dcheckstyle.skip
 
-  sonar:
-    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
-    needs: test
-    with:
-      sonarProjectKey: opencb_cellbase
-    secrets:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
