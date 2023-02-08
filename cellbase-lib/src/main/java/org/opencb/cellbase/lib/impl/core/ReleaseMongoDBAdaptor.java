@@ -96,7 +96,7 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease, String token) {
         return null;
     }
 

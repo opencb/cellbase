@@ -222,7 +222,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
-                    case "dataToken":
+                    case "token":
                     case "dataRelease":
                         // Do nothing
                         break;
@@ -470,7 +470,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public List<CellBaseDataResult<ClinicalVariant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<ClinicalVariant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
+                                                          String token) {
         return null;
     }
 

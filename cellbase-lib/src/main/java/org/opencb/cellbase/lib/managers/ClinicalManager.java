@@ -94,12 +94,12 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease)
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String token)
             throws CellBaseException {
-        List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease);
+        List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease, token);
 
         Set<String> validSources = new HashSet<>(Arrays.asList("clinvar"));
-        validSources.addAll(tokenManager.getValidSources(queryOptions.getToken()));
+        validSources.addAll(tokenManager.getValidSources(token));
 
         // Check if is necessary to use the token licensed variant iterator
         if (DataAccessTokenUtils.checkAllowedDataSources(queryOptions.getIncludes(), queryOptions.getExcludes(), validSources)) {

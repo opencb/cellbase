@@ -351,7 +351,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query,
-                    getDataRelease());
+                    getDataRelease(), getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

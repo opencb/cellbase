@@ -18,8 +18,6 @@ package org.opencb.cellbase.core.api.query;
 
 import java.util.List;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
-
 public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     @QueryParameter(id = "limit", min = "0")
@@ -40,9 +38,6 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     @QueryParameter(id = "facet")
     protected String facet;
 
-    @QueryParameter(id = DATA_ACCESS_TOKEN)
-    protected String token;
-
     public enum Order {
         ASCENDING,
         DESCENDING
@@ -58,7 +53,6 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.sort = sort;
         this.order = order;
         this.facet = facet;
-        this.token = token;
     }
 
     public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String token,
@@ -71,7 +65,6 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.sort = sort;
         this.order = order;
         this.facet = facet;
-        this.token = token;
     }
 
     @Override
@@ -83,7 +76,6 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         sb.append(", sort=").append(sort);
         sb.append(", order=").append(order);
         sb.append(", facet=").append(facet);
-        sb.append(", token=").append(token);
         sb.append(", includes=").append(includes);
         sb.append(", excludes=").append(excludes);
         sb.append('}');
@@ -141,15 +133,6 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     public CellBaseQueryOptions setFacet(String facet) {
         this.facet = facet;
-        return this;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public CellBaseQueryOptions setToken(String token) {
-        this.token = token;
         return this;
     }
 }
