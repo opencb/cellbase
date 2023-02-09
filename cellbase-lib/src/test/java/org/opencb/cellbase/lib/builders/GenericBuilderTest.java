@@ -65,7 +65,7 @@ public class GenericBuilderTest<T> {
         return objectList;
     }
 
-    protected T parseObject(String jsonString) throws JsonProcessingException {
+    protected T parseObject(String jsonString) throws IOException {
         return jsonObjectMapper.convertValue(jsonObjectMapper
                 .readerFor(VariantAvro.class).readValue(jsonString), clazz);
     }

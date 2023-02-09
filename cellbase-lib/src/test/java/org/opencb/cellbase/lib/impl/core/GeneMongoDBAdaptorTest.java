@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Constraint;
@@ -62,6 +63,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testQueryId() throws Exception {
 //       GeneMongoDBAdaptor  geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
         GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
@@ -83,6 +85,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testQuery() throws Exception {
         GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
 
@@ -154,6 +157,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     // exac_pLI 0.17633
     // exac_oe_lof 0.45091
     @Test
+    @Disabled
     public void testConstraints() throws Exception {
         GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
 

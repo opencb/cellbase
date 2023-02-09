@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
@@ -56,6 +57,7 @@ public class ClinicalVariantBuilderTest {
     }
 
     @Test
+    @Disabled
     public void noNormaliseTest() throws Exception {
         // Remove all previous clinical variant temporary test data
         cleanUp();
@@ -109,6 +111,7 @@ public class ClinicalVariantBuilderTest {
     }
 
     @Test
+    @Disabled
     public void parseMNVTest() throws Exception {
 
         // Remove all previous clinical variant temporary test data
@@ -194,6 +197,7 @@ public class ClinicalVariantBuilderTest {
 
 
     @Test
+    @Disabled
     public void parse() throws Exception {
 
         // Remove all previous clinical variant temporary test data

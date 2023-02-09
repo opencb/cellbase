@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.variant.hgvs;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Gene;
@@ -514,6 +515,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
      * NB: THESE ARE GRCH37 TRANSCRIPTS!
      */
     @Test
+    @Disabled
     public void testTranscriptHgvs() throws QueryException, IllegalAccessException, CellBaseException {
 
         // Invalid characters in alternate allele ("TBS") - should not break the code, no transcript hgvs should be

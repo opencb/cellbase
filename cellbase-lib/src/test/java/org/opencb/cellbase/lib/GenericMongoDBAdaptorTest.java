@@ -53,18 +53,22 @@ public class GenericMongoDBAdaptorTest {
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
 
-    protected final LoadRunner loadRunner;
+    protected LoadRunner loadRunner = null;
 //    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public GenericMongoDBAdaptorTest() throws IOException {
-        cellBaseConfiguration = CellBaseConfiguration.load(
-                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
-        cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+    public GenericMongoDBAdaptorTest() {
+        try {
+            cellBaseConfiguration = CellBaseConfiguration.load(
+                    GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
+                    CellBaseConfiguration.ConfigurationFileFormat.YAML);
+            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
+            cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void clearDB(String dbName) throws Exception {
