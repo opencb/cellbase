@@ -58,22 +58,13 @@ jobs:
     needs: test
     strategy:
       matrix:
-        module: [ "cellbase-core","cellbase-app","cellbase-client","cellbase-lib","cellbase-server","cellbase-test" ]
+        module: [ "cellbase-core","cellbase-app","cellbase-client","cellbase-lib","cellbase-server" ]
     steps:
       - name: Download result dir
         uses: actions/download-artifact@v3
         with:
           name: workdir
-      - name: Check for file
-        id: file_check
-        run: |
-          if git status -s | grep -x "** ${{ matrix.module }}"; then
-            echo "check_result=true" >> $GITHUB_OUTPUT
-          else
-            echo "check_result=false" >> $GITHUB_OUTPUT
-          fi
       - name: Deploy unit tests web recursively to remote
-        if: steps.file_check.outputs.check_result == 'true'
         uses: garygrossgarten/github-action-scp@release
         with:
           local: ${{ matrix.module }}/target/site
