@@ -11,7 +11,8 @@ on:
 jobs:
   delete-docker:
     uses: opencb/java-common-libs/.github/workflows/delete-docker-hub-workflow.yml@TASK-2270
+    with:
+      cli: python3 ./build/cloud/docker/docker-build.py delete --images base --tag ${{ github.head_ref }}
     secrets:
-      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD}}
-      DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER}}
-      DOCKER_HUB_ORGANISATION: ${{ secrets.DOCKER_HUB_ORGANISATION}}
+      DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
