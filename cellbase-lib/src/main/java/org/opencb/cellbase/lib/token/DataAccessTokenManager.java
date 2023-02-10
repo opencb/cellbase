@@ -38,6 +38,8 @@ public class DataAccessTokenManager {
     private final Logger logger;
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
+    public static final String VERSION_FIELD_NAME = "version";
+    public static final String SOURCES_FIELD_NAME = "sources";
 
     public DataAccessTokenManager(String key) {
         this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(TextCodec.BASE64.decode(key), SignatureAlgorithm.HS256.getJcaName()));
@@ -55,9 +57,9 @@ public class DataAccessTokenManager {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("version", dat.getVersion());
+        claims.put(VERSION_FIELD_NAME, dat.getVersion());
         if (MapUtils.isNotEmpty(dat.getSources())) {
-            claims.put("sources", dat.getSources());
+            claims.put(SOURCES_FIELD_NAME, dat.getSources());
         }
 
         jwtBuilder.setClaims(claims)
@@ -73,12 +75,13 @@ public class DataAccessTokenManager {
 
         Jws<Claims> claimsJws = parse(token);
         Claims body = claimsJws.getBody();
-        for (String key : body.keySet()) {
+        for (Map.Entry<String, Object> entry : body.entrySet()) {
+            String key = entry.getKey();
             switch (key) {
-                case "version":
+                case VERSION_FIELD_NAME:
                     dat.setVersion((String) body.get(key));
                     break;
-                case "sources":
+                case SOURCES_FIELD_NAME:
                     dat.setSources((Map<String, Long>) body.get(key));
                     break;
                 default:
@@ -96,10 +99,7 @@ public class DataAccessTokenManager {
     public boolean hasExpiredSource(String source, String token) throws IllegalArgumentException {
         DataAccessTokenSources dat = decode(token);
         if (MapUtils.isNotEmpty(dat.getSources()) && dat.getSources().containsKey(source)) {
-            if (new Date().getTime() > dat.getSources().get(source)) {
-                return true;
-            }
-            return false;
+            return (new Date().getTime() > dat.getSources().get(source));
         }
         throw new IllegalArgumentException("Data source '" + source + "' is not enabled for token '" + token + "'");
     }
@@ -112,6 +112,11 @@ public class DataAccessTokenManager {
                 for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
                     if (new Date().getTime() <= entry.getValue()) {
                         validSources.add(entry.getKey());
+                    } else {
+                        String msg = "CellBase token expired at " + dateFormatter().format(entry.getValue()) + " for data source '"
+                                + entry.getKey() + "'";
+                        logger.error(msg);
+                        throw new IllegalArgumentException(msg);
                     }
                 }
             }
@@ -136,9 +141,9 @@ public class DataAccessTokenManager {
         sb.append("Token: ").append(token).append("\n");
         sb.append("Organization: ").append(body.getSubject()).append("\n");
         sb.append("Issued at: ").append(dateFormatter().format(body.getIssuedAt())).append("\n");
-        sb.append("Version: ").append(body.get("version")).append("\n");
+        sb.append("Version: ").append(body.get(VERSION_FIELD_NAME)).append("\n");
         sb.append("Sources:\n");
-        Map<String, Long> sources = (Map<String, Long>) body.get("sources");
+        Map<String, Long> sources = (Map<String, Long>) body.get(SOURCES_FIELD_NAME);
         for (Map.Entry<String, Long> entry : sources.entrySet()) {
             sb.append("\t- '").append(entry.getKey()).append("' until ").append(dateFormatter().format(entry.getValue())).append("\n");
         }
