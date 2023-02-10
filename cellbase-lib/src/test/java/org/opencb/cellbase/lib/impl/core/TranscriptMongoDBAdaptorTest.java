@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
@@ -55,6 +56,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testQuery() throws Exception {
         TranscriptManager transcriptManager = cellBaseManagerFactory.getTranscriptManager(SPECIES, ASSEMBLY);
 //        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");

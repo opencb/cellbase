@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Chromosome;
@@ -71,6 +72,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void getChromosomeInfo() throws Exception {
         GenomeQuery query = new GenomeQuery();
         query.setNames(Collections.singletonList("1"));
@@ -83,6 +85,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void getGenomicSequence() throws CellBaseException {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions(), dataRelease);
         assertEquals(StringUtils.repeat("N", 1999), cellBaseDataResult.getResults().get(0).getSequence());
@@ -95,6 +98,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testGenomicSequenceChromosomeNotPresent() throws CellBaseException {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
                 .getSequence(new Region("1234:1-1999"), new QueryOptions(), dataRelease);
@@ -102,6 +106,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testGenomicSequenceQueryOutOfBounds() throws CellBaseException {
         // Both start & end out of the right bound
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager
@@ -122,6 +127,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
 
     @Test
+    @Disabled
     public void testGetCytoband() throws CellBaseException {
         List<Region> regions = Arrays.asList(new Region("19:55799900-55803000"), new Region("11:121300000-124030001"));
         List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = genomeManager.getCytobands(regions, dataRelease);

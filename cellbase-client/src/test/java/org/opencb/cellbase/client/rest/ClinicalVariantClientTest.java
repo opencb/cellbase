@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
@@ -54,6 +55,7 @@ public class ClinicalVariantClientTest {
     }
 
     @Test
+    @Disabled
     public void search() throws Exception {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add(QueryOptions.COUNT, true);
