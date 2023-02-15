@@ -7,8 +7,12 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  build:
+    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
+
   test:
-    uses: opencb/cellbase/.github/workflows/build-test.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/test-analysis.yml@develop
+    needs: build
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SSH_TESTING_SERVER_HOST: ${{ secrets.SSH_TESTING_SERVER_HOST}}
