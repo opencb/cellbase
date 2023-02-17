@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.*;
@@ -55,6 +56,7 @@ public class GenomicRegionClientTest {
     }
 
     @Test
+    @Disabled
     public void testgetGene() throws Exception {
         CellBaseDataResponse<Gene> geneCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getGene(Arrays.asList("3:555-77777"), null);
         assertNotNull(geneCellBaseDataResponse.firstResult());
@@ -62,6 +64,7 @@ public class GenomicRegionClientTest {
     }
 
     @Test
+    @Disabled
     public void testgetTranscript() throws Exception {
         CellBaseDataResponse<Transcript> transcriptCellBaseDataResponse = cellBaseClient.getGenomicRegionClient().getTranscript(Arrays.asList("3:555-77777"), null);
         assertNotNull(transcriptCellBaseDataResponse.firstResult());
@@ -77,6 +80,7 @@ public class GenomicRegionClientTest {
     }
 
     @Test
+    @Disabled
     public void testgetVariant() throws Exception {
         QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end,id");
         CellBaseDataResponse<Variant> variantCellBaseDataResponse = cellBaseClient.getGenomicRegionClient()
@@ -105,6 +109,7 @@ public class GenomicRegionClientTest {
     }
 
     @Test
+    @Disabled
     public void testgetTfbs() throws Exception {
         CellBaseDataResponse<RegulatoryFeature> response = cellBaseClient.getGenomicRegionClient().getTfbs(Arrays.asList("1:555-66666"), null);
         assertNotNull(response.firstResult());

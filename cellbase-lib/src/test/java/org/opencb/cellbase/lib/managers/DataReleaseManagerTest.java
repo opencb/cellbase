@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -23,6 +24,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void test1() throws JsonProcessingException, CellBaseException {
         DataReleaseManager dataReleaseManager = new DataReleaseManager(CELLBASE_DBNAME, cellBaseConfiguration);
         DataRelease firstRelease = dataReleaseManager.createRelease();

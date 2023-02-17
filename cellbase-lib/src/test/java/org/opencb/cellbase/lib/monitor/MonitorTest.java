@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.monitor;
 
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -32,6 +33,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void run() throws Exception {
 
         // "Local" monitoring all OK

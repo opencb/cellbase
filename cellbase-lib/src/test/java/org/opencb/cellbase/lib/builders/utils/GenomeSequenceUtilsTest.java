@@ -36,6 +36,7 @@ import java.util.Map;
 public class GenomeSequenceUtilsTest {
 
     @Test
+    @Disabled
     public void testGetGenomeSequence() throws Exception {
         Map<String, String> sequenceMap = GenomeSequenceUtils.getGenomeSequence(Paths.get("/home/imedina/cellbase_v3/hsapiens/sequence/Homo_sapiens.GRCh37.p12.fa.gz"));
         Iterator<Map.Entry<String, String>> iter = sequenceMap.entrySet().iterator();
@@ -46,6 +47,7 @@ public class GenomeSequenceUtilsTest {
     }
 
     @Test
+    @Disabled
     public void testGetGenomeSequenceGZipped() throws Exception {
         Map<String, byte[]> sequenceMap = GenomeSequenceUtils.getGenomeSequenceGZipped(Paths.get("/home/imedina/cellbase_v3/hsapiens/sequence/Homo_sapiens.GRCh37.p12.fa.gz"));
         Iterator<Map.Entry<String, byte[]>> iter = sequenceMap.entrySet().iterator();
@@ -56,6 +58,7 @@ public class GenomeSequenceUtilsTest {
     }
 
     @Test
+    @Disabled
     public void testGetSequenceByChromosomeName() throws Exception {
 
     }

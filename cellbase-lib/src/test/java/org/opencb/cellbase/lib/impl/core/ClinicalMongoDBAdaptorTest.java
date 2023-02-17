@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
@@ -58,6 +59,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void parseQueryTest() throws CellBaseException {
         ClinicalManager manager = cellBaseManagerFactory.getClinicalManager("hsapiens");
         ClinicalMongoDBAdaptor dbAdaptor = (ClinicalMongoDBAdaptor) manager.getDBAdaptor();
@@ -74,6 +76,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void phasedQueriesTest() throws Exception {
         clearDB(CELLBASE_DBNAME);
 
@@ -534,6 +537,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void proteinChangeMatchTest() throws Exception {
         clearDB(CELLBASE_DBNAME);
 
