@@ -73,32 +73,40 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         : null);
                 SoNames.clear();
 
-                if (transcript.getStrand().equals("+")) {
-                    // Check variant overlaps transcript start/end coordinates
-                    if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
-                        solvePositiveTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                try {
+                    if (transcript.getStrand().equals("+")) {
+                        // Check variant overlaps transcript start/end coordinates
+                        if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
+                            solvePositiveTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                            consequenceTypeList.add(consequenceType);
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
+                        }
+                    } else {
+                        // Check overlaps transcript start/end coordinates
+                        if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
+                            solveNegativeTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
                     }
-                } else {
-                    // Check overlaps transcript start/end coordinates
-                    if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
-                        solveNegativeTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                            consequenceTypeList.add(consequenceType);
-                        }
-                    }
+                } catch (Exception e) {
+                    logger.error(e.toString());
+//                    SoNames.add("function_uncertain_variant");
+//                    SoNames.add(VariantAnnotationUtils.UNCERTAIN_FUNCTION);
+//                    consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+//                    consequenceTypeList.add(consequenceType);
                 }
             }
         }
