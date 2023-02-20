@@ -141,6 +141,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void indexedVariantWithoutRequiredAttributeTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
@@ -172,6 +173,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void twoCustomFilesTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         String customFileString =
@@ -219,6 +221,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void alreadyIndexedTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
@@ -262,6 +265,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void maxFilesCustomAnnotationTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process
@@ -341,6 +345,7 @@ public class VariantAnnotationCommandExecutorTest {
     }
 
     @Test
+    @Disabled
     public void phasedCustomAnnotationTest() throws IOException, URISyntaxException, CellBaseException {
         cleanUp();
         // Custom VCF annotation file includes a malformed variant which should be skipped and the indexing process

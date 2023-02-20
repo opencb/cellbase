@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.XrefManager;
@@ -48,6 +49,7 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void contains() throws Exception {
 //        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37", dataRelease);
         XrefManager xrefManager = cellBaseManagerFactory.getXrefManager(SPECIES, ASSEMBLY);

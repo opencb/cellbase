@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>5.2.9</version>
+    <version>5.3.0</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -23,8 +23,8 @@
 
     <properties>
         <pycellbase.version>${project.version}</pycellbase.version>
-        <java-common-libs.version>4.6.0</java-common-libs.version>
-        <biodata.version>2.6.0</biodata.version>
+        <java-common-libs.version>4.7.0</java-common-libs.version>
+        <biodata.version>2.7.0</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.11.4</jackson.version>
         <jersey.version>2.30.1</jersey.version>
@@ -32,7 +32,7 @@
         <log4j2.version>2.17.2</log4j2.version>
         <junit.platform.version>1.5.2</junit.platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <jacoco.version>0.8.5</jacoco.version>
+        <jacoco.version>0.8.8</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
@@ -325,22 +325,61 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.7.1</version>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.jacoco</groupId>-->
+<!--                <artifactId>jacoco-maven-plugin</artifactId>-->
+<!--                <version>${jacoco.version}</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>prepare-agent</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>report</id>-->
+<!--                        <phase>test</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>report</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
                 <executions>
                     <execution>
+                        <id>default-prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
-                        <phase>test</phase>
+                        <id>default-report</id>
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <!--                                <rule>-->
+                                <!--                                    <element>BUNDLE</element>-->
+                                <!--                                    <limits>-->
+                                <!--                                        <limit>-->
+                                <!--                                            <counter>COMPLEXITY</counter>-->
+                                <!--                                            <value>COVEREDRATIO</value>-->
+                                <!--                                            <minimum>0.60</minimum>-->
+                                <!--                                        </limit>-->
+                                <!--                                    </limits>-->
+                                <!--                                </rule>-->
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
