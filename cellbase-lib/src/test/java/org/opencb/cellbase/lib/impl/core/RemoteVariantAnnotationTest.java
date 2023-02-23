@@ -32,7 +32,7 @@ public class RemoteVariantAnnotationTest {
     //------------------------------------------------------------------------
     // IMPORTANT
     // To run these tests you need to hava the following config file
-    // /opt/cellbase/remote.congiguration.test.yaml
+    // /opt/cellbase/remote.configuration.test.yaml
     // (useful if you have a tunnel to the CellBase MongoDB)
     //------------------------------------------------------------------------
 

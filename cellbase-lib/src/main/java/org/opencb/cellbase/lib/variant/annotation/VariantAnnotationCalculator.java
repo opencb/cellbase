@@ -620,6 +620,7 @@ public class VariantAnnotationCalculator {
                         }
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                     logger.error("Something wrong happened when calculation consequence type for variant " + variant, e);
                     throw e;
                 }

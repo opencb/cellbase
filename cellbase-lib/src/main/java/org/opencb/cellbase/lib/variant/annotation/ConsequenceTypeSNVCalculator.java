@@ -18,14 +18,17 @@ package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -102,11 +105,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         }
                     }
                 } catch (Exception e) {
-                    logger.error(e.toString());
-//                    SoNames.add("function_uncertain_variant");
-//                    SoNames.add(VariantAnnotationUtils.UNCERTAIN_FUNCTION);
-//                    consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-//                    consequenceTypeList.add(consequenceType);
+                    logger.error("Error computing consequence type: {}", Arrays.toString(e.getStackTrace()));
+                    SequenceOntologyTerm soTerm = new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(
+                            VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT), VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    consequenceType.setSequenceOntologyTerms(Collections.singletonList(soTerm));
+                    consequenceTypeList.add(consequenceType);
                 }
             }
         }

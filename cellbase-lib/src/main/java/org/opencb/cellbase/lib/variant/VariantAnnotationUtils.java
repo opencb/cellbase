@@ -127,6 +127,8 @@ public class VariantAnnotationUtils {
     public static final String CDS_START_NF = "cds_start_NF";
     public static final String CDS_END_NF = "cds_end_NF";
 
+    public static final String FUNCTION_UNCERTAIN_VARIANT = "function_uncertain_variant";
+
     public static final Map<String, Map<String, Boolean>> IS_SYNONYMOUS_CODON = new HashMap<>();
     public static final Map<String, Map<String, Boolean>> MT_IS_SYNONYMOUS_CODON = new HashMap<>();
     public static final Map<String, String> SO_NAMES_CORRECTIONS = new HashMap<>();
