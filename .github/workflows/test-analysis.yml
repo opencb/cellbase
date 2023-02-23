@@ -17,15 +17,9 @@ env:
   xb_version: "1.5.0"
 
 jobs:
-  build:
-    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-    with:
-      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
-
   test:
     name: Test and push Sonar analysis
     runs-on: ubuntu-22.04
-    needs: build
     steps:
       - uses: actions/checkout@v3
         with:
