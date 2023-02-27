@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.rest;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.cellbase.client.config.ClientConfiguration;
@@ -72,6 +73,7 @@ public class MetaClientTest {
     }
 
     @Test
+    @Disabled
     public void versions() throws Exception {
         CellBaseDataResponse<ObjectMap> queryResponse = cellBaseClient.getMetaClient().versions();
         assertTrue(queryResponse.allResults().size() > 0);

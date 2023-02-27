@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.*;
@@ -27,6 +28,7 @@ class SpliceBuilderTest {
 
 
     @Test
+    @Disabled
     public void createGtfFile() throws IOException {
         Path genePath = Paths.get("/home/jtarraga/bioinfo/cellbase/MANE.v0.93/gene.json.gz");
         Path inputAnnotPath = Paths.get("/home/jtarraga/bioinfo/cellbase/MANE.v0.93/grch38.gtf");
@@ -103,6 +105,7 @@ class SpliceBuilderTest {
     }
 
     @Test
+    @Disabled
     public void createInputVcfFiles() throws IOException {
         Path fastaPath = Paths.get("/home/jtarraga/bioinfo/cellbase/fasta/Homo_sapiens.GRCh38.fa");
         Path genePath = Paths.get("/home/jtarraga/bioinfo/cellbase/MANE.v0.93/gene.json.gz");
@@ -279,6 +282,7 @@ class SpliceBuilderTest {
     }
 
     @Test
+    @Disabled
     public void parseMMSpliceFile() throws Exception {
         Path spliceDir = Paths.get(SpliceBuilderTest.class.getResource("/splice").toURI());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"));
@@ -311,6 +315,7 @@ class SpliceBuilderTest {
     }
 
     @Test
+    @Disabled
     public void buildMMSpliceFile() throws Exception {
         Path spliceDir = Paths.get("/home/jtarraga/data150/cellbase/homo_sapiens_grch38/download/splice");
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/home/jtarraga/data150/cellbase/homo_sapiens_grch38/generated_json/splice"));

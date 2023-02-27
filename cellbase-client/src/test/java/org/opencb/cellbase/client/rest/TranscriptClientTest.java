@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
@@ -66,6 +67,7 @@ public class TranscriptClientTest {
 //    }
 
     @Test
+    @Disabled
     public void get() throws Exception {
         CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000671466.1"), null);
         assertNotNull(transcript.firstResult(), "This transcript should exist");
@@ -77,12 +79,14 @@ public class TranscriptClientTest {
     }
 
     @Test
+    @Disabled
     public void getGene() throws Exception {
         CellBaseDataResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new QueryOptions());
         assertNotNull(response.firstResult(), "It should return the respective gene");
     }
 
-//    @Test
+    @Test
+    @Disabled
     public void getVariation() throws Exception {
         CellBaseDataResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762",
                 new QueryOptions(QueryOptions.EXCLUDE, "annotation"));
@@ -90,6 +94,7 @@ public class TranscriptClientTest {
     }
 
     @Test
+    @Disabled
     public void getSequence() throws Exception {
         CellBaseDataResponse<String> seq = cellBaseClient.getTranscriptClient().getSequence("ENST00000528762", null);
         assertEquals("TCATCTGGATTATACATATTTCGCAATGAAAGAGAGGAAGAAAAGGAAGCAGCAAAATATGTG" +

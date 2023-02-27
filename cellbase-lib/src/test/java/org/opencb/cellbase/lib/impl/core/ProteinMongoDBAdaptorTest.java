@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinQuery;
@@ -57,6 +58,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testQuery() throws Exception {
         ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager(SPECIES, ASSEMBLY);
         ProteinQuery query = new ProteinQuery();

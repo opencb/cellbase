@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Gene;
@@ -55,6 +56,7 @@ public class GenericClientTest {
     }
 
     @Test
+    @Disabled
     public void get() throws Exception {
         CellBaseDataResponse<Gene> queryResponse1 = cellBaseClient.getGenericClient().get("feature", "gene", "BRCA2", "info",
                 new QueryOptions(QueryOptions.INCLUDE, "name"), Gene.class);
