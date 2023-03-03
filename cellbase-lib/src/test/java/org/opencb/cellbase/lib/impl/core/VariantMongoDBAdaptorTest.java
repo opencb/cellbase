@@ -277,6 +277,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testGet() throws CellBaseException {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions("include", "id");

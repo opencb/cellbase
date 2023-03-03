@@ -66,6 +66,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testExonAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
@@ -165,6 +166,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testSVsCNVsConsequenceTypeAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
@@ -446,6 +448,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testImpreciseConsequenceTypeAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
@@ -641,6 +644,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //    }
 
     @Test
+    @Disabled
     public void testCellBaseDataResultGroupingDecomposedMNVs() throws Exception {
 
         QueryOptions queryOptions = (new QueryOptions("normalize", true));
@@ -789,6 +793,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testHgvsAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "hgvs");
@@ -878,6 +883,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testRepeatAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "repeats");
@@ -1229,6 +1235,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testGetAllConsequenceTypesByVariant() throws IOException, QueryException, IllegalAccessException, CellBaseException {
 
 

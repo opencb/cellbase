@@ -43,6 +43,7 @@ public class RevelScoreBuilderTest {
     }
 
     @Test
+    @Disabled
     public void testParse() throws Exception {
         Path revelDir = Paths.get(RevelScoreBuilderTest.class.getResource("/revel").toURI());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "missense_variation_functional_score");

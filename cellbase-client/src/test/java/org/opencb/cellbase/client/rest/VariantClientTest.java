@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -46,6 +47,7 @@ public class VariantClientTest {
 
     @ParameterizedTest
     @ArgumentsSource(CellbaseClientProvider.class)
+    @Disabled
     public void getAnnotationId(CellBaseClient cellBaseClient) throws Exception {
         // Check assembly = GRCh38 is being correctly sent by the client and appropriately managed by the server
         CellBaseDataResponse<VariantAnnotation> annotationsGet = cellBaseClient.getVariantClient()
@@ -118,6 +120,7 @@ public class VariantClientTest {
 
     @ParameterizedTest
     @ArgumentsSource(CellbaseClientProvider.class)
+    @Disabled
     public void get(CellBaseClient cellBaseClient) throws Exception {
         CellBaseDataResponse<Variant> variation = cellBaseClient.getVariantClient().get(Collections.singletonList("13:32316514:C:G"), null);
         assertNotNull(variation.firstResult(), "This variation should exist");

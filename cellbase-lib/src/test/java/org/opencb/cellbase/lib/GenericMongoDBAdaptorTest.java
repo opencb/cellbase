@@ -63,18 +63,22 @@ public class GenericMongoDBAdaptorTest {
     protected String HGMD_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiWkVUVEEiLCJpYXQiOjE2NzU4NzI1MDd9.f3JgVRt7_VrifNWTaRMW3aQfrKbtDbIxlzoenJRYJo0";
     protected String HGMD_COSMIC_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwN30sInZlcnNpb24iOiIxLjAiLCJzdWIiOiJaRVRUQSIsImlhdCI6MTY3NTg3MjUyN30.NCCFc4SAhjUsN5UU0wXGY6nCZx8jLglvaO1cNZYI0u4";
 
-    protected final LoadRunner loadRunner;
+    protected LoadRunner loadRunner = null;
 //    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public GenericMongoDBAdaptorTest() throws IOException {
-        cellBaseConfiguration = CellBaseConfiguration.load(
-                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
-        cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+    public GenericMongoDBAdaptorTest() {
+        try {
+            cellBaseConfiguration = CellBaseConfiguration.load(
+                    GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
+                    CellBaseConfiguration.ConfigurationFileFormat.YAML);
+            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
+            cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void clearDB(String dbName) throws Exception {

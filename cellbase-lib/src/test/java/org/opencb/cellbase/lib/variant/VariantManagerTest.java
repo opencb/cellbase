@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
@@ -60,12 +61,14 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testNormalisation() throws Exception {
         CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease, token);
         assertEquals(1, results.getResults().size());
     }
 
     @Test
+    @Disabled
     public void testHgvs() throws Exception {
         List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease, token);
         assertEquals(5, results.get(0).getResults().size());

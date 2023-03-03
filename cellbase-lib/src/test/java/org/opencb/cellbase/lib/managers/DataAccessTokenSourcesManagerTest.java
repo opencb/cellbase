@@ -1,6 +1,5 @@
 package org.opencb.cellbase.lib.managers;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
@@ -11,13 +10,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.opencb.cellbase.lib.token.DataAccessTokenManager.SECRET_KEY_MIN_LENGTH;
 
 public class DataAccessTokenSourcesManagerTest {
 

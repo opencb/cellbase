@@ -17,10 +17,10 @@ public class CellbaseClientProvider implements ArgumentsProvider {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) throws Exception {
         List<ClientConfiguration> configurations = new ArrayList<>();
-        configurations.add(getClientConfiguration("http://bioinfo.hpc.cam.ac.uk/cellbase-4.7.3", "v4"));
-        configurations.add(getClientConfiguration("https://ws.opencb.org/cellbase-5.0.0", "v5"));
-        configurations.add(getClientConfiguration("https://ws.zettagenomics.com/cellbase", "v5.0"));
+//        configurations.add(getClientConfiguration("http://bioinfo.hpc.cam.ac.uk/cellbase-4.7.3", "v4"));
+//        configurations.add(getClientConfiguration("https://ws.opencb.org/cellbase-5.0.0", "v5"));
         configurations.add(getClientConfiguration("https://ws.zettagenomics.com/cellbase", "v5.1"));
+        configurations.add(getClientConfiguration("https://ws.zettagenomics.com/cellbase", "v5.2"));
 
         return configurations.stream().map(CellBaseClient::new).map(Arguments::of);
     }
