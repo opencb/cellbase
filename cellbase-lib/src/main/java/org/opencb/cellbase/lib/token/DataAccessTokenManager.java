@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.token;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
@@ -105,7 +106,15 @@ public class DataAccessTokenManager {
     }
 
     public Set<String> getValidSources(String token) throws IllegalArgumentException {
+        return getValidSources(token, new HashSet<>());
+    }
+
+    public Set<String> getValidSources(String token, Set<String> init) throws IllegalArgumentException {
         Set<String> validSources = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(init)) {
+            validSources.addAll(init);
+        }
+
         if (StringUtils.isNotEmpty(token)) {
             DataAccessTokenSources dat = decode(token);
             if (MapUtils.isNotEmpty(dat.getSources())) {

@@ -4,7 +4,7 @@ apiVersion: "${project.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
 maintainerContact: javier.lopez@genomicsengland.co.uk
-tokenKey: "kK1McXsyceO67cK5eEaXfRGOJycYxS7FG3YWJlAk9GJbrhgMKJ"
+secretKey: "xPacig89igHSieEnveJEi4KCfdEslhmssC3vui1JJQGgDQ0y8v"
 databases:
   mongodb:
     host: localhost:27017

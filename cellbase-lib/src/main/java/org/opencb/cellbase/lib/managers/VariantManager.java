@@ -35,15 +35,14 @@ import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -288,16 +287,28 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, int dataRelease) throws CellBaseException {
-        return spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
-                dataRelease);
+    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, String token, int dataRelease) throws CellBaseException {
+        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+
+        return getSpliceScoreVariant(variant, validSources, dataRelease);
     }
 
-    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, int dataRelease) throws CellBaseException {
+    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, String token, int dataRelease)
+            throws CellBaseException {
+        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            cellBaseDataResults.add(getSpliceScoreVariant(variant, dataRelease));
+            cellBaseDataResults.add(getSpliceScoreVariant(variant, validSources, dataRelease));
         }
         return cellBaseDataResults;
+    }
+
+    private CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, Set<String> validSources, int dataRelease)
+            throws CellBaseException {
+        CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
+                variant.getReference(), variant.getAlternate(), dataRelease);
+
+        return DataAccessTokenUtils.filterDataSources(result, validSources);
     }
 }

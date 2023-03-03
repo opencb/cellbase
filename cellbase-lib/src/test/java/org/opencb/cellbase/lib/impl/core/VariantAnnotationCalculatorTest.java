@@ -1062,6 +1062,26 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testLicensedClinicalHGMDandCOSMICAnnotation() throws Exception {
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_COSMIC_ACCESS_TOKEN, cellBaseManagerFactory);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertEquals(Integer.valueOf(113588287), variant.getStart());
+        assertEquals("G", variantAnnotation.getReference());
+        assertEquals(3, variantAnnotation.getTraitAssociation().size());
+        assertEquals("cosmic", variantAnnotation.getTraitAssociation().get(0).getSource().getName());
+        assertEquals("clinvar", variantAnnotation.getTraitAssociation().get(1).getSource().getName());
+        assertEquals("hgmd", variantAnnotation.getTraitAssociation().get(2).getSource().getName());
+    }
+
+    @Test
     public void testNoLicensedClinicalAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");

@@ -1934,7 +1934,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query splice");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, dataRelease));
+                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, token, dataRelease));
             }
             logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());

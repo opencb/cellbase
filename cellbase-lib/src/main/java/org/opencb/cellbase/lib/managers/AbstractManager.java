@@ -22,6 +22,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.token.DataAccessTokenManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ public class AbstractManager implements AutoCloseable {
     protected MongoDataStore mongoDatastore;
     protected MongoDBAdaptorFactory dbAdaptorFactory;
 
+    protected DataAccessTokenManager tokenManager;
+
     protected Logger logger;
 
     public AbstractManager(String databaseName, CellBaseConfiguration configuration) throws CellBaseException {
@@ -51,6 +54,8 @@ public class AbstractManager implements AutoCloseable {
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
+
+        tokenManager = new DataAccessTokenManager(configuration.getSecretKey());
     }
 
     public AbstractManager(String species, String assembly, CellBaseConfiguration configuration)
@@ -70,6 +75,8 @@ public class AbstractManager implements AutoCloseable {
         mongoDBManager = new MongoDBManager(configuration);
         mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
+
+        tokenManager = new DataAccessTokenManager(configuration.getSecretKey());
     }
 
 

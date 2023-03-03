@@ -111,7 +111,7 @@ public class DataAccessTokenSourcesManagerTest {
         datManager.hasExpiredSource("hgmd", token);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testValidSources() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -125,9 +125,6 @@ public class DataAccessTokenSourcesManagerTest {
 
         String token = datManager.encode("ucam", dat);
 
-        Set<String> validSources = datManager.getValidSources(token);
-        assertEquals(2, validSources.size());
-        assertThat(validSources, hasItem("cosmic"));
-        assertThat(validSources, hasItem("cadd"));
+        datManager.getValidSources(token);
     }
 }

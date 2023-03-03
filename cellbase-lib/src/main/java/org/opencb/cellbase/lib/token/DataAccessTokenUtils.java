@@ -17,15 +17,18 @@
 package org.opencb.cellbase.lib.token;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.EvidenceEntry;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class DataAccessTokenUtils {
+
+    public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Arrays.asList("mmsplice"));
+    public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("clinvar"));
 
     public static boolean checkAllowedDataSources(List<String> includes, List<String> excludes, Set<String> tokenSources) {
         // TODO: check includes/excludes to decide if data sources must be checked/filtered
@@ -44,13 +47,33 @@ public class DataAccessTokenUtils {
         return true;
     }
 
+    public static <T> CellBaseDataResult<T> filterDataSources(CellBaseDataResult<T> results, Set<String> validSources) {
+        List<T> list = new ArrayList<>();
+        for (T result : results.getResults()) {
+            T filtered = null;
+            if (result instanceof Variant) {
+                 filtered = (T) filterDataSources((Variant) result, validSources);
+            } else if (result instanceof SpliceScore) {
+                filtered = (T) filterDataSources((SpliceScore) result, validSources);
+            }
+            if (filtered != null) {
+                list.add(filtered);
+            }
+        }
+        results.setResults(list);
+        results.setNumResults(list.size());
+        results.setNumMatches(list.size());
+
+        return results;
+    }
+
     public static Variant filterDataSources(Variant variant, Set<String> validSources) {
         if (variant.getAnnotation() != null) {
             // Filtering clinical data sources
             if (CollectionUtils.isNotEmpty(variant.getAnnotation().getTraitAssociation())) {
                 List<EvidenceEntry> filteredTraits = new ArrayList<>();
                 for (EvidenceEntry trait : variant.getAnnotation().getTraitAssociation()) {
-                    if (validSources.contains(trait.getSource().getName())) {
+                    if (validSources.contains(trait.getSource().getName().toLowerCase())) {
                         filteredTraits.add(trait);
                     }
                 }
@@ -60,16 +83,6 @@ public class DataAccessTokenUtils {
         return variant;
     }
 
-    public static CellBaseDataResult<Variant> filterDataSources(CellBaseDataResult<Variant> results, Set<String> validSources) {
-        List<Variant> variants = new ArrayList<>();
-        for (Variant variant : results.getResults()) {
-            variants.add(filterDataSources(variant, validSources));
-        }
-        results.setResults(variants);
-
-        return results;
-    }
-
     public static List<CellBaseDataResult<Variant>> filterDataSources(List<CellBaseDataResult<Variant>> results,
                                                                       Set<String> validTokenSources) {
         List<CellBaseDataResult<Variant>> output = new ArrayList<>();
@@ -77,5 +90,14 @@ public class DataAccessTokenUtils {
             output.add(filterDataSources(result, validTokenSources));
         }
         return output;
+    }
+
+    private static SpliceScore filterDataSources(SpliceScore spliceScore, Set<String> validSources) {
+        // Filtering clinical data sources
+        if (spliceScore != null && StringUtils.isNotEmpty(spliceScore.getSource())
+                && validSources.contains(spliceScore.getSource().toLowerCase())) {
+            return spliceScore;
+        }
+        return null;
     }
 }
