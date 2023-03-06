@@ -11,8 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class DataAccessTokenSourcesManagerTest {
 
@@ -104,6 +103,25 @@ public class DataAccessTokenSourcesManagerTest {
         String token = datManager.encode("ucam", dat);
 
         datManager.hasExpiredSource("hgmd", token);
+    }
+
+    @Test
+    public void testRecodeToken() throws ParseException {
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+        DataAccessTokenSources dat = new DataAccessTokenSources();
+        dat.setVersion("1.0");
+        Map<String, Long> sources = new HashMap<>();
+        sources.put("cadd", formatter.parse("25/09/2030").getTime());
+        sources.put("cosmic", formatter.parse("25/09/2021").getTime());
+        dat.setSources(sources);
+
+        String token = datManager.encode("ucam", dat);
+        String newToken = datManager.recode(token);
+
+        DataAccessTokenSources newDat = datManager.decode(newToken);
+        assertEquals(1, newDat.getSources().size());
+        assertTrue(newDat.getSources().containsKey("cadd"));
     }
 
     @Test(expected = IllegalArgumentException.class)

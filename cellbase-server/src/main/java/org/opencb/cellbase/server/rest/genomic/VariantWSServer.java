@@ -82,7 +82,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
         try {
-            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, getDataRelease(), getToken());
+            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -97,7 +97,7 @@ public class VariantWSServer extends GenericRestWSServer {
             required = true) String id) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease(), getToken());
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -27,9 +27,11 @@ import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
+import org.opencb.cellbase.lib.managers.MetaManager;
+import org.opencb.cellbase.lib.token.DataAccessTokenManager;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;
@@ -50,7 +52,11 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.opencb.cellbase.core.token.DataAccessTokenSources.dateFormatter;
 
 /**
  * Created by imedina on 04/08/15.
@@ -119,7 +125,7 @@ public class MetaWSServer extends GenericRestWSServer {
                                    @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
                                            String assembly,
                                    @ApiParam(name = "onlyActive", value = "Set to true if you only want to get the active data relaease")
-                                       @QueryParam("onlyActive") @DefaultValue("false") boolean onlyActive) {
+                                   @QueryParam("onlyActive") @DefaultValue("false") boolean onlyActive) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -147,6 +153,90 @@ public class MetaWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
+
+    @GET
+    @Path("/getLicensedData")
+    @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input token and their expiration date",
+            response = Map.class, responseContainer = "QueryResponse")
+    public Response getLicensedData(@ApiParam(name = "token", required = true, value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION)
+                                           @QueryParam("token") String token) {
+        try {
+            DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            DataAccessTokenSources sources = datManager.decode(token);
+
+            // Convert milliseconds to date in format dd/MM/yyyy
+            Map<String, String> expDates = new HashMap<>();
+            DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+            for (Map.Entry<String, Long> entry : sources.getSources().entrySet()) {
+                expDates.put(entry.getKey(), dateFormatter.format(entry.getValue()));
+            }
+
+            return createOkResponse(new CellBaseDataResult(null, 1, Collections.emptyList(), 1, Collections.singletonList(expDates), 1));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/removeExpiredLicensedData")
+    @ApiOperation(httpMethod = "GET", value = "Create a new token by removing the expired licensed data sources from the input token",
+            response = String.class, responseContainer = "QueryResponse")
+    public Response removeExpiredLicensedData(@ApiParam(name = "token", required = true,
+            value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION) @QueryParam("token") String token) {
+        try {
+            DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+
+            return createOkResponse(new CellBaseDataResult<>(null, 1, Collections.emptyList(), 1,
+                    Collections.singletonList(datManager.recode(token)), 1));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+
+    /*
+
+        @GET
+    @Path("/api")
+    @ApiOperation(value = "API", response = Map.class)
+    public Response api(@ApiParam(value = "List of categories to get API from, e.g. Xref,Gene") @QueryParam("category") String category) {
+        List<LinkedHashMap<String, Object>> api = new ArrayList<>(20);
+        Map<String, Class> classes = new LinkedHashMap<>();
+        classes.put("clinical", ClinicalWSServer.class);
+        classes.put("gene", GeneWSServer.class);
+        classes.put("chromosome", ChromosomeWSServer.class);
+        classes.put("meta", MetaWSServer.class);
+        classes.put("ontology", OntologyWSServer.class);
+        classes.put("protein", ProteinWSServer.class);
+        classes.put("region", RegionWSServer.class);
+        classes.put("regulation", RegulatoryWSServer.class);
+        classes.put("species", SpeciesWSServer.class);
+        classes.put("tfbs", TfWSServer.class);
+        classes.put("transcript", TranscriptWSServer.class);
+        classes.put("variant", VariantWSServer.class);
+        classes.put("xref", IdWSServer.class);
+
+        if (StringUtils.isNotEmpty(category)) {
+            for (String cat : category.split(",")) {
+                Class clazz = classes.get(cat.toLowerCase());
+                if (clazz == null) {
+                    return createErrorResponse(new CellBaseException("Category not found: " + cat));
+                }
+                LinkedHashMap<String, Object> help = getHelp(clazz);
+                api.add(help);
+            }
+        } else {
+            // Get API for all categories
+            for (String cat : classes.keySet()) {
+                api.add(getHelp(classes.get(cat)));
+            }
+        }
+        return createOkResponse(new CellBaseDataResult<>(null, 0, Collections.emptyList(), 1, Collections.singletonList(api), 1));
+    }
+
+
+     */
+
 
     @GET
     @Path("/{category}")

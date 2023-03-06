@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.*;
 
-public class DataAccessTokenUtils {
+public final class DataAccessTokenUtils {
 
     public static final int NUM_SPLICE_SCORE_SOURCES = 2;
     public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("mmsplice"));

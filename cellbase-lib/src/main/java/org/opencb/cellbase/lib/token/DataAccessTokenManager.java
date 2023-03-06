@@ -93,6 +93,21 @@ public class DataAccessTokenManager {
         return dat;
     }
 
+    public String recode(String token) {
+        DataAccessTokenSources dataAccessTokenSources = decode(token);
+        if (MapUtils.isNotEmpty(dataAccessTokenSources.getSources())) {
+            Map<String, Long> sources = new HashMap<>();
+            for (Map.Entry<String, Long> entry : dataAccessTokenSources.getSources().entrySet()) {
+                if (new Date().getTime() <= entry.getValue()) {
+                    sources.put(entry.getKey(), entry.getValue());
+                }
+            }
+            dataAccessTokenSources.setSources(sources);
+        }
+
+        return encode(getOrganization(token), dataAccessTokenSources);
+    }
+
     public void validate(String token) {
         parse(token);
     }
