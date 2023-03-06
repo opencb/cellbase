@@ -63,14 +63,14 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     @Test
     @Disabled
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease, token);
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
         assertEquals(1, results.getResults().size());
     }
 
     @Test
     @Disabled
     public void testHgvs() throws Exception {
-        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease, token);
+        List<CellBaseDataResult<String>> results = variantManager.getHgvsByVariant("22:38318124:-:CTTTTG", dataRelease);
         assertEquals(5, results.get(0).getResults().size());
     }
 }

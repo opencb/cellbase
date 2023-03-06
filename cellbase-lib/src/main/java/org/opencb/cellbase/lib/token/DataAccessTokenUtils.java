@@ -27,24 +27,13 @@ import java.util.*;
 
 public class DataAccessTokenUtils {
 
-    public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Arrays.asList("mmsplice"));
-    public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("clinvar"));
+    public static final int NUM_SPLICE_SCORE_SOURCES = 2;
+    public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("mmsplice"));
 
-    public static boolean checkAllowedDataSources(List<String> includes, List<String> excludes, Set<String> tokenSources) {
-        // TODO: check includes/excludes to decide if data sources must be checked/filtered
+    public static final int NUM_CLINICAL_SOURCES = 3;
+    public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Collections.singletonList("clinvar"));
 
-//        if (CollectionUtils.isEmpty(tokenSources)) {
-//            // cosmic and hgmd must be filtered
-//            return true;
-//        }
-
-//        if (CollectionUtils.isNotEmpty(includes)) {
-//            // Take into account includes
-//            if (includes.contains("annotation"))
-//        } else if (CollectionUtils.isNotEmpty(excludes)) {
-//            // Otherwise, exludes
-//        }
-        return true;
+    private DataAccessTokenUtils() {
     }
 
     public static <T> CellBaseDataResult<T> filterDataSources(CellBaseDataResult<T> results, Set<String> validSources) {
@@ -52,7 +41,7 @@ public class DataAccessTokenUtils {
         for (T result : results.getResults()) {
             T filtered = null;
             if (result instanceof Variant) {
-                 filtered = (T) filterDataSources((Variant) result, validSources);
+                filtered = (T) filterDataSources((Variant) result, validSources);
             } else if (result instanceof SpliceScore) {
                 filtered = (T) filterDataSources((SpliceScore) result, validSources);
             }
@@ -68,17 +57,15 @@ public class DataAccessTokenUtils {
     }
 
     public static Variant filterDataSources(Variant variant, Set<String> validSources) {
-        if (variant.getAnnotation() != null) {
+        if (variant.getAnnotation() != null && CollectionUtils.isNotEmpty(variant.getAnnotation().getTraitAssociation())) {
             // Filtering clinical data sources
-            if (CollectionUtils.isNotEmpty(variant.getAnnotation().getTraitAssociation())) {
-                List<EvidenceEntry> filteredTraits = new ArrayList<>();
-                for (EvidenceEntry trait : variant.getAnnotation().getTraitAssociation()) {
-                    if (validSources.contains(trait.getSource().getName().toLowerCase())) {
-                        filteredTraits.add(trait);
-                    }
+            List<EvidenceEntry> filteredTraits = new ArrayList<>();
+            for (EvidenceEntry trait : variant.getAnnotation().getTraitAssociation()) {
+                if (validSources.contains(trait.getSource().getName().toLowerCase())) {
+                    filteredTraits.add(trait);
                 }
-                variant.getAnnotation().setTraitAssociation(filteredTraits);
             }
+            variant.getAnnotation().setTraitAssociation(filteredTraits);
         }
         return variant;
     }
