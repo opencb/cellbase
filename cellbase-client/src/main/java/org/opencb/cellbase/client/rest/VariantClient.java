@@ -44,7 +44,7 @@ public final class VariantClient extends FeatureClient<Variant> {
     private static final char ABSENT_ALLELE = '0';
     private static final String REFERENCE_HOMOZYGOUS_GENOTYPE = "0|0";
 
-    public VariantClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+    VariantClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
         super(species, assembly, dataRelease, token, configuration);
         this.clazz = Variant.class;
 

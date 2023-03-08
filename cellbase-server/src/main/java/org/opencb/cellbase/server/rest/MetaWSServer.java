@@ -56,8 +56,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.opencb.cellbase.core.token.DataAccessTokenSources.dateFormatter;
-
 /**
  * Created by imedina on 04/08/15.
  */
@@ -184,10 +182,10 @@ public class MetaWSServer extends GenericRestWSServer {
     public Response removeExpiredLicensedData(@ApiParam(name = "token", required = true,
             value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION) @QueryParam("token") String token) {
         try {
-            DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            DataAccessTokenManager dataManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
 
             return createOkResponse(new CellBaseDataResult<>(null, 1, Collections.emptyList(), 1,
-                    Collections.singletonList(datManager.recode(token)), 1));
+                    Collections.singletonList(dataManager.recode(token)), 1));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

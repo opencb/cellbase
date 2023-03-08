@@ -58,10 +58,10 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     private Map<String, QueryParameter> annotations;
 
     @QueryParameter(id = DATA_RELEASE)
-    private Integer dataRelease = null;
+    private Integer dataRelease;
 
     @QueryParameter(id = DATA_ACCESS_TOKEN)
-    private String token = null;
+    private String token;
 
     public AbstractQuery() {
         init();

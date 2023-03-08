@@ -193,8 +193,7 @@ public class GenericRestWSServer implements IWSServer {
     protected int getDataRelease() throws CellBaseException {
         if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
             try {
-                int dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
-                return dataRelease;
+                return Integer.parseInt(uriParams.get("dataRelease"));
             } catch (NumberFormatException e) {
                 throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
             }
