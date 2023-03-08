@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class TranscriptClient extends ParentRestClient<Transcript> {
 
-    public TranscriptClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+    TranscriptClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
         super(species, assembly, dataRelease, token, configuration);
         this.clazz = Transcript.class;
 

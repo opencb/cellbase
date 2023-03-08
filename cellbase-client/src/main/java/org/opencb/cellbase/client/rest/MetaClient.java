@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class MetaClient extends ParentRestClient<ObjectMap> {
 
-    public MetaClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
+    MetaClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
         super(species, assembly, dataRelease, token, clientConfiguration);
 
         this.clazz = ObjectMap.class;

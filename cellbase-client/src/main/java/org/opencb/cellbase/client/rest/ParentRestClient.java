@@ -86,16 +86,16 @@ public class ParentRestClient<T> {
 
 
     @Deprecated
-    public ParentRestClient(ClientConfiguration configuration) {
+    ParentRestClient(ClientConfiguration configuration) {
         this(configuration.getDefaultSpecies(), null, null, null, configuration);
     }
 
     @Deprecated
-    public ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
+    ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
         this(species, assembly, null, null, configuration);
     }
 
-    public ParentRestClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+    ParentRestClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
         this.species = species;
         this.assembly = assembly;
         this.dataRelease = dataRelease;

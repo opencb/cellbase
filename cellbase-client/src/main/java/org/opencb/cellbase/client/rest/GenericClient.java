@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class GenericClient extends ParentRestClient<ObjectMap> {
 
-    public GenericClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
+    GenericClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
         super(species, assembly, dataRelease, token, clientConfiguration);
     }
 

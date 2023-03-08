@@ -30,7 +30,7 @@ import java.io.IOException;
  */
 public class FeatureClient<T> extends ParentRestClient<T> {
 
-    public FeatureClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+    FeatureClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
         super(species, assembly, dataRelease, token, configuration);
     }
 
