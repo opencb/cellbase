@@ -35,8 +35,9 @@ public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
     private Key privateKey;
     private Key publicKey;
+    private JwtParser jwtParser;
 
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
     public static final String VERSION_FIELD_NAME = "version";
@@ -50,8 +51,11 @@ public class DataAccessTokenManager {
         this.algorithm = SignatureAlgorithm.forName(algorithm);
         this.privateKey = secretKey;
         this.publicKey = secretKey;
+        jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
+    }
 
-        logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
+    public DataAccessTokenManager() {
+        jwtParser = Jwts.parserBuilder().build();
     }
 
     public String encode(String organization, DataAccessTokenSources dat) {
@@ -74,8 +78,7 @@ public class DataAccessTokenManager {
     public DataAccessTokenSources decode(String token) {
         DataAccessTokenSources dat = new DataAccessTokenSources();
 
-        Jws<Claims> claimsJws = parse(token);
-        Claims body = claimsJws.getBody();
+        Claims body = parse(token);
         for (Map.Entry<String, Object> entry : body.entrySet()) {
             String key = entry.getKey();
             switch (key) {
@@ -149,17 +152,17 @@ public class DataAccessTokenManager {
     }
 
     public String getOrganization(String token) {
-        Jws<Claims> parse = parse(token);
-        return parse.getBody().getSubject();
+        Claims parse = parse(token);
+        return parse.getSubject();
     }
 
     public String getCreationDate(String token) {
-        Jws<Claims> parse = parse(token);
-        return dateFormatter().format(parse.getBody().getIssuedAt());
+        Claims parse = parse(token);
+        return dateFormatter().format(parse.getIssuedAt());
     }
 
     public void display(String token) {
-        Claims body = parse(token).getBody();
+        Claims body = parse(token);
 
         final StringBuilder sb = new StringBuilder();
         sb.append("Token: ").append(token).append("\n");
@@ -175,7 +178,14 @@ public class DataAccessTokenManager {
         System.out.println(sb);
     }
 
-    private Jws<Claims> parse(String token) {
-        return Jwts.parser().setSigningKey(publicKey).parseClaimsJws(token);
+    private Claims parse(String token) {
+        if (publicKey == null) {
+            // Remove signature to parse JWT
+            token = token.substring(0, token.lastIndexOf(".") + 1);
+            return jwtParser.parseClaimsJwt(token).getBody();
+        } else {
+            // Parse signed JWT (aka a 'JWS')
+            return jwtParser.parseClaimsJws(token).getBody();
+        }
     }
 }
