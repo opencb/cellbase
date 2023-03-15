@@ -31,7 +31,7 @@ import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.lib.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;

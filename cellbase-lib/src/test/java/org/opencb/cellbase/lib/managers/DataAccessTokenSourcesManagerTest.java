@@ -3,7 +3,7 @@ package org.opencb.cellbase.lib.managers;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
-import org.opencb.cellbase.lib.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import java.text.DateFormat;
 import java.text.ParseException;

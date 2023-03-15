@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib.token;
+package org.opencb.cellbase.core.token;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

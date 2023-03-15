@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
-import org.opencb.cellbase.lib.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;

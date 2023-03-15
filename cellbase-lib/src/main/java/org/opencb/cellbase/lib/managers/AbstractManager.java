@@ -22,7 +22,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
