@@ -18,6 +18,13 @@ jobs:
       report_context: development
       report_dir: ${{ github.ref_name }}/cellbase/${{ github.sha }}
 
+  deploy-docker:
+    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
+    needs: test
+    with:
+      cli: python3 ./build/cloud/docker/docker-build.py push --images base
+    secrets: inherit
+
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: [ build, test ]
