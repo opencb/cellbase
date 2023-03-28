@@ -22,7 +22,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
     needs: test
     with:
-      cli: python3 ./build/cloud/docker/docker-build.py push --images base
+      cli: python3 ./build/cloud/docker/docker-build.py push --images base --tag ${{ github.ref_name }}
     secrets: inherit
 
   deploy-maven:
