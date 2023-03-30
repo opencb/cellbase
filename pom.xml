@@ -517,7 +517,7 @@
                 <repository>
                     <id>github</id>
                     <name>GitHub OpenCB Apache Maven Packages</name>
-                    <url>https://maven.pkg.github.com/opencb/java-common-libs</url>
+                    <url>https://maven.pkg.github.com/opencb/cellbase</url>
                 </repository>
             </distributionManagement>
             <build>
