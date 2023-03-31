@@ -12,7 +12,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
 
   test:
-    uses: opencb/cellbase/.github/workflows/test-analysis.yml@develop
+    uses: ./.github/workflows/test-analysis.yml
     needs: build
     secrets: inherit
     with:
