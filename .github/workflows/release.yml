@@ -11,14 +11,12 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
 
   test:
-    uses: opencb/cellbase/.github/workflows/test-analysis.yml@develop
+    uses: ./.github/workflows/test-analysis.yml
     needs: build
     secrets: inherit
-#      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#      SSH_TESTING_SERVER_HOST: ${{ secrets.SSH_TESTING_SERVER_HOST}}
-#      SSH_TESTING_SERVER_PORT: ${{ secrets.SSH_TESTING_SERVER_PORT}}
-#      SSH_TESTING_SERVER_USER: ${{ secrets.SSH_TESTING_SERVER_USER }}
-#      SSH_TESTING_SERVER_PASSWORD: ${{ secrets.SSH_TESTING_SERVER_PASSWORD }}
+    with:
+      report_context: xetabase
+      report_dir: cellbase
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
@@ -26,10 +24,6 @@ jobs:
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
     secrets: inherit
-#      MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
-#      MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-#      MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-#      MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
   deploy-docker:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
@@ -37,8 +31,6 @@ jobs:
     with:
       cli: python3 ./build/cloud/docker/docker-build.py push --images base
     secrets: inherit
-#      DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
-#      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
   deploy-python:
     uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
@@ -47,8 +39,6 @@ jobs:
       cli: bash ./clients/python/python-build.sh push
       artifact: build-folder
     secrets: inherit
-#      PYPI_TWINE_USER: ${{ secrets.PYPI_TWINE_USER }}
-#      PYPI_TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
 
   release:
     uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@develop

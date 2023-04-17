@@ -96,6 +96,13 @@
                 <updatePolicy>daily</updatePolicy>
             </snapshots>
         </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/opencb</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -434,7 +441,17 @@
         </profile>
 
         <profile>
-            <id>deploy</id>
+            <id>deploy-maven</id>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
@@ -501,16 +518,17 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>deploy-github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub OpenCB Apache Maven Packages</name>
+                    <url>https://maven.pkg.github.com/opencb/cellbase</url>
+                </repository>
+            </distributionManagement>
+            <build>
+            </build>
+        </profile>
     </profiles>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
