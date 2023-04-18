@@ -19,8 +19,10 @@ package org.opencb.cellbase.lib.variant.annotation;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -30,6 +32,8 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -83,47 +87,55 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                         ? new ArrayList<>(transcript.getFlags()) : null);
                 SoNames.clear();
 
-                if (transcript.getStrand().equals("+")) {
-                    // Deletion - whole transcript removed
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
-                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
+                try {
+                    if (transcript.getStrand().equals("+")) {
+                        // Deletion - whole transcript removed
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
+                            SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
 //                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
-                        if (isBigDeletion) {  // Big deletion
-                            SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
-                        }
-                        solvePositiveTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
-                        }
-                    }
-                } else {
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // Deletion - whole trans. removed
-                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
-//                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
-                        if (isBigDeletion) {  // Big deletion
-                            SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
-                        }
-                        solveNegativeTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            if (isBigDeletion) {  // Big deletion
+                                SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
+                            }
+                            solvePositiveTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
+                        }
+                    } else {
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // Deletion - whole trans. removed
+                            SoNames.add(VariantAnnotationUtils.TRANSCRIPT_ABLATION);
+//                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            if (isBigDeletion) {  // Big deletion
+                                SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
+                            }
+                            solveNegativeTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    logger.error("Error computing consequence type: {}", Arrays.toString(e.getStackTrace()));
+                    SequenceOntologyTerm soTerm = new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(
+                            VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT), VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    consequenceType.setSequenceOntologyTerms(Collections.singletonList(soTerm));
+                    consequenceTypeList.add(consequenceType);
                 }
             }
         }
@@ -134,7 +146,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+                                                        int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
             throws CellBaseException {
         if (variantEnd > transcript.getGenomicCodingEnd()) {
             if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
@@ -149,8 +161,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     // ---NNNNNNNNCATTTTTTT
                     //    deletion  |---|
                     if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
-                        && (cdnaVariantEnd - transcript.getCdnaCodingStart()) < 3
-                        && (cdnaVariantEnd - transcript.getCdnaCodingStart()) >= 0) {
+                            && (cdnaVariantEnd - transcript.getCdnaCodingStart()) < 3
+                            && (cdnaVariantEnd - transcript.getCdnaCodingStart()) >= 0) {
                         solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
                                 cdnaVariantStart, cdnaVariantEnd);
                     } else {
@@ -246,7 +258,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+                                                        int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
             throws CellBaseException {
         if (variantStart < transcript.getGenomicCodingStart()) {
             // Check transcript has 3 UTR
@@ -314,7 +326,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     }
 
     private void solveStartCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                                  int cdnaVariantEnd) throws CellBaseException {
+                                                int cdnaVariantEnd) throws CellBaseException {
         // Not necessary to include % 3 since if we get here we already know that the difference is < 3
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
@@ -356,7 +368,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveCodingExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
+                                                              int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Boolean codingAnnotationAdded = false;
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -396,7 +408,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveStopCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart,
-                                               int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
+                                                 int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -473,7 +485,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
             decideStopCodonModificationAnnotation(SoNames,
                     VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)
-                    ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
+                            ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
         }
     }
 
@@ -481,7 +493,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveCodingExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
+                                                              int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
 
@@ -521,7 +533,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
     @Override
     protected void solveStopCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
-                                               int cdnaVariantEnd) throws CellBaseException {
+                                                 int cdnaVariantEnd) throws CellBaseException {
         Integer variantPhaseShift1 = (cdnaVariantStart - cdnaCodingStart) % 3;
         Integer variantPhaseShift2 = (cdnaVariantEnd - cdnaCodingStart) % 3;
         int modifiedCodon1Start = cdnaVariantStart - variantPhaseShift1;
@@ -576,7 +588,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
 
             decideStopCodonModificationAnnotation(SoNames,
                     VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)
-                    ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
+                            ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
         }
     }
 

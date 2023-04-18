@@ -557,24 +557,24 @@ public class LoadCommandExecutor extends CommandExecutor {
         Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
 
         if (Files.exists(pubmedPath)) {
-            try {
-                // Load data
-                for (File file : pubmedPath.toFile().listFiles()) {
-                    if (file.isFile() && (file.getName().endsWith("gz"))) {
-                        logger.info("Loading file '{}'", file.getName());
+            // Load data
+            for (File file : pubmedPath.toFile().listFiles()) {
+                if (file.isFile() && (file.getName().endsWith("gz"))) {
+                    logger.info("Loading file '{}'", file.getName());
+                    try {
                         loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
+                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                            | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                        logger.error("Error loading file '{}': {}", file.getName(), e.toString());
                     }
                 }
-                // Create index
-                createIndex(EtlCommons.PUBMED_DATA);
-
-                // Update release (collection and sources)
-                List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
-                dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-                logger.error(e.toString());
             }
+            // Create index
+            createIndex(EtlCommons.PUBMED_DATA);
+
+            // Update release (collection and sources)
+            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
+            dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
         } else {
             logger.warn("PubMed folder {} not found", pubmedPath.toString());
         }
