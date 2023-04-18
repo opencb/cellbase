@@ -204,7 +204,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, this.assembly, variantAnnotationCommandOptions.dataRelease,
-                                    cellBaseManagerFactory);
+                                    variantAnnotationCommandOptions.token, cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -479,7 +479,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    variantAnnotationCommandOptions.dataRelease, new CellBaseManagerFactory(configuration)), serverQueryOptions);
+                    variantAnnotationCommandOptions.dataRelease, variantAnnotationCommandOptions.token,
+                    new CellBaseManagerFactory(configuration)), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()

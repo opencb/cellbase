@@ -44,8 +44,8 @@ public final class VariantClient extends FeatureClient<Variant> {
     private static final char ABSENT_ALLELE = '0';
     private static final String REFERENCE_HOMOZYGOUS_GENOTYPE = "0|0";
 
-    public VariantClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
-        super(species, assembly, dataRelease, configuration);
+    VariantClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, token, configuration);
         this.clazz = Variant.class;
 
         this.category = "genomic";
@@ -90,7 +90,7 @@ public final class VariantClient extends FeatureClient<Variant> {
                     Collections.singletonList(variants.get(i)), 1));
         }
 
-        return new CellBaseDataResponse<>(configuration.getVersion(), 0, annotations.getTime(), null,
+        return new CellBaseDataResponse<>(configuration.getVersion(), 0, getToken(), annotations.getTime(), null,
                 new ObjectMap(options), annotatedVariants);
     }
 

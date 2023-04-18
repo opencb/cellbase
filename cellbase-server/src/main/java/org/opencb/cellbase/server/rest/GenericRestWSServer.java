@@ -58,6 +58,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
+
 @Path("/{version}/{species}")
 @Produces("text/plain")
 public class GenericRestWSServer implements IWSServer {
@@ -191,8 +193,7 @@ public class GenericRestWSServer implements IWSServer {
     protected int getDataRelease() throws CellBaseException {
         if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
             try {
-                int dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
-                return dataRelease;
+                return Integer.parseInt(uriParams.get("dataRelease"));
             } catch (NumberFormatException e) {
                 throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
             }
@@ -200,12 +201,17 @@ public class GenericRestWSServer implements IWSServer {
         // It means to use the default data release
         return defaultDataRelease;
     }
+
     protected int getDataReleaseUsed() throws CellBaseException {
         int dataRelease = getDataRelease();
         if (dataRelease == 0) {
             return defaultDataRelease;
         }
         return dataRelease;
+    }
+
+    protected String getToken() {
+        return uriParams.get(DATA_ACCESS_TOKEN);
     }
 
     /**
@@ -310,6 +316,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException ex) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
+        queryResponse.setToken(getToken());
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -340,6 +347,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException e) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
+        queryResponse.setToken(getToken());
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);

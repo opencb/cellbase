@@ -32,8 +32,8 @@ import java.util.List;
  */
 public class GenericClient extends ParentRestClient<ObjectMap> {
 
-    public GenericClient(String species, String assembly, String dataRelease, ClientConfiguration clientConfiguration) {
-        super(species, assembly, dataRelease, clientConfiguration);
+    GenericClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
+        super(species, assembly, dataRelease, token, clientConfiguration);
     }
 
     public <T> CellBaseDataResponse<T> get(String category, String resource, QueryOptions queryOptions,

@@ -35,15 +35,12 @@ import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
-
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -58,110 +55,14 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        Path path;
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
-        updateDataRelease(dataRelease, "gene", Collections.emptyList());
+        clearDB(CELLBASE_DBNAME);
+        initDB();
 
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
-        updateDataRelease(dataRelease, "genome_sequence", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
-        loadRunner.load(path, "regulatory_region", dataRelease);
-        updateDataRelease(dataRelease, "regulatory_region", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein", dataRelease);
-        updateDataRelease(dataRelease, "protein", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-        updateDataRelease(dataRelease, "protein_functional_prediction", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        updateDataRelease(dataRelease, "variation", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info", dataRelease);
-        updateDataRelease(dataRelease, "genome_info", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats", dataRelease);
-        updateDataRelease(dataRelease, "repeats", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
-        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
-        loadRunner.load(path, "missense_variation_functional_score", dataRelease);
-        updateDataRelease(dataRelease, "missense_variation_functional_score", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("refseq", dataRelease);
-        updateDataRelease(dataRelease, "refseq", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("conservation", dataRelease);
-        updateDataRelease(dataRelease, "conservation", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("variation_functional_score", dataRelease);
-        updateDataRelease(dataRelease, "variation_functional_score", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("splice_score", dataRelease);
-        updateDataRelease(dataRelease, "splice_score", Collections.emptyList());
-
-        //        path = Paths.get(getClass()
-//                .getResource("/splice/build/splice_1.json.gz").toURI());
-//        loadRunner.load(path, "splice_score", dataRelease);
-//        updateDataRelease(dataRelease, "splice_score", Collections.emptyList());
-
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, cellBaseManagerFactory);
-
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
     }
 
     @Test
@@ -752,7 +653,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
         VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
-                cellBaseManagerFactory);
+                token, cellBaseManagerFactory);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
@@ -1147,6 +1048,60 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+    @Test
+    public void testLicensedClinicalHGMDAnnotation() throws Exception {
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_ACCESS_TOKEN, cellBaseManagerFactory);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertEquals(Integer.valueOf(113588287), variant.getStart());
+        assertEquals("G", variantAnnotation.getReference());
+        assertEquals(2, variantAnnotation.getTraitAssociation().size());
+        assertEquals("clinvar", variantAnnotation.getTraitAssociation().get(0).getSource().getName());
+        assertEquals("hgmd", variantAnnotation.getTraitAssociation().get(1).getSource().getName());
+    }
+
+    @Test
+    public void testLicensedClinicalHGMDandCOSMICAnnotation() throws Exception {
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_COSMIC_ACCESS_TOKEN, cellBaseManagerFactory);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertEquals(Integer.valueOf(113588287), variant.getStart());
+        assertEquals("G", variantAnnotation.getReference());
+        assertEquals(3, variantAnnotation.getTraitAssociation().size());
+        assertEquals("cosmic", variantAnnotation.getTraitAssociation().get(0).getSource().getName());
+        assertEquals("clinvar", variantAnnotation.getTraitAssociation().get(1).getSource().getName());
+        assertEquals("hgmd", variantAnnotation.getTraitAssociation().get(2).getSource().getName());
+    }
+
+    @Test
+    public void testNoLicensedClinicalAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertEquals(Integer.valueOf(113588287), variant.getStart());
+        assertEquals("G", variantAnnotation.getReference());
+        assertEquals(1, variantAnnotation.getTraitAssociation().size());
+        assertEquals("clinvar", variantAnnotation.getTraitAssociation().get(0).getSource().getName());
+    }
 
     @Test
     public void testClinicalAnnotationGwas() throws Exception {

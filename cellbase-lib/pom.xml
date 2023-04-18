@@ -19,6 +19,11 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.opencb.commons</groupId>-->
+<!--            <artifactId>commons-lib</artifactId>-->
+<!--            <version>${java-common-libs.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-datastore-mongodb</artifactId>
@@ -31,9 +36,9 @@
             </exclusions>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.opencb.bionetdb</groupId>-->
-            <!--<artifactId>bionetdb-core</artifactId>-->
-            <!--<version>${bionetdb.version}</version>-->
+        <!--<groupId>org.opencb.bionetdb</groupId>-->
+        <!--<artifactId>bionetdb-core</artifactId>-->
+        <!--<version>${bionetdb.version}</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -44,10 +49,6 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>commons-io</groupId>-->
-<!--            <artifactId>commons-io</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>

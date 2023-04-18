@@ -34,6 +34,8 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
+        <jwt.version>0.11.5</jwt.version>
+
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
@@ -169,6 +171,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>

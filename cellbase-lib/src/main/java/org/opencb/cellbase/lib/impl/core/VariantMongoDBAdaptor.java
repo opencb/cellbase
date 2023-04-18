@@ -736,7 +736,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);

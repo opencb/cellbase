@@ -40,6 +40,7 @@ public class CellBaseConfiguration {
     private String maintenanceFlagFile;
     private String maintainerContact;
     private String defaultOutdir;
+    private String secretKey;
     private Databases databases;
     private DownloadProperties download;
     private SpeciesProperties species;
@@ -183,6 +184,15 @@ public class CellBaseConfiguration {
 
     public void setMaintainerContact(String maintainerContact) {
         this.maintainerContact = maintainerContact;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public CellBaseConfiguration setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+        return this;
     }
 
     public Databases getDatabases() {

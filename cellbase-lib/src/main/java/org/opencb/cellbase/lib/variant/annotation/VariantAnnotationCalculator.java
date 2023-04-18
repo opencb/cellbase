@@ -34,7 +34,6 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
@@ -70,6 +69,7 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private int dataRelease;
+    private String token;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
 
@@ -82,7 +82,6 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
-    private String enable = null;
 
     private HgvsCalculator hgvsCalculator;
 
@@ -92,8 +91,8 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
-            throws CellBaseException {
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String token,
+                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
@@ -103,6 +102,7 @@ public class VariantAnnotationCalculator {
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
         this.dataRelease = dataRelease;
+        this.token = token;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
@@ -503,6 +503,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            queryOptions.add("token", token);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
@@ -762,10 +763,6 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
-
-        enable = (queryOptions.get("enable") != null
-                ? (String) queryOptions.get("enable") : "");
-        logger.debug("enable = {}", enable);
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer, int dataRelease)
@@ -1745,19 +1742,10 @@ public class VariantAnnotationCalculator {
             }
         }
 
-
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                if (enable.contains("hgmd")) {
-                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
-                } else {
-                    for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
-                        if (entry.getSource() == null || !EtlCommons.HGMD_DATA.equals(entry.getSource().getName())) {
-                            traitAssociations.add(entry);
-                        }
-                    }
-                }
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
             }
             return traitAssociations;
         }
@@ -1929,7 +1917,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query splice");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, dataRelease));
+                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, token, dataRelease));
             }
             logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
