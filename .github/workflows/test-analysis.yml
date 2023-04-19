@@ -21,7 +21,7 @@ on:
         required: true
 
 env:
-  xb_version: "1.5.1"
+  xb_version: "1.6.0"
 
 jobs:
   test:
@@ -37,10 +37,10 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Start MongoDB v5.0
+      - name: Start MongoDB v6.0
         uses: supercharge/mongodb-github-action@1.8.0
         with:
-          mongodb-version: 5.0
+          mongodb-version: 6.0
           mongodb-replica-set: rs-test
       - name: Test and Analyze
         env:
