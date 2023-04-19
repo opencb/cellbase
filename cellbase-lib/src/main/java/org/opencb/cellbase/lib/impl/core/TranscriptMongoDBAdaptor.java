@@ -83,13 +83,13 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease)
-            throws CellBaseException {
-        return info(ids, projectionQueryOptions, null, dataRelease);
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease,
+                                                     String token) throws CellBaseException {
+        return info(ids, projectionQueryOptions, null, dataRelease, token);
     }
 
     public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source,
-                                                     int dataRelease) throws CellBaseException {
+                                                     int dataRelease, String token) throws CellBaseException {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
@@ -223,6 +223,7 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
                         break;
                     case "source":
                     case "dataRelease":
+                    case "token":
                         // Do nothing
                         break;
                     default:

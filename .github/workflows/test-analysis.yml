@@ -12,9 +12,16 @@ on:
         required: true
       SSH_TESTING_SERVER_PASSWORD:
         required: true
+    inputs:
+      report_dir:
+        type: string
+        required: true
+      report_context:
+        type: string
+        required: true
 
 env:
-  xb_version: "1.5.0"
+  xb_version: "1.6.0"
 
 jobs:
   test:
@@ -30,10 +37,10 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Start MongoDB v5.0
+      - name: Start MongoDB v6.0
         uses: supercharge/mongodb-github-action@1.8.0
         with:
-          mongodb-version: 5.0
+          mongodb-version: 6.0
           mongodb-replica-set: rs-test
       - name: Test and Analyze
         env:
@@ -62,7 +69,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: ${{ matrix.module }}/target/site
-          remote: /var/www/html/reports/development/${{ env.xb_version }}/${{ github.ref_name }}/cellbase/${{ github.sha }}/unit/${{ matrix.module }}
+          remote: /var/www/html/reports/${{ inputs.report_context }}/${{ env.xb_version }}/${{ inputs.report_dir }}/unit/${{ matrix.module }}
           host: ${{ secrets.SSH_TESTING_SERVER_HOST}}
           port: ${{ secrets.SSH_TESTING_SERVER_PORT}}
           username: ${{ secrets.SSH_TESTING_SERVER_USER }}

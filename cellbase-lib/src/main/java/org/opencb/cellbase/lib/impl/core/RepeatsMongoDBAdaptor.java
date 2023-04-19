@@ -68,6 +68,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                         createRegionQuery(query, value, MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE, andBsonList);
                         break;
                     case "dataRelease":
+                    case "token":
                         // Do nothing
                         break;
                     default:
@@ -99,7 +100,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Repeat>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<Repeat>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token) {
         return null;
     }
 

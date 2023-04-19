@@ -108,6 +108,9 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
                         variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
                         aaReference, aaAlternate, dataRelease);
         if (proteinVariantAnnotation.getResults() != null && revelResults.getResults() != null) {
+            if (proteinVariantAnnotation.getResults().get(0).getSubstitutionScores() == null) {
+                proteinVariantAnnotation.getResults().get(0).setSubstitutionScores(new ArrayList<>());
+            }
             proteinVariantAnnotation.getResults().get(0).getSubstitutionScores().add(
                     new Score(revelResults.first().getScore(), "revel", ""));
         }

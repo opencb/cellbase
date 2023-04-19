@@ -82,13 +82,13 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
             throws CellBaseException {
-        return info(ids, queryOptions, null, dataRelease);
+        return info(ids, queryOptions, null, dataRelease, token);
     }
 
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source, int dataRelease)
-            throws CellBaseException {
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source, int dataRelease,
+                                               String token) throws CellBaseException {
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {
@@ -207,6 +207,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
                         break;
                     case "source":
                     case "dataRelease":
+                    case "token":
                         // do nothing
                         break;
                     default:

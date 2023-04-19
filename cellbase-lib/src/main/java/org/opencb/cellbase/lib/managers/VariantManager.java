@@ -35,15 +35,14 @@ import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -93,7 +92,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease);
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
@@ -114,7 +113,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, int dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory);
         List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
         return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
     }
@@ -130,8 +129,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
-                                                                              String enable,
-                                                                              int dataRelease)
+                                                                              int dataRelease,
+                                                                              String token)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
@@ -169,14 +168,11 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (consequenceTypeSource != null) {
             queryOptions.put("consequenceTypeSource", consequenceTypeSource);
         }
-        if (enable != null) {
-            queryOptions.put("enable", enable);
-        }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, cellbaseManagerFactory);
-        List<CellBaseDataResult<VariantAnnotation>> queryResults =
-                variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
+                dataRelease, token, cellbaseManagerFactory);
+        List<CellBaseDataResult<VariantAnnotation>> queryResults = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
         return queryResults;
     }
 
@@ -290,17 +286,35 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, int dataRelease) throws CellBaseException {
-        return spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
-                dataRelease);
+    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, String token, int dataRelease) throws CellBaseException {
+        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+
+        CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
+                variant.getReference(), variant.getAlternate(), dataRelease);
+
+        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
+            return DataAccessTokenUtils.filterDataSources(result, validSources);
+        } else {
+            return result;
+        }
     }
 
-    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, int dataRelease) throws CellBaseException {
+    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, String token, int dataRelease)
+            throws CellBaseException {
+        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
-        for (Variant variant: variants) {
-            cellBaseDataResults.add(getSpliceScoreVariant(variant, dataRelease));
+        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
+            for (Variant variant : variants) {
+                cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                        variant.getAlternate(), dataRelease));
+            }
+        } else {
+            for (Variant variant : variants) {
+                cellBaseDataResults.add(DataAccessTokenUtils.filterDataSources(spliceDBAdaptor.getScores(variant.getChromosome(),
+                        variant.getStart(), variant.getReference(), variant.getAlternate(), dataRelease), validSources));
+            }
         }
         return cellBaseDataResults;
     }
-
 }

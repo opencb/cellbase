@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>5.3.0</version>
+    <version>5.4.0</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -23,8 +23,8 @@
 
     <properties>
         <pycellbase.version>${project.version}</pycellbase.version>
-        <java-common-libs.version>4.7.0</java-common-libs.version>
-        <biodata.version>2.7.0</biodata.version>
+        <java-common-libs.version>4.8.0</java-common-libs.version>
+        <biodata.version>2.8.0</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.11.4</jackson.version>
         <jersey.version>2.30.1</jersey.version>
@@ -34,6 +34,8 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
+        <jwt.version>0.11.5</jwt.version>
+
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
@@ -92,6 +94,13 @@
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/opencb</url>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
@@ -162,6 +171,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
@@ -427,7 +441,17 @@
         </profile>
 
         <profile>
-            <id>deploy</id>
+            <id>deploy-maven</id>
+            <distributionManagement>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
@@ -494,16 +518,17 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>deploy-github</id>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub OpenCB Apache Maven Packages</name>
+                    <url>https://maven.pkg.github.com/opencb/cellbase</url>
+                </repository>
+            </distributionManagement>
+            <build>
+            </build>
+        </profile>
     </profiles>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

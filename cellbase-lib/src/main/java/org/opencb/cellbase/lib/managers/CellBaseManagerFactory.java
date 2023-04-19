@@ -65,8 +65,6 @@ public class CellBaseManagerFactory {
         tfManagers = new HashMap<>();
         ontologyManagers = new HashMap<>();
         dataReleaseManagers = new HashMap<>();
-
-        System.out.println("In CellBaseManagerFactory");
     }
 
     private String getMultiKey(String species, String assembly) {
@@ -92,9 +90,6 @@ public class CellBaseManagerFactory {
             if (!validateSpeciesAssembly(species, assembly)) {
                 throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
-            System.out.println("=======================================");
-            System.out.println("configuration Manager Factory = " + configuration);
-            System.out.println("=======================================");
             geneManagers.put(multiKey, new GeneManager(species, assembly, configuration));
         }
         return geneManagers.get(multiKey);
@@ -155,9 +150,6 @@ public class CellBaseManagerFactory {
             if (!validateSpeciesAssembly(species, assembly)) {
                 throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
             }
-            System.out.println("=======================================");
-            System.out.println("configuration VariantManager Factory = " + configuration);
-            System.out.println("=======================================");
             variantManagers.put(multiKey, new VariantManager(species, assembly, configuration));
         }
         return variantManagers.get(multiKey);

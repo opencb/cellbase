@@ -127,6 +127,8 @@ public class VariantAnnotationUtils {
     public static final String CDS_START_NF = "cds_start_NF";
     public static final String CDS_END_NF = "cds_end_NF";
 
+    public static final String FUNCTION_UNCERTAIN_VARIANT = "function_uncertain_variant";
+
     public static final Map<String, Map<String, Boolean>> IS_SYNONYMOUS_CODON = new HashMap<>();
     public static final Map<String, Map<String, Boolean>> MT_IS_SYNONYMOUS_CODON = new HashMap<>();
     public static final Map<String, String> SO_NAMES_CORRECTIONS = new HashMap<>();
@@ -463,10 +465,15 @@ public class VariantAnnotationUtils {
         }
 
         COMPLEMENTARY_NT.put('A', 'T');
+        COMPLEMENTARY_NT.put('a', 't');
         COMPLEMENTARY_NT.put('C', 'G');
+        COMPLEMENTARY_NT.put('c', 'g');
         COMPLEMENTARY_NT.put('G', 'C');
+        COMPLEMENTARY_NT.put('g', 'c');
         COMPLEMENTARY_NT.put('T', 'A');
+        COMPLEMENTARY_NT.put('t', 'a');
         COMPLEMENTARY_NT.put('N', 'N');
+        COMPLEMENTARY_NT.put('n', 'n');
 
         POLYPHEN_DESCRIPTIONS.put(0, "probably damaging");
         POLYPHEN_DESCRIPTIONS.put(1, "possibly damaging");
