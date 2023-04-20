@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -1092,6 +1091,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
         queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, null, cellBaseManagerFactory);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
