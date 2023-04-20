@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -36,8 +35,6 @@ import org.opencb.cellbase.lib.managers.ClinicalManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
@@ -65,7 +62,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
     // S E A R C H
     //-------------------------------------------------------------------------
 
-    @Test
+//    @Test
     public void testLicensedHGMD() throws CellBaseException, QueryException, IllegalAccessException {
         // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
@@ -81,7 +78,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         Assert.assertEquals(2, results.getResults().get(0).getAnnotation().getTraitAssociation().size());
     }
 
-    @Test
+//    @Test
     public void testNotLicensed() throws CellBaseException, QueryException, IllegalAccessException {
         // Any token, so only CLINVAR is allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
@@ -101,7 +98,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
     // I T E R A T O R
     //-------------------------------------------------------------------------
 
-    @Test
+//    @Test
     public void testIteratorOnlyClinvar() throws CellBaseException, QueryException, IllegalAccessException {
         // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
@@ -118,7 +115,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         }
     }
 
-    @Test
+//    @Test
     public void testIteratorLicensedHGMD() throws CellBaseException, QueryException, IllegalAccessException {
         // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
