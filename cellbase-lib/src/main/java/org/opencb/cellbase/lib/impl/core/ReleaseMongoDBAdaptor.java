@@ -18,13 +18,17 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.TransactionOptions;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
@@ -34,7 +38,10 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
@@ -62,12 +69,55 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return mongoDBCollection.insert(document, QueryOptions.empty());
     }
 
-    public void update(int release, String field, Object value) {
+    public DataResult<DataRelease> update(int release, List<String> versions) throws CellBaseException {
+        Map<String, DataRelease> toUpdate = new HashMap<>();
+        for (String version : versions) {
+            DataResult<DataRelease> result = mongoDBCollection.find(Filters.eq("activeByDefaultInd", version), null, DataRelease.class,
+                    QueryOptions.empty());
+            if (result.getNumResults() > 1) {
+                throw new CellBaseException("There's something wrong in the CellBase MongoDB. CellBase version " + version + " has"
+                        + " multiple data releases: " + StringUtils.join(result.getResults().stream().map(dr -> dr.getRelease()), ","));
+            }
+            if (result.getNumResults() == 1) {
+                toUpdate.put(version, result.first());
+            }
+        }
+
+        // Start a transaction
+        ClientSession session = mongoDataStore.startSession();
+        try {
+            session.startTransaction(TransactionOptions.builder().build());
+
+            // Update data releases by removing versions
+            for (Map.Entry<String, DataRelease> entry : toUpdate.entrySet()) {
+                DataRelease dataRelease = entry.getValue();
+                List<String> updatedVersions = new ArrayList<>(dataRelease.getActiveByDefaultIn());
+                updatedVersions.remove(entry.getKey());
+                update(entry.getValue().getRelease(), "activeByDefaultIn", updatedVersions);
+            }
+
+            // Update data release by adding versions
+            update(release, "activeByDefaultIn", versions);
+
+            // Commit the transaction
+            session.commitTransaction();
+        } catch (Exception e) {
+            // Roll back the transaction if any operation fails
+            session.abortTransaction();
+            System.err.println("Transaction rolled back: " + e.getMessage());
+        } finally {
+            session.close();
+        }
+
+        return  mongoDBCollection.find(Filters.eq("release", release), null, DataRelease.class, QueryOptions.empty());
+    }
+
+    public DataResult update(int release, String field, Object value) {
         Bson query = Filters.eq("release", release);
         Document projection = new Document(field, true);
         Bson update = Updates.set(field, value);
         QueryOptions queryOptions = new QueryOptions("replace", true);
-        mongoDBCollection.findAndUpdate(query, projection, null, update, queryOptions);
+        return mongoDBCollection.findAndUpdate(query, projection, null, update, DataRelease.class, queryOptions);
     }
 
     @Override

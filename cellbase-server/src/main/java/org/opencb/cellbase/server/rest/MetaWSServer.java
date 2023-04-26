@@ -27,11 +27,11 @@ import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;
@@ -121,9 +121,7 @@ public class MetaWSServer extends GenericRestWSServer {
     public Response getDataRelease(@PathParam("species")
                                    @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
                                    @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                           String assembly,
-                                   @ApiParam(name = "onlyActive", value = "Set to true if you only want to get the active data relaease")
-                                   @QueryParam("onlyActive") @DefaultValue("false") boolean onlyActive) {
+                                           String assembly) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -136,17 +134,7 @@ public class MetaWSServer extends GenericRestWSServer {
                         + assembly + "'");
             }
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-            CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
-            if (onlyActive) {
-                for (DataRelease release : result.getResults()) {
-                    if (release.isActive()) {
-                        return createOkResponse(new CellBaseDataResult<>(result.getId(), result.getTime(), result.getEvents(), 1,
-                                Collections.singletonList(release), 1));
-                    }
-                }
-            }
-
-            return createOkResponse(result);
+            return createOkResponse(dataReleaseManager.getReleases());
         } catch (CellBaseException e) {
             return createErrorResponse(e);
         }

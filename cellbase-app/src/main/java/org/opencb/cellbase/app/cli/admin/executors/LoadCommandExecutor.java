@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -105,7 +106,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         dataReleaseManager = new DataReleaseManager(database, configuration);
 
         checkParameters();
-        logger.info("Loading in data release " + dataRelease);
+        logger.info("Loading in data release {}", dataRelease);
 
         if (loadCommandOptions.data != null) {
             // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
@@ -359,49 +360,35 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available for database " + database);
         }
-        int lastDataRelease = 0;
-        int defaultDataRelease = 0;
+        DataRelease lastDataRelease = null;
         for (DataRelease dataRelease : dataReleaseResults.getResults()) {
-            if (dataRelease.isActive()) {
-                defaultDataRelease = dataRelease.getRelease();
-            }
-            if (dataRelease.getRelease() > lastDataRelease) {
-                lastDataRelease = dataRelease.getRelease();
+            if (lastDataRelease == null) {
+                lastDataRelease = dataRelease;
+            } else if (dataRelease.getRelease() > lastDataRelease.getRelease()) {
+                lastDataRelease = dataRelease;
             }
         }
-        if (lastDataRelease == defaultDataRelease) {
-            throw new CellBaseException("Loading data in the active data release (" + defaultDataRelease + ") is not permitted.");
+        if (lastDataRelease == null) {
+            throw new CellBaseException("Loading data is not permitted since no data release is found");
         }
-        dataRelease = lastDataRelease;
-
-//        for (DataRelease dr : dataReleaseResults.getResults()) {
-//            if (dr.getRelease() == dataRelease) {
-//                for (String loadOption : loadOptions) {
-//                    if (dr.getCollections().containsKey(loadOption)) {
-//                        String collectionName = CellBaseDBAdaptor.buildCollectionName(loadOption, dataRelease);
-//                        if (dr.getCollections().get(loadOption).equals(collectionName)) {
-//                           throw new CellBaseException("Impossible load data " + loadOption + " with release " + dataRelease + " since it"
-//                                    + " has already been done.");
-//                        }
-//                    }
-//                }
-//                break;
-//            }
-//        }
+        if (CollectionUtils.isNotEmpty(lastDataRelease.getActiveByDefaultIn())) {
+            throw new CellBaseException("Loading data is not permitted for data release " + lastDataRelease.getRelease() + " since it has"
+                    + " already assigned CellBase versions:" + StringUtils.join(lastDataRelease.getActiveByDefaultIn(), ","));
+        }
+        dataRelease = lastDataRelease.getRelease();
     }
 
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, LoaderException {
+            IOException, LoaderException, CellBaseException {
         // First load data
         // Common loading process from CellBase variation data models
         if (field == null) {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-                return entry.getFileName().toString().startsWith("variation_chr");
-            });
+            DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                    entry -> entry.getFileName().toString().startsWith("variation_chr"));
 
             for (Path entry : stream) {
-                logger.info("Loading file '{}'", entry.toString());
+                logger.info("Loading file '{}'", entry);
                 loadRunner.load(input.resolve(entry.getFileName()), "variation", dataRelease);
             }
 
@@ -416,20 +403,20 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             // Custom update required e.g. population freqs loading
         } else {
-            logger.info("Loading file '{}'", input.toString());
+            logger.info("Loading file '{}'", input);
             loadRunner.load(input, "variation", dataRelease, field, innerFields);
         }
     }
 
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException {
+            IOException, CellBaseException {
         // Load data
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("conservation_");
-        });
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                entry -> entry.getFileName().toString().startsWith("conservation_"));
+
         for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
+            logger.info("Loading file '{}'", entry);
             loadRunner.load(input.resolve(entry.getFileName()), "conservation", dataRelease);
         }
 
@@ -447,13 +434,13 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException {
+            IOException, CellBaseException {
         // Load data
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("prot_func_pred_");
-        });
+        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                entry -> entry.getFileName().toString().startsWith("prot_func_pred_"));
+
         for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
+            logger.info("Loading file '{}'", entry);
             loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction", dataRelease);
         }
 
@@ -483,11 +470,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                 ));
                 dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANTS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());
             }
         } else {
-            throw new FileNotFoundException("File " + path.toString() + " does not exist");
+            throw new FileNotFoundException("File " + path + " does not exist");
         }
     }
 
@@ -510,18 +497,18 @@ public class LoadCommandExecutor extends CommandExecutor {
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());
             }
         } else {
-            logger.warn("Repeats file {} not found", path.toString());
+            logger.warn("Repeats file {} not found", path);
             logger.warn("No repeats data will be loaded");
         }
     }
 
     private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException {
+            IOException, CellBaseException {
         // Load data
         logger.info("Loading splice scores from '{}'", input);
         // MMSplice scores
@@ -543,17 +530,17 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,
             ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         // Get files from folder
-        DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder, entry -> {
-            return entry.getFileName().toString().startsWith("splice_score_");
-        });
+        DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder,
+                entry -> entry.getFileName().toString().startsWith("splice_score_"));
+
         // Load from JSON files
         for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
+            logger.info("Loading file '{}'", entry);
             loadRunner.load(spliceFolder.resolve(entry.getFileName()), "splice_score", dataRelease);
         }
     }
 
-    private void loadPubMed() {
+    private void loadPubMed() throws CellBaseException {
         Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
 
         if (Files.exists(pubmedPath)) {
@@ -576,7 +563,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
             dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
         } else {
-            logger.warn("PubMed folder {} not found", pubmedPath.toString());
+            logger.warn("PubMed folder {} not found", pubmedPath);
         }
     }
 
@@ -589,7 +576,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         try {
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
         } catch (IOException e) {
-            logger.error("Error creating index: " +  e.getMessage());
+            logger.error("Error creating index: {}", e.getMessage());
         }
     }
 }

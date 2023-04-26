@@ -10,6 +10,8 @@ import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
     public DataReleaseManagerTest() throws IOException {
@@ -27,14 +29,12 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     @Disabled
     public void test1() throws JsonProcessingException, CellBaseException {
         DataReleaseManager dataReleaseManager = new DataReleaseManager(CELLBASE_DBNAME, cellBaseConfiguration);
+
         DataRelease firstRelease = dataReleaseManager.createRelease();
-        if (firstRelease != null) {
-            dataReleaseManager.active(firstRelease.getRelease());
-        }
+        assertEquals(firstRelease.getRelease(), 1);
+
         DataRelease secondRelease = dataReleaseManager.createRelease();
-        if (secondRelease != null) {
-            dataReleaseManager.active(secondRelease.getRelease());
-        }
+        assertEquals(secondRelease.getRelease(), 2);
     }
 
 }
