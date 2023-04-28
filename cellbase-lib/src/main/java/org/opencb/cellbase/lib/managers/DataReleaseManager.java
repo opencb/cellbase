@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
@@ -85,6 +87,7 @@ public class DataReleaseManager extends AbstractManager {
             if (MapUtils.isNotEmpty(lastRelease.getCollections())) {
                 // Increment the release number, only if the previous release has collections
                 lastRelease.setRelease(lastRelease.getRelease() + 1)
+                        .setActiveByDefaultIn(new ArrayList<>())
                         .setDate(sdf.format(new Date()));
                 // Write it to the database
                 releaseDBAdaptor.insert(lastRelease);
@@ -209,5 +212,31 @@ public class DataReleaseManager extends AbstractManager {
 
     public String getMaintainerContact() {
         return configuration.getMaintainerContact();
+    }
+
+    public int checkDataRelease(int inRelease) throws CellBaseException {
+        int outRelease = inRelease;
+        if (outRelease < 0) {
+            throw new CellBaseException("Invalid data release " + outRelease + ". Data release must be greater or equal to 0");
+        }
+        if (outRelease == 0) {
+            String[] split = GitRepositoryState.get().getBuildVersion().split("[.-]");
+            String version = "v" + split[0] + "." + split[1];
+            outRelease = getDefault(version).getRelease();
+            logger.info("Using data release 0: it means to take default data release '" + outRelease + "' for CellBase version '"
+                    + version + "'");
+            return outRelease;
+        }
+
+        List<DataRelease> dataReleases = getReleases().getResults();
+        for (DataRelease dataRelease : dataReleases) {
+            if (outRelease == dataRelease.getRelease()) {
+                return outRelease;
+            }
+        }
+
+        throw new CellBaseException("Invalid data release " + outRelease + ". Valid data releases are: "
+                + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease()).collect(Collectors.toList()), ",") + ". And use 0 to"
+                + " use the default data release.");
     }
 }

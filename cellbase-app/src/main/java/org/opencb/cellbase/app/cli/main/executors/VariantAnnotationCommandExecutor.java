@@ -478,9 +478,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // Normalization should just be performed in one place: before calling the annotation calculator - within the
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
+            CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    variantAnnotationCommandOptions.dataRelease, variantAnnotationCommandOptions.token,
-                    new CellBaseManagerFactory(configuration)), serverQueryOptions);
+                    variantAnnotationCommandOptions.dataRelease, variantAnnotationCommandOptions.token, cellBaseManagerFactory),
+                    serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()

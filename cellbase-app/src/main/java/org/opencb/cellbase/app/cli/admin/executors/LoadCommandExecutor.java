@@ -114,7 +114,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 configuration.getDatabases().getMongodb().getOptions().put("authenticationDatabase",
                         loadCommandOptions.loaderParams.get("authenticationDatabase"));
             }
-            loadRunner = new LoadRunner(loader, database, numThreads, configuration);
+            loadRunner = new LoadRunner(loader, database, numThreads, dataReleaseManager, configuration);
             if (createIndexes) {
                 Path indexFile = Paths.get(this.appHome).resolve("conf").resolve("mongodb-indexes.json");
                 indexManager = new IndexManager(database, indexFile, configuration);
@@ -317,7 +317,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
             ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
-            ClassNotFoundException {
+            ClassNotFoundException, LoaderException, CellBaseException {
         File file = new File(path.toString());
         if (file.exists()) {
             if (file.isFile()) {
@@ -356,26 +356,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Check data release
-        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
-        if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
-            throw new CellBaseException("No data releases are available for database " + database);
-        }
-        DataRelease lastDataRelease = null;
-        for (DataRelease dataRelease : dataReleaseResults.getResults()) {
-            if (lastDataRelease == null) {
-                lastDataRelease = dataRelease;
-            } else if (dataRelease.getRelease() > lastDataRelease.getRelease()) {
-                lastDataRelease = dataRelease;
-            }
-        }
-        if (lastDataRelease == null) {
-            throw new CellBaseException("Loading data is not permitted since no data release is found");
-        }
-        if (CollectionUtils.isNotEmpty(lastDataRelease.getActiveByDefaultIn())) {
-            throw new CellBaseException("Loading data is not permitted for data release " + lastDataRelease.getRelease() + " since it has"
-                    + " already assigned CellBase versions:" + StringUtils.join(lastDataRelease.getActiveByDefaultIn(), ","));
-        }
-        dataRelease = lastDataRelease.getRelease();
+        dataRelease = getDataReleaseForLoading(dataReleaseManager).getRelease();
     }
 
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
@@ -410,7 +391,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, CellBaseException {
+            IOException, CellBaseException, LoaderException {
         // Load data
         DirectoryStream<Path> stream = Files.newDirectoryStream(input,
                 entry -> entry.getFileName().toString().startsWith("conservation_"));
@@ -434,7 +415,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, CellBaseException {
+            IOException, CellBaseException, LoaderException {
         // Load data
         DirectoryStream<Path> stream = Files.newDirectoryStream(input,
                 entry -> entry.getFileName().toString().startsWith("prot_func_pred_"));
@@ -472,6 +453,8 @@ public class LoadCommandExecutor extends CommandExecutor {
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());
+            } catch (LoaderException e) {
+                e.printStackTrace();
             }
         } else {
             throw new FileNotFoundException("File " + path + " does not exist");
@@ -499,6 +482,8 @@ public class LoadCommandExecutor extends CommandExecutor {
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());
+            } catch (LoaderException e) {
+                e.printStackTrace();
             }
         } else {
             logger.warn("Repeats file {} not found", path);
@@ -506,9 +491,8 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException,
-            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, CellBaseException {
+    private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
+            IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, CellBaseException, LoaderException {
         // Load data
         logger.info("Loading splice scores from '{}'", input);
         // MMSplice scores
@@ -528,7 +512,8 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,
-            ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+            ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+            LoaderException, CellBaseException {
         // Get files from folder
         DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder,
                 entry -> entry.getFileName().toString().startsWith("splice_score_"));
@@ -551,7 +536,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                     try {
                         loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                            | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                            | IllegalAccessException | ExecutionException | IOException | InterruptedException | LoaderException e) {
                         logger.error("Error loading file '{}': {}", file.getName(), e.toString());
                     }
                 }
@@ -578,5 +563,29 @@ public class LoadCommandExecutor extends CommandExecutor {
         } catch (IOException e) {
             logger.error("Error creating index: {}", e.getMessage());
         }
+    }
+
+    private DataRelease getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
+        // Check data release
+        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
+        if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
+            throw new CellBaseException("No data releases are available");
+        }
+        DataRelease lastDataRelease = null;
+        for (DataRelease dataRelease : dataReleaseResults.getResults()) {
+            if (lastDataRelease == null) {
+                lastDataRelease = dataRelease;
+            } else if (dataRelease.getRelease() > lastDataRelease.getRelease()) {
+                lastDataRelease = dataRelease;
+            }
+        }
+        if (lastDataRelease == null) {
+            throw new CellBaseException("Loading data is not permitted since no data release is found");
+        }
+        if (CollectionUtils.isNotEmpty(lastDataRelease.getActiveByDefaultIn())) {
+            throw new CellBaseException("Loading data is not permitted for data release " + lastDataRelease.getRelease() + " since it has"
+                    + " already assigned CellBase versions:" + StringUtils.join(lastDataRelease.getActiveByDefaultIn(), ","));
+        }
+        return lastDataRelease;
     }
 }

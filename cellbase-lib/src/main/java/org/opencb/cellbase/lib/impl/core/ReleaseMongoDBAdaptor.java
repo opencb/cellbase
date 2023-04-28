@@ -70,16 +70,23 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     public DataResult<DataRelease> update(int release, List<String> versions) throws CellBaseException {
-        Map<String, DataRelease> toUpdate = new HashMap<>();
+        DataRelease currDataRelease = mongoDBCollection.find(Filters.eq("release", release), null, DataRelease.class, QueryOptions.empty())
+                .first();
+
+        Map<Integer, List<String>> toUpdate = new HashMap<>();
         for (String version : versions) {
-            DataResult<DataRelease> result = mongoDBCollection.find(Filters.eq("activeByDefaultInd", version), null, DataRelease.class,
+            DataResult<DataRelease> result = mongoDBCollection.find(Filters.eq("activeByDefaultIn", version), null, DataRelease.class,
                     QueryOptions.empty());
             if (result.getNumResults() > 1) {
                 throw new CellBaseException("There's something wrong in the CellBase MongoDB. CellBase version " + version + " has"
                         + " multiple data releases: " + StringUtils.join(result.getResults().stream().map(dr -> dr.getRelease()), ","));
             }
             if (result.getNumResults() == 1) {
-                toUpdate.put(version, result.first());
+                DataRelease dr = result.first();
+                if (!toUpdate.containsKey(dr.getRelease())) {
+                    toUpdate.put(dr.getRelease(), dr.getActiveByDefaultIn());
+                }
+                toUpdate.get(dr.getRelease()).remove(version);
             }
         }
 
@@ -89,15 +96,14 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             session.startTransaction(TransactionOptions.builder().build());
 
             // Update data releases by removing versions
-            for (Map.Entry<String, DataRelease> entry : toUpdate.entrySet()) {
-                DataRelease dataRelease = entry.getValue();
-                List<String> updatedVersions = new ArrayList<>(dataRelease.getActiveByDefaultIn());
-                updatedVersions.remove(entry.getKey());
-                update(entry.getValue().getRelease(), "activeByDefaultIn", updatedVersions);
+            for (Map.Entry<Integer, List<String>> entry : toUpdate.entrySet()) {
+                update(entry.getKey(), "activeByDefaultIn", entry.getValue());
             }
 
             // Update data release by adding versions
-            update(release, "activeByDefaultIn", versions);
+            List<String> vers = new ArrayList<>(currDataRelease.getActiveByDefaultIn());
+            vers.addAll(versions);
+            update(release, "activeByDefaultIn", vers);
 
             // Commit the transaction
             session.commitTransaction();
