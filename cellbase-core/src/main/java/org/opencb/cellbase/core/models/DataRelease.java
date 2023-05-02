@@ -75,6 +75,15 @@ public class DataRelease {
         return this;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public DataRelease setActive(boolean active) {
+        this.active = active;
+        return this;
+    }
+
     public List<String> getActiveByDefaultIn() {
         return activeByDefaultIn;
     }

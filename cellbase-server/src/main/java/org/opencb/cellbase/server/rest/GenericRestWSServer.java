@@ -234,7 +234,7 @@ public class GenericRestWSServer implements IWSServer {
 //        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
 //        System.out.println("version = " + version);
 //        System.out.println("*************************************");
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
+        if (!version.startsWith(cellBaseConfiguration.getVersion())) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("Version not valid: '" + version + "'");
         }

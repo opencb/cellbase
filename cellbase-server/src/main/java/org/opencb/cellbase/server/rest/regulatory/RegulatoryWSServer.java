@@ -79,6 +79,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -98,6 +99,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setFacet("featureType");
             CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
@@ -120,6 +122,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setFacet("featureClass");
             CellBaseDataResult queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
@@ -161,6 +164,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<RegulatoryFeature> queryResults = regulatoryManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

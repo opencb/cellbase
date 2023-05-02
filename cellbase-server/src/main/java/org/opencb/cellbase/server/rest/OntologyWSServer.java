@@ -112,6 +112,7 @@ public class OntologyWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search OntologyQuery: " + query.toString());
             CellBaseDataResult<OntologyTerm> queryResults = ontologyManager.search(query);
             return createOkResponse(queryResults);
@@ -167,6 +168,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = ontologyManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
