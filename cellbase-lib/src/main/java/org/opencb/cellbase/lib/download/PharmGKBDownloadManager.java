@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.net.URL;
@@ -29,9 +28,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class PharmGKBDownloadManager extends AbstractDownloadManager {
 
-    private static final String PHARMGKB_NAME = "PharmGKB";
     public PharmGKBDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
@@ -41,7 +41,7 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading PharmGKB files...");
 
-        Path folder = downloadFolder.resolve(PHARMGKB_NAME);
+        Path folder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
         Files.createDirectories(folder);
 
         // Downloads PubMed XML files
@@ -50,8 +50,8 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
         List<String> urls = new ArrayList<>();
         urls.add(pharmGKB.getHost());
         urls.addAll(pharmGKB.getFiles());
-        saveVersionData(EtlCommons.PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
-                folder.resolve("pharmgkbVersion.json"));
+        saveVersionData(PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
+                folder.resolve(PHARMGKB_VERSION_FILENAME));
 
         List<DownloadFile> list = new ArrayList<>();
         for (String url : pharmGKB.getFiles()) {

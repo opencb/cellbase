@@ -47,7 +47,11 @@ public class EtlCommons {
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
+
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
+    public static final String PHARMGKB_NAME = "PharmGKB";
+    public static final String PHARMGKB_DATA = "pharmgkb";
+    public static final String PHARMGKB_VERSION_FILENAME = "pharmgkbVersion.json";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
     public static final String CLINVAR_VERSION = "2022.11";
