@@ -64,7 +64,7 @@ import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
-    protected int defaultDataRelease = -1;
+    protected int defaultDataRelease = 0;
     protected String species;
 
     protected Query query;
@@ -170,7 +170,7 @@ public class GenericRestWSServer implements IWSServer {
         checkVersion();
 
         // Set default data release if necessary
-        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease == -1) {
+        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease < 1) {
             // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
             assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
 

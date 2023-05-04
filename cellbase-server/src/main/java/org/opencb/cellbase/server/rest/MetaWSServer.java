@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.query.QueryException;
@@ -82,9 +83,10 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
             + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
-                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
-                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                       String assembly) {
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -145,7 +147,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input token and their expiration date",
             response = Map.class, responseContainer = "QueryResponse")
     public Response getLicensedData(@ApiParam(name = "token", required = true, value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION)
-                                           @QueryParam("token") String token) {
+                                    @QueryParam("token") String token) {
         try {
             DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
             DataAccessTokenSources sources = datManager.decode(token);
@@ -287,12 +289,33 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Returns info about current CellBase code.",
             response = Map.class, responseContainer = "QueryResponse")
     public Response getAbout() {
-        Map<String, String> info = new HashMap<>(3);
+        Map<String, String> info = new LinkedHashMap<>();
         info.put("Program", "CellBase (OpenCB)");
-        info.put("Version", GitRepositoryState.get().getBuildVersion());
+        info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+        info.put("Version", version);
+        info.put("Build version", GitRepositoryState.get().getBuildVersion());
         info.put("Git branch", GitRepositoryState.get().getBranch());
         info.put("Git commit", GitRepositoryState.get().getCommitId());
-        info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+
+        // Get default data releases
+        species = "hsapiens";
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, species);
+        List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
+        if (CollectionUtils.isNotEmpty(assemblies)) {
+            DataReleaseManager dataReleaseManager;
+            for (SpeciesConfiguration.Assembly assembly : assemblies) {
+                String key = "Default data release for " + version + " (" + species + "/" + assembly.getName() + ")";
+                try {
+                    dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly.getName());
+                    DataRelease defaultDataRelease = dataReleaseManager.getDefault(version);
+                    info.put(key, String.valueOf(defaultDataRelease.getRelease()));
+                } catch (CellBaseException e) {
+                    info.put(key, "ERROR: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+
         CellBaseDataResult queryResult = new CellBaseDataResult();
         queryResult.setId("about");
         queryResult.setTime(0);

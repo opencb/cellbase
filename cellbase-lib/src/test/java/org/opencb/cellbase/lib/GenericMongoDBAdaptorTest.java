@@ -83,13 +83,15 @@ public class GenericMongoDBAdaptorTest {
         }
     }
 
-    protected void clearDB(String dbName) throws Exception {
+    protected void clearDB(String dbName) {
         logger.info("Cleaning MongoDB {}", dbName);
         try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
             MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
             MongoDBConfiguration  mongoDBConfiguration = builder.build();
             mongoManager.get(dbName, mongoDBConfiguration);
             mongoManager.drop(dbName);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
