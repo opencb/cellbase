@@ -172,6 +172,11 @@ download:
       - https://api.pharmgkb.org/v1/download/file/data/chemicals.zip
       - https://api.pharmgkb.org/v1/download/file/data/variants.zip
       - https://api.pharmgkb.org/v1/download/file/data/guidelineAnnotations.json.zip
+      - https://api.pharmgkb.org/v1/download/file/data/variantAnnotations.zip
+      - https://api.pharmgkb.org/v1/download/file/data/clinicalAnnotations.zip
+      - https://api.pharmgkb.org/v1/download/file/data/clinicalVariants.zip
+      - https://api.pharmgkb.org/v1/download/file/data/drugLabels.zip
+      - https://api.pharmgkb.org/v1/download/file/data/relationships.zip
 species:
   vertebrates:
     - id: hsapiens
