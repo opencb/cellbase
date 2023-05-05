@@ -8,12 +8,12 @@ on:
 
 jobs:
   build:
-    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@release-4.4.x
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
 
   sonar:
-    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@release-4.4.x
     needs: build
     with:
       sonarProjectKey: opencb_cellbase
