@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: CellBase Build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -50,7 +50,7 @@ jobs:
 #        run: mvn clean install -Dcheckstyle.skip
   deploy:
     name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 #    needs: test
     steps:
       - uses: actions/checkout@v2
@@ -124,7 +124,7 @@ jobs:
 
   site:
     name: Generate Maven site
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - uses: actions/checkout@v2
