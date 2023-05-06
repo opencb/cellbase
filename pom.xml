@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>5.1.9-SNAPSHOT</version>
+    <version>5.1.8-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -22,9 +22,9 @@
     </modules>
 
     <properties>
-        <cellbase.version>5.1.9-SNAPSHOT</cellbase.version>
-        <java-common-libs.version>4.7.1-SNAPSHOT</java-common-libs.version>
-        <biodata.version>2.3.2-SNAPSHOT</biodata.version>
+        <cellbase.version>5.1.8-SNAPSHOT</cellbase.version>
+        <java-common-libs.version>4.7.0</java-common-libs.version>
+        <biodata.version>2.3.1</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.11.4</jackson.version>
         <jersey.version>2.30.1</jersey.version>

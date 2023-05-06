@@ -4,11 +4,13 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch: { }
+
 
 jobs:
   deploy:
     name: Copy Python client to server
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -40,7 +42,7 @@ jobs:
         run: echo "${{ steps.deploy.outputs.status }}"
   pypi:
     name: Deploy Python package in PyPI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
