@@ -34,7 +34,6 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
@@ -70,6 +69,7 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private int dataRelease;
+    private String token;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
 
@@ -82,7 +82,6 @@ public class VariantAnnotationCalculator {
     private Integer cnvExtraPadding = 0;
     private Boolean checkAminoAcidChange = false;
     private String consequenceTypeSource = null;
-    private String enable = null;
 
     private HgvsCalculator hgvsCalculator;
 
@@ -92,8 +91,8 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, CellBaseManagerFactory cellbaseManagerFactory)
-            throws CellBaseException {
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String token,
+                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
@@ -103,6 +102,7 @@ public class VariantAnnotationCalculator {
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
         this.dataRelease = dataRelease;
+        this.token = token;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
@@ -503,6 +503,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            queryOptions.add("token", token);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
@@ -619,15 +620,10 @@ public class VariantAnnotationCalculator {
                             }
                         }
                     }
-                } catch (UnsupportedURLVariantFormat e) {
-                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
-                            + " Leaving an empty consequence type list.", variant);
-                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {
-                    logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
-                            + " consequence type list.", variant);
                     e.printStackTrace();
-                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
+                    logger.error("Something wrong happened when calculation consequence type for variant " + variant, e);
+                    throw e;
                 }
             }
 
@@ -767,38 +763,7 @@ public class VariantAnnotationCalculator {
         consequenceTypeSource = (queryOptions.get("consequenceTypeSource") != null
                 ? (String) queryOptions.get("consequenceTypeSource") : "ensembl,refseq");
         logger.debug("consequenceTypeSource = {}", consequenceTypeSource);
-
-        enable = (queryOptions.get("enable") != null
-                ? (String) queryOptions.get("enable") : "");
-        logger.debug("enable = {}", enable);
     }
-
-//    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
-//        destination.setChromosome(origin.getChromosome());
-//        destination.setStart(origin.getStart());
-//        destination.setReference(origin.getReference());
-//        destination.setAlternate(origin.getAlternate());
-//
-//        if (annotatorSet.contains("variation")) {
-//            destination.setId(origin.getId());
-//        }
-//        if (annotatorSet.contains("consequenceType")) {
-//            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
-//            destination.setConsequenceTypes(origin.getConsequenceTypes());
-//        }
-//        if (annotatorSet.contains("conservation")) {
-//            destination.setConservation(origin.getConservation());
-//        }
-//        if (annotatorSet.contains("populationFrequencies")) {
-//            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
-//        }
-//        if (annotatorSet.contains("clinical")) {
-//            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
-//        }
-//        if (annotatorSet.contains("functionalScore")) {
-//            destination.setFunctionalScore(origin.getFunctionalScore());
-//        }
-//    }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer, int dataRelease)
             throws CellBaseException {
@@ -1585,12 +1550,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Variant>>> variationFuture,
                                    List<VariantAnnotation> variantAnnotationList,
                                    Set<String> annotatorSet) throws InterruptedException, ExecutionException {
-
-            while (!variationFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Variant>> variationCellBaseDataResults;
+            try {
+                variationCellBaseDataResults = variationFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                variationFuture.cancel(true);
+                throw new ExecutionException("Unable to finish variant query on time", e);
             }
 
-            List<CellBaseDataResult<Variant>> variationCellBaseDataResults = variationFuture.get();
             if (variationCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     Variant preferredVariant = getPreferredVariant(variationCellBaseDataResults.get(i));
@@ -1668,11 +1635,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Score>>> conservationFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-            while (!conservationFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Score>> conservationCellBaseDataResults;
+            try {
+                conservationCellBaseDataResults = conservationFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                conservationFuture.cancel(true);
+                throw new ExecutionException("Unable to finish conservation score query on time", e);
             }
 
-            List<CellBaseDataResult<Score>> conservationCellBaseDataResults = conservationFuture.get();
             if (conservationCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     variantAnnotationList.get(i).setConservation(conservationCellBaseDataResults.get(i).getResults());
@@ -1707,12 +1677,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-
-            while (!variantFunctionalScoreFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResults;
+            try {
+                variantFunctionalScoreCellBaseDataResults = variantFunctionalScoreFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                variantFunctionalScoreFuture.cancel(true);
+                throw new ExecutionException("Unable to finish variant functional score query on time", e);
             }
 
-            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResults = variantFunctionalScoreFuture.get();
             if (variantFunctionalScoreCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     if (variantFunctionalScoreCellBaseDataResults.get(i).getNumResults() > 0) {
@@ -1747,11 +1719,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-            while (!clinicalFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResults;
+            try {
+                clinicalCellBaseDataResults = clinicalFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                clinicalFuture.cancel(true);
+                throw new ExecutionException("Unable to finish clinical variant query on time", e);
             }
 
-            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResults = clinicalFuture.get();
             if (clinicalCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
@@ -1767,19 +1742,10 @@ public class VariantAnnotationCalculator {
             }
         }
 
-
         private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
             List<EvidenceEntry> traitAssociations = new ArrayList<>();
             for (Variant variant: clinicalQueryResult.getResults()) {
-                if (enable.contains("hgmd")) {
-                    traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
-                } else {
-                    for (EvidenceEntry entry : variant.getAnnotation().getTraitAssociation()) {
-                        if (entry.getSource() == null || !EtlCommons.HGMD_DATA.equals(entry.getSource().getName())) {
-                            traitAssociations.add(entry);
-                        }
-                    }
-                }
+                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
             }
             return traitAssociations;
         }
@@ -1837,12 +1803,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Repeat>>> repeatsFuture,
                                    List<VariantAnnotation> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
-//            try {
-            while (!repeatsFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Repeat>> cellBaseDataResultList;
+            try {
+                cellBaseDataResultList = repeatsFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                repeatsFuture.cancel(true);
+                throw new ExecutionException("Unable to finish repeat query on time", e);
             }
 
-            List<CellBaseDataResult<Repeat>> cellBaseDataResultList = repeatsFuture.get();
             if (cellBaseDataResultList != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
                     CellBaseDataResult<Repeat> cellBaseDataResult = cellBaseDataResultList.get(i);
@@ -1901,11 +1869,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-            while (!cytobandFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<Cytoband>> cellBaseDataResultList;
+            try {
+                cellBaseDataResultList = cytobandFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                cytobandFuture.cancel(true);
+                throw new ExecutionException("Unable to finish cytoband query on time", e);
             }
 
-            List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = cytobandFuture.get();
             if (cellBaseDataResultList != null) {
                 if (cellBaseDataResultList.isEmpty()) {
                     StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
@@ -1946,7 +1917,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query splice");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, dataRelease));
+                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, token, dataRelease));
             }
             logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
@@ -1956,11 +1927,14 @@ public class VariantAnnotationCalculator {
         public void processResults(Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
-            while (!spliceFuture.isDone()) {
-                Thread.sleep(1);
+            List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults;
+            try {
+                spliceCellBaseDataResults = spliceFuture.get(30, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                spliceFuture.cancel(true);
+                throw new ExecutionException("Unable to finish splice score query on time", e);
             }
 
-            List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults = spliceFuture.get();
             if (CollectionUtils.isNotEmpty(spliceCellBaseDataResults)) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     CellBaseDataResult<SpliceScore> spliceScoreResult = spliceCellBaseDataResults.get(i);

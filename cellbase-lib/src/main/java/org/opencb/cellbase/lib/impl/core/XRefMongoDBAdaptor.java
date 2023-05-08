@@ -67,7 +67,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease)
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
             throws CellBaseException {
         List<CellBaseDataResult<Xref>> results = new ArrayList<>();
         for (String id : ids) {
@@ -154,6 +154,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
                         createAndOrQuery(value, "transcripts.xrefs.dbName", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "dataRelease":
+                    case "token":
                         // Do nothing
                         break;
                     default:

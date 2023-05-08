@@ -79,7 +79,7 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CellBaseDBAdaptor{");
-        sb.append("dataReleasse=").append(dataReleases);
+        sb.append("dataRelease=").append(dataReleases);
         sb.append('}');
         return sb.toString();
     }

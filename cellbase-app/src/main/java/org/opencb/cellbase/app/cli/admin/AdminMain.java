@@ -66,6 +66,9 @@ public class AdminMain {
                     case "data-release":
                         commandExecutor = new DataReleaseCommandExecutor(cliOptionsParser.getDataReleaseCommandOptions());
                         break;
+                    case "data-token":
+                        commandExecutor = new DataTokenCommandExecutor(cliOptionsParser.getDataTokenCommandOptions());
+                        break;
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;

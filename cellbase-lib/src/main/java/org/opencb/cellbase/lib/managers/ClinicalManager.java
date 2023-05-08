@@ -20,21 +20,27 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
-import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
+import org.opencb.cellbase.lib.token.TokenFilteredVariantIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class ClinicalManager extends AbstractManager implements AggregationApi<ClinicalVariantQuery, ClinicalVariant> {
+import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
+import static org.opencb.commons.datastore.core.QueryOptions.EXCLUDE;
+import static org.opencb.commons.datastore.core.QueryOptions.INCLUDE;
+
+public class ClinicalManager extends AbstractManager implements AggregationApi<ClinicalVariantQuery, Variant> {
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
@@ -57,8 +63,81 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         return clinicalDBAdaptor;
     }
 
+    @Override
+    public CellBaseDataResult<Variant> search(ClinicalVariantQuery query) throws QueryException, IllegalAccessException, CellBaseException {
+        query.setDefaults();
+        query.validate();
+        CellBaseDataResult<Variant> results = getDBAdaptor().query(query);
+
+        Set<String> validSources = tokenManager.getValidSources(query.getToken(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+
+        // Check if is necessary to use the token licensed variant iterator
+        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        } else {
+            return results;
+        }
+    }
+
+    @Override
+    public List<CellBaseDataResult<Variant>> search(List<ClinicalVariantQuery> queries) throws QueryException, IllegalAccessException,
+            CellBaseException {
+        List<CellBaseDataResult<Variant>> results = new ArrayList<>();
+        for (ClinicalVariantQuery query : queries) {
+            results.add(search(query));
+        }
+        return results;
+    }
+
+    @Override
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String token)
+            throws CellBaseException {
+        List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease, token);
+
+        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+
+        // Check if is necessary to use the token licensed variant iterator
+        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        } else {
+            return results;
+        }
+    }
+
+    @Override
+    public CellBaseIterator<Variant> iterator(ClinicalVariantQuery query) throws CellBaseException {
+        Set<String> validSources = tokenManager.getValidSources(query.getToken(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+
+        // Check if is necessary to use the token licensed variant iterator
+        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+            return new TokenFilteredVariantIterator(getDBAdaptor().iterator(query), validSources);
+        } else {
+            return getDBAdaptor().iterator(query);
+        }
+    }
+
     public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) throws CellBaseException {
-        return clinicalDBAdaptor.nativeGet(query, queryOptions);
+        CellBaseDataResult<Variant> result = clinicalDBAdaptor.nativeGet(query, queryOptions);
+
+        Set<String> validSources = tokenManager.getValidSources(queryOptions.getString(DATA_ACCESS_TOKEN),
+                DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+
+
+        List<String> includes = null;
+        if (queryOptions.containsKey(INCLUDE)) {
+            includes = Arrays.asList(queryOptions.getString(INCLUDE).split(","));
+        }
+        List<String> excludes = null;
+        if (queryOptions.containsKey(EXCLUDE)) {
+            includes = Arrays.asList(queryOptions.getString(EXCLUDE).split(","));
+        }
+
+        // Check if is necessary to use the token licensed variant iterator
+        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+            return DataAccessTokenUtils.filterDataSources(result, validSources);
+        } else {
+            return result;
+        }
     }
 
     public CellBaseDataResult<String> getAlleleOriginLabels() {
@@ -85,7 +164,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     public CellBaseDataResult<String> getConsistencyLabels() {
         List<String> consistencyLabels = Arrays.stream(ConsistencyStatus.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-        return  new CellBaseDataResult<String>("consistency_labels", 0, Collections.emptyList(),
+        return new CellBaseDataResult<String>("consistency_labels", 0, Collections.emptyList(),
                 consistencyLabels.size(), consistencyLabels, consistencyLabels.size());
     }
 
@@ -98,6 +177,25 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
                                                           QueryOptions queryOptions, int dataRelease) throws CellBaseException {
-        return clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
+        List<CellBaseDataResult<Variant>> results = clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
+
+        Set<String> validSources = tokenManager.getValidSources(queryOptions.getString(DATA_ACCESS_TOKEN),
+                DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+
+        List<String> includes = null;
+        if (queryOptions.containsKey(INCLUDE)) {
+            includes = Arrays.asList(queryOptions.getString(INCLUDE).split(","));
+        }
+        List<String> excludes = null;
+        if (queryOptions.containsKey(EXCLUDE)) {
+            includes = Arrays.asList(queryOptions.getString(EXCLUDE).split(","));
+        }
+
+        // Check if is necessary to use the token licensed variant iterator
+        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        } else {
+            return results;
+        }
     }
 }

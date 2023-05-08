@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -54,6 +53,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
                                     String assembly,
                             @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                     int dataRelease,
+                            @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
+                                    String token,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -116,7 +117,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
-            CellBaseDataResult<ClinicalVariant> queryResults = clinicalManager.search(query);
+            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
+
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

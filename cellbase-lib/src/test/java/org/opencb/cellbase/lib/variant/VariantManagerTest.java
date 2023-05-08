@@ -24,14 +24,14 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +41,7 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     private ObjectMapper jsonObjectMapper;
     private VariantAnnotationCalculator variantAnnotationCalculator;
     private VariantManager variantManager;
+    private DataReleaseManager dataReleaseManager;
 
     public VariantManagerTest() throws IOException {
         super();
@@ -48,72 +49,15 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        int release = 1;
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         clearDB(CELLBASE_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
-        loadRunner.load(path, "regulatory_region", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
-        loadRunner.load(path, "variation", release);
-        path = Paths.get(getClass()
-                .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats", release);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", release);
+        initDB();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease, cellBaseManagerFactory);
-
-        path = Paths.get(getClass()
-                .getResource("/hgvs/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene");
-        path = Paths.get(getClass()
-                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence");
-
-        variantManager = cellBaseManagerFactory.getVariantManager("hsapiens", "GRCh37");
-
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
+        variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
     @Test

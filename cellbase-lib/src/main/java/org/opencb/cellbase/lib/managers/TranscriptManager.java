@@ -54,9 +54,9 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         return transcriptDBAdaptor;
     }
 
-    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease)
-            throws CellBaseException {
-        return transcriptDBAdaptor.info(ids, query, source, dataRelease);
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease,
+                                                     String token) throws CellBaseException {
+        return transcriptDBAdaptor.info(ids, query, source, dataRelease, token);
     }
 
 

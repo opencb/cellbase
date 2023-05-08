@@ -59,6 +59,7 @@ public class IdWSServer extends GenericRestWSServer {
                       @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly") String assembly,
                       @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                               int dataRelease,
+                      @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token") String token,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
@@ -87,7 +88,8 @@ public class IdWSServer extends GenericRestWSServer {
                                     String id) {
         try {
             XrefQuery query = new XrefQuery(uriParams);
-            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query, getDataRelease());
+            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
+                    getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -178,7 +180,8 @@ public class IdWSServer extends GenericRestWSServer {
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             GeneQuery query = new GeneQuery(uriParams);
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query, getDataRelease());
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
+                    getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

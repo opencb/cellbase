@@ -189,7 +189,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
         return this;
     }
 
-
     public static final class ClinicalVariantQueryBuilder {
         protected Integer limit;
         protected Integer skip;
