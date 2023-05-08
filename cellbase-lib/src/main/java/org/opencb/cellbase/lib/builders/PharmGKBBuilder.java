@@ -18,10 +18,7 @@ package org.opencb.cellbase.lib.builders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.biodata.models.pharma.PharmaClinicalAllele;
-import org.opencb.biodata.models.pharma.PharmaClinicalAnnotation;
-import org.opencb.biodata.models.pharma.PharmaClinicalEvidence;
+import org.opencb.biodata.models.pharma.*;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -44,6 +41,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String CLINICAL_ANNOTATIONS_TSV_FILENAME = "clinical_annotations.tsv";
     private static final String CLINICAL_ANN_ALLELES_TSV_FILENAME = "clinical_ann_alleles.tsv";
     private static final String CLINICAL_ANN_EVIDENCE_TSV_FILENAME = "clinical_ann_evidence.tsv";
+    private static final String VARIANT_ANNOTATIONS_BASENAME = "variantAnnotations";
+    private static final String VARIANT_ANNOTATIONS_TSV_FILENAME = "var_drug_ann.tsv";
+    private static final String VARIANT_ANNOTATIONS_STUDY_PARAMETERS_TSV_FILENAME = "study_parameters.tsv";
 
     public PharmGKBBuilder(Path inputDir, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -138,7 +138,13 @@ public class PharmGKBBuilder extends CellBaseBuilder {
      */
     private void parseClinicalAnnotationFiles(Path annPath, Map<String, PharmaChemical> chemicalsMap) throws IOException {
         Map<String, PharmaClinicalAnnotation> clinicalAnnotationMap = new HashMap<>();
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToVariantAnnotationMap = new HashMap<>();
         Map<String, List<String>> drugToClinicalAnnotationIdMap = new HashMap<>();
+
+        // These are stored in the evidences
+        Map<String, PharmaVariantAnnotation> variantAnnotationMap =
+                parseVariantAnnotation(annPath.getParent().resolve(VARIANT_ANNOTATIONS_BASENAME));
+        logger.info("Number of variantAnnotations: " + variantAnnotationMap.size());
 
         // clinical_annotations.tsv
         try (BufferedReader br = FileUtils.newBufferedReader(annPath.resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME))) {
@@ -178,6 +184,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Add the annotation to the annotationMap by annotation ID
                 clinicalAnnotationMap.put(fields[0], clinicalAnnotation);
 
+                clinicalAnnotationIdToVariantAnnotationMap.put(fields[0], variantAnnotationMap.get(fields[1] + "_" + fields[2]));
+
                 // Process the drug names to update the drugToClinicalAnnotationId map
                 // This will be used at the end of the method.
                 if (StringUtils.isNotEmpty(fields[10])) {
@@ -216,6 +224,10 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setPmid(fields[4])
                         .setSummary(fields[5])
                         .setScore(fields[6]);
+
+                if (clinicalAnnotationIdToVariantAnnotationMap.containsKey(fields[0])) {
+                    evidence.setAnnotation(clinicalAnnotationIdToVariantAnnotationMap.get(fields[0]));
+                }
 
                 // Add evidence to clinical annotation
                 if (clinicalAnnotationMap.containsKey(fields[0])) {
@@ -259,10 +271,71 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         for (String drug : drugToClinicalAnnotationIdMap.keySet()) {
             if (chemicalsMap.containsKey(drug)) {
                 for (String clinicalAnnotationId : drugToClinicalAnnotationIdMap.get(drug)) {
-                    chemicalsMap.get(drug).getAnnotations().add(clinicalAnnotationMap.get(clinicalAnnotationId));
+                    chemicalsMap.get(drug).getVariants().add(clinicalAnnotationMap.get(clinicalAnnotationId));
                 }
             }
         }
+    }
+
+    private Map<String, PharmaVariantAnnotation> parseVariantAnnotation(Path varAnnnPath) throws IOException {
+        Map<String, PharmaVariantAnnotation> variantAnnotationMap = new HashMap<>();
+
+        try (BufferedReader br = FileUtils.newBufferedReader(varAnnnPath.resolve(VARIANT_ANNOTATIONS_TSV_FILENAME))) {
+            // Skip first line, i.e. the header line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+
+                // Sanity check
+                if (StringUtils.isEmpty(fields[0])) {
+                    logger.warn("Clinical annotation ID is missing in clinical annotations line: {}", line);
+                    continue;
+                }
+
+                // 0                        1                       2       3       4           5
+                // Variant Annotation ID   Variant/Haplotypes      Gene    Drug(s) PMID    Phenotype Category
+                // 6           7       8               9           10
+                // Significance    Notes   Sentence        Alleles Specialty Population
+                PharmaVariantAnnotation variantAnnotation = new PharmaVariantAnnotation()
+                        .setVariantId(fields[1])
+                        .setGene(fields[2])
+                        .setPmid(fields[4])
+                        .setPhenotypeCategory(fields[5])
+                        .setSignificance(fields[6])
+                        .setDiscussion(fields[7])
+                        .setSentence(fields[8])
+                        .setAlleles(fields[9])
+                        .setSpecialtyPopulation(fields[10]);
+
+                if (StringUtils.isNotEmpty(fields[3])) {
+                    variantAnnotation.setDrugs(stringFieldToList(fields[3]));
+                }
+
+                // Add the annotation to the variantAnnotationMap by variant and gene
+                variantAnnotationMap.put(fields[1] + "_" + fields[2], variantAnnotation);
+            }
+        }
+
+        try (BufferedReader br = FileUtils.newBufferedReader(varAnnnPath.resolve(VARIANT_ANNOTATIONS_STUDY_PARAMETERS_TSV_FILENAME))) {
+            // Skip first line, i.e. the header line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+
+                // Sanity check
+                if (StringUtils.isEmpty(fields[0])) {
+                    logger.warn("Clinical annotation ID is missing in clinical annotations line: {}", line);
+                    continue;
+                }
+
+               // TODO Joaquin continue here please.
+
+                // Add the annotation to the annotationMap by annotation ID
+//                variantAnnotationMap.put(fields[0], studyParameters);
+            }
+        }
+
+        return variantAnnotationMap;
     }
 
 
