@@ -62,6 +62,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                       String assembly,
                               @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                               @QueryParam("dataRelease") int dataRelease,
+                              @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
+                                      String token,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -104,7 +106,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 source = query.getSource().get(0);
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")), query,
-                    source, getDataRelease());
+                    source, getDataRelease(), getToken());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

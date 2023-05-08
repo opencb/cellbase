@@ -19,10 +19,8 @@ on:
       report_context:
         type: string
         required: true
-
 env:
-  xb_version: "1.5.1"
-
+  xb_version: "1.6.1"
 jobs:
   test:
     name: Test and push Sonar analysis
@@ -37,10 +35,10 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Start MongoDB v5.0
+      - name: Start MongoDB v6.0
         uses: supercharge/mongodb-github-action@1.8.0
         with:
-          mongodb-version: 5.0
+          mongodb-version: 6.0
           mongodb-replica-set: rs-test
       - name: Install dependencies branches
         run: |
@@ -60,14 +58,13 @@ jobs:
         with:
           name: workdir
           path: "**/target/site"
-
   publish-test:
     name: Publish test results
     runs-on: ubuntu-22.04
     needs: test
     strategy:
       matrix:
-        module: [ "cellbase-core","cellbase-app","cellbase-client","cellbase-lib","cellbase-server" ]
+        module: ["cellbase-core", "cellbase-app", "cellbase-client", "cellbase-lib", "cellbase-server"]
     steps:
       - name: Download result dir
         uses: actions/download-artifact@v3

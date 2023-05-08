@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-
 import java.io.IOException;
 
 /**
@@ -33,8 +32,8 @@ import java.io.IOException;
 @Deprecated
 public class VariationClient extends FeatureClient<Variant> {
 
-    public VariationClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
-        super(species, assembly, dataRelease, configuration);
+    VariationClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, token, configuration);
         this.clazz = Variant.class;
 
         this.category = "feature";

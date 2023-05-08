@@ -61,6 +61,7 @@ public class ParentRestClient<T> {
     protected final String species;
     protected final String assembly;
     protected final String dataRelease;
+    protected final String token;
     protected final Client client;
 
     // TODO: Should this be final?
@@ -85,19 +86,20 @@ public class ParentRestClient<T> {
 
 
     @Deprecated
-    public ParentRestClient(ClientConfiguration configuration) {
-        this(configuration.getDefaultSpecies(), null, null, configuration);
+    ParentRestClient(ClientConfiguration configuration) {
+        this(configuration.getDefaultSpecies(), null, null, null, configuration);
     }
 
     @Deprecated
-    public ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
-        this(species, assembly, null, configuration);
+    ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
+        this(species, assembly, null, null, configuration);
     }
 
-    public ParentRestClient(String species, String assembly, String dataRelease, ClientConfiguration configuration) {
+    ParentRestClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
         this.species = species;
         this.assembly = assembly;
         this.dataRelease = dataRelease;
+        this.token = token;
         this.configuration = configuration;
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
@@ -118,6 +120,10 @@ public class ParentRestClient<T> {
 
     public String getDataRelease() {
         return dataRelease;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     static {
@@ -402,11 +408,11 @@ public class ParentRestClient<T> {
                 logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
                 Event event = new Event(Event.Type.ERROR, "CellBase REST error. Skipping id " + idList.get(0));
                 CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), 0, Collections.emptyList(), 0, null, 0);
-                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, 0, Collections.singletonList(event),
+                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), 0, Collections.singletonList(event),
                         new ObjectMap(queryOptions), Collections.singletonList(result));
             }
             List<CellBaseDataResult<U>> cellBaseDataResultList = new LinkedList<>();
-            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, -1, null, queryOptions,
+            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), -1, null, queryOptions,
                     cellBaseDataResultList);
             logger.info("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
@@ -444,12 +450,18 @@ public class ParentRestClient<T> {
             if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_RELEASE))) {
                 callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
             }
+            if (token != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_ACCESS_TOKEN))) {
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_ACCESS_TOKEN, token);
+            }
         } else {
             if (assembly != null) {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
             if (dataRelease != null) {
                 callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+            }
+            if (token != null) {
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_ACCESS_TOKEN, token);
             }
         }
 

@@ -72,6 +72,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
                         createRegionQuery(query, value, MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
                         break;
                     case "dataRelease":
+                    case "token":
                         // Do nothing
                         break;
                     default:
@@ -102,7 +103,8 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     }
 
     @Override
-    public List<CellBaseDataResult<RegulatoryFeature>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease) {
+    public List<CellBaseDataResult<RegulatoryFeature>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
+                                                            String token) {
         return null;
     }
 
