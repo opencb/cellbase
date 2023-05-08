@@ -138,14 +138,20 @@ public class PharmGKBBuilder extends CellBaseBuilder {
      */
     private void parseClinicalAnnotationFiles(Path annPath, Map<String, PharmaChemical> chemicalsMap) throws IOException {
         Map<String, PharmaClinicalAnnotation> clinicalAnnotationMap = new HashMap<>();
-        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToVariantAnnotationMap = new HashMap<>();
         Map<String, List<String>> drugToClinicalAnnotationIdMap = new HashMap<>();
+
+        // To build PharmaClinicalEvidence we need to parse 5 other files and store the information
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToVariantAnnotationMap = new HashMap<>();
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToDrugLabelAnnotationMap = new HashMap<>();
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToGuidelineAnnotationMap = new HashMap<>();
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToFunctionalAnnotationMap = new HashMap<>();
+        Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToPhenotypeAnnotationMap = new HashMap<>();
 
         Map<String, PharmaVariantAnnotation> variantAnnotationMap =
                 parseVariantAnnotation(annPath.getParent().resolve(VARIANT_ANNOTATIONS_BASENAME));
-
         Map<String, PharmaLabelAnnotation> labelAnnotationMap =
                 parseLabelAnnotation(annPath.getParent().resolve(LABEL_ANNOTATIONS_BASENAME).resolve(LABEL_ANNOTATIONS_TSV_FILENAME));
+        // TODO add the other 3
 
         // clinical_annotations.tsv
         try (BufferedReader br = FileUtils.newBufferedReader(annPath.resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME))) {
@@ -185,6 +191,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Add the annotation to the annotationMap by annotation ID
                 clinicalAnnotationMap.put(fields[0], clinicalAnnotation);
 
+                // TODO add the other 4
                 clinicalAnnotationIdToVariantAnnotationMap.put(fields[0], variantAnnotationMap.get(fields[1] + "_" + fields[2]));
 
                 // Process the drug names to update the drugToClinicalAnnotationId map
@@ -228,6 +235,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setSummary(fields[5])
                         .setScore(fields[6]);
 
+                // TODO the other 4
                 if (clinicalAnnotationIdToVariantAnnotationMap.containsKey(fields[0])) {
                     evidence.setAnnotation(clinicalAnnotationIdToVariantAnnotationMap.get(fields[0]));
                 }
