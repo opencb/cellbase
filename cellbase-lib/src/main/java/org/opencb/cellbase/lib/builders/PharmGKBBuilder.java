@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.pharma.*;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -43,6 +44,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String VARIANT_ANNOTATIONS_BASENAME = "variantAnnotations";
     private static final String VARIANT_ANNOTATIONS_TSV_FILENAME = "var_drug_ann.tsv";
     private static final String VARIANT_ANNOTATIONS_STUDY_PARAMETERS_TSV_FILENAME = "study_parameters.tsv";
+    private static final String LABEL_ANNOTATIONS_BASENAME = "drugLabels";
+    private static final String LABEL_ANNOTATIONS_TSV_FILENAME = "drugLabels.tsv";
 
     public PharmGKBBuilder(Path inputDir, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -69,8 +72,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         // Clinical annotation
         parseClinicalAnnotationFiles(inPharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME), chemicalsMap);
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(chemicalsMap.get("warfarin")));
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(chemicalsMap.get("warfarin")));
 //        for (Map.Entry<String, PharmaChemical> entry : chemicalsMap.entrySet()) {
 //            System.out.println(entry.getKey());
 //        }
@@ -138,9 +141,11 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         Map<String, PharmaVariantAnnotation> clinicalAnnotationIdToVariantAnnotationMap = new HashMap<>();
         Map<String, List<String>> drugToClinicalAnnotationIdMap = new HashMap<>();
 
-        // These are stored in the evidences
         Map<String, PharmaVariantAnnotation> variantAnnotationMap =
                 parseVariantAnnotation(annPath.getParent().resolve(VARIANT_ANNOTATIONS_BASENAME));
+
+        Map<String, PharmaLabelAnnotation> labelAnnotationMap =
+                parseLabelAnnotation(annPath.getParent().resolve(LABEL_ANNOTATIONS_BASENAME).resolve(LABEL_ANNOTATIONS_TSV_FILENAME));
 
         // clinical_annotations.tsv
         try (BufferedReader br = FileUtils.newBufferedReader(annPath.resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME))) {
@@ -199,7 +204,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
 
-        // clinical_ann_evidence.tsv
+        // Processing clinical annotation evidences: clinical_ann_evidence.tsv
+        // It implies to process variant annotation, label annoataion and guideline annotation sindce the EvidcenceID relates to the
+        // three previous annotations (variant, labal and guideline), they are stored in the evidences
         try (BufferedReader br = FileUtils.newBufferedReader(annPath.resolve(CLINICAL_ANN_EVIDENCE_TSV_FILENAME))) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -376,6 +383,41 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         return variantAnnotationMap;
     }
 
+    private Map<String, PharmaLabelAnnotation> parseLabelAnnotation(Path labelAnnotationPath) throws IOException {
+        Map<String, PharmaLabelAnnotation> labelAnnotationMap = new HashMap<>();
+        try (BufferedReader br = FileUtils.newBufferedReader(labelAnnotationPath)) {
+            // Skip first line, i.e. the header line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+
+                // Sanity check
+                if (StringUtils.isEmpty(fields[0])) {
+                    logger.warn("PharmGKB ID is missing in drug label line: {}", line);
+                    continue;
+                }
+
+                // 0            1     2       3               4              5                     6                7
+                // PharmGKB ID  Name  Source  Biomarker Flag  Testing Level  Has Prescribing Info  Has Dosing Info  Has Alternate Drug
+                // 8              9            10         11     12                   13
+                // Cancer Genome  Prescribing  Chemicals  Genes  Variants/Haplotypes  Latest History Date (YYYY-MM-DD)
+                PharmaLabelAnnotation labelAnnotation = new PharmaLabelAnnotation()
+                        .setName(fields[1])
+                        .setSource(fields[2])
+                        .setBiomarkerFlag(fields[3])
+                        .setTestingLevel(fields[4])
+                        .setPrescribingInfo(fields[5])
+                        .setDosingInfo(fields[6])
+                        .setAlternateDrug(fields[7])
+                        .setCancerGenome(fields[8]);
+
+                // Add the label annotation to the label annotation map
+                labelAnnotationMap.put(fields[0], labelAnnotation);
+            }
+        }
+
+        return labelAnnotationMap;
+    }
 
     private List<String> stringFieldToList(String field) {
         if (field.startsWith("\"")) {
