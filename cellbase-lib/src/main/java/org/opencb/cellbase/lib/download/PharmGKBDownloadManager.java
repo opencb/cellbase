@@ -19,6 +19,8 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.commons.exec.Command;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -40,24 +43,46 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading PharmGKB files...");
-
-        Path folder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        Files.createDirectories(folder);
-
-        // Downloads PubMed XML files
         DownloadProperties.URLProperties pharmGKB = configuration.getDownload().getPharmGKB();
+        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
+        Files.createDirectories(pharmgkbDownloadFolder);
 
         List<String> urls = new ArrayList<>();
-        urls.add(pharmGKB.getHost());
-        urls.addAll(pharmGKB.getFiles());
-        saveVersionData(PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
-                folder.resolve(PHARMGKB_VERSION_FILENAME));
-
-        List<DownloadFile> list = new ArrayList<>();
+        List<DownloadFile> downloadFiles = new ArrayList<>();
         for (String url : pharmGKB.getFiles()) {
-            logger.info("\tDownloading file " + url + " to " + folder.resolve(Paths.get(new URL(url).getPath()).getFileName()));
-            list.add(downloadFile(url, folder.resolve(Paths.get(new URL(url).getPath()).getFileName()).toString()));
+            urls.add(url);
+
+            Path downloadedFileName = Paths.get(new URL(url).getPath()).getFileName();
+            Path downloadedFilePath = pharmgkbDownloadFolder.resolve(downloadedFileName);
+            logger.info("Downloading file {} to {}", url, downloadedFilePath);
+            DownloadFile downloadFile = downloadFile(url, downloadedFilePath.toString());
+            downloadFiles.add(downloadFile);
+
+            // Unzip downloaded file
+            unzip(downloadedFilePath.getParent(), downloadedFileName.toString(), Collections.emptyList(),
+                    pharmgkbDownloadFolder.resolve(downloadedFileName.toString().split("\\.")[0]));
         }
-        return list;
+
+        // Save versions
+        saveVersionData(PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
+                pharmgkbDownloadFolder.resolve(PHARMGKB_VERSION_FILENAME));
+
+        return downloadFiles;
+    }
+
+    private void unzip(Path inPath, String zipFilename, List<String> outFilenames, Path outPath) throws IOException {
+        // Check zip file exists
+        FileUtils.checkFile(inPath.resolve(zipFilename));
+
+        // Unzip files if output dir does NOT exist
+        if (!outPath.toFile().exists()) {
+            logger.info("Unzipping {} into {}", zipFilename, outPath);
+            Command cmd = new Command("unzip -d " + outPath + " " + inPath.resolve(zipFilename));
+            cmd.run();
+            // Check if expected files exist
+            for (String outFilename : outFilenames) {
+                FileUtils.checkFile(outPath.resolve(outFilename));
+            }
+        }
     }
 }
