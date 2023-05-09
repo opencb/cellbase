@@ -230,17 +230,16 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     }
 
     private void parseClinicalAnnotationEvidences(Map<String, PharmaClinicalAnnotation> clinicalAnnotationMap) throws IOException {
-        // Processing clinical annotation evidences implies to process the variant annotation, guideline annotations, drug label annataions,
-        // phenotypa annotations and functional analysis annotations
-        Map<String, PharmaBasicAnnotation> variantAnnotationsMap = parseVariantAnnotations();
+        // Processing clinical annotation evidences implies to process the variant annotation, guideline annotations,
+        // drug label annotations, phenotype annotations and functional analysis annotations
+        Map<String, PharmaVariantAssociation> variantAnnotationsMap = parseVariantAnnotations();
+        Map<String, PharmaVariantAssociation> phenotypeAnnotationsMap = parsePhenotypeAnnotations();
+        Map<String, PharmaVariantAssociation> functionalAnnotationsMap = parseFunctionalAnnotations();
         Map<String, PharmaGuidelineAnnotation> guidelineAnnotationsMap = parseGuidelineAnnotations();
         Map<String, PharmaDrugLabelAnnotation> drugLabelAnnotationsMap = parseDrugLabelAnnotations();
-        Map<String, PharmaBasicAnnotation> phenotypeAnnotationsMap = parsePhenotypeAnnotations();
-        Map<String, PharmaFunctionalAnnotation> functionalAnnotationsMap = parseFunctionalAnnotations();
 
         // Parse study parameters and update the variant, phenotype and functional annotations with the parsed study parameters
         parseStudyParameters(variantAnnotationsMap, phenotypeAnnotationsMap, functionalAnnotationsMap);
-
 
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
         Path evidencesPath = pharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_EVIDENCE_TSV_FILENAME);
@@ -264,17 +263,19 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 PharmaClinicalEvidence evidence = new PharmaClinicalEvidence()
                         .setType(evidenceType)
                         .setUrl(fields[3])
-                        .setPmid(fields[4])
+                        .setPubmed(fields[4])
                         .setSummary(fields[5])
                         .setScore(fields[6]);
 
                 switch (evidenceType) {
                     case VARIANT_ANNOTATION_EVIDENCE_TYPE: {
                         if (variantAnnotationsMap.containsKey(evidenceId)) {
+                            // TODO remove this line
                             evidence.getVariantAnnotations().add(variantAnnotationsMap.get(evidenceId));
+                            evidence.getVariantAssociations().add(variantAnnotationsMap.get(evidenceId));
                         } else {
-                            logger.warn("Evidence ID '{}' of type '{}' not found in the variant annotations map", evidenceId,
-                                    VARIANT_ANNOTATION_EVIDENCE_TYPE);
+                            logger.warn("Evidence ID '{}' of type '{}' not found in the variant annotations map",
+                                    evidenceId, VARIANT_ANNOTATION_EVIDENCE_TYPE);
                         }
                         break;
                     }
@@ -282,8 +283,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         if (guidelineAnnotationsMap.containsKey(evidenceId)) {
                             evidence.getGuidelineAnnotations().add(guidelineAnnotationsMap.get(evidenceId));
                         } else {
-                            logger.warn("Evidence ID '{}' of type '{}' not found in the variant annotations map", evidenceId,
-                                    GUIDELINE_ANNOTATION_EVIDENCE_TYPE);
+                            logger.warn("Evidence ID '{}' of type '{}' not found in the variant annotations map",
+                                    evidenceId, GUIDELINE_ANNOTATION_EVIDENCE_TYPE);
                         }
                         break;
                     }
@@ -291,32 +292,38 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         if (drugLabelAnnotationsMap.containsKey(evidenceId)) {
                             evidence.getDrugLabelAnnotations().add(drugLabelAnnotationsMap.get(evidenceId));
                         } else {
-                            logger.warn("Evidence ID '{}' of type '{}' not found in the drug label annotations map", evidenceId,
-                                    DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE);
+                            logger.warn("Evidence ID '{}' of type '{}' not found in the drug label annotations map",
+                                    evidenceId, DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE);
                         }
                         break;
                     }
                     case PHENOTYPE_ANNOTATION_EVIDENCE_TYPE: {
                         if (phenotypeAnnotationsMap.containsKey(evidenceId)) {
+                            // TODO remove this line
                             evidence.getPhenotypeAnnotations().add(phenotypeAnnotationsMap.get(evidenceId));
+                            evidence.getVariantAssociations().add(variantAnnotationsMap.get(evidenceId));
                         } else {
-                            logger.warn("Evidence ID '{}' of type '{}' not found in the phenotype annotations map", evidenceId,
-                                    PHENOTYPE_ANNOTATION_EVIDENCE_TYPE);
+                            logger.warn("Evidence ID '{}' of type '{}' not found in the phenotype annotations map",
+                                    evidenceId, PHENOTYPE_ANNOTATION_EVIDENCE_TYPE);
                         }
                         break;
                     }
                     case FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE: {
                         if (functionalAnnotationsMap.containsKey(evidenceId)) {
+                            // TODO remove this line
                             evidence.getFunctionalAnnotations().add(functionalAnnotationsMap.get(evidenceId));
+                            evidence.getVariantAssociations().add(variantAnnotationsMap.get(evidenceId));
                         } else {
-                            logger.warn("Evidence ID '{}' of type '{}' not found in the functional analysis annotations map", evidenceId,
-                                    FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE);
+                            logger.warn("Evidence ID '{}' of type '{}' not found in the functional analysis annotations map",
+                                    evidenceId, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE);
                         }
                         break;
                     }
                     default: {
-                        logger.warn("Unknown evidence type '{}': this evidence is skipped. Valid evidence types are: {}", evidenceType,
-                                StringUtils.join(Arrays.asList(VARIANT_ANNOTATION_EVIDENCE_TYPE, GUIDELINE_ANNOTATION_EVIDENCE_TYPE,
+                        logger.warn("Unknown evidence type '{}': this evidence is skipped. Valid evidence types are: {}",
+                                evidenceType,
+                                StringUtils.join(
+                                        Arrays.asList(VARIANT_ANNOTATION_EVIDENCE_TYPE, GUIDELINE_ANNOTATION_EVIDENCE_TYPE,
                                         DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE,
                                         PHENOTYPE_ANNOTATION_EVIDENCE_TYPE), ","));
                         break;
@@ -355,7 +362,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 PharmaClinicalAllele clinicalAllele = new PharmaClinicalAllele()
                         .setAllele(fields[1])
                         .setAnnotation(fields[2])
-                        .setFunction(fields[3]);
+                        .setDescription(fields[3]);
 
                 // Add allele to clinical annotation
                 if (clinicalAnnotationMap.containsKey(clinicalAnnotationId)) {
@@ -368,8 +375,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
     }
 
-    private Map<String, PharmaBasicAnnotation> parseVariantAnnotations() throws IOException {
-        Map<String, PharmaBasicAnnotation> variantAnnotationMap = new HashMap<>();
+    private Map<String, PharmaVariantAssociation> parseVariantAnnotations() throws IOException {
+        Map<String, PharmaVariantAssociation> variantAnnotationMap = new HashMap<>();
         // Parse the variant annotation file (i.e., var_drug_ann.tsv)
         Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(VARIANT_ANNOTATIONS_TSV_FILENAME);
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
@@ -389,10 +396,10 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Variant Annotation ID   Variant/Haplotypes      Gene    Drug(s) PMID    Phenotype Category
                 // 6           7       8               9           10
                 // Significance    Notes   Sentence        Alleles Specialty Population
-                PharmaBasicAnnotation variantAnnotation = new PharmaBasicAnnotation()
+                PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
                         .setVariantId(fields[1])
                         .setGene(fields[2])
-                        .setPmid(fields[4])
+                        .setPubmed(fields[4])
                         .setPhenotypeCategory(fields[5])
                         .setSignificance(fields[6])
                         .setDiscussion(fields[7])
@@ -400,12 +407,16 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setAlleles(fields[9])
                         .setSpecialtyPopulation(fields[10]);
 
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("PharmGKB Association Type", "VAR_DRUG");
+                variantAssociation.setAttributes(attributes);
+
                 if (StringUtils.isNotEmpty(fields[3])) {
-                    variantAnnotation.setDrugs(stringFieldToList(fields[3]));
+                    variantAssociation.setDrugs(stringFieldToList(fields[3]));
                 }
 
                 // Add the annotation to the variantAnnotationMap by variant and gene
-                variantAnnotationMap.put(variantAnnotationId, variantAnnotation);
+                variantAnnotationMap.put(variantAnnotationId, variantAssociation);
             }
         }
         logger.info("Number of variant annotations = {}", variantAnnotationMap.size());
@@ -481,8 +492,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         return drugLabelAnnotationMap;
     }
 
-    private Map<String, PharmaBasicAnnotation> parsePhenotypeAnnotations() throws IOException {
-        Map<String, PharmaBasicAnnotation> phenotypeAnnotationMap = new HashMap<>();
+    private Map<String, PharmaVariantAssociation> parsePhenotypeAnnotations() throws IOException {
+        Map<String, PharmaVariantAssociation> phenotypeAnnotationMap = new HashMap<>();
         // Parse the variant annotation file (i.e., var_pheno_ann.tsv)
         Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(PHENOTYPE_ANNOTATIONS_TSV_FILENAME);
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
@@ -502,10 +513,10 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Variant Annotation ID  Variant/Haplotypes  Gene  Drug(s)  PMID  Phenotype Category  Significance  Notes  Sentence
                 // 9        10                   .....
                 // Alleles  Specialty Population .....
-                PharmaBasicAnnotation phenotypeAnnotation = new PharmaBasicAnnotation()
+                PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
                         .setVariantId(fields[1])
                         .setGene(fields[2])
-                        .setPmid(fields[4])
+                        .setPubmed(fields[4])
                         .setPhenotypeCategory(fields[5])
                         .setSignificance(fields[6])
                         .setDiscussion(fields[7])
@@ -513,12 +524,16 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setAlleles(fields[9])
                         .setSpecialtyPopulation(fields[10]);
 
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("PharmGKB Association Type", "VAR_PHENOTYPE");
+                variantAssociation.setAttributes(attributes);
+
                 if (StringUtils.isNotEmpty(fields[3])) {
-                    phenotypeAnnotation.setDrugs(stringFieldToList(fields[3]));
+                    variantAssociation.setDrugs(stringFieldToList(fields[3]));
                 }
 
                 // Add the annotation to the variantAnnotationMap by variant and gene
-                phenotypeAnnotationMap.put(variantAnnotationId, phenotypeAnnotation);
+                phenotypeAnnotationMap.put(variantAnnotationId, variantAssociation);
             }
         }
         logger.info("Number of phenotype annotations = {}", phenotypeAnnotationMap.size());
@@ -526,8 +541,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         return phenotypeAnnotationMap;
     }
 
-    private Map<String, PharmaFunctionalAnnotation> parseFunctionalAnnotations() throws IOException {
-        Map<String, PharmaFunctionalAnnotation> functionalAnnotationMap = new HashMap<>();
+    private Map<String, PharmaVariantAssociation> parseFunctionalAnnotations() throws IOException {
+        Map<String, PharmaVariantAssociation> functionalAnnotationMap = new HashMap<>();
         // Parse the variant annotation file (i.e., var_fa_ann.tsv)
         Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(FUNCTIONAL_ANNOTATIONS_TSV_FILENAME);
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
@@ -547,25 +562,28 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Variant Annotation ID   Variant/Haplotypes      Gene    Drug(s) PMID    Phenotype Category
                 // 6           7       8               9           10                    11          .....
                 // Significance    Notes   Sentence        Alleles Specialty Population  Assay type  .....
-                PharmaFunctionalAnnotation functionalAnnotation = new PharmaFunctionalAnnotation()
-                        .setAssayType(fields[11]);
-
-                functionalAnnotation.setVariantId(fields[1])
+                PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
+                        .setVariantId(fields[1])
                         .setGene(fields[2])
-                        .setPmid(fields[4])
+                        .setPubmed(fields[4])
                         .setPhenotypeCategory(fields[5])
                         .setSignificance(fields[6])
                         .setDiscussion(fields[7])
                         .setSentence(fields[8])
                         .setAlleles(fields[9])
-                        .setSpecialtyPopulation(fields[10]);
+                        .setSpecialtyPopulation(fields[10])
+                        .setAssayType(fields[11]);
+
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("PharmGKB Association Type", "VAR_FUNCTIONAL_ANALYSIS");
+                variantAssociation.setAttributes(attributes);
 
                 if (StringUtils.isNotEmpty(fields[3])) {
-                    functionalAnnotation.setDrugs(stringFieldToList(fields[3]));
+                    variantAssociation.setDrugs(stringFieldToList(fields[3]));
                 }
 
                 // Add the annotation to the variantAnnotationMap by variant and gene
-                functionalAnnotationMap.put(variantAnnotationId, functionalAnnotation);
+                functionalAnnotationMap.put(variantAnnotationId, variantAssociation);
             }
         }
         logger.info("Number of variant annotations = {}", functionalAnnotationMap.size());
@@ -573,9 +591,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         return functionalAnnotationMap;
     }
 
-    private void parseStudyParameters(Map<String, PharmaBasicAnnotation> variantAnnotationsMap,
-                                      Map<String, PharmaBasicAnnotation> phenotypeAnnotationsMap,
-                                      Map<String, PharmaFunctionalAnnotation> functionalAnnotationsMap) throws IOException {
+    private void parseStudyParameters(Map<String, PharmaVariantAssociation> variantAnnotationsMap,
+                                      Map<String, PharmaVariantAssociation> phenotypeAnnotationsMap,
+                                      Map<String, PharmaVariantAssociation> functionalAnnotationsMap) throws IOException {
         Map<String, List<PharmaStudyParameters>> studyParametersMap = new HashMap<>();
         // Parse the study parameters file (i.e., study_parameters.tsv)
         Path studyParamsPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(STUDY_PARAMETERS_TSV_FILENAME);
