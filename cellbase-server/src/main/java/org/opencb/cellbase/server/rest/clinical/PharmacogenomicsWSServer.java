@@ -17,13 +17,15 @@
 package org.opencb.cellbase.server.rest.clinical;
 
 import io.swagger.annotations.*;
+import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.api.PharmaChemicalQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
+import org.opencb.cellbase.lib.managers.PharmacogenomicsManager;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
 
@@ -43,14 +47,15 @@ import static org.opencb.cellbase.core.ParamConstants.*;
 public class PharmacogenomicsWSServer extends GenericRestWSServer {
 
     private ClinicalManager clinicalManager;
+    private PharmacogenomicsManager pharmacogenomicsManager;
 
     public PharmacogenomicsWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = VERSION_DESCRIPTION,
             defaultValue = DEFAULT_VERSION) String apiVersion,
                                     @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
                                     @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
                                     String assembly,
-                                    @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
-                                    int dataRelease,
+                                    @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
+                                    @QueryParam("dataRelease") int dataRelease,
                                     @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
                                     String token,
                                     @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
@@ -61,6 +66,7 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
         }
 
         clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+        pharmacogenomicsManager = cellBaseManagerFactory.getPharmacogenomicsManager(species, assembly);
     }
 
     @GET
@@ -72,29 +78,15 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = SOURCE_PARAM, value = SOURCE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "region", value = REGION_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = SEQUENCE_ONTOLOGY_PARAM, value = SEQUENCE_ONTOLOGY_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = FEATURE_IDS_PARAM, value = FEATURE_IDS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = TRAITS_PARAM, value = TRAITS_DESCRIPTION,
-                    required = false, dataType = "String", paramType = "query"),
-//            @ApiImplicitParam(name = ParamConstants.VARIANT_ACCESSIONS_PARAM, value = ParamConstants.VARIANT_ACCESSIONS_DESCRIPTION,
+//            @ApiImplicitParam(name = SOURCE_PARAM, value = SOURCE_DESCRIPTION,
 //                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = VARIANT_IDS_PARAM, value = VARIANT_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = "type", value = "List of types",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = VARIANT_TYPES_PARAM, value = VARIANT_TYPES_DESCRIPTION,
+            @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs)",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = CONSISTENCY_STATUS_PARAM, value = CONSISTENCY_STATUS_DESCRIPTION,
+            @ApiImplicitParam(name = "gene", value = "List of gene names",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = CLINICAL_SIGNFICANCE_PARAM, value = CLINICAL_SIGNFICANCE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = MODE_INHERITANCE_PARAM, value = MODE_INHERITANCE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ALLELE_ORIGIN_PARAM, value = ALLELE_ORIGIN_DESCRIPTION,
+            @ApiImplicitParam(name = "location", value = "List of chromomic coordinates in the format: chromosome:position",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -114,8 +106,8 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-            ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
-            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
+            PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            CellBaseDataResult<PharmaChemical> queryResults = pharmacogenomicsManager.search(query);
 
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -124,45 +116,44 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/distinct")
-    @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. biotype or chromosome",
-            value = "Get a unique list of values for a given field.")
+    @Path("/{chemicals}/info")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified chemical(s) or drug(s)", response = PharmaChemical.class,
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region", value = REGION_DESCRIPTION,
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = GENE_ENSEMBL_IDS,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = GENE_NAMES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "biotype",  value = GENE_BIOTYPES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.biotype", value = TRANSCRIPT_BIOTYPES_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs", value = TRANSCRIPT_XREFS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = TRANSCRIPT_IDS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.name", value = TRANSCRIPT_NAMES_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.id", value = TRANSCRIPT_TFBS_IDS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id", value = ANNOTATION_DISEASES_IDS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name", value = ANNOTATION_DISEASES_NAMES_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.gene", value = ANNOTATION_EXPRESSION_GENE,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue", value = ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name", value = ANNOTATION_DRUGS_NAME_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.gene", value = ANNOTATION_DRUGS_GENE,
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
-            value = "Name of column to return, e.g. biotype") String field) {
+    public Response getInfo(@PathParam("chemicals") @ApiParam(name = "chemicals", value = "Chemical/drug names", required = true)
+                                        String chemicals) {
         try {
-            return createOkResponse(null);
+            PharmaChemicalQuery pharmaQuery = new PharmaChemicalQuery(uriParams);
+            List<CellBaseDataResult<PharmaChemical>> queryResults = pharmacogenomicsManager.info(Arrays.asList(chemicals.split(",")),
+                    pharmaQuery, getDataRelease(), getToken());
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/distinct")
+    @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. variants.location",
+            value = "Get a unique list of values for a given field.")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "type", value = "List of types",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "gene", value = "List of gene names",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+    })
+    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
+            value = "Name of column to return, e.g. variants.location") String field) {
+        try {
+            copyToFacet("field", field);
+            PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            CellBaseDataResult<String> queryResults = pharmacogenomicsManager.distinct(query);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
