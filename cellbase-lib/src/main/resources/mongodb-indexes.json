@@ -130,3 +130,13 @@
 {"collection": "splice_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
 
 {"collection": "pubmed", "fields": {"medlineCitation.pmid.content": 1}, "options": {"background": true}}
+
+{"collection": "pharmacogenomics", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"types": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.variantId": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.location": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.chromosome": 1, "variants.position": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.gene": 1}, "options": {"background": true}}

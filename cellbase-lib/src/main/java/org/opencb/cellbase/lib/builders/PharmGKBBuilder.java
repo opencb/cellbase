@@ -67,6 +67,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE = "Variant Functional Assay Annotation";
     private static final String PHENOTYPE_ANNOTATION_EVIDENCE_TYPE = "Variant Phenotype Annotation";
 
+    private static final String LOCATION_KEY = "location";
     private static final String CHROMOSOME_KEY = "chrom";
     private static final String POSITION_KEY = "pos";
 
@@ -208,6 +209,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
                 // Add some fields from the variant map
                 if (variantMap.containsKey(clinicalAnnotation.getVariantId())) {
+                    clinicalAnnotation.setLocation((String) variantMap.get(clinicalAnnotation.getVariantId()).get(LOCATION_KEY));
                     clinicalAnnotation.setChromosome((String) variantMap.get(clinicalAnnotation.getVariantId()).get(CHROMOSOME_KEY));
                     clinicalAnnotation.setPosition((int) variantMap.get(clinicalAnnotation.getVariantId()).get(POSITION_KEY));
                 } else {
@@ -315,6 +317,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                     logger.warn("Error computing chromosome position from location {}: {}", location, e.getMessage());
                     continue;
                 }
+                attrMap.put(LOCATION_KEY, attrMap.get(CHROMOSOME_KEY) + ":" + attrMap.get(POSITION_KEY));
 
                 // Add it to the variant map
                 variantMap.put(variantName, attrMap);
