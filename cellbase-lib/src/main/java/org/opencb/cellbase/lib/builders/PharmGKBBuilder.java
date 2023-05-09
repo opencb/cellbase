@@ -199,13 +199,16 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setLevelModifiers(fields[5])
                         .setScore(fields[6])
                         .setPhenotypeCategory(fields[7])
-                        .setLatestUpdateDate(fields[12])
                         .setUrl(fields[13])
                         .setSpecialtyPopulation(fields[14]);
 
                 if (StringUtils.isNotEmpty(fields[11])) {
                     clinicalAnnotation.setPhenotypes(stringFieldToList(fields[11]));
                 }
+
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("LastUpdateDate", fields[12]);
+                clinicalAnnotation.setAttributes(attributes);
 
                 // Add some fields from the variant map
                 if (variantMap.containsKey(clinicalAnnotation.getVariantId())) {
