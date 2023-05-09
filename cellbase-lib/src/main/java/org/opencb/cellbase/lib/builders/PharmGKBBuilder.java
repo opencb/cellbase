@@ -30,8 +30,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_NAME;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class PharmGKBBuilder extends CellBaseBuilder {
 
@@ -82,24 +81,28 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         FileUtils.checkDirectory(inputDir);
 
         // PharmGKB
-        logger.info("Building PharmGKB data model ...");
-
         FileUtils.checkDirectory(pharmGKBDir);
+        logger.info("Parsing {} files and building the data models...", PHARMGKB_NAME);
 
         // Chemicals
         Map<String, PharmaChemical> chemicalsMap = parseChemicals();
-        logger.info("Number of Chemical items read {}", chemicalsMap.size());
 
         // Clinical annotation
         parseClinicalAnnotationFiles(chemicalsMap);
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(chemicalsMap.get("warfarin")));
-//        for (Map.Entry<String, PharmaChemical> entry : chemicalsMap.entrySet()) {
-//            System.out.println(entry.getKey());
-//        }
+        logger.info("Parsing {} files finished.", PHARMGKB_NAME);
 
-        logger.info("Parsing PharmGKB files finished.");
+        // Generation the pharmacogenomics JSON file
+        logger.info("Writing {} JSON file to {} ...", PHARMACOGENOMICS_DATA, serializer.getOutdir());
+        int counter = 0;
+        for (Map.Entry<String, PharmaChemical> entry : chemicalsMap.entrySet()) {
+            ((CellBaseFileSerializer) serializer).serialize(entry.getValue(), PHARMACOGENOMICS_DATA);
+            if (++counter % 1000 == 0) {
+                logger.info("\t\t {} chemicals/drugs written.", counter);
+            }
+        }
+        serializer.close();
+        logger.info("Writing {} JSON file done!", PHARMACOGENOMICS_DATA);
     }
 
     private Map<String, PharmaChemical> parseChemicals() throws IOException {
@@ -149,6 +152,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 chemicalsMap.put(pharmaChemical.getName(), pharmaChemical);
             }
         }
+        logger.info("Number of Chemical items read {}", chemicalsMap.size());
+
         return chemicalsMap;
     }
 
