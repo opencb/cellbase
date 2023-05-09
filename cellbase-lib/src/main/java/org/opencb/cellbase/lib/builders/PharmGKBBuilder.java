@@ -41,6 +41,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String CHEMICALS_BASENAME = "chemicals";
     private static final String CHEMICALS_TSV_FILENAME = "chemicals.tsv";
 
+    private static final String VARIANTS_BASENAME = "variants";
+    private static final String VARIANTS_TSV_FILENAME = "variants.tsv";
+
     private static final String CLINICAL_ANNOTATIONS_BASENAME = "clinicalAnnotations";
     private static final String CLINICAL_ANNOTATIONS_TSV_FILENAME = "clinical_annotations.tsv";
     private static final String CLINICAL_ANN_ALLELES_TSV_FILENAME = "clinical_ann_alleles.tsv";
@@ -62,6 +65,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String VARIANT_ANNOTATION_EVIDENCE_TYPE = "Variant Drug Annotation";
     private static final String FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE = "Variant Functional Assay Annotation";
     private static final String PHENOTYPE_ANNOTATION_EVIDENCE_TYPE = "Variant Phenotype Annotation";
+
+    private static final String CHROMOSOME_KEY = "chrom";
+    private static final String POSITION_KEY = "pos";
 
     public PharmGKBBuilder(Path inputDir, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -87,8 +93,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         // Clinical annotation
         parseClinicalAnnotationFiles(chemicalsMap);
 
-        ObjectMapper mapper = new ObjectMapper();
-        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(chemicalsMap.get("warfarin")));
+//        ObjectMapper mapper = new ObjectMapper();
+//        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(chemicalsMap.get("warfarin")));
 //        for (Map.Entry<String, PharmaChemical> entry : chemicalsMap.entrySet()) {
 //            System.out.println(entry.getKey());
 //        }
@@ -155,6 +161,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         Map<String, PharmaClinicalAnnotation> clinicalAnnotationMap = new HashMap<>();
         Map<String, List<String>> drugToClinicalAnnotationIdMap = new HashMap<>();
 
+        Map<String, Map<String, Object>> variantMap = parseVariants();
+
         // clinical_annotations.tsv
         try (BufferedReader br = FileUtils.newBufferedReader(pharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME)
                 .resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME))) {
@@ -189,6 +197,15 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
                 if (StringUtils.isNotEmpty(fields[11])) {
                     clinicalAnnotation.setPhenotypes(stringFieldToList(fields[11]));
+                }
+
+                // Add some fields from the variant map
+                if (variantMap.containsKey(clinicalAnnotation.getVariantId())) {
+                    clinicalAnnotation.setChromosome((String) variantMap.get(clinicalAnnotation.getVariantId()).get(CHROMOSOME_KEY));
+                    clinicalAnnotation.setPosition((int) variantMap.get(clinicalAnnotation.getVariantId()).get(POSITION_KEY));
+                } else {
+                    logger.warn("Variant {} from clinical annotation not found in the variant map, so chromosome and position are not set",
+                            clinicalAnnotation.getVariantId());
                 }
 
                 // Add the annotation to the annotationMap by annotation ID
@@ -227,6 +244,78 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 logger.warn("Drug '{}' not found in the chemicals map", drug);
             }
         }
+    }
+
+    private Map<String, Map<String, Object>> parseVariants() throws IOException {
+        Map<String, Map<String, Object>> variantMap = new HashMap<>();
+        // Parse the variant file (i.e., variants.tsv)
+        Path varPath = pharmGKBDir.resolve(VARIANTS_BASENAME).resolve(VARIANTS_TSV_FILENAME);
+        try (BufferedReader br = FileUtils.newBufferedReader(varPath)) {
+            // Skip first line, i.e. the header line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t", -1);
+                String variantName = fields[1];
+
+                // Sanity check
+                if (StringUtils.isEmpty(variantName)) {
+                    logger.warn("Variant name is missing in variant line: {}", line);
+                    continue;
+                }
+
+                if (variantMap.containsKey(variantName)) {
+                    logger.warn("Variant name is duplicated in variant line: {}", line);
+                    continue;
+                }
+
+                // 0           1             2         3             4         5                         6
+                // Variant ID  Variant Name  Gene IDs  Gene Symbols  Location  Variant Annotation count  Clinical Annotation count
+                // 7                                    8                           9                      10
+                // Level 1/2 Clinical Annotation count  Guideline Annotation count  Label Annotation count Synonyms
+                String location = fields[4];
+                if (StringUtils.isEmpty(location)) {
+                    logger.warn("Location is missing for Variant name {}", variantName);
+                    continue;
+                }
+                if (!location.startsWith("NC_")) {
+                    logger.warn("Unknown location {}, it has to be a RefSeq ID", location);
+                    continue;
+                }
+                Map<String, Object> attrMap = new HashMap<>();
+                String[] splits = location.split("[_\\.:]");
+                try {
+                    int chrom = Integer.parseInt(splits[1]);
+                    if (chrom >= 1 && chrom <= 22) {
+                        attrMap.put(CHROMOSOME_KEY, String.valueOf(chrom));
+                    } else if (chrom == 23) {
+                        attrMap.put(CHROMOSOME_KEY, "X");
+                    } else if (chrom == 24) {
+                        attrMap.put(CHROMOSOME_KEY, "Y");
+                    } else if (chrom == 12920) {
+                        attrMap.put(CHROMOSOME_KEY, "MT");
+                    } else {
+                        logger.warn("Unknown chromosome {}", chrom);
+                        continue;
+                    }
+                } catch (NumberFormatException e) {
+                    logger.warn("Error computing chromosome from location {}: {}", location, e.getMessage());
+                    continue;
+                }
+                try {
+                    int position = Integer.parseInt(splits[3]);
+                    attrMap.put(POSITION_KEY, position);
+                } catch (NumberFormatException e) {
+                    logger.warn("Error computing chromosome position from location {}: {}", location, e.getMessage());
+                    continue;
+                }
+
+                // Add it to the variant map
+                variantMap.put(variantName, attrMap);
+            }
+        }
+        logger.info("Number of variants = {}", variantMap.size());
+
+        return variantMap;
     }
 
     private void parseClinicalAnnotationEvidences(Map<String, PharmaClinicalAnnotation> clinicalAnnotationMap) throws IOException {
@@ -324,8 +413,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                                 evidenceType,
                                 StringUtils.join(
                                         Arrays.asList(VARIANT_ANNOTATION_EVIDENCE_TYPE, GUIDELINE_ANNOTATION_EVIDENCE_TYPE,
-                                        DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE,
-                                        PHENOTYPE_ANNOTATION_EVIDENCE_TYPE), ","));
+                                                DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE,
+                                                PHENOTYPE_ANNOTATION_EVIDENCE_TYPE), ","));
                         break;
                     }
                 }
