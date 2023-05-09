@@ -329,13 +329,13 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         // Processing clinical annotation evidences implies to process the variant annotation, guideline annotations,
         // drug label annotations, phenotype annotations and functional analysis annotations
         Map<String, PharmaVariantAssociation> variantAssociationMap = new HashMap<>();
-        parseVariantAnnotations(variantAssociationMap);
-        parsePhenotypeAnnotations(variantAssociationMap);
-        parseFunctionalAnnotations(variantAssociationMap);
         Map<String, PharmaGuidelineAnnotation> guidelineAnnotationsMap = parseGuidelineAnnotations();
         Map<String, PharmaDrugLabelAnnotation> drugLabelAnnotationsMap = parseDrugLabelAnnotations();
 
         // Parse study parameters and update the variant, phenotype and functional annotations with the parsed study parameters
+        parseVariantAnnotations(variantAssociationMap);
+        parsePhenotypeAnnotations(variantAssociationMap);
+        parseFunctionalAnnotations(variantAssociationMap);
         parseStudyParameters(variantAssociationMap);
 
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
