@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.variant.annotation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -36,6 +37,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -68,6 +70,7 @@ public class VariantAnnotationCalculator {
     private ClinicalManager clinicalManager;
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
+    private PharmacogenomicsManager pharmacogenomicsManager;
     private int dataRelease;
     private String token;
     private Set<String> annotatorSet;
@@ -100,6 +103,7 @@ public class VariantAnnotationCalculator {
         this.proteinManager = cellbaseManagerFactory.getProteinManager(species, assembly);
         this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
+        this.pharmacogenomicsManager = cellbaseManagerFactory.getPharmacogenomicsManager(species, assembly);
 
         this.dataRelease = dataRelease;
         this.token = token;
@@ -529,6 +533,14 @@ public class VariantAnnotationCalculator {
             spliceScoreFuture = CACHED_THREAD_POOL.submit(futureSpliceScoreAnnotator);
         }
 
+        FuturePharmacogenomicsAnnotator futurePharmacogenomicsAnnotator = null;
+        Future<List<CellBaseDataResult<PharmaChemical>>> pharmacogenomicsFuture = null;
+        if (annotatorSet.contains("pharmacogenomics")) {
+            futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease,
+                    pharmacogenomicsManager, logger);
+            pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
+        }
+
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
         long startTime = System.currentTimeMillis();
@@ -664,9 +676,11 @@ public class VariantAnnotationCalculator {
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
-
         if (futureSpliceScoreAnnotator != null) {
             futureSpliceScoreAnnotator.processResults(spliceScoreFuture, variantAnnotationList);
+        }
+        if (futurePharmacogenomicsAnnotator != null) {
+            futurePharmacogenomicsAnnotator.processResults(pharmacogenomicsFuture, variantAnnotationList);
         }
 
         // Not needed with newCachedThreadPool
@@ -1161,7 +1175,7 @@ public class VariantAnnotationCalculator {
         } else {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
-                    "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets",
+                    "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets", "pharmacogenomics",
                     "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
@@ -1965,4 +1979,3 @@ public class VariantAnnotationCalculator {
         }
     }
 }
-
