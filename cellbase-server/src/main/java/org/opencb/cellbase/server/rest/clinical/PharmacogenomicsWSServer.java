@@ -43,7 +43,7 @@ import static org.opencb.cellbase.core.ParamConstants.*;
 
 @Path("/{apiVersion}/{species}/clinical/pharmacogenomics")
 @Produces(MediaType.APPLICATION_JSON)
-@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
+@Api(value = "Clinical Pharmacogenomics", description = "Clinical RESTful Web Services API")
 public class PharmacogenomicsWSServer extends GenericRestWSServer {
 
     private ClinicalManager clinicalManager;
