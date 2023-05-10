@@ -729,8 +729,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
     private List<String> stringFieldToList(String field) {
         if (field.startsWith("\"")) {
-            // FIXME: double double quotes
-            return Arrays.stream(field.replace("\", \"", "\",\"").split("\",\"")).map(String::trim).collect(Collectors.toList());
+            return Arrays.stream(field.replace("\"\"\"", "\"").replace("\"\"", "\"").replace("\", \"", "\",\"").split("\",\""))
+                    .map(s -> s.replace("\"", "").trim()).collect(Collectors.toList());
         } else {
             if (field.contains(", ")) {
                 return Arrays.stream(field.replace(", ", ",").split(",")).map(String::trim).collect(Collectors.toList());
@@ -739,5 +739,4 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
     }
-
 }
