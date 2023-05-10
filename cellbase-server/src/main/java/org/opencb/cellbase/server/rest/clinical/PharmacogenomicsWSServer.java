@@ -18,7 +18,6 @@ package org.opencb.cellbase.server.rest.clinical;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.PharmaChemicalQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -73,21 +72,23 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
             + DOT_NOTATION_NOTE,
-            value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
+            value = "Retrieves all chemicals/drugs", response = PharmaChemical.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
 //            @ApiImplicitParam(name = SOURCE_PARAM, value = SOURCE_DESCRIPTION,
 //                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "type", value = "List of types",
+            @ApiImplicitParam(name = "name", value = "List of chemical/drug names, e.g.: warfarin",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs)",
+            @ApiImplicitParam(name = "type", value = "List of chemical/drug types, e.g.: Drug,Metabolite",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene", value = "List of gene names",
+            @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs), e.g.: rs1429376,rs11191561",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "location", value = "List of chromomic coordinates in the format: chromosome:position",
+            @ApiImplicitParam(name = "gene", value = "List of gene names, e.g.: NT5C2",
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "location", value = "List of chromomsomic coordinates in the format: chromosome:position, e.g.:"
+                    + " 10:103109774", required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,

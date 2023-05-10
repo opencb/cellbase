@@ -28,20 +28,23 @@ public class PharmaChemicalQuery extends AbstractQuery {
 
     @QueryParameter(id = "id")
     private List<String> ids;
+
     @QueryParameter(id = "name")
     private List<String> names;
+
 //    @QueryParameter(id = "source", allowedValues = {"PharmGKB"})
 //    private List<String> source;
 
-    @QueryParameter(id = "type")
+    @QueryParameter(id = "types", alias = {"types", "type"})
     private List<String> types;
 
-    @QueryParameter(id = "variants.variantId")
+    @QueryParameter(id = "variants.variantId", alias = {"variant"})
     private List<String> variants;
 
-    @QueryParameter(id = "variants.gene")
+    @QueryParameter(id = "variants.gene", alias = {"gene"})
     private List<String> genes;
-    @QueryParameter(id = "variants.location")
+
+    @QueryParameter(id = "variants.location", alias = {"location"})
     private List<String> locations;
 
     public PharmaChemicalQuery() {
