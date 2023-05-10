@@ -109,6 +109,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                 resultClinicalAnnotation.setVariantId(clinicalAnnotation.getVariantId());
                                 resultClinicalAnnotation.setGeneName(clinicalAnnotation.getGene());
                                 resultClinicalAnnotation.setPhenotypes(clinicalAnnotation.getPhenotypes());
+                                resultClinicalAnnotation.setPhenotypeType(clinicalAnnotation.getPhenotypeCategory());
                                 resultClinicalAnnotation.setLevelOfEvidence(clinicalAnnotation.getLevelOfEvidence());
                                 resultClinicalAnnotation.setConfidence(clinicalAnnotation.getScore());
                                 resultClinicalAnnotation.setUrl(clinicalAnnotation.getUrl());
