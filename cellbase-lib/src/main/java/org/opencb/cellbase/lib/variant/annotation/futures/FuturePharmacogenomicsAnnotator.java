@@ -105,6 +105,9 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
 
                         // Clinical annotation fields
                         if (CollectionUtils.isNotEmpty(pharmaChemical.getVariants())) {
+                            String varAnnotChrom = variantAnnotationList.get(i).getChromosome();
+                            int varAnnotStart = variantAnnotationList.get(i).getStart();
+
                             List<PharmacogenomicsClinicalAnnotation> resultClinicalAnnotations = new ArrayList<>();
 
                             // We must filter out those annotations based on different alternate alleles
@@ -112,6 +115,10 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                             final String queryAllele =
                                     variantAnnotationList.get(i).getAlternate() + variantAnnotationList.get(i).getAlternate();
                             for (PharmaClinicalAnnotation clinicalAnnotation : pharmaChemical.getVariants()) {
+                                if (!varAnnotChrom.equals(clinicalAnnotation.getChromosome())
+                                        || varAnnotStart != clinicalAnnotation.getPosition()) {
+                                    continue;
+                                }
                                 // 2. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
                                 // otherwise go to next annotation
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
