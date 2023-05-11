@@ -18,7 +18,9 @@ package org.opencb.cellbase.lib.variant.annotation.futures;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.biodata.models.pharma.PharmaChemical;
+import org.opencb.biodata.models.pharma.PharmaClinicalAllele;
 import org.opencb.biodata.models.pharma.PharmaClinicalAnnotation;
+import org.opencb.biodata.models.pharma.PharmaClinicalEvidence;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Pharmacogenomics;
 import org.opencb.biodata.models.variant.avro.PharmacogenomicsAlleles;
@@ -104,7 +106,30 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                         // Clinical annotation fields
                         if (CollectionUtils.isNotEmpty(pharmaChemical.getVariants())) {
                             List<PharmacogenomicsClinicalAnnotation> resultClinicalAnnotations = new ArrayList<>();
+
+                            // We must filter out those annotations based on different alternate alleles
+                            // 1. Construct the HOM ALT genotype
+                            final String queryAllele =
+                                    variantAnnotationList.get(i).getAlternate() + variantAnnotationList.get(i).getAlternate();
                             for (PharmaClinicalAnnotation clinicalAnnotation : pharmaChemical.getVariants()) {
+                                // 2. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
+                                // otherwise go to next annotation
+                                if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
+                                    boolean found = false;
+                                    for (PharmaClinicalAllele allele : clinicalAnnotation.getAlleles()) {
+                                        if (allele.getAllele().equalsIgnoreCase(queryAllele)
+                                                || allele.getAllele().contains("null")
+                                                || allele.getAllele().contains("*")) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found) {
+                                        continue;
+                                    }
+                                }
+
+                                // 3. Create, build and add the annotation
                                 PharmacogenomicsClinicalAnnotation resultClinicalAnnotation = new PharmacogenomicsClinicalAnnotation();
                                 resultClinicalAnnotation.setVariantId(clinicalAnnotation.getVariantId());
                                 resultClinicalAnnotation.setGeneName(clinicalAnnotation.getGene());
@@ -115,11 +140,11 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                 resultClinicalAnnotation.setUrl(clinicalAnnotation.getUrl());
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getEvidences())) {
                                     resultClinicalAnnotation.setPubmed(new ArrayList<>(clinicalAnnotation.getEvidences().stream()
-                                            .map(e -> e.getPubmed()).collect(Collectors.toSet())));
+                                            .map(PharmaClinicalEvidence::getPubmed).collect(Collectors.toSet())));
                                 }
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
-                                    resultClinicalAnnotation.setAlleles(clinicalAnnotation.getAlleles().stream().map(
-                                                    a -> new PharmacogenomicsAlleles(a.getAllele(), a.getAnnotation(), a.getDescription()))
+                                    resultClinicalAnnotation.setAlleles(clinicalAnnotation.getAlleles().stream()
+                                            .map(a -> new PharmacogenomicsAlleles(a.getAllele(), a.getAnnotation(), a.getDescription()))
                                             .collect(Collectors.toList())
                                     );
                                 }
