@@ -115,11 +115,12 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                             final String queryAllele =
                                     variantAnnotationList.get(i).getAlternate() + variantAnnotationList.get(i).getAlternate();
                             for (PharmaClinicalAnnotation clinicalAnnotation : pharmaChemical.getVariants()) {
+                                // 2. Check the variant is the same
                                 if (!varAnnotChrom.equals(clinicalAnnotation.getChromosome())
                                         || varAnnotStart != clinicalAnnotation.getPosition()) {
                                     continue;
                                 }
-                                // 2. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
+                                // 3. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
                                 // otherwise go to next annotation
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
                                     boolean found = false;
@@ -136,7 +137,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                     }
                                 }
 
-                                // 3. Create, build and add the annotation
+                                // 4. Create, build and add the annotation
                                 PharmacogenomicsClinicalAnnotation resultClinicalAnnotation = new PharmacogenomicsClinicalAnnotation();
                                 resultClinicalAnnotation.setVariantId(clinicalAnnotation.getVariantId());
                                 resultClinicalAnnotation.setGeneName(clinicalAnnotation.getGene());
@@ -161,8 +162,10 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                             // Set pharmacogenomics clinical annotation
                             pharmacogenomics.setAnnotations(resultClinicalAnnotations);
                         }
-                        // Add pharmacogenomics to the list
-                        pharmacogenomicsList.add(pharmacogenomics);
+                        // Add pharmacogenomics to the list if at least one annotation for the same variant has been found
+                        if (pharmacogenomics.getAnnotations().size() > 0) {
+                            pharmacogenomicsList.add(pharmacogenomics);
+                        }
                     }
                     // Set the pharmacogenomics data in the variant annotation
                     variantAnnotationList.get(i).setPharmacogenomics(pharmacogenomicsList);
