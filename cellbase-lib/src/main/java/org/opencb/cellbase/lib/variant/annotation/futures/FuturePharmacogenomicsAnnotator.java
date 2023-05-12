@@ -110,17 +110,17 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                             // 1. Construct the HOM ALT genotype
                             final String queryAllele =
                                     variantAnnotationList.get(i).getAlternate() + variantAnnotationList.get(i).getAlternate();
-                            for (PharmaClinicalAnnotation clinicalAnnotation : pharmaChemical.getVariants()) {
+                            for (PharmaVariantAnnotation pharmaVariantAnnotation : pharmaChemical.getVariants()) {
                                 // 2. Check the variant is the same
-                                if (!varAnnotChrom.equals(clinicalAnnotation.getChromosome())
-                                        || varAnnotStart != clinicalAnnotation.getPosition()) {
+                                if (!varAnnotChrom.equals(pharmaVariantAnnotation.getChromosome())
+                                        || varAnnotStart != pharmaVariantAnnotation.getPosition()) {
                                     continue;
                                 }
                                 // 3. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
                                 // otherwise go to next annotation
-                                if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
+                                if (CollectionUtils.isNotEmpty(pharmaVariantAnnotation.getAlleles())) {
                                     boolean found = false;
-                                    for (PharmaClinicalAllele allele : clinicalAnnotation.getAlleles()) {
+                                    for (PharmaClinicalAllele allele : pharmaVariantAnnotation.getAlleles()) {
                                         if (allele.getAllele().equalsIgnoreCase(queryAllele)
                                                 || allele.getAllele().contains("null")
                                                 || allele.getAllele().contains("*")) {
@@ -135,24 +135,24 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
 
                                 // 4. Create, build and add the annotation
                                 PharmacogenomicsClinicalAnnotation resultClinicalAnnotation = new PharmacogenomicsClinicalAnnotation();
-                                resultClinicalAnnotation.setVariantId(clinicalAnnotation.getVariantId());
-                                resultClinicalAnnotation.setGeneName(clinicalAnnotation.getGene());
-                                resultClinicalAnnotation.setPhenotypes(clinicalAnnotation.getPhenotypes());
-                                resultClinicalAnnotation.setPhenotypeType(clinicalAnnotation.getPhenotypeCategory());
-                                resultClinicalAnnotation.setLevelOfEvidence(clinicalAnnotation.getLevelOfEvidence());
-                                resultClinicalAnnotation.setConfidence(clinicalAnnotation.getScore());
-                                resultClinicalAnnotation.setUrl(clinicalAnnotation.getUrl());
+                                resultClinicalAnnotation.setVariantId(pharmaVariantAnnotation.getVariantId());
+                                resultClinicalAnnotation.setGeneName(pharmaVariantAnnotation.getGeneName());
+                                resultClinicalAnnotation.setPhenotypes(pharmaVariantAnnotation.getPhenotypes());
+                                resultClinicalAnnotation.setPhenotypeType(pharmaVariantAnnotation.getPhenotypeCategory());
+                                resultClinicalAnnotation.setConfidence(pharmaVariantAnnotation.getConfidence());
+                                resultClinicalAnnotation.setScore(pharmaVariantAnnotation.getScore());
+                                resultClinicalAnnotation.setUrl(pharmaVariantAnnotation.getUrl());
 
-                                if (CollectionUtils.isNotEmpty(clinicalAnnotation.getEvidences())) {
+                                if (CollectionUtils.isNotEmpty(pharmaVariantAnnotation.getEvidences())) {
                                     List<String> pubmeds = new ArrayList<>();
                                     Set<String> summaries = new LinkedHashSet<>();
-                                    for (PharmaClinicalEvidence evidence : clinicalAnnotation.getEvidences()) {
+                                    for (PharmaClinicalEvidence evidence : pharmaVariantAnnotation.getEvidences()) {
                                         if (StringUtils.isNotEmpty(evidence.getPubmed())) {
                                             pubmeds.add(evidence.getPubmed());
                                         }
                                         if (CollectionUtils.isNotEmpty(evidence.getVariantAssociations())) {
                                             for (PharmaVariantAssociation variantAssociation : evidence.getVariantAssociations()) {
-                                                summaries.add(variantAssociation.getSentence());
+                                                summaries.add(variantAssociation.getDescription());
                                                 summaries.add(variantAssociation.getDiscussion());
                                             }
                                         }
@@ -161,8 +161,8 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                     resultClinicalAnnotation.setSummary(String.join(" ", summaries));
                                 }
 
-                                if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
-                                    resultClinicalAnnotation.setAlleles(clinicalAnnotation.getAlleles().stream()
+                                if (CollectionUtils.isNotEmpty(pharmaVariantAnnotation.getAlleles())) {
+                                    resultClinicalAnnotation.setAlleles(pharmaVariantAnnotation.getAlleles().stream()
                                             .map(a -> new PharmacogenomicsAlleles(a.getAllele(), a.getAnnotation(), a.getDescription()))
                                             .collect(Collectors.toList())
                                     );
