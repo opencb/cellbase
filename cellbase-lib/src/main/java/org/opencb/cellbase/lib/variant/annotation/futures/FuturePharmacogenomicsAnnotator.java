@@ -116,6 +116,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                         || varAnnotStart != pharmaVariantAnnotation.getPosition()) {
                                     continue;
                                 }
+
                                 // 3. Check if the 'alleles' contains the alternate homozygous genotype, or 'null' or '*',
                                 // otherwise go to next annotation
                                 if (CollectionUtils.isNotEmpty(pharmaVariantAnnotation.getAlleles())) {
@@ -144,7 +145,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                 resultClinicalAnnotation.setUrl(pharmaVariantAnnotation.getUrl());
 
                                 if (CollectionUtils.isNotEmpty(pharmaVariantAnnotation.getEvidences())) {
-                                    List<String> pubmeds = new ArrayList<>();
+                                    Set<String> pubmeds = new LinkedHashSet<>();
                                     Set<String> summaries = new LinkedHashSet<>();
                                     for (PharmaClinicalEvidence evidence : pharmaVariantAnnotation.getEvidences()) {
                                         if (StringUtils.isNotEmpty(evidence.getPubmed())) {
@@ -157,7 +158,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                             }
                                         }
                                     }
-                                    resultClinicalAnnotation.setPubmed(pubmeds);
+                                    resultClinicalAnnotation.setPubmed(new ArrayList<>(pubmeds));
                                     resultClinicalAnnotation.setSummary(String.join(" ", summaries));
                                 }
 
