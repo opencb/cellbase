@@ -816,19 +816,23 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Chromosomal Stop - GRCh37  Chromosomal Start - GRCh38  Chromosomal Stop - GRCh38
                 PharmaGeneAnnotation geneAnnotation = new PharmaGeneAnnotation()
                         .setId(pgkbGeneId)
-                        .setNcbiGeneId(fields[1])
-                        .setHgncId(fields[2])
-                        .setEnsebmlId(fields[3])
-                        .setName(fields[4])
-                        .setSymbol(fields[5]);
+//                        .setNcbiGeneId(fields[1])
+//                        .setHgncId(fields[2])
+//                        .setEnsebmlId(fields[3])
+//                        .setSymbol(fields[5])
+                        .setName(fields[4]);
 
-                if (StringUtils.isNotEmpty(fields[8])) {
-                    geneAnnotation.setVIP(fields[8].toLowerCase(Locale.ROOT).equals("yes") ? true : false);
-                }
+//                if (StringUtils.isNotEmpty(fields[8])) {
+//                    geneAnnotation.setVIP(fields[8].toLowerCase(Locale.ROOT).equals("yes") ? true : false);
+//                }
 
                 if (StringUtils.isNotEmpty(fields[9])) {
                     geneAnnotation.setHasVariantAnnotation(fields[9].toLowerCase(Locale.ROOT).equals("yes") ? true : false);
                 }
+
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("IS_VIP", fields[8]);
+                geneAnnotation.setAttributes(attributes);
 
                 // Set guidelines by getting them from the guideline annotations map
                 if (guidelineAnnotationMapByPgkbGeneId.containsKey(pgkbGeneId)) {
