@@ -139,4 +139,9 @@
 {"collection": "pharmacogenomics", "fields": {"variants.variantId": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.location": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.chromosome": 1, "variants.position": 1}, "options": {"background": true}}
-{"collection": "pharmacogenomics", "fields": {"variants.gene": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.geneId": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.geneName": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.phenotypes": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.phenotypeType": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.confidence": 1}, "options": {"background": true}}
+{"collection": "pharmacogenomics", "fields": {"variants.evidences.pubmed": 1}, "options": {"background": true}}
