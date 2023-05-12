@@ -17,10 +17,8 @@
 package org.opencb.cellbase.lib.variant.annotation.futures;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.biodata.models.pharma.PharmaClinicalAllele;
-import org.opencb.biodata.models.pharma.PharmaClinicalAnnotation;
-import org.opencb.biodata.models.pharma.PharmaClinicalEvidence;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.pharma.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Pharmacogenomics;
 import org.opencb.biodata.models.variant.avro.PharmacogenomicsAlleles;
@@ -32,9 +30,7 @@ import org.opencb.cellbase.lib.managers.PharmacogenomicsManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -146,10 +142,25 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                 resultClinicalAnnotation.setLevelOfEvidence(clinicalAnnotation.getLevelOfEvidence());
                                 resultClinicalAnnotation.setConfidence(clinicalAnnotation.getScore());
                                 resultClinicalAnnotation.setUrl(clinicalAnnotation.getUrl());
+
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getEvidences())) {
-                                    resultClinicalAnnotation.setPubmed(new ArrayList<>(clinicalAnnotation.getEvidences().stream()
-                                            .map(PharmaClinicalEvidence::getPubmed).collect(Collectors.toSet())));
+                                    List<String> pubmeds = new ArrayList<>();
+                                    Set<String> summaries = new LinkedHashSet<>();
+                                    for (PharmaClinicalEvidence evidence : clinicalAnnotation.getEvidences()) {
+                                        if (StringUtils.isNotEmpty(evidence.getPubmed())) {
+                                            pubmeds.add(evidence.getPubmed());
+                                        }
+                                        if (CollectionUtils.isNotEmpty(evidence.getVariantAssociations())) {
+                                            for (PharmaVariantAssociation variantAssociation : evidence.getVariantAssociations()) {
+                                                summaries.add(variantAssociation.getSentence());
+                                                summaries.add(variantAssociation.getDiscussion());
+                                            }
+                                        }
+                                    }
+                                    resultClinicalAnnotation.setPubmed(pubmeds);
+                                    resultClinicalAnnotation.setSummary(String.join(" ", summaries));
                                 }
+
                                 if (CollectionUtils.isNotEmpty(clinicalAnnotation.getAlleles())) {
                                     resultClinicalAnnotation.setAlleles(clinicalAnnotation.getAlleles().stream()
                                             .map(a -> new PharmacogenomicsAlleles(a.getAllele(), a.getAnnotation(), a.getDescription()))
