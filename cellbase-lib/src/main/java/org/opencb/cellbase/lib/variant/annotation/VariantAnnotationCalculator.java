@@ -103,6 +103,7 @@ public class VariantAnnotationCalculator {
 
         // Check data release
         this.dataRelease = cellbaseManagerFactory.getDataReleaseManager(species, assembly).checkDataRelease(dataRelease);
+        logger.info("Variant annotation calculator using data release {}", this.dataRelease);
         this.token = token;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
