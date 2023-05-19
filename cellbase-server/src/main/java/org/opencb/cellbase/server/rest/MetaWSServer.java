@@ -292,8 +292,8 @@ public class MetaWSServer extends GenericRestWSServer {
         Map<String, String> info = new LinkedHashMap<>();
         info.put("Program", "CellBase (OpenCB)");
         info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
-        info.put("Version", version);
-        info.put("Build version", GitRepositoryState.get().getBuildVersion());
+        info.put("API version", version);
+        info.put("Version", GitRepositoryState.get().getBuildVersion());
         info.put("Git branch", GitRepositoryState.get().getBranch());
         info.put("Git commit", GitRepositoryState.get().getCommitId());
 
