@@ -233,6 +233,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
             TranscriptQuery query = new TranscriptQuery();
             query.setTranscriptsId(Collections.singletonList(ensemblTranscriptId));
+            query.setDataRelease(dataRelease);
             proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, position, aaAlternate).getResults());
         }
 

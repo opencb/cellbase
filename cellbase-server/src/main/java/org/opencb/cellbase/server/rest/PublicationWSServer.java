@@ -105,6 +105,7 @@ public class PublicationWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             PublicationQuery query = new PublicationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search PublicationQuery: " + query);
             CellBaseDataResult<PubmedArticle> queryResults = publicationManager.search(query);
             return createOkResponse(queryResults);
