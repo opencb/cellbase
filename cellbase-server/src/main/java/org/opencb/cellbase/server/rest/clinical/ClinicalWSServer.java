@@ -115,6 +115,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
 
             return createOkResponse(queryResults);

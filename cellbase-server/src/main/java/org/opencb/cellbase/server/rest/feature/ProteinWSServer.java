@@ -137,6 +137,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -174,6 +175,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                   required = false) String aa) {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setTranscriptsXrefs(Arrays.asList(id.split(",")));
             CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResult);
@@ -218,6 +220,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             required = true) String proteins) throws QueryException {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setAccessions(Arrays.asList(proteins.split(",")));
             CellBaseDataResult<String> queryResult = proteinManager.getSequence(query);
             return createOkResponse(queryResult);

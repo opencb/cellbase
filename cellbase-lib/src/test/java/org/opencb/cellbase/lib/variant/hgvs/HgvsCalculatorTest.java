@@ -15,6 +15,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.GeneManager;
 
 import java.io.IOException;
@@ -41,9 +42,9 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @BeforeAll
     public void init() throws Exception {
-        dataRelease = 1;
-
         clearDB(CELLBASE_DBNAME);
+        DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
+        dataRelease = dataReleaseManager.createRelease().getRelease();
         Path path = Paths.get(getClass()
                 .getResource("/hgvs/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene", dataRelease);

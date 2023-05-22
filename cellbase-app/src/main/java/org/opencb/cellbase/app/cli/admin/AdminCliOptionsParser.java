@@ -142,8 +142,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--list"}, description = "List the data releases present in the database", arity = 0)
         public boolean list;
 
-        @Parameter(names = {"--set-active"}, description = "Set the data release active", arity = 1)
-        public int active;
+        @Parameter(names = {"--update"}, description = "Data release to be updated by adding CellBase vesions", arity = 1)
+        public int update;
+
+        @Parameter(names = {"--add-versions"}, description = "CellBase versions separated by commas, e.g.: v5.2,v5.3. This parameter has to be used together to the parameter --update", arity = 1)
+        public String versions;
     }
 
     @Parameters(commandNames = {"data-token"}, commandDescription = "Manage data access tokens in order to access to restricted/licensed data sources")

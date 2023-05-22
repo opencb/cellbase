@@ -19,7 +19,9 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.loader.LoadRunner;
+import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.File;
@@ -112,9 +114,9 @@ public class CustomiseCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
-            ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
-            ClassNotFoundException {
+    private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IOException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            LoaderException, CellBaseException {
         File file = new File(path.toString());
         if (file.exists()) {
             if (file.isFile()) {
