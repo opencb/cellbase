@@ -558,7 +558,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadPharmacogenomica() throws IOException {
+    private void loadPharmacogenomica() throws IOException, CellBaseException {
         Path pharmaPath = input.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
 
         if (!Files.exists(pharmaPath)) {
@@ -572,7 +572,8 @@ public class LoadCommandExecutor extends CommandExecutor {
         try {
             loadRunner.load(pharmaJsonPath, EtlCommons.PHARMACOGENOMICS_DATA, dataRelease);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
             logger.error("Error loading file '{}': {}", pharmaJsonPath.toFile().getName(), e.toString());
         }
 
