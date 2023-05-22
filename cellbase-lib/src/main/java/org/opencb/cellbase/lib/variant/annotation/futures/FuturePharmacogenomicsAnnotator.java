@@ -62,13 +62,35 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
 
         logger.debug("Pharmacogenomics queries...");
         // Want to return only one CellBaseDataResult object per Variant
+        List<String> includes = new ArrayList<>();
+        includes.add("id");
+        includes.add("name");
+        includes.add("source");
+        includes.add("types");
+        includes.add("smiles");
+        includes.add("inChI");
+        includes.add("variants.variantId");
+        includes.add("variants.geneName");
+        includes.add("variants.chromosome");
+        includes.add("variants.position");
+        includes.add("variants.phenotypes");
+        includes.add("variants.phenotypeType");
+        includes.add("variants.confidence");
+        includes.add("variants.score");
+        includes.add("variants.url");
+        includes.add("variants.evidences.pubmed");
+        includes.add("variants.evidences.variantAssociations.description");
+        includes.add("variants.evidences.variantAssociations.discussion");
+        includes.add("variants.alleles");
+        logger.info("Pharmacogenomics variant annotation/search includes: {}", StringUtils.join(includes, ","));
         for (Variant variant : variantList) {
             PharmaChemicalQuery query = new PharmaChemicalQuery();
             query.setLocations(Collections.singletonList(variant.getChromosome() + ":" + variant.getStart()));
             query.setDataRelease(dataRelease);
+            query.setIncludes(includes);
             cellBaseDataResultList.add(pharmacogenomicsManager.search(query));
         }
-        logger.debug("Pharmacogenomics queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
+        logger.info("Pharmacogenomics queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
                 variantList.size());
         return cellBaseDataResultList;
     }
@@ -175,7 +197,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                             pharmacogenomics.setAnnotations(resultClinicalAnnotations);
                         }
                         // Add pharmacogenomics to the list if at least one annotation for the same variant has been found
-                        if (pharmacogenomics.getAnnotations().size() > 0) {
+                        if (CollectionUtils.isNotEmpty(pharmacogenomics.getAnnotations())) {
                             pharmacogenomicsList.add(pharmacogenomics);
                         }
                     }
