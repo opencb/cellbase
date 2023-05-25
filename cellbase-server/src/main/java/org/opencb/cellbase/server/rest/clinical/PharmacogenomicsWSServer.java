@@ -79,22 +79,28 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
 //            @ApiImplicitParam(name = SOURCE_PARAM, value = SOURCE_DESCRIPTION,
 //                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = "List of chemical/drug names, e.g.: warfarin", dataType = "java.util.List",
+            @ApiImplicitParam(name = "name", value = "List of chemical/drug names, e.g.: warfarin. In order to get the list of chemical or"
+                    + " drug names, please, call the endpoint pharmacogenomics/distinct?field=names", dataType = "java.util.List",
                     paramType = "query"),
-            @ApiImplicitParam(name = "type", value = "List of chemical/drug types, e.g.: Drug,Metabolite", dataType = "java.util.List",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs), e.g.: rs1429376,rs11191561",
+            @ApiImplicitParam(name = "type", value = "List of chemical/drug types, e.g.: Drug,Metabolite. In order to get the list of"
+                    + " chemical or drug types, please, call the endpoint pharmacogenomics/distinct?field=types",
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "geneName", value = "List of gene names, e.g.: NT5C2,VKORC1", dataType = "java.util.List",
+            @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs), e.g.: rs1429376,rs11191561. In order to get the list"
+                    + " of variant IDs, please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.variantId",
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "geneName", value = "List of gene names, e.g.: NT5C2,VKORC1. In order to get the list of gene names,"
+                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.geneName", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "location", value = "List of chromosomic coordinates in the format: chromosome:position, e.g.:"
                     + " 10:103109774", dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "phenotype", value = "List of phenotypes, e.g.: Hemorrhage,Thrombosis", dataType = "java.util.List",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "phenotypeType", value = "List of phenotype types, e.g.: Dosage", dataType = "java.util.List",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "confidence", value = "List of confidence values, e.g.: 3", dataType = "java.util.List",
-                    paramType = "query"),
+            @ApiImplicitParam(name = "phenotype", value = "List of phenotypes, e.g.: Hemorrhage,Thrombosis. In order to get the list of"
+                    + "phenotype values, please, call the endpoint pharmacogenomics/distinct?field=variants.phenotypes",
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "phenotypeType", value = "List of phenotype categories (i.e., association phenotype), e.g.: Dosage,"
+                    + "Toxicity. In order to get the list of phenotype category values, please, call the endpoint pharmacogenomics/distinct"
+                    + "?field=variants.phenotypeTypes", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "confidence", value = "List of confidence values. Valid values: 1A, 1B, 2A, 2B, 3, 4",
+                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "pubmedId", value = "List of evidence PubMed IDs, e.g.: 14765194", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,

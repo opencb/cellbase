@@ -216,12 +216,15 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setGeneName(fields[2])
                         .setConfidence(fields[3])
                         .setScore(fields[6])
-                        .setPhenotypeType(fields[7])
                         .setUrl(fields[13])
                         .setPopulation(fields[14]);
 
+                if (StringUtils.isNotEmpty(fields[7])) {
+                    pharmaVariantAnnotation.setPhenotypeTypes(Arrays.asList(fields[7].split(";", -1)));
+                }
+
                 if (StringUtils.isNotEmpty(fields[11])) {
-                    pharmaVariantAnnotation.setPhenotypes(stringFieldToList(fields[11]));
+                    pharmaVariantAnnotation.setPhenotypes(Arrays.asList(fields[11].split(";", -1)));
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
