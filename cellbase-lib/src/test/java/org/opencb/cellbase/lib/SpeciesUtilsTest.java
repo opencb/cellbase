@@ -22,6 +22,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.loader.LoadRunner;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +44,13 @@ public class SpeciesUtilsTest {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public SpeciesUtilsTest() throws IOException {
+    public SpeciesUtilsTest() throws IOException, CellBaseException {
         cellBaseConfiguration = CellBaseConfiguration.load(
                 SpeciesUtilsTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
+
+        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2,
+                new DataReleaseManager(GRCH37_DBNAME, cellBaseConfiguration), cellBaseConfiguration);
     }
 
     @Test

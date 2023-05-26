@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.loader.LoadRunner;
+import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -73,28 +74,30 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration = CellBaseConfiguration.load(
                     GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
-            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+            dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
+            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, dataReleaseManager, cellBaseConfiguration);
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    protected void clearDB(String dbName) throws Exception {
+    protected void clearDB(String dbName) {
         logger.info("Cleaning MongoDB {}", dbName);
         try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
             MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
             MongoDBConfiguration  mongoDBConfiguration = builder.build();
             mongoManager.get(dbName, mongoDBConfiguration);
             mongoManager.drop(dbName);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     protected void initDB() throws IOException, ExecutionException, ClassNotFoundException,
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            URISyntaxException, CellBaseException {
-        dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
+            URISyntaxException, CellBaseException, LoaderException {
         dataRelease = dataReleaseManager.createRelease().getRelease();
 
         Path path = Paths.get(getClass()

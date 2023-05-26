@@ -102,6 +102,7 @@ public class TfWSServer extends RegulatoryWSServer {
             String[] identifiers = tf.split(",");
             for (String identifier : identifiers) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setNames(Arrays.asList(identifier));
                 query.setFeatureTypes(Arrays.asList("TF_binding_site"));
                 queries.add(query);
@@ -152,6 +153,7 @@ public class TfWSServer extends RegulatoryWSServer {
     public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = TFBS_IDS, required = true) String tf) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             LogicalList<String> logicalList = new LogicalList(Arrays.asList(tf.split(",")));
             geneQuery.setTranscriptsTfbsId(logicalList);
             CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);

@@ -45,10 +45,6 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
                 if (dataRelease.getCollections().containsKey(data)) {
                     String collectionName = dataRelease.getCollections().get(data);
                     collectionMap.put(dataRelease.getRelease(), mongoDataStore.getCollection(collectionName));
-                    if (dataRelease.isActive()) {
-                        // Associate the default data release to the key 0 in the map
-                        collectionMap.put(0, mongoDataStore.getCollection(collectionName));
-                    }
                 }
             }
         } else {

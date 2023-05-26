@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
+import org.opencb.commons.utils.PrintUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
@@ -63,6 +64,8 @@ public abstract class ClinicalIndexer {
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         objectReader = mapper.readerFor(VariantAnnotation.class);
         jsonObjectWriter = mapper.writer();
+
+        PrintUtils.printSpace();
 //        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
     }
 

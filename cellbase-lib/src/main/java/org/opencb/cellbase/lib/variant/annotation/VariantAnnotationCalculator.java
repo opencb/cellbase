@@ -101,14 +101,16 @@ public class VariantAnnotationCalculator {
         this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
-        this.dataRelease = dataRelease;
+        // Check data release
+        this.dataRelease = cellbaseManagerFactory.getDataReleaseManager(species, assembly).checkDataRelease(dataRelease);
+        logger.info("Variant annotation calculator using data release {}", this.dataRelease);
         this.token = token;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-        hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease);
+        hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -1322,6 +1324,7 @@ public class VariantAnnotationCalculator {
         boolean[] overlapsRegulatoryRegion = {false, false};
 
         RegulationQuery query = new RegulationQuery();
+        query.setDataRelease(dataRelease);
         query.setIncludes(Collections.singletonList(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE));
         query.setRegions(Collections.singletonList(new Region(chromosome, position)));
         CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
@@ -1772,6 +1775,7 @@ public class VariantAnnotationCalculator {
                 List<RepeatsQuery> queries = new ArrayList<>();
                 for (Region region :  breakpointsToRegionList(variant)) {
                     RepeatsQuery query = new RepeatsQuery();
+                    query.setDataRelease(dataRelease);
                     query.setRegions(Collections.singletonList(region));
                     queries.add(query);
                 }

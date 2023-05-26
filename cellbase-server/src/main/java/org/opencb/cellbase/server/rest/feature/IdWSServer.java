@@ -109,6 +109,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getAllXrefs() {
         try {
             XrefQuery query = new XrefQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<Xref> queryResults = xrefManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
