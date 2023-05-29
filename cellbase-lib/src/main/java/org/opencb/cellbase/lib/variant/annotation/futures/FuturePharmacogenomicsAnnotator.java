@@ -159,7 +159,8 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
                                 // 4. Create, build and add the annotation
                                 PharmacogenomicsClinicalAnnotation resultClinicalAnnotation = new PharmacogenomicsClinicalAnnotation();
                                 resultClinicalAnnotation.setVariantId(pharmaVariantAnnotation.getVariantId());
-                                resultClinicalAnnotation.setGeneName(pharmaVariantAnnotation.getGeneName());
+
+                                resultClinicalAnnotation.setGeneNames(pharmaVariantAnnotation.getGeneNames());
                                 resultClinicalAnnotation.setPhenotypes(pharmaVariantAnnotation.getPhenotypes());
                                 resultClinicalAnnotation.setPhenotypeTypes(pharmaVariantAnnotation.getPhenotypeTypes());
                                 resultClinicalAnnotation.setConfidence(pharmaVariantAnnotation.getConfidence());

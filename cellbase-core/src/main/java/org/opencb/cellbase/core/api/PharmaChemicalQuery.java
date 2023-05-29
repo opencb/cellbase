@@ -47,11 +47,11 @@ public class PharmaChemicalQuery extends AbstractQuery {
     @QueryParameter(id = "variants.chromosome", alias = {"chromosome"})
     private List<String> chromosomes;
 
-    @QueryParameter(id = "variants.geneName", alias = {"geneName"})
-    private List<String> geneNames;
+    @QueryParameter(id = "variants.haplotypes", alias = {"haplotype"})
+    private List<String> hapolotypes;
 
-    @QueryParameter(id = "variants.geneId", alias = {"geneId"})
-    private List<String> geneIds;
+    @QueryParameter(id = "variants.geneNames", alias = {"geneName"})
+    private List<String> geneNames;
 
     @QueryParameter(id = "variants.phenotypes", alias = {"phenotype"})
     private List<String> phenotypes;
@@ -97,8 +97,8 @@ public class PharmaChemicalQuery extends AbstractQuery {
         sb.append(", variants=").append(variants);
         sb.append(", locations=").append(locations);
         sb.append(", chromosomes=").append(chromosomes);
+        sb.append(", hapolotypes=").append(hapolotypes);
         sb.append(", geneNames=").append(geneNames);
-        sb.append(", geneIds=").append(geneIds);
         sb.append(", phenotypes=").append(phenotypes);
         sb.append(", phenotypeTypes=").append(phenotypeTypes);
         sb.append(", confidences=").append(confidences);
@@ -170,21 +170,21 @@ public class PharmaChemicalQuery extends AbstractQuery {
         return this;
     }
 
+    public List<String> getHapolotypes() {
+        return hapolotypes;
+    }
+
+    public PharmaChemicalQuery setHapolotypes(List<String> hapolotypes) {
+        this.hapolotypes = hapolotypes;
+        return this;
+    }
+
     public List<String> getGeneNames() {
         return geneNames;
     }
 
     public PharmaChemicalQuery setGeneNames(List<String> geneNames) {
         this.geneNames = geneNames;
-        return this;
-    }
-
-    public List<String> getGeneIds() {
-        return geneIds;
-    }
-
-    public PharmaChemicalQuery setGeneIds(List<String> geneIds) {
-        this.geneIds = geneIds;
         return this;
     }
 

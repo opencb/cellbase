@@ -88,8 +88,11 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "variant", value = "List of variants (dbSNP IDs), e.g.: rs1429376,rs11191561. In order to get the list"
                     + " of variant IDs, please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.variantId",
                     dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "haplotype", value = "List of haplotypes, e.g.: CYP2A6*1. In order to get the list of gene names,"
+                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.haplotypes", dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "geneName", value = "List of gene names, e.g.: NT5C2,VKORC1. In order to get the list of gene names,"
-                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.geneName", dataType = "java.util.List",
+                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.geneNames", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "location", value = "List of chromosomic coordinates in the format: chromosome:position, e.g.:"
                     + " 10:103109774", dataType = "java.util.List", paramType = "query"),

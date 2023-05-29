@@ -212,19 +212,33 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // 14
                 // Specialty Population
                 PharmaVariantAnnotation pharmaVariantAnnotation = new PharmaVariantAnnotation()
-                        .setVariantId(fields[1])
-                        .setGeneName(fields[2])
                         .setConfidence(fields[3])
                         .setScore(fields[6])
                         .setUrl(fields[13])
                         .setPopulation(fields[14]);
 
+                // Variant or haplotypes
+                if (StringUtils.isNotEmpty(fields[1])) {
+                    if (isHaplotype(fields[1])) {
+                        // Haplotype
+                        pharmaVariantAnnotation.setHaplotypes(getHaplotypeList(fields[1]));
+                    } else {
+                        // Variant
+                        pharmaVariantAnnotation.setVariantId(fields[1]);
+                    }
+                }
+
+                // Genes
+                if (StringUtils.isNotEmpty(fields[2])) {
+                    pharmaVariantAnnotation.setGeneNames(Arrays.asList(fields[2].split(";")));
+                }
+
                 if (StringUtils.isNotEmpty(fields[7])) {
-                    pharmaVariantAnnotation.setPhenotypeTypes(Arrays.asList(fields[7].split(";", -1)));
+                    pharmaVariantAnnotation.setPhenotypeTypes(Arrays.asList(fields[7].split(";")));
                 }
 
                 if (StringUtils.isNotEmpty(fields[11])) {
-                    pharmaVariantAnnotation.setPhenotypes(Arrays.asList(fields[11].split(";", -1)));
+                    pharmaVariantAnnotation.setPhenotypes(Arrays.asList(fields[11].split(";")));
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
@@ -513,7 +527,6 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // 6           7       8               9           10
                 // Significance    Notes   Sentence        Alleles Specialty Population
                 PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
-                        .setVariantId(fields[1])
                         .setGeneName(fields[2])
                         .setPubmed(fields[4])
                         .setPhenotypeType(fields[5])
@@ -522,6 +535,17 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setDescription(fields[8])
                         .setAlleles(fields[9])
                         .setPopulation(fields[10]);
+
+                // Variant or haplotypes
+                if (StringUtils.isNotEmpty(fields[1])) {
+                    if (isHaplotype(fields[1])) {
+                        // Haplotype
+                        variantAssociation.setHaplotypes(getHaplotypeList(fields[1]));
+                    } else {
+                        // Variant
+                        variantAssociation.setVariantId(fields[1]);
+                    }
+                }
 
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put(PHARMGKB_ID_KEY, fields[0]);
@@ -632,7 +656,6 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // 9        10                   .....
                 // Alleles  Specialty Population .....
                 PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
-                        .setVariantId(fields[1])
                         .setGeneName(fields[2])
                         .setPubmed(fields[4])
                         .setPhenotypeType(fields[5])
@@ -641,6 +664,17 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setDescription(fields[8])
                         .setAlleles(fields[9])
                         .setPopulation(fields[10]);
+
+                // Variant or haplotypes
+                if (StringUtils.isNotEmpty(fields[1])) {
+                    if (isHaplotype(fields[1])) {
+                        // Haplotype
+                        variantAssociation.setHaplotypes(getHaplotypeList(fields[1]));
+                    } else {
+                        // Variant
+                        variantAssociation.setVariantId(fields[1]);
+                    }
+                }
 
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
@@ -681,7 +715,6 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // 6           7       8               9           10                    11          .....
                 // Significance    Notes   Sentence        Alleles Specialty Population  Assay type  .....
                 PharmaVariantAssociation variantAssociation = new PharmaVariantAssociation()
-                        .setVariantId(fields[1])
                         .setGeneName(fields[2])
                         .setPubmed(fields[4])
                         .setPhenotypeType(fields[5])
@@ -691,6 +724,17 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         .setAlleles(fields[9])
                         .setPopulation(fields[10])
                         .setAssayType(fields[11]);
+
+                // Variant or haplotypes
+                if (StringUtils.isNotEmpty(fields[1])) {
+                    if (isHaplotype(fields[1])) {
+                        // Haplotype
+                        variantAssociation.setHaplotypes(getHaplotypeList(fields[1]));
+                    } else {
+                        // Variant
+                        variantAssociation.setVariantId(fields[1]);
+                    }
+                }
 
                 Map<String, Object> attributes = new HashMap<>();
                 attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
@@ -960,5 +1004,13 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 return Collections.singletonList(field);
             }
         }
+    }
+
+    private boolean isHaplotype(String value) {
+        return (!value.startsWith("rs") && value.contains("*"));
+    }
+
+    private List<String> getHaplotypeList(String value) {
+        return Arrays.stream(value.split(",")).map(s -> s.trim()).collect(Collectors.toList());
     }
 }
