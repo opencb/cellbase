@@ -117,8 +117,8 @@ public class VariantAnnotationCalculator {
         return (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(false)
                 .setNormalizeAlleles(false)
-                .setDecomposeMNVs(decompose)
-                .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+                .setDecomposeMNVs(false)
+                .disableLeftAlign();
     }
 
     @Deprecated
@@ -731,10 +731,10 @@ public class VariantAnnotationCalculator {
         logger.debug("normalize = {}", normalize);
 
         // Default behaviour decompose
-        decompose = (queryOptions.get("skipDecompose") == null || !queryOptions.getBoolean("skipDecompose"));
-        logger.debug("decompose = {}", decompose);
+//        decompose = (queryOptions.get("skipDecompose") == null || !queryOptions.getBoolean("skipDecompose"));
+//        logger.debug("decompose = {}", decompose);
         // Must update normaliser configuration since normaliser was created on constructor
-        normalizer.getConfig().setDecomposeMNVs(decompose);
+//        normalizer.getConfig().setDecomposeMNVs(decompose);
 
         // New parameter "ignorePhase" present overrides presence of old "phased" parameter
         if (queryOptions.get("ignorePhase") != null) {
