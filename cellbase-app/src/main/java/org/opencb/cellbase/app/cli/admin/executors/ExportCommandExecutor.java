@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.api.ClinicalVariantQuery;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
@@ -161,26 +162,6 @@ public class ExportCommandExecutor extends CommandExecutor {
                     long dbTimeStart = System.currentTimeMillis();
                     switch (loadOption) {
 //                        case EtlCommons.GENOME_DATA: {
-//                            // Load data
-//                            GenomeManager genomeManager = new GenomeManager(species, assembly, configuration);
-//                            GenomeQuery genomeQuery = new GenomeQuery();
-//                            genomeQuery.setRegions(regions);
-//                            genomeQuery.setDataRelease(dataRelease);
-//                            CellBaseIterator<Chromosome> iterator = genomeManager.iterator(genomeQuery);
-//                            List<CellBaseDataResult<GenomeSequenceFeature>> results = genomeManager.getByRegions(genomeQuery);
-//                            for (CellBaseDataResult<GenomeSequenceFeature> result : results) {
-//                                for (GenomeSequenceFeature genomeSequenceFeature : result.getResults()) {
-//
-//                                }
-//                            }
-//
-////                            genomeManager.get
-//
-//
-//
-////                            loadIfExists(input.resolve("genome_info.json"), "genome_info");
-////                            loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-//
 //                            break;
 //                        }
                         case EtlCommons.GENE_DATA: {
@@ -211,17 +192,6 @@ public class ExportCommandExecutor extends CommandExecutor {
                             break;
                         }
 //                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
-//                            // Load data
-//                            loadIfExists(input.resolve("missense_variation_functional_score.json.gz"),
-//                                    "missense_variation_functional_score");
-//
-//                            // Create index
-//                            createIndex("missense_variation_functional_score");
-//
-//                            // Update release (collection and sources)
-//                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("revelVersion.json")));
-//                            dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
-//                                    EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
 //                            break;
 //                        }
                         case EtlCommons.CONSERVATION_DATA: {
@@ -242,51 +212,24 @@ public class ExportCommandExecutor extends CommandExecutor {
                             break;
                         }
 //                        case EtlCommons.REGULATION_DATA: {
-//                            // Load data (regulatory region and regulatory PFM))
-//                            loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
-//                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
-//
-//                            // Create index
-//                            createIndex("regulatory_region");
-//                            createIndex("regulatory_pfm");
-//
-//                            // Update release (collection and sources)
-//                            List<Path> sources = new ArrayList<>(Collections.singletonList(
-//                            input.resolve("ensemblRegulationVersion.json")));
-//                            dataReleaseManager.update(dataRelease, "regulatory_region", EtlCommons.REGULATION_DATA, sources);
-//                            dataReleaseManager.update(dataRelease, "regulatory_pfm", null, null);
 //                            break;
 //                        }
 //                        case EtlCommons.PROTEIN_DATA: {
-//                            // Load data
-//                            loadIfExists(input.resolve("protein.json.gz"), "protein");
-//
-//                            // Create index
-//                            createIndex("protein");
-//
-//                            // Update release (collection and sources)
-//                            List<Path> sources = new ArrayList<>(Arrays.asList(
-//                                    input.resolve("uniprotVersion.json"),
-//                                    input.resolve("interproVersion.json")
-//                            ));
-//                            dataReleaseManager.update(dataRelease, "protein", EtlCommons.PROTEIN_DATA, sources);
 //                            break;
 //                        }
-////                        case EtlCommons.PPI_DATA:
-////                            loadIfExists(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
-////                            loadIfExists(input.resolve("intactVersion.json"), METADATA);
-////                            createIndex("protein_protein_interaction");
-////                            break;
 //                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
-//                            // Load data, create index and update release
-//                            loadProteinFunctionalPrediction();
 //                            break;
 //                        }
-//                        case EtlCommons.CLINICAL_VARIANTS_DATA: {
-//                            // Load data, create index and update release
-//                            loadClinical();
-//                            break;
-//                        }
+                        case EtlCommons.CLINICAL_VARIANTS_DATA: {
+                            // Export data
+                            ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
+                            ClinicalVariantQuery query = new ClinicalVariantQuery();
+                            query.setRegions(regions);
+                            query.setDataRelease(dataRelease);
+                            CellBaseDataResult<Variant> results = clinicalManager.search(query);
+                            counter = writeExportedData(results.getResults(), "clinical_variants", output);
+                            break;
+                        }
                         case EtlCommons.REPEATS_DATA: {
                             // Export data
                             RepeatsManager repeatsManager = managerFactory.getRepeatsManager(species, assembly);
@@ -297,23 +240,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counter = writeExportedData(results.getResults(), "repeats", output.resolve("genome"));
                             break;
                         }
-////                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-////                            loadStructuralVariants();
-////                            break;
 //                        case EtlCommons.OBO_DATA: {
-//                            // Load data
-//                            loadIfExists(input.resolve("ontology.json.gz"), "ontology");
-//
-//                            // Create index
-//                            createIndex("ontology");
-//
-//                            // Update release (collection and sources)
-//                            List<Path> sources = new ArrayList<>(Arrays.asList(
-//                                    input.resolve(EtlCommons.HPO_VERSION_FILE),
-//                                    input.resolve(EtlCommons.GO_VERSION_FILE),
-//                                    input.resolve(EtlCommons.DO_VERSION_FILE)
-//                            ));
-//                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.OBO_DATA, sources);
 //                            break;
 //                        }
 //                        case EtlCommons.SPLICE_SCORE_DATA: {
