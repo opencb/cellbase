@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.variant.Variant;
@@ -27,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -316,5 +318,16 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             }
         }
         return cellBaseDataResults;
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getFunctionalScoreRegion(List<Region> regions, CellBaseQueryOptions options,
+                                                                           int dataRelease)
+            throws CellBaseException {
+        Set<String> chunkIdSet = new HashSet<>();
+        for (Region region : regions) {
+            chunkIdSet.addAll(variantDBAdaptor.getFunctionalScoreChunkIds(region));
+        }
+
+        return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
     }
 }

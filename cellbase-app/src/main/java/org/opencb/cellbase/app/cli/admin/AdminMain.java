@@ -72,6 +72,9 @@ public class AdminMain {
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
+                    case "export":
+                        commandExecutor = new ExportCommandExecutor(cliOptionsParser.getExportCommandOptions());
+                        break;
                     case "index":
                         commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());
                         break;

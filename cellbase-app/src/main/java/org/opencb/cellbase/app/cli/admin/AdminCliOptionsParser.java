@@ -36,6 +36,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DataReleaseCommandOptions dataReleaseCommandOptions;
     private DataTokenCommandOptions dataTokenCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private ExportCommandOptions exportCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
     private InstallCommandOptions installCommandOptions;
@@ -52,6 +53,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         dataReleaseCommandOptions = new DataReleaseCommandOptions();
         dataTokenCommandOptions = new DataTokenCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        exportCommandOptions = new ExportCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
         installCommandOptions = new InstallCommandOptions();
@@ -63,6 +65,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("data-release", dataReleaseCommandOptions);
         jCommander.addCommand("data-token", dataTokenCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("export", exportCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("install", installCommandOptions);
@@ -207,6 +210,36 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();
 
+    }
+
+    @Parameters(commandNames = {"export"}, commandDescription = "Export data into JSON files")
+    public class ExportCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
+                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed. 'all' "
+                + " loads everything", required = true, arity = 1)
+        public String data;
+
+        @Parameter(names = {"--db", "--database"}, description = "Database name, e.g., cellbase_hsapiens_grch38_v5", required = true,
+                arity = 1)
+        public String database;
+
+        @Parameter(names = {"--data-release"}, description = "Data release for exporting data.", required = true, arity = 1)
+        public int dataRelease;
+
+        @Parameter(names = {"--token"}, description = "Data token to export licensed data.", arity = 1)
+        public String token;
+
+        @Parameter(names = {"--gene"}, description = "List of genes (separated by commas). Exported data will be related to these genes"
+                + " (gene coordinates will be taken into account).", required = true, arity = 1)
+        public String gene;
+
+        @Parameter(names = {"-o", "--output"}, required = true, arity = 1,
+                description = "Output directory where to save the JSON data models.")
+        public String output;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
@@ -357,9 +390,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         return dataTokenCommandOptions;
     }
 
-    public LoadCommandOptions getLoadCommandOptions() {
-        return loadCommandOptions;
-    }
+    public LoadCommandOptions getLoadCommandOptions() { return loadCommandOptions; }
+
+    public ExportCommandOptions getExportCommandOptions() { return exportCommandOptions; }
 
     public IndexCommandOptions getIndexCommandOptions() {
         return indexCommandOptions;
