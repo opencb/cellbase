@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -34,7 +35,9 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GenomeManager extends AbstractManager implements AggregationApi<GenomeQuery, Chromosome> {
 
@@ -137,6 +140,16 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
             queryResultList.get(i).setId(regions);
         }
         return queryResultList;
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getConservationScoreRegion(List<Region> regions, CellBaseQueryOptions options,
+                                                                             int dataRelease) throws CellBaseException {
+        Set<String> chunkIdSet = new HashSet<>();
+        for (Region region : regions) {
+            chunkIdSet.addAll(genomeDBAdaptor.getConservationScoreChunkIds(region));
+        }
+
+        return genomeDBAdaptor.getConservationScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
     }
 
     public List<CellBaseDataResult<Score>> getAllScoresByRegionList(List<Region> regionList, QueryOptions options, int dataRelease)

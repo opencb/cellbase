@@ -29,6 +29,7 @@ import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -45,6 +46,8 @@ import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
+
+import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
 
 /**
  * Created by imedina on 07/12/15.
@@ -549,5 +552,27 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         } else {
             return new Document();
         }
+    }
+
+    public Collection<String> getConservationScoreChunkIds(Region region) {
+        Set<String> chunkIdSet = new HashSet<>();
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getStart(), CONSERVATION_CHUNK_SIZE));
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getEnd(), CONSERVATION_CHUNK_SIZE));
+        return new ArrayList<>(chunkIdSet);
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getConservationScoreRegion(List<String> chunkIds, CellBaseQueryOptions options,
+                                                                             int dataRelease)
+            throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(conservationMongoDBCollectionByRelease, dataRelease);
+
+        Bson projection = getProjection(options);
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String chunkId : chunkIds) {
+            orBsonList.add(Filters.eq("_chunkIds", chunkId));
+        }
+        Bson bson = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, GenomicScoreRegion.class, new QueryOptions()));
     }
 }

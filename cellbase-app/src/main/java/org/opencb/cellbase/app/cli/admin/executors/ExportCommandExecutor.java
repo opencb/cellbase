@@ -224,14 +224,23 @@ public class ExportCommandExecutor extends CommandExecutor {
 //                                    EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
 //                            break;
 //                        }
-//                        case EtlCommons.CONSERVATION_DATA: {
-//                            // Export data
-//                            GenomeManager genomeManager = managerFactory.getGenomeManager(species, assembly);
-//                            List<CellBaseDataResult<GenomicScoreRegion<Float>>> results = genomeManager.getConservation(
-//                            QueryOptions.empty(), regions, dataRelease);
-//                            loadConservation();
-//                            break;
-//                        }
+                        case EtlCommons.CONSERVATION_DATA: {
+                            // Export data
+                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
+                            GenomeManager genomeManager = managerFactory.getGenomeManager(species, assembly);
+                            CellBaseDataResult<GenomicScoreRegion> results = genomeManager.getConservationScoreRegion(regions, null,
+                                    dataRelease);
+                            for (GenomicScoreRegion scoreRegion : results.getResults()) {
+                                String chromosome = scoreRegion.getChromosome();
+                                if (chromosome.equals("M")) {
+                                    chromosome = "MT";
+                                }
+                                serializer.serialize(scoreRegion, "conservation_" + chromosome);
+                                counter++;
+                            }
+                            serializer.close();
+                            break;
+                        }
 //                        case EtlCommons.REGULATION_DATA: {
 //                            // Load data (regulatory region and regulatory PFM))
 //                            loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
