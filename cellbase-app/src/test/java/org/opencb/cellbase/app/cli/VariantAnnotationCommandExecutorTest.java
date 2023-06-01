@@ -930,9 +930,9 @@ public class VariantAnnotationCommandExecutorTest {
         variantAnnotationCommandOptions.benchmark = false;
         variantAnnotationCommandOptions.phased = true;
         variantAnnotationCommandOptions.input = inputFilename;
-        variantAnnotationCommandOptions.skipNormalize = false;
-        variantAnnotationCommandOptions.skipDecompose = !decompose;
-        variantAnnotationCommandOptions.skipLeftAlign = false;
+        variantAnnotationCommandOptions.normalize = true;
+        variantAnnotationCommandOptions.decompose = decompose;
+        variantAnnotationCommandOptions.leftAlign = true;
         variantAnnotationCommandOptions.output = Paths.get(OUTPUT_FILENAME).toString();
         variantAnnotationCommandOptions.outputFormat = "json";
         variantAnnotationCommandOptions.include = "cytobands";

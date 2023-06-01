@@ -344,9 +344,11 @@ public class ParamConstants {
             + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
             + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>";
     public static final String NORMALISE = "Boolean to indicate whether input variants shall be "
-            + "normalized or not. Normalization process does NOT include decomposing ";
-    public static final String SKIP_DECOMPOSE = "Boolean to indicate whether input MNVs should be "
-            + "decomposed or not as part of the normalisation step. MNV decomposition is strongly encouraged.";
+            + "normalized or not. Normalization process does NOT include decomposing nor left alignment.";
+    public static final String DECOMPOSE = "Boolean to indicate whether input MNVs should be "
+            + "decomposed or not as part of the normalisation step.";
+    public static final String LEFT_ALIGN = "Boolean to indicate whether input ambiguous INDELS should be "
+            + "left aligned or not as part of the normalisation step.";
     public static final String IGNORE_PHASE = "Boolean to indicate whether phase data should be taken into account.";
     public static final String PHASED = "DEPRECATED. Will be removed in next release. Please, use ignorePhase instead. "
             + " Boolean to indicate whether phase should be considered during the annotation process";

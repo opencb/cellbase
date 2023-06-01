@@ -117,7 +117,7 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", true, true, dataRelease);
         assertEquals(1, results.getResults().size());
     }
 

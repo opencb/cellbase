@@ -92,10 +92,23 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = Map.class,
             responseContainer = "QueryResponse")
     public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
-            required = true) String id) {
+            required = true) String id,
+                                     @QueryParam("decompose")
+                                     @ApiParam(name = "decompose",
+                                             value = "Boolean to indicate whether input MNVs should be "
+                                                     + "decomposed or not as part of the normalisation step.",
+                                             allowableValues = "false,true",
+                                             defaultValue = "false") Boolean decompose,
+                                     @QueryParam("leftAlign")
+                                     @ApiParam(name = "leftAlign",
+                                             value = "Boolean to indicate whether input ambiguous INDELS should be "
+                                                     + "left aligned or not as part of the normalisation step.",
+                                             allowableValues = "false,true",
+                                             defaultValue = "false") Boolean leftAlign) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease());
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, decompose, leftAlign,
+                    getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -126,23 +139,28 @@ public class VariantWSServer extends GenericRestWSServer {
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats, hgvs, geneConstraints, mirnaTargets}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse", hidden = true)
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
-                                                        + "annotate, e.g. "
-                                                        + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                        + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
-                                                        required = true) String variants,
+            + "annotate, e.g. "
+            + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+            + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+            required = true) String variants,
                                                 @QueryParam("normalize")
                                                 @ApiParam(name = "normalize",
                                                         value = "Boolean to indicate whether input variants shall be "
                                                                 + "normalized or not. Normalization process does NOT "
-                                                                + "include decomposing ", allowableValues = "false,true",
-                                                        defaultValue = "false", required = false) Boolean normalize,
-                                                @QueryParam("skipDecompose")
-                                                @ApiParam(name = "skipDecompose",
+                                                                + "include decomposing MNV nor left alignment",
+                                                        allowableValues = "false,true", defaultValue = "false") Boolean normalize,
+                                                @QueryParam("decompose")
+                                                @ApiParam(name = "decompose",
                                                         value = "Boolean to indicate whether input MNVs should be "
-                                                                + "decomposed or not as part of the normalisation step."
-                                                                + " MNV decomposition is strongly encouraged.",
+                                                                + "decomposed or not as part of the normalisation step.",
                                                         allowableValues = "false,true",
-                                                        defaultValue = "false", required = false) Boolean skipDecompose,
+                                                        defaultValue = "false") Boolean decompose,
+                                                @QueryParam("leftAlign")
+                                                @ApiParam(name = "leftAlign",
+                                                        value = "Boolean to indicate whether input ambiguous INDELS should be "
+                                                                + "left aligned or not as part of the normalisation step.",
+                                                        allowableValues = "false,true",
+                                                        defaultValue = "false") Boolean leftAlign,
                                                 @QueryParam("ignorePhase")
                                                 @ApiParam(name = "ignorePhase",
                                                         value = "Boolean to indicate whether phase data should be "
@@ -176,10 +194,10 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         defaultValue = "0", required = false) Integer cnvExtraPadding,
                                                 @QueryParam("checkAminoAcidChange")
                                                 @ApiParam(name = "checkAminoAcidChange",
-                                                value = "true/false to specify whether variant match in the clinical variant collection "
-                                                        + "should also be performed at the aminoacid change level",
-                                                allowableValues = "false,true",
-                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange,
+                                                        value = "true/false to specify whether variant match in the clinical variant "
+                                                                + "collection should also be performed at the aminoacid change level",
+                                                        allowableValues = "false,true",
+                                                        defaultValue = "false", required = false) Boolean checkAminoAcidChange,
                                                 @QueryParam("consequenceTypeSource")
                                                 @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                         + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
@@ -187,11 +205,17 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 @QueryParam("enable")
                                                 @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
                                                         + " e.g.: hgdm", hidden = true) String enable
-) {
+    ) {
+        try {
+            checkNormalizationConfig();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e);
+        }
 
         return getAnnotationByVariant(variants,
                 normalize,
-                skipDecompose,
+                decompose,
+                leftAlign,
                 ignorePhase,
                 phased,
                 imprecise,
@@ -233,10 +257,14 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @ApiParam(name = "normalize", value = NORMALISE,
                                                        allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean normalize,
-                                               @QueryParam("skipDecompose")
-                                               @ApiParam(name = "skipDecompose", value = SKIP_DECOMPOSE,
+                                               @QueryParam("decompose")
+                                               @ApiParam(name = "decompose", value = DECOMPOSE,
                                                        allowableValues = "false,true",
-                                                       defaultValue = "false", required = false) Boolean skipDecompose,
+                                                       defaultValue = "false") Boolean decompose,
+                                               @QueryParam("leftAlign")
+                                               @ApiParam(name = "leftAlign", value = LEFT_ALIGN,
+                                                       allowableValues = "false,true",
+                                                       defaultValue = "false") Boolean leftAlign,
                                                @QueryParam("ignorePhase")
                                                @ApiParam(name = "ignorePhase", value = IGNORE_PHASE,
                                                        allowableValues = "false,true",
@@ -265,15 +293,22 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        Boolean checkAminoAcidChange,
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
-                                                            + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
+                                                       + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
                                                        defaultValue = "ensembl", required = false) String consequenceTypeSource,
                                                @QueryParam("enable")
                                                @ApiParam(name = "enable", value = "Enable certain fields that are disabled by default, "
-                                                           + " e.g.: hgdm", hidden = true) String enable
+                                                       + " e.g.: hgdm", hidden = true) String enable
     ) {
+        try {
+            checkNormalizationConfig();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e);
+        }
+
         return getAnnotationByVariant(variants,
                 normalize,
-                skipDecompose,
+                decompose,
+                leftAlign,
                 ignorePhase,
                 phased,
                 imprecise,
@@ -284,9 +319,26 @@ public class VariantWSServer extends GenericRestWSServer {
                 enable);
     }
 
+    private void checkNormalizationConfig() throws IllegalArgumentException {
+        if (uriParams.containsKey("skipDecompose")) {
+            throw new IllegalArgumentException("Param 'skipDecompose' is not supported anymore. Please, use 'decompose' instead");
+        }
+        if (uriParams.containsKey("normalize")) {
+            if (!Boolean.parseBoolean(uriParams.get("normalize"))) {
+                if (uriParams.containsKey("decompose") && Boolean.parseBoolean(uriParams.get("decompose"))) {
+                    throw new IllegalArgumentException("Incompatible parameter usage: 'normalize'=false and 'decompose'=true");
+                }
+                if (uriParams.containsKey("leftAlign") && Boolean.parseBoolean(uriParams.get("leftAlign"))) {
+                    throw new IllegalArgumentException("Incompatible parameter usage: 'normalize'=false and 'leftAlign'=true");
+                }
+            }
+        }
+    }
+
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
-                                            Boolean skipDecompose,
+                                            Boolean decompose,
+                                            Boolean leftAlign,
                                             Boolean ignorePhase,
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
@@ -301,7 +353,7 @@ public class VariantWSServer extends GenericRestWSServer {
             String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
-                    variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
+                    variants, normalize, decompose, leftAlign, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
                     checkAminoAcidChange, consequenceTypeSources, enable, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
