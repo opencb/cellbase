@@ -18,15 +18,13 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.api.ClinicalVariantQuery;
-import org.opencb.cellbase.core.api.GeneQuery;
-import org.opencb.cellbase.core.api.RepeatsQuery;
-import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -39,10 +37,7 @@ import org.opencb.cellbase.lib.managers.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -97,16 +92,18 @@ public class ExportCommandExecutor extends CommandExecutor {
         // Check data release
         checkDataRelease();
 
+
         logger.info("Exporting from data release {}", dataRelease);
 
         CellBaseManagerFactory managerFactory = new CellBaseManagerFactory(configuration);
 
         if (exportCommandOptions.data != null) {
             // Get genes
+            List<String> geneNames = Arrays.asList(exportCommandOptions.gene.split(","));
             GeneManager geneManager = managerFactory.getGeneManager(species, assembly);
             GeneQuery geneQuery = new GeneQuery();
 //            geneQuery.setIds(Arrays.asList(exportCommandOptions.gene.split(",")));
-            geneQuery.setNames(Arrays.asList(exportCommandOptions.gene.split(",")));
+            geneQuery.setNames(geneNames);
             geneQuery.setSource(Collections.singletonList("ensembl"));
             geneQuery.setDataRelease(dataRelease);
             List<Gene> genes;
@@ -214,14 +211,36 @@ public class ExportCommandExecutor extends CommandExecutor {
 //                        case EtlCommons.REGULATION_DATA: {
 //                            break;
 //                        }
-//                        case EtlCommons.PROTEIN_DATA: {
-//                            break;
-//                        }
-//                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
-//                            break;
-//                        }
+                        case EtlCommons.PROTEIN_DATA: {
+                            ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
+                            ProteinQuery query = new ProteinQuery();
+                            query.setGenes(geneNames);
+                            query.setDataRelease(dataRelease);
+                            CellBaseDataResult<Entry> results = proteinManager.search(query);
+                            counter = writeExportedData(results.getResults(), "proteins", output);
+                            break;
+                        }
+                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
+                            ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
+                            Map<String, List<String>> transcriptsMap = new HashMap<>();
+                            for (Gene gene : genes) {
+                                for (Transcript transcript : gene.getTranscripts()) {
+                                    if (!transcriptsMap.containsKey(transcript.getChromosome())) {
+                                        transcriptsMap.put(transcript.getChromosome(), new ArrayList<>());
+                                    }
+                                    transcriptsMap.get(transcript.getChromosome()).add(transcript.getId().split("\\.")[0]);
+                                }
+                            }
+                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
+                            for (Map.Entry<String, List<String>> entry : transcriptsMap.entrySet()) {
+                                CellBaseDataResult<Object> results = proteinManager.getProteinSubstitutionRawData(entry.getValue(), null,
+                                        dataRelease);
+                                counter += writeExportedData(results.getResults(), "prot_func_pred_chr_" + entry.getKey(), output);
+                            }
+                            serializer.close();
+                            break;
+                        }
                         case EtlCommons.CLINICAL_VARIANTS_DATA: {
-                            // Export data
                             ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
                             ClinicalVariantQuery query = new ClinicalVariantQuery();
                             query.setRegions(regions);
