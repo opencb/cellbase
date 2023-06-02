@@ -107,8 +107,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                              defaultValue = "false") Boolean leftAlign) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, decompose, leftAlign,
-                    getDataRelease());
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, Boolean.TRUE.equals(decompose),
+                    Boolean.TRUE.equals(leftAlign), getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
