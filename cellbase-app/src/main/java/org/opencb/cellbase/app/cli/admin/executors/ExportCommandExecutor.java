@@ -125,12 +125,12 @@ public class ExportCommandExecutor extends CommandExecutor {
                     for (Transcript transcript : gene.getTranscripts()) {
                         if (CollectionUtils.isNotEmpty(transcript.getExons())) {
                             for (Exon exon : transcript.getExons()) {
-                                if (first) {
+//                                if (first) {
                                     regions.add(new Region(exon.getChromosome(), exon.getStart() - THRESHOLD_LENGTH,
                                             exon.getEnd() + THRESHOLD_LENGTH));
-                                    first = false;
-                                    break;
-                                }
+//                                    first = false;
+//                                    break;
+//                                }
                             }
                         }
                     }
@@ -208,9 +208,15 @@ public class ExportCommandExecutor extends CommandExecutor {
                             serializer.close();
                             break;
                         }
-//                        case EtlCommons.REGULATION_DATA: {
-//                            break;
-//                        }
+                        case EtlCommons.REGULATION_DATA: {
+                            RegulatoryManager regulatoryManager = managerFactory.getRegulatoryManager(species, assembly);
+                            RegulationQuery query = new RegulationQuery();
+                            query.setRegions(regions);
+                            query.setDataRelease(dataRelease);
+                            CellBaseDataResult<RegulatoryFeature> results = regulatoryManager.search(query);
+                            counter = writeExportedData(results.getResults(), "regulatory_region", output);
+                            break;
+                        }
                         case EtlCommons.PROTEIN_DATA: {
                             ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
                             ProteinQuery query = new ProteinQuery();
