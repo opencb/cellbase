@@ -562,7 +562,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 FileUtils.checkDirectory(input);
                 normalize = false;
             } else {
-                normalize =  !variantAnnotationCommandOptions.skipNormalize;
+                normalize =  variantAnnotationCommandOptions.normalize;
                 FileUtils.checkFile(input);
                 inputFormat = getFileFormat(input);
             }
@@ -572,8 +572,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         parsePhaseConfiguration();
-        decompose = !variantAnnotationCommandOptions.skipDecompose;
-        leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
+        decompose = variantAnnotationCommandOptions.decompose;
+        leftAlign = variantAnnotationCommandOptions.leftAlign;
         // Update serverQueryOptions
         serverQueryOptions.put("checkAminoAcidChange", variantAnnotationCommandOptions.checkAminoAcidChange);
 
@@ -619,7 +619,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // to the server. Actual normalization and decomposition options are set and processed here in the server code
         // using this.decompose and this.normalize fields.
         serverQueryOptions.add("normalize", false);
-        serverQueryOptions.add("skipDecompose", true);
+        serverQueryOptions.add("decompose", false);
 
         if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {
             serverQueryOptions.add("include", variantAnnotationCommandOptions.include);
