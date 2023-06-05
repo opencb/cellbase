@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -139,9 +140,20 @@ public class ExportCommandExecutor extends CommandExecutor {
                     logger.info("Exporting '{}' data...", loadOption);
                     long dbTimeStart = System.currentTimeMillis();
                     switch (loadOption) {
-//                        case EtlCommons.GENOME_DATA: {
-//                            break;
-//                        }
+                        case EtlCommons.GENOME_DATA: {
+                            GenomeManager genomeManager = managerFactory.getGenomeManager(species, assembly);
+
+                            // Genome sequence
+                            CellBaseDataResult results = genomeManager.getGenomeSequenceRawData(regions, dataRelease);
+                            counter = writeExportedData(results.getResults(), "genome_sequence", output.resolve("genome"));
+
+                            // Genome info
+                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve("genome"));
+                            results = genomeManager.getGenomeInfo(QueryOptions.empty(), dataRelease);
+                            writeExportedData(results.getResults(), "genome_info", serializer);
+                            serializer.close();
+                            break;
+                        }
                         case EtlCommons.GENE_DATA: {
                             // Export data
                             counter = writeExportedData(genes, "gene", output.resolve("gene"));

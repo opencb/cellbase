@@ -17,10 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.google.common.base.Splitter;
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
@@ -182,5 +179,14 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
 
     public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, int dataRelease) throws CellBaseException {
         return getCytobands(regionList, null, dataRelease);
+    }
+
+    public CellBaseDataResult<GenomeSequenceChunk> getGenomeSequenceRawData(List<Region> regions, int dataRelease)
+            throws CellBaseException {
+        Set<String> chunkIdSet = new HashSet<>();
+        for (Region region : regions) {
+            chunkIdSet.addAll(genomeDBAdaptor.getGenomeSequenceChunkId(region));
+        }
+        return genomeDBAdaptor.getGenomeSequenceRawData(new ArrayList<>(chunkIdSet), dataRelease);
     }
 }
