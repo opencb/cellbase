@@ -55,6 +55,7 @@ public class ExportCommandExecutor extends CommandExecutor {
     private int dataRelease;
 
     private String database;
+    private CellBaseManagerFactory managerFactory;
 
     private static final int THRESHOLD_LENGTH = 1000;
 
@@ -63,23 +64,23 @@ public class ExportCommandExecutor extends CommandExecutor {
 
         this.exportCommandOptions = exportCommandOptions;
 
-        dataRelease = exportCommandOptions.dataRelease;
+        this.dataRelease = exportCommandOptions.dataRelease;
 
-        output = Paths.get(exportCommandOptions.output);
+        this.output = Paths.get(exportCommandOptions.output);
 
-        database = exportCommandOptions.database;
+        this.database = exportCommandOptions.database;
         String[] splits = database.split("_");
-        species = splits[1];
-        assembly = splits[2];
+        this.species = splits[1];
+        this.assembly = splits[2];
 
         if (exportCommandOptions.data.equals("all")) {
-            dataToExport = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
+            this.dataToExport = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
                     EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
         } else {
-            dataToExport = exportCommandOptions.data.split(",");
+            this.dataToExport = exportCommandOptions.data.split(",");
         }
     }
 
@@ -92,10 +93,8 @@ public class ExportCommandExecutor extends CommandExecutor {
         // Check data release
         checkDataRelease();
 
-
         logger.info("Exporting from data release {}", dataRelease);
-
-        CellBaseManagerFactory managerFactory = new CellBaseManagerFactory(configuration);
+        this.managerFactory = new CellBaseManagerFactory(configuration);
 
         if (exportCommandOptions.data != null) {
             // Get genes
@@ -117,39 +116,21 @@ public class ExportCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("None gene retrieved from: " + exportCommandOptions.gene);
             }
             // Extract regions from genes
+            int maxRegionSize = 50000;
             List<Region> regions = new ArrayList<>();
             for (Gene gene : genes) {
-//                regions.add(new Region(gene.getChromosome(), gene.getStart() - THRESHOLD_LENGTH, gene.getEnd() + THRESHOLD_LENGTH));
-                boolean first = true;
-                if (CollectionUtils.isNotEmpty(gene.getTranscripts())) {
-                    for (Transcript transcript : gene.getTranscripts()) {
-                        if (CollectionUtils.isNotEmpty(transcript.getExons())) {
-                            for (Exon exon : transcript.getExons()) {
-//                                if (first) {
-                                    regions.add(new Region(exon.getChromosome(), exon.getStart() - THRESHOLD_LENGTH,
-                                            exon.getEnd() + THRESHOLD_LENGTH));
-//                                    first = false;
-//                                    break;
-//                                }
-                            }
-                        }
-                    }
+                int start = Math.max(1, gene.getStart() - THRESHOLD_LENGTH);
+                int end = gene.getEnd() + THRESHOLD_LENGTH;
+                logger.info("Gene {}: bounds {}:{}-{}", gene.getName(), gene.getChromosome(), start, end);
+                for (int pos = start; pos < end; pos += maxRegionSize) {
+                    regions.add(new Region(gene.getChromosome(), pos, Math.min(end, pos + maxRegionSize)));
                 }
             }
             logger.info("{} regions: {}", regions.size(), StringUtils.join(regions.stream().map(r -> r.toString())
                     .collect(Collectors.toList()), ","));
             List<Variant> variants = new ArrayList<>();
             if (areVariantsNeeded()) {
-                VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
-                VariantQuery query = new VariantQuery();
-                query.setRegions(regions);
-                query.setDataRelease(dataRelease);
-                try {
-                    variants = variantManager.search(query).getResults();
-                    logger.info("{} variants", variants.size());
-                } catch (QueryException | IllegalAccessException e) {
-                    throw new CellBaseException("Searching variants: " + e.getMessage());
-                }
+                variants = getVariants(regions);
             }
 
             for (String loadOption : dataToExport) {
@@ -188,9 +169,36 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counter = writeExportedData(results.getResults(), "cadd", output.resolve("variation"));
                             break;
                         }
-//                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
-//                            break;
-//                        }
+                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
+                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
+                            ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
+                            Map<String, List<Integer>> positionMap = new HashMap<>();
+                            for (Variant variant : variants) {
+                                if (!positionMap.containsKey(variant.getChromosome())) {
+                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
+                                }
+                                positionMap.get(variant.getChromosome()).add(variant.getStart());
+                                if (positionMap.get(variant.getChromosome()).size() >= 200) {
+                                    CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
+                                            .getMissenseVariantFunctionalScores(variant.getChromosome(),
+                                                    positionMap.get(variant.getChromosome()), null, dataRelease);
+                                    counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
+                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
+                                }
+                            }
+
+                            // Process map
+                            for (Map.Entry<String, List<Integer>> entry : positionMap.entrySet()) {
+                                if (CollectionUtils.isEmpty(entry.getValue())) {
+                                    continue;
+                                }
+                                CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
+                                        .getMissenseVariantFunctionalScores(entry.getKey(), entry.getValue(), null, dataRelease);
+                                counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
+                            }
+                            serializer.close();
+                            break;
+                        }
                         case EtlCommons.CONSERVATION_DATA: {
                             // Export data
                             CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
@@ -291,13 +299,44 @@ public class ExportCommandExecutor extends CommandExecutor {
         }
     }
 
+    private List<Variant> getVariants(List<Region> regions) throws CellBaseException {
+        List<Variant> variants = new ArrayList<>();
+        VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
+        VariantQuery query = new VariantQuery();
+        query.setDataRelease(dataRelease);
+        int batchSize = 10;
+        for (int start = 0;  start < regions.size(); start += batchSize) {
+            query.setRegions(regions.subList(start, Math.min(start + batchSize, regions.size())));
+            try {
+                List<Variant> results = variantManager.search(query).getResults();
+                logger.info("{} retrieved variants", results.size());
+                variants.addAll(results);
+            } catch (QueryException | IllegalAccessException e) {
+                throw new CellBaseException("Searching variants: " + e.getMessage());
+            }
+        }
+        logger.info("Total variants retrieved: {}", variants.size());
+        return variants;
+    }
+
     private boolean areVariantsNeeded() {
         for (String data : dataToExport) {
-            if (data.equals(EtlCommons.VARIATION_DATA)) { // || data.equals(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA)) {
+            if (data.equals(EtlCommons.VARIATION_DATA)
+                    || data.equals(EtlCommons.MISSENSE_VARIATION_SCORE_DATA)) {
+                // || data.equals(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private int writeExportedData(List<?> objects, String baseFilename, CellBaseFileSerializer serializer) throws IOException {
+        int counter = 0;
+        for (Object object : objects) {
+            serializer.serialize(object, baseFilename);
+            counter++;
+        }
+        return counter;
     }
 
     private int writeExportedData(List<?> objects, String baseFilename, Path outDir) throws IOException {
