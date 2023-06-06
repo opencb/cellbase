@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@release-4.6.x
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
 
@@ -38,7 +38,7 @@ jobs:
         run: mvn -T 2 clean install -DskipTests -Dcheckstyle.skip
 
   sonar:
-    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/sonar-analysis-workflow.yml@release-4.6.x
     needs: test
     with:
       sonarProjectKey: opencb_cellbase
@@ -46,7 +46,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy-maven:
-    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@release-4.6.x
     needs: test
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
@@ -57,7 +57,7 @@ jobs:
       MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
   deploy-docker:
-    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@release-4.6.x
     needs: test
     with:
       cli: python3 ./build/cloud/docker/docker-build.py push --images base
@@ -66,7 +66,7 @@ jobs:
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
   deploy-python:
-    uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@release-4.6.x
     needs: test
     with:
       cli: bash ./clients/python/python-build.sh push
@@ -76,7 +76,7 @@ jobs:
       PYPI_TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
 
   release:
-    uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@develop
+    uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@release-4.6.x
     needs: [deploy-maven, deploy-docker, deploy-python]
 
 #  deploy:
