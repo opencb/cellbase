@@ -91,7 +91,6 @@ public class ExportCommandExecutor extends CommandExecutor {
      * @throws CellBaseException CellBase exception
      */
     public void execute() throws CellBaseException {
-        // Check data release
         checkDataRelease();
 
         logger.info("Exporting from data release {}", dataRelease);
@@ -102,7 +101,6 @@ public class ExportCommandExecutor extends CommandExecutor {
             List<String> geneNames = Arrays.asList(exportCommandOptions.gene.split(","));
             GeneManager geneManager = managerFactory.getGeneManager(species, assembly);
             GeneQuery geneQuery = new GeneQuery();
-//            geneQuery.setIds(Arrays.asList(exportCommandOptions.gene.split(",")));
             geneQuery.setNames(geneNames);
             geneQuery.setSource(Collections.singletonList("ensembl"));
             geneQuery.setDataRelease(dataRelease);
@@ -288,11 +286,10 @@ public class ExportCommandExecutor extends CommandExecutor {
 //                        case EtlCommons.OBO_DATA: {
 //                            break;
 //                        }
-//                        case EtlCommons.SPLICE_SCORE_DATA: {
-//                            // Load data, create index and update release
-//                            loadSpliceScores();
-//                            break;
-//                        }
+                        case EtlCommons.SPLICE_SCORE_DATA: {
+                            counter = exportSpliceScoreData(variants);
+                            break;
+                        }
 //                        case EtlCommons.PUBMED_DATA: {
 //                            // Load data, create index and update release
 //                            loadPubMed();
@@ -309,6 +306,45 @@ public class ExportCommandExecutor extends CommandExecutor {
                 }
             }
         }
+    }
+
+    private int exportSpliceScoreData(List<Variant> variants) throws CellBaseException, IOException {
+        int counter = 0;
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve("splice_score"));
+        serializer.getOutdir().resolve("mmsplice").toFile().mkdirs();
+        serializer.getOutdir().resolve("spliceai").toFile().mkdirs();
+        VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
+        int maxNumVariants = 100;
+        for (int start = 0; start < variants.size(); start += maxNumVariants) {
+            List<Variant> vars = variants.subList(start, Math.min(start + maxNumVariants, variants.size()));
+            logger.info("Searching splice scores in variants [{}..{})", start, Math.min(start + maxNumVariants, variants.size()));
+            List<CellBaseDataResult<SpliceScore>> resultList = variantManager.getSpliceScoreVariant(vars, null,
+                    dataRelease);
+            for (CellBaseDataResult<SpliceScore> result : resultList) {
+                for (SpliceScore spliceScore : result.getResults()) {
+                    switch (spliceScore.getSource()) {
+                        case "MMSplice": {
+                            serializer.serialize(spliceScore, "mmsplice/splice_score_all");
+                            counter++;
+                            break;
+                        }
+                        case "SpliceAI": {
+                            serializer.serialize(spliceScore, "spliceai/splice_score_all");
+                            counter++;
+                            break;
+                        }
+                        default:
+                            logger.info("Splice score unknown, skipping it!");
+                            break;
+                    }
+                    if (counter % 1000 == 0) {
+                        logger.info("{} splice scores written....", counter);
+                    }
+                }
+            }
+        }
+        serializer.close();
+        return counter;
     }
 
     private List<Variant> getVariants(List<Region> regions) throws CellBaseException {
@@ -334,7 +370,8 @@ public class ExportCommandExecutor extends CommandExecutor {
     private boolean areVariantsNeeded() {
         for (String data : dataToExport) {
             if (data.equals(EtlCommons.VARIATION_DATA)
-                    || data.equals(EtlCommons.MISSENSE_VARIATION_SCORE_DATA)) {
+                    || data.equals(EtlCommons.MISSENSE_VARIATION_SCORE_DATA)
+                    || data.equals(EtlCommons.SPLICE_SCORE_DATA)) {
                 // || data.equals(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA)) {
                 return true;
             }
@@ -384,227 +421,6 @@ public class ExportCommandExecutor extends CommandExecutor {
             }
         }
     }
-//    private void loadStructuralVariants() {
-//        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
-//        if (Files.exists(path)) {
-//            try {
-//                logger.debug("Loading '{}' ...", path.toString());
-//                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
-//                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
-//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-//                logger.error(e.toString());
-//            }
-//        }
-//    }
-
-//    private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
-//            ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
-//            ClassNotFoundException, LoaderException, CellBaseException {
-//        File file = new File(path.toString());
-//        if (file.exists()) {
-//            if (file.isFile()) {
-//                loadRunner.load(path, collection, dataRelease);
-//            } else {
-//                logger.warn("{} is not a file - skipping", path);
-//            }
-//        } else {
-//            logger.warn("{} does not exist - skipping", path);
-//        }
-//    }
-//
-//    private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
-//            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-//            IOException, LoaderException, CellBaseException {
-//        // First load data
-//        // Common loading process from CellBase variation data models
-//        if (field == null) {
-//            DirectoryStream<Path> stream = Files.newDirectoryStream(input,
-//                    entry -> entry.getFileName().toString().startsWith("variation_chr"));
-//
-//            for (Path entry : stream) {
-//                logger.info("Loading file '{}'", entry);
-//                loadRunner.load(input.resolve(entry.getFileName()), "variation", dataRelease);
-//            }
-//
-//            // Create index
-//            createIndex("variation");
-//
-//            // Update release (collection and sources)
-//            List<Path> sources = new ArrayList<>(Arrays.asList(
-//                    input.resolve("ensemblVariationVersion.json")
-//            ));
-//            dataReleaseManager.update(dataRelease, "variation", EtlCommons.VARIATION_DATA, sources);
-//
-//            // Custom update required e.g. population freqs loading
-//        } else {
-//            logger.info("Loading file '{}'", input);
-//            loadRunner.load(input, "variation", dataRelease, field, innerFields);
-//        }
-//    }
-//
-//    private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
-//            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-//            IOException, CellBaseException, LoaderException {
-//        // Load data
-//        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
-//                entry -> entry.getFileName().toString().startsWith("conservation_"));
-//
-//        for (Path entry : stream) {
-//            logger.info("Loading file '{}'", entry);
-//            loadRunner.load(input.resolve(entry.getFileName()), "conservation", dataRelease);
-//        }
-//
-//        // Create index
-//        createIndex("conservation");
-//
-//        // Update release (collection and sources)
-//        List<Path> sources = new ArrayList<>(Arrays.asList(
-//                input.resolve("gerpVersion.json"),
-//                input.resolve("phastConsVersion.json"),
-//                input.resolve("phyloPVersion.json")
-//        ));
-//        dataReleaseManager.update(dataRelease, "conservation", EtlCommons.CONSERVATION_DATA, sources);
-//    }
-//
-//    private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
-//            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-//            IOException, CellBaseException, LoaderException {
-//        // Load data
-//        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
-//                entry -> entry.getFileName().toString().startsWith("prot_func_pred_"));
-//
-//        for (Path entry : stream) {
-//            logger.info("Loading file '{}'", entry);
-//            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction", dataRelease);
-//        }
-//
-//        // Create index
-//        createIndex("protein_functional_prediction");
-//
-//        // Update release (collection and sources)
-//        dataReleaseManager.update(dataRelease, "protein_functional_prediction", null, null);
-//    }
-//
-//    private void loadClinical() throws FileNotFoundException {
-//        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
-//        if (Files.exists(path)) {
-//            try {
-//                // Load data
-//                logger.info("Loading '{}' ...", path);
-//                loadRunner.load(path, "clinical_variants", dataRelease);
-//
-//                // Create index
-//                createIndex("clinical_variants");
-//
-//                // Update release (collection and sources)
-//                List<Path> sources = new ArrayList<>(Arrays.asList(
-//                        input.resolve("clinvarVersion.json"),
-//                        input.resolve("cosmicVersion.json"),
-//                        input.resolve("gwasVersion.json")
-//                ));
-//                dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANTS_DATA, sources);
-//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                    | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
-//                logger.error(e.toString());
-//            } catch (LoaderException e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            throw new FileNotFoundException("File " + path + " does not exist");
-//        }
-//    }
-//
-//    private void loadRepeats() {
-//        Path path = input.resolve(EtlCommons.REPEATS_JSON + ".json.gz");
-//        if (Files.exists(path)) {
-//            try {
-//                // Load data
-//                logger.debug("Loading '{}' ...", path);
-//                loadRunner.load(path, "repeats", dataRelease);
-//
-//                // Create index
-//                createIndex("repeats");
-//
-//                // Update release (collection and sources)
-//                List<Path> sources = new ArrayList<>(Arrays.asList(
-//                        input.resolve(EtlCommons.TRF_VERSION_FILE),
-//                        input.resolve(EtlCommons.GSD_VERSION_FILE),
-//                        input.resolve(EtlCommons.WM_VERSION_FILE)
-//                ));
-//                dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
-//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                    | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
-//                logger.error(e.toString());
-//            } catch (LoaderException e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            logger.warn("Repeats file {} not found", path);
-//            logger.warn("No repeats data will be loaded");
-//        }
-//    }
-//
-//    private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
-//            IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, CellBaseException, LoaderException {
-//        // Load data
-//        logger.info("Loading splice scores from '{}'", input);
-//        // MMSplice scores
-//        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY));
-//        // SpliceAI scores
-//        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY));
-//
-//        // Create index
-//        createIndex("splice_score");
-//
-//        // Update release (collection and sources)
-//        List<Path> sources = new ArrayList<>(Arrays.asList(
-//                input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME),
-//                input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_VERSION_FILENAME)
-//        ));
-//        dataReleaseManager.update(dataRelease, "splice_score", EtlCommons.SPLICE_SCORE_DATA, sources);
-//    }
-//
-//    private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,
-//            ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-//            LoaderException, CellBaseException {
-//        // Get files from folder
-//        DirectoryStream<Path> stream = Files.newDirectoryStream(spliceFolder,
-//                entry -> entry.getFileName().toString().startsWith("splice_score_"));
-//
-//        // Load from JSON files
-//        for (Path entry : stream) {
-//            logger.info("Loading file '{}'", entry);
-//            loadRunner.load(spliceFolder.resolve(entry.getFileName()), "splice_score", dataRelease);
-//        }
-//    }
-//
-//    private void loadPubMed() throws CellBaseException {
-//        Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
-//
-//        if (Files.exists(pubmedPath)) {
-//            // Load data
-//            for (File file : pubmedPath.toFile().listFiles()) {
-//                if (file.isFile() && (file.getName().endsWith("gz"))) {
-//                    logger.info("Loading file '{}'", file.getName());
-//                    try {
-//                        loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
-//                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                            | IllegalAccessException | ExecutionException | IOException | InterruptedException | LoaderException e) {
-//                        logger.error("Error loading file '{}': {}", file.getName(), e.toString());
-//                    }
-//                }
-//            }
-//            // Create index
-//            createIndex(EtlCommons.PUBMED_DATA);
-//
-//            // Update release (collection and sources)
-//            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
-//            dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
-//        } else {
-//            logger.warn("PubMed folder {} not found", pubmedPath);
-//        }
-//    }
 
     private void checkDataRelease() throws CellBaseException {
         // Check data release
