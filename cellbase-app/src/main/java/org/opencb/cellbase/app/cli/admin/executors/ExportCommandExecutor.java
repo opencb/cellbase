@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -40,6 +41,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.opencb.cellbase.lib.EtlCommons.OBO_DATA;
 
 /**
  * Created by jtarraga on 29/05/23.
@@ -79,7 +82,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
+                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -283,9 +286,10 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counter = writeExportedData(results.getResults(), "repeats", output.resolve("genome"));
                             break;
                         }
-//                        case EtlCommons.OBO_DATA: {
-//                            break;
-//                        }
+                        case OBO_DATA: {
+                            counter = exportOntologyData();
+                            break;
+                        }
                         case EtlCommons.SPLICE_SCORE_DATA: {
                             counter = exportSpliceScoreData(variants);
                             break;
@@ -306,6 +310,22 @@ public class ExportCommandExecutor extends CommandExecutor {
                 }
             }
         }
+    }
+
+    private int exportOntologyData() throws CellBaseException, IOException {
+        int counter = 0;
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, OBO_DATA);
+        OntologyManager ontologyManager = managerFactory.getOntologyManager(species, assembly);
+        CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(new OntologyQuery());
+        while (iterator.hasNext()) {
+            serializer.serialize(iterator.next());
+            counter++;
+            if (counter % 5000 == 0) {
+                logger.info("{} ontology terms written....", counter);
+            }
+        }
+        serializer.close();
+        return counter;
     }
 
     private int exportSpliceScoreData(List<Variant> variants) throws CellBaseException, IOException {
