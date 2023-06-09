@@ -20,7 +20,7 @@ on:
         type: string
         required: true
 env:
-  xb_version: "1.6.1"
+  xb_version: "1.7.0"
 jobs:
   test:
     name: Test and push Sonar analysis
