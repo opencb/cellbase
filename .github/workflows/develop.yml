@@ -17,9 +17,9 @@ jobs:
     uses: ./.github/workflows/test-analysis.yml
     needs: build
     secrets: inherit
-    with:
-      report_context: development
-      report_dir: ${{ github.ref_name }}/cellbase/${{ github.sha }}
+#    with:
+#      report_context: development
+#      report_dir: ${{ github.ref_name }}/cellbase/${{ github.sha }}
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@release-4.6.x
