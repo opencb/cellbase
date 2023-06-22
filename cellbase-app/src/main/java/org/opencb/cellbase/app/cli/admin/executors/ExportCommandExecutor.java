@@ -42,6 +42,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.lib.EtlCommons.CLINICAL_VARIANTS_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.OBO_DATA;
 
 /**
@@ -57,6 +58,7 @@ public class ExportCommandExecutor extends CommandExecutor {
     private Path output;
     private String[] dataToExport;
     private int dataRelease;
+    private String token;
 
     private String database;
     private CellBaseManagerFactory managerFactory;
@@ -69,6 +71,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         this.exportCommandOptions = exportCommandOptions;
 
         this.dataRelease = exportCommandOptions.dataRelease;
+        this.token = exportCommandOptions.token;
 
         this.output = Paths.get(exportCommandOptions.output);
 
@@ -128,8 +131,15 @@ public class ExportCommandExecutor extends CommandExecutor {
                     regions.add(new Region(gene.getChromosome(), pos, Math.min(end, pos + maxRegionSize)));
                 }
             }
+
+            // Add input regions
+            if (StringUtils.isNotEmpty(exportCommandOptions.region)) {
+                regions.addAll(Region.parseRegions(exportCommandOptions.region));
+            }
+
             logger.info("{} regions: {}", regions.size(), StringUtils.join(regions.stream().map(r -> r.toString())
                     .collect(Collectors.toList()), ","));
+
             List<Variant> variants = new ArrayList<>();
             if (areVariantsNeeded()) {
                 variants = getVariants(regions);
@@ -146,10 +156,10 @@ public class ExportCommandExecutor extends CommandExecutor {
 
                             // Genome sequence
                             CellBaseDataResult results = genomeManager.getGenomeSequenceRawData(regions, dataRelease);
-                            counter = writeExportedData(results.getResults(), "genome_sequence", output.resolve("genome"));
+                            counter = writeExportedData(results.getResults(), "genome_sequence", output);
 
                             // Genome info
-                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve("genome"));
+                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
                             results = genomeManager.getGenomeInfo(QueryOptions.empty(), dataRelease);
                             writeExportedData(results.getResults(), "genome_info", serializer);
                             serializer.close();
@@ -157,7 +167,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                         }
                         case EtlCommons.GENE_DATA: {
                             // Export data
-                            counter = writeExportedData(genes, "gene", output.resolve("gene"));
+                            counter = writeExportedData(genes, "gene", output);
                             break;
                         }
                         case EtlCommons.REFSEQ_DATA: {
@@ -166,12 +176,12 @@ public class ExportCommandExecutor extends CommandExecutor {
                             geneQuery.setDataRelease(dataRelease);
 
                             CellBaseDataResult<Gene> results = geneManager.search(geneQuery);
-                            counter = writeExportedData(results.getResults(), "refseq", output.resolve("gene"));
+                            counter = writeExportedData(results.getResults(), "refseq", output);
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
                             // Export data
-                            counter = writeExportedData(variants, "variation", output.resolve("variation"));
+                            counter = writeExportedData(variants, "variation_chr_all", output);
                             break;
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
@@ -179,7 +189,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
                             CellBaseDataResult<GenomicScoreRegion> results = variantManager.getFunctionalScoreRegion(regions, null,
                                     dataRelease);
-                            counter = writeExportedData(results.getResults(), "cadd", output.resolve("variation"));
+                            counter = writeExportedData(results.getResults(), "cadd", output);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -244,7 +254,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             query.setGenes(geneNames);
                             query.setDataRelease(dataRelease);
                             CellBaseDataResult<Entry> results = proteinManager.search(query);
-                            counter = writeExportedData(results.getResults(), "proteins", output);
+                            counter = writeExportedData(results.getResults(), "protein", output);
                             break;
                         }
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
@@ -268,12 +278,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.CLINICAL_VARIANTS_DATA: {
-                            ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
-                            ClinicalVariantQuery query = new ClinicalVariantQuery();
-                            query.setRegions(regions);
-                            query.setDataRelease(dataRelease);
-                            CellBaseDataResult<Variant> results = clinicalManager.search(query);
-                            counter = writeExportedData(results.getResults(), "clinical_variants", output);
+                            counter = exportClinicalVariantData(regions);
                             break;
                         }
                         case EtlCommons.REPEATS_DATA: {
@@ -283,7 +288,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             repeatsQuery.setRegions(regions);
                             repeatsQuery.setDataRelease(dataRelease);
                             CellBaseDataResult<Repeat> results = repeatsManager.search(repeatsQuery);
-                            counter = writeExportedData(results.getResults(), "repeats", output.resolve("genome"));
+                            counter = writeExportedData(results.getResults(), "repeats", output);
                             break;
                         }
                         case OBO_DATA: {
@@ -312,6 +317,31 @@ public class ExportCommandExecutor extends CommandExecutor {
         }
     }
 
+    private int exportClinicalVariantData(List<Region> regions) throws CellBaseException, QueryException, IllegalAccessException,
+            IOException {
+        String baseFilename = CLINICAL_VARIANTS_DATA + ".full";
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, baseFilename);
+        ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
+        ClinicalVariantQuery query = new ClinicalVariantQuery();
+        query.setDataRelease(dataRelease);
+        query.setToken(token);
+        int counter = 0;
+        for (Region region : regions) {
+            query.setRegions(Collections.singletonList(region));
+            CellBaseDataResult<Variant> results = clinicalManager.search(query);
+            logger.info("{} retrieved clinical variant data from region {}", results.getNumResults(), region);
+            for (Variant variant : results.getResults()) {
+                serializer.serialize(variant);
+                counter++;
+                if (counter % 1000 == 0) {
+                    logger.info("{} clinical variants written....", counter);
+                }
+            }
+        }
+        serializer.close();
+        return counter;
+    }
+
     private int exportOntologyData() throws CellBaseException, IOException {
         int counter = 0;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, OBO_DATA);
@@ -334,7 +364,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         serializer.getOutdir().resolve("mmsplice").toFile().mkdirs();
         serializer.getOutdir().resolve("spliceai").toFile().mkdirs();
         VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
-        int maxNumVariants = 100;
+        int maxNumVariants = 200;
         for (int start = 0; start < variants.size(); start += maxNumVariants) {
             List<Variant> vars = variants.subList(start, Math.min(start + maxNumVariants, variants.size()));
             logger.info("Searching splice scores in variants [{}..{})", start, Math.min(start + maxNumVariants, variants.size()));
@@ -357,7 +387,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             logger.info("Splice score unknown, skipping it!");
                             break;
                     }
-                    if (counter % 1000 == 0) {
+                    if (counter % 10000 == 0) {
                         logger.info("{} splice scores written....", counter);
                     }
                 }
@@ -373,11 +403,11 @@ public class ExportCommandExecutor extends CommandExecutor {
         VariantQuery query = new VariantQuery();
         query.setDataRelease(dataRelease);
         int batchSize = 10;
-        for (int start = 0;  start < regions.size(); start += batchSize) {
-            query.setRegions(regions.subList(start, Math.min(start + batchSize, regions.size())));
+        for (Region region : regions) {
+            query.setRegions(Collections.singletonList(region));
             try {
                 List<Variant> results = variantManager.search(query).getResults();
-                logger.info("{} retrieved variants", results.size());
+                logger.info("{} retrieved variants from region {}", results.size(), region);
                 variants.addAll(results);
             } catch (QueryException | IllegalAccessException e) {
                 throw new CellBaseException("Searching variants: " + e.getMessage());

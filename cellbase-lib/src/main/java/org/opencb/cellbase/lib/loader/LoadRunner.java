@@ -171,6 +171,8 @@ public class LoadRunner {
                     logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
                 }
             }
+            br.close();
+
             // Last batch
             if (!batch.isEmpty()) {
                 blockingQueue.put(batch);

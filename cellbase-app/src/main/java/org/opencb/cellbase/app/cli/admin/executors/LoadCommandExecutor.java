@@ -124,7 +124,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA: {
                             // Load data
-                            loadIfExists(input.resolve("genome_info.json"), "genome_info");
+                            if (input.resolve("genome_info.json").toFile().exists()) {
+                                loadIfExists(input.resolve("genome_info.json"), "genome_info");
+                            } else {
+                                loadIfExists(input.resolve("genome_info.json.gz"), "genome_info");
+                            }
                             loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
 
                             // Create index

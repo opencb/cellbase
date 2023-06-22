@@ -237,6 +237,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " (gene coordinates will be taken into account).", required = true, arity = 1)
         public String gene;
 
+        @Parameter(names = {"--region"}, description = "List of regions (separated by commas). Exported data will be related to these"
+                + " regions taking into account their coordinates.", arity = 1)
+        public String region;
+
         @Parameter(names = {"-o", "--output"}, required = true, arity = 1,
                 description = "Output directory where to save the JSON data models.")
         public String output;

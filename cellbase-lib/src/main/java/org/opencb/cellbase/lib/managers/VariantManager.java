@@ -294,7 +294,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
                 variant.getReference(), variant.getAlternate(), dataRelease);
 
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_SPLICE_SCORES_DATA)) {
             return DataAccessTokenUtils.filterDataSources(result, validSources);
         } else {
             return result;
@@ -306,15 +306,15 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
-            for (Variant variant : variants) {
-                cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
-                        variant.getAlternate(), dataRelease));
-            }
-        } else {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_SPLICE_SCORES_DATA)) {
             for (Variant variant : variants) {
                 cellBaseDataResults.add(DataAccessTokenUtils.filterDataSources(spliceDBAdaptor.getScores(variant.getChromosome(),
                         variant.getStart(), variant.getReference(), variant.getAlternate(), dataRelease), validSources));
+            }
+        } else {
+            for (Variant variant : variants) {
+                cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                        variant.getAlternate(), dataRelease));
             }
         }
         return cellBaseDataResults;

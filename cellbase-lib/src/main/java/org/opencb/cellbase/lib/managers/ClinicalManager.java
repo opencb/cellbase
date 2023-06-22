@@ -72,7 +72,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         Set<String> validSources = tokenManager.getValidSources(query.getToken(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
             return DataAccessTokenUtils.filterDataSources(results, validSources);
         } else {
             return results;
@@ -97,7 +97,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
             return DataAccessTokenUtils.filterDataSources(results, validSources);
         } else {
             return results;
@@ -109,7 +109,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         Set<String> validSources = tokenManager.getValidSources(query.getToken(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
             return new TokenFilteredVariantIterator(getDBAdaptor().iterator(query), validSources);
         } else {
             return getDBAdaptor().iterator(query);
@@ -133,7 +133,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         }
 
         // Check if is necessary to use the token licensed variant iterator
-        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
             return DataAccessTokenUtils.filterDataSources(result, validSources);
         } else {
             return result;
@@ -192,7 +192,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         }
 
         // Check if is necessary to use the token licensed variant iterator
-        if (validSources.size() != DataAccessTokenUtils.NUM_CLINICAL_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
             return DataAccessTokenUtils.filterDataSources(results, validSources);
         } else {
             return results;

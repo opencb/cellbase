@@ -61,6 +61,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String GENOMIC_FEATURES = "genomicFeatures";
     private static final String XREFS = "xrefs";
     private static final String TRAIT_ASSOCIATION = "traitAssociation";
+    private static final String GWAS = "gwas";
     private static final String SOMATIC_INFORMATION = "somaticInformation";
     private static final String PRIMARY_SITE = "primarySite";
     private static final String SITE_SUBTYPE = "siteSubtype";
@@ -314,6 +315,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     }
                 }
             }
+        } else if (document.containsKey(GWAS)) {
+            logger.info("Clinical variant {} contains GWAS info but not association traits", document.get("id"));
         } else {
             ObjectMapper jsonObjectMapper = new ObjectMapper();
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -359,6 +362,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             List evidenceEntryList = (List) document.get(TRAIT_ASSOCIATION);
             getFeatureXrefsFromClinicalObject(evidenceEntryList, values);
             getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
+        } else if (document.containsKey(GWAS)) {
+            logger.info("Clinical variant {} contains GWAS info but not association traits", document.get("id"));
         } else {
             ObjectMapper jsonObjectMapper = new ObjectMapper();
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
