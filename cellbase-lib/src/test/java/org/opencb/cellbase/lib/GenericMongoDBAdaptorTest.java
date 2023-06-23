@@ -17,9 +17,11 @@
 package org.opencb.cellbase.lib;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
@@ -30,12 +32,17 @@ import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
+import org.opencb.commons.exec.Command;
+import org.opencb.commons.utils.URLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -51,9 +58,14 @@ public class GenericMongoDBAdaptorTest {
     protected int dataRelease;
     protected String token;
 
+    private static final String DATASET_BASENAME = "cb5.5-dr4";
+    private static final String DATASET_EXTENSION = ".tar.gz";
+    private static final String DATASET_URL = "http://reports.test.zettagenomics.com/cellbase/test-data/";
+    private static final String DATASET_TMP_DIR = "/tmp/cb";
+
     private static final String LOCALHOST = "localhost:27017";
     protected static final String SPECIES = "hsapiens";
-    protected static final String ASSEMBLY = "grch37";
+    protected static final String ASSEMBLY = "grch38";
     protected static final String API_VERSION = "v5";
     protected static final String CELLBASE_DBNAME = "cellbase_" + SPECIES + "_" + ASSEMBLY + "_" + API_VERSION;
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
@@ -75,23 +87,142 @@ public class GenericMongoDBAdaptorTest {
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+            initDB();
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @Deprecated
     protected void clearDB(String dbName) throws Exception {
-        logger.info("Cleaning MongoDB {}", dbName);
-        try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
-            MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
-            MongoDBConfiguration  mongoDBConfiguration = builder.build();
-            mongoManager.get(dbName, mongoDBConfiguration);
-            mongoManager.drop(dbName);
-        }
+        logger.info("Deprecated, doing nothing!");
+//        logger.info("Cleaning MongoDB {}", dbName);
+//        try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
+//            MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
+//            MongoDBConfiguration  mongoDBConfiguration = builder.build();
+//            mongoManager.get(dbName, mongoDBConfiguration);
+//            mongoManager.drop(dbName);
+//        }
     }
 
     protected void initDB() throws IOException, ExecutionException, ClassNotFoundException,
+            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+            URISyntaxException, CellBaseException {
+        dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY);
+        CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
+        List<DataRelease> dataReleaseList = results.getResults();
+        if (CollectionUtils.isEmpty(dataReleaseList)) {
+            // Download data and populate mongo DB
+            downloadAndPopulate();
+        } else if (dataReleaseList.size() != 1) {
+            throw new CellBaseException("Something wrong with the CellBase dataset, it must contain only ONE data release");
+        } else {
+            dataRelease = dataReleaseList.get(0).getRelease();
+        }
+    }
+
+    private void downloadAndPopulate() throws IOException, ExecutionException, ClassNotFoundException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, CellBaseException {
+        // Download and uncompress dataset
+        URL url = new URL(DATASET_URL + DATASET_BASENAME + DATASET_EXTENSION);
+        Path tmpPath = Paths.get(DATASET_TMP_DIR);
+        tmpPath.toFile().mkdirs();
+
+        URLUtils.download(url, tmpPath);
+        Path tmpFile = tmpPath.resolve(DATASET_BASENAME + DATASET_EXTENSION);
+        String commandline = "tar -xvzf " + tmpFile.toAbsolutePath() + " -C " + tmpPath;
+        logger.info("Running: " + commandline);
+        Command command = new Command(commandline);
+        command.run();
+
+        logger.info("Downloading and decompressing " + tmpFile.toAbsolutePath());
+
+        Path baseDir = tmpPath.resolve(DATASET_BASENAME);
+        if (!baseDir.toFile().exists() || !baseDir.toFile().isDirectory()) {
+            throw new CellBaseException("Something wrong downloading and uncompressing the datasets, please check " + tmpPath);
+        }
+
+        // Populate mongoDB from the downloaded dataset
+        dataRelease = dataReleaseManager.createRelease().getRelease();
+
+        // Genome:  genome_sequence.json.gz, genome_info.json.gz
+        loadData("genome_info", "genome_info", baseDir.resolve("genome_info.json.gz"));
+        loadData("genome_sequence", "genome_sequence", baseDir.resolve("genome_sequence.json.gz"));
+
+        // Gene: gene.json.gz, refseq.json.gz
+        loadData("gene", "gene", baseDir.resolve("gene.json.gz"));
+        loadData("refseq", "refseq", baseDir.resolve("refseq.json.gz"));
+
+        // Conservation
+        for (File file : baseDir.toFile().listFiles()) {
+            if (file.getName().startsWith("conservation_")) {
+                loadData("conservation", "conservation", file.toPath(), true);
+            }
+        }
+        dataReleaseManager.update(dataRelease, "conservation", "conservation", Collections.emptyList());
+
+        // Regulatory regions: regulatory_region.json.gz
+        loadData("regulatory_region", "regulatory_region", baseDir.resolve("regulatory_region.json.gz"));
+
+        // Protein: protein.json.gz
+        loadData("protein", "protein", baseDir.resolve("protein.json.gz"));
+
+        // Protein functional prediction
+        for (File file : baseDir.toFile().listFiles()) {
+            if (file.getName().startsWith("prot_func_pred_")) {
+                loadData("protein_functional_prediction", "protein_functional_prediction", file.toPath(), true);
+            }
+        }
+        dataReleaseManager.update(dataRelease, "protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
+
+        // Variation: variation_chr_all.json.gz
+        loadData("variation", "variation", baseDir.resolve("variation_chr_all.json.gz"));
+
+        // Variant functional score: cadd.json.gz
+        loadData("variation_functional_score", "variation_functional_score", baseDir.resolve("cadd.json.gz"));
+
+        // Repeats: repeats.json.gz
+        loadData("repeats", "repeats", baseDir.resolve("repeats.json.gz"));
+
+        // Ontology: ontology.json.gz
+        loadData("ontology", "ontology", baseDir.resolve("ontology.json.gz"));
+
+        // Missense variation functional scores: missense_variation_functional_score.json.gz
+        loadData("missense_variation_functional_score", "missense_variation_functional_score",
+                baseDir.resolve("missense_variation_functional_score.json.gz"));
+
+        // splice_score
+        loadData("splice_score", "splice_score", baseDir.resolve("splice_score/spliceai/splice_score_all.json.gz"), true);
+        loadData("splice_score", "splice_score", baseDir.resolve("splice_score/mmsplice/splice_score_all.json.gz"), true);
+        dataReleaseManager.update(dataRelease, "splice_score", "splice_score", Collections.emptyList());
+
+        // clinical_variants.full.json.gz
+        loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
+
+        // Clean temporary dir
+    }
+
+    private void loadData(String collection, String data, Path filePath) throws IOException, ExecutionException, ClassNotFoundException,
+            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        loadData(collection, data, filePath, false);
+    }
+
+    private void loadData(String collection, String data, Path filePath, boolean skipUpdate) throws IOException, ExecutionException,
+            ClassNotFoundException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException,
+            IllegalAccessException {
+        if (filePath.toFile().exists()) {
+            logger.info("Loading (" + collection + ", " + data + ") from file " + filePath);
+            loadRunner.load(filePath, collection, dataRelease);
+            if (!skipUpdate) {
+                dataReleaseManager.update(dataRelease, collection, data, Collections.emptyList());
+            }
+        } else {
+            logger.error("(" + collection + ", " + data + ") not loading: file " + filePath + "does not exist");
+        }
+    }
+
+    @Deprecated
+    protected void initDB_OLD() throws IOException, ExecutionException, ClassNotFoundException,
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
             URISyntaxException, CellBaseException {
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
@@ -163,10 +294,6 @@ public class GenericMongoDBAdaptorTest {
         loadRunner.load(path, "variation", dataRelease);
         dataReleaseManager.update(dataRelease,"variation", "variation", Collections.emptyList());
 
-        path = Paths.get(getClass()
-                .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome_info", dataRelease);
-        dataReleaseManager.update(dataRelease,"genome_info", "genome_info", Collections.emptyList());
 
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
