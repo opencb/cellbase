@@ -25,6 +25,7 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -93,7 +94,6 @@ public class GenericMongoDBAdaptorTest {
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
             initDB();
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -16,14 +16,17 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.api.XrefQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.XrefManager;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
+
+import static org.bson.assertions.Assertions.fail;
 
 
 /**
@@ -33,32 +36,25 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public XRefMongoDBAdaptorTest() throws Exception {
         super();
-
-        setUp();
-    }
-
-    public void setUp() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
-        Path path = Paths.get(getClass().getResource("/xref/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
-        updateDataRelease(dataRelease, "gene", Collections.emptyList());
     }
 
     @Test
-    @Disabled
-    public void contains() throws Exception {
-//        XRefMongoDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37", dataRelease);
+    public void queryTest() throws Exception {
         XrefManager xrefManager = cellBaseManagerFactory.getXrefManager(SPECIES, ASSEMBLY);
-//        CellBaseDataResult xrefs = xRefDBAdaptor.contains("BRCA2", new QueryOptions());
-//        Set<String> reference = new HashSet<>(Arrays.asList("ENSG00000185515", "ENSG00000139618", "ENSG00000107949",
-//                "ENSG00000083093", "ENSG00000170037"));
-//        Set<String> set = (Set) xrefs.getResults().stream()
-//                .map(result -> ((String) ((Document) result).get("id"))).collect(Collectors.toSet());
-//        assertEquals(reference, set);
+        XrefQuery query = new XrefQuery();
+        query.setIds(Collections.singletonList("BRCA1"));
+        query.setDataRelease(dataRelease);
+        List<CellBaseDataResult<Xref>> resultList = xrefManager.search(Collections.singletonList(query));
+        CellBaseDataResult<Xref> result = resultList.get(0);
+        boolean found = false;
+        for (Xref xref : result.getResults()) {
+            if (xref.getId().equals("ENSG00000012048")) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail();
+        }
     }
-
 }
