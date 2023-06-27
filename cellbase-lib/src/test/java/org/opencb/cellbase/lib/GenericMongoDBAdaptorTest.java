@@ -85,6 +85,11 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration = CellBaseConfiguration.load(
                     GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
+//            cellBaseConfiguration.getDatabases().getMongodb().setHost("localhost:27037");
+//            cellBaseConfiguration.getDatabases().getMongodb().setUser("cellbase");
+//            cellBaseConfiguration.getDatabases().getMongodb().setPassword("cellbase");
+//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationDatabase", "admin");
+//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationMechanism", "SCRAM-SHA-256");
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
             initDB();
