@@ -16,14 +16,11 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,26 +29,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
     private MongoDBManager mongoDBManager;
-    private CellBaseConfiguration cellBaseConfiguration;
 
-
-    public MongoDBAdaptorFactoryTest() throws IOException {
+    public MongoDBAdaptorFactoryTest() {
         super();
-    }
-
-    @BeforeAll
-    public void setUp() throws Exception {
-        dataRelease = 1;
-
-        cellBaseConfiguration = CellBaseConfiguration.load(
-                MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                CellBaseConfiguration.ConfigurationFileFormat.YAML);
-
-        mongoDBManager = new MongoDBManager(cellBaseConfiguration);
+        this.mongoDBManager = new MongoDBManager(cellBaseConfiguration);
     }
 
     @Test
-    public void testGetDatabaseName() throws Exception {
+    public void testGetDatabaseName() {
         // provide assembly
         String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName");
         assertEquals("cellbase_speciesname_assemblyname_v5", databaseName);

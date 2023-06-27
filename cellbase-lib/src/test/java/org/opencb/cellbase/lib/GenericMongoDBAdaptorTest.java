@@ -101,7 +101,7 @@ public class GenericMongoDBAdaptorTest {
 
     @Deprecated
     protected void clearDB(String dbName) throws Exception {
-        logger.info("Deprecated, doing nothing!");
+        logger.info("Deprecated, nothing to do!");
 //        logger.info("Cleaning MongoDB {}", dbName);
 //        try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
 //            MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
