@@ -647,7 +647,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public void testCellBaseDataResultGroupingDecomposedMNVs() throws Exception {
 
         QueryOptions queryOptions = (new QueryOptions("normalize", true));
-        queryOptions.put("skipDecompose", false);
+        queryOptions.put("decompose", true);
 
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.

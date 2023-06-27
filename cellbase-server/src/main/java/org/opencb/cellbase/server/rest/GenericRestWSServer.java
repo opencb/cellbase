@@ -31,7 +31,6 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -170,22 +169,15 @@ public class GenericRestWSServer implements IWSServer {
         // check version. species is validated later
         checkVersion();
 
-        // Check data release and retrieve the default data release
-        if (!DONT_CHECK_SPECIES.equals(species)) {
-            // Prepare data release (do we need to get the default one?)
-            if (StringUtils.isEmpty(uriParams.get("dataRelease")) || uriParams.get("dataRelease").equals("0")) {
-                if (defaultDataRelease == 0) {
-                    if (StringUtils.isEmpty(assembly)) {
-                        assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, species, assembly).getAssembly();
-                    }
-                    if (StringUtils.isNotEmpty(assembly)) {
-                        DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-                        DataRelease dr = releaseManager.getDefault();
-                        if (dr != null) {
-                            defaultDataRelease = dr.getRelease();
-                        }
-                    }
-                }
+        // Set default data release if necessary
+        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease < 1) {
+            // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
+            assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
+
+            if (StringUtils.isNotEmpty(assembly)) {
+                DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+                // getDefault launches an exception if no data release is found for that CellBase version
+                defaultDataRelease = releaseManager.getDefault(version).getRelease();
             }
         }
     }
@@ -193,21 +185,23 @@ public class GenericRestWSServer implements IWSServer {
     protected int getDataRelease() throws CellBaseException {
         if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
             try {
-                return Integer.parseInt(uriParams.get("dataRelease"));
+                int dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
+                // If data release is 0, then use the default data release
+                if (dataRelease == 0) {
+                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease + "' for CellBase"
+                            + " version '" + version + "'");
+                    return defaultDataRelease;
+                } else {
+                    return dataRelease;
+                }
             } catch (NumberFormatException e) {
                 throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
             }
         }
-        // It means to use the default data release
+        // If no data release is present in the query, then use the default data release
+        logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
+                + " '" + version + "'");
         return defaultDataRelease;
-    }
-
-    protected int getDataReleaseUsed() throws CellBaseException {
-        int dataRelease = getDataRelease();
-        if (dataRelease == 0) {
-            return defaultDataRelease;
-        }
-        return dataRelease;
     }
 
     protected String getToken() {
@@ -240,7 +234,7 @@ public class GenericRestWSServer implements IWSServer {
 //        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
 //        System.out.println("version = " + version);
 //        System.out.println("*************************************");
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
+        if (!version.startsWith(cellBaseConfiguration.getVersion())) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("Version not valid: '" + version + "'");
         }
@@ -312,7 +306,7 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         try {
-            queryResponse.setDataRelease(getDataReleaseUsed());
+            queryResponse.setDataRelease(getDataRelease());
         } catch (CellBaseException ex) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
@@ -343,7 +337,7 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         try {
-            queryResponse.setDataRelease(getDataReleaseUsed());
+            queryResponse.setDataRelease(getDataRelease());
         } catch (CellBaseException e) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
@@ -417,6 +411,4 @@ public class GenericRestWSServer implements IWSServer {
                 .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 .build();
     }
-
-
 }

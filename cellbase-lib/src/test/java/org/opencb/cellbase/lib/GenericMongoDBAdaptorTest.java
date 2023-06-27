@@ -27,6 +27,7 @@ import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.loader.LoadRunner;
+import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -91,8 +92,9 @@ public class GenericMongoDBAdaptorTest {
 //            cellBaseConfiguration.getDatabases().getMongodb().setPassword("cellbase");
 //            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationDatabase", "admin");
 //            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationMechanism", "SCRAM-SHA-256");
-            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2, cellBaseConfiguration);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, CELLBASE_DBNAME, 2,
+                    cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);
             initDB();
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,7 +115,7 @@ public class GenericMongoDBAdaptorTest {
 
     protected void initDB() throws IOException, ExecutionException, ClassNotFoundException,
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            URISyntaxException, CellBaseException {
+            URISyntaxException, CellBaseException, LoaderException {
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY);
         CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
         List<DataRelease> dataReleaseList = results.getResults();
@@ -127,7 +129,7 @@ public class GenericMongoDBAdaptorTest {
         }
     }
 
-    private void downloadAndPopulate() throws IOException, ExecutionException, ClassNotFoundException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, CellBaseException {
+    private void downloadAndPopulate() throws IOException, ExecutionException, ClassNotFoundException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, CellBaseException, LoaderException {
         // Download and uncompress dataset
         URL url = new URL(DATASET_URL + DATASET_BASENAME + DATASET_EXTENSION);
         Path tmpPath = Paths.get(DATASET_TMP_DIR);
@@ -208,13 +210,13 @@ public class GenericMongoDBAdaptorTest {
     }
 
     private void loadData(String collection, String data, Path filePath) throws IOException, ExecutionException, ClassNotFoundException,
-            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, LoaderException, CellBaseException {
         loadData(collection, data, filePath, false);
     }
 
     private void loadData(String collection, String data, Path filePath, boolean skipUpdate) throws IOException, ExecutionException,
             ClassNotFoundException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException,
-            IllegalAccessException {
+            IllegalAccessException, LoaderException, CellBaseException {
         if (filePath.toFile().exists()) {
             logger.info("Loading (" + collection + ", " + data + ") from file " + filePath);
             loadRunner.load(filePath, collection, dataRelease);
@@ -229,7 +231,7 @@ public class GenericMongoDBAdaptorTest {
     @Deprecated
     protected void initDB_OLD() throws IOException, ExecutionException, ClassNotFoundException,
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            URISyntaxException, CellBaseException {
+            URISyntaxException, CellBaseException, LoaderException {
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
         dataRelease = dataReleaseManager.createRelease().getRelease();
 

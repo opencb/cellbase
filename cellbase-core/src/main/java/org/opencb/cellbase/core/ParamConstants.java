@@ -109,17 +109,16 @@ public class ParamConstants {
 
     public static final String DOT_NOTATION_NOTE = "Parameters can be camel case (e.g. transcriptsBiotype) "
             + "or dot notation (e.g. transcripts.biotype).";
-    public static final String VERSION_DESCRIPTION = "Possible values: v5";
-    public static final String DEFAULT_VERSION = "v5";
-    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. Please,"
-            + " check the web service /metadata/dataReleases in order to know the different data releases and sources, and the default"
-            + " data release";
-    public static final String DEFAULT_DATA_RELEASE = "0";
+    public static final String DEFAULT_VERSION = "v5.5";
+    public static final String VERSION_DESCRIPTION = "API version, e.g.: " + DEFAULT_VERSION;
+    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. To get the list"
+            + " of available data release, please call the endpoint 'meta/dataReleases'";
     public static final String DATA_ACCESS_TOKEN_DESCRIPTION = "Data token to allow access to licensed/restricted data sources such as"
             + " Cosmic or HGMD";
+    public static final String DEFAULT_ASSEMBLY = "grch38";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
-            + "potentially available assemblies, please refer to: "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";
+            + "potentially available assemblies, please call the endpoint 'meta/species'";
+
 
     public static final String COUNT_DESCRIPTION = "Get the total number of results matching the query. ";
 
@@ -136,9 +135,9 @@ public class ParamConstants {
     public static final String SORT_DESCRIPTION = "Sort returned results by a certain data model attribute";
     public static final String ORDER_DESCRIPTION = "Results are in ascending order by default";
 
+    public static final String DEFAULT_SPECIES = "hsapiens";
     public static final String SPECIES_DESCRIPTION = "Name of the species, e.g. hsapiens. For a full list "
-            + "of potentially available species ids, please refer to: "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";
+            + "of potentially available species ids, please call the endpoint 'meta/species'";
     public static final String DATA_MODEL_DESCRIPTION = "Get JSON specification of the data model";
 
     public static final String REGION_DESCRIPTION = "Comma separated list of genomic regions to be queried, "
@@ -175,8 +174,8 @@ public class ParamConstants {
     public static final String ONTOLOGY_NAMES = "Comma separated list of ontology term names, "
             + "e.g. Diabetes mellitus,histone kinase activity";
     public static final String ONTOLOGY_NAMESPACES = "Comma separated list of namespaces, e.g. human_phenotype,biological_process. "
-            + "For a full list of potentially available namespaces, please refer to: "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/ontology/distinct?field=namespace";
+            + "For a full list of potentially available namespaces, please call the endpoint 'feature/ontology/distinct?field=namespace'";
+
     public static final String ONTOLOGY_SOURCES = "Name of ontology, e.g. HP or GO";
     public static final String ONTOLOGY_SYNONYMS = "Comma separated list of synonyms, e.g. Cerebellar ataxia";
     public static final String ONTOLOGY_XREFS = "Comma separated list of cross references, e.g. MSH:D002524";
@@ -302,8 +301,9 @@ public class ParamConstants {
             + " Possible values are clinvar or cosmic";
     public static final String SOURCE_PARAM = "source";
     public static final String SEQUENCE_ONTOLOGY_DESCRIPTION = "Comma separated list of consequence types, "
-            + "e.g. missense_variant. Exact text matches will be returned. A list of searchable consequence types can be"
-            + " accessed at https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types";
+
+            + "e.g. missense_variant. Exact text matches will be returned. To get list of searchable consequence types, please call"
+            + " the endpoint 'genomic/variant/consequenceTypes'";
     public static final String SEQUENCE_ONTOLOGY_PARAM = "consequenceType";
     public static final String FEATURE_IDS_DESCRIPTION = "Comma separated list of feature ids, which can be either ENSEMBL gene "
             + "ids, HGNC gene symbols, transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2,ENST00000409047. "
@@ -320,26 +320,22 @@ public class ParamConstants {
     public static final String VARIANT_IDS_DESCRIPTION = "Comma separated list of ids, e.g. rs6025,COSM306824. "
             + "Exact text matches will be returned.";
     public static final String VARIANT_IDS_PARAM = "id";
-    public static final String VARIANT_TYPES_DESCRIPTION = "Comma separated list of variant types, e.g. \"SNV\" A list of "
-            + "searchable types can be accessed at "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/type";
+    public static final String VARIANT_TYPES_DESCRIPTION = "Comma separated list of variant types, e.g. \"SNV\". To get the list of "
+            + "searchable types, please call the endpoint 'clinical/variant/type'";
     public static final String VARIANT_TYPES_PARAM = "type";
-    public static final String CONSISTENCY_STATUS_DESCRIPTION = "Comma separated list of consistency labels. A list of searchable "
-            + "consistency labels can be accessed at "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/consistency_labels";
+    public static final String CONSISTENCY_STATUS_DESCRIPTION = "Comma separated list of consistency labels. To get the list of searchable"
+            + " consistency labels, please call the endpoint 'clinical/variant/consistencyLabels'";
     public static final String CONSISTENCY_STATUS_PARAM = "consistencyStatus";
-    public static final String CLINICAL_SIGNFICANCE_DESCRIPTION = "Comma separated list of clinical significance labels. "
-            + "A list of searchable clinical  significance labels can be accessed at "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/clinsig_labels"
+    public static final String CLINICAL_SIGNFICANCE_DESCRIPTION = "Comma separated list of clinical significance labels. To get the list of"
+            + " searchable clinical significance labels, please call the endpoint 'clinical/variant/clinsigLabels'. "
             + " WARNING: returned numTotalResults will always be -1 if more than 1 label is provided.";
     public static final String CLINICAL_SIGNFICANCE_PARAM = "clinicalSignificance";
-    public static final String MODE_INHERITANCE_DESCRIPTION = "Comma separated list of mode of inheritance labels. A list of "
-            + "searchable mode of inheritance labels can be accessed at "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/mode_inheritance_labels";
+    public static final String MODE_INHERITANCE_DESCRIPTION = "Comma separated list of mode of inheritance labels. To the the list of "
+            + "searchable mode of inheritance labels, please call the endpoint 'clinical/variant/modeInheritanceLabels'";
     public static final String MODE_INHERITANCE_PARAM = "modeInheritance";
-    public static final String ALLELE_ORIGIN_DESCRIPTION = "Comma separated list of allele origin labels. A list of searchable "
-            + "allele origin  labels can be accessed at "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels";
+    public static final String ALLELE_ORIGIN_DESCRIPTION = "Comma separated list of allele origin labels. To get the list of searchable "
+            + "allele origin  labels, please call the endpoint 'clinical/variant/alleleOriginLabels'";
+
     public static final String ALLELE_ORIGIN_PARAM = "alleleOrigin";
 
     // ---------------------------------------------
@@ -348,9 +344,11 @@ public class ParamConstants {
             + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
             + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>";
     public static final String NORMALISE = "Boolean to indicate whether input variants shall be "
-            + "normalized or not. Normalization process does NOT include decomposing ";
-    public static final String SKIP_DECOMPOSE = "Boolean to indicate whether input MNVs should be "
-            + "decomposed or not as part of the normalisation step. MNV decomposition is strongly encouraged.";
+            + "normalized or not. Normalization process does NOT include decomposing nor left alignment.";
+    public static final String DECOMPOSE = "Boolean to indicate whether input MNVs should be "
+            + "decomposed or not as part of the normalisation step.";
+    public static final String LEFT_ALIGN = "Boolean to indicate whether input ambiguous INDELS should be "
+            + "left aligned or not as part of the normalisation step.";
     public static final String IGNORE_PHASE = "Boolean to indicate whether phase data should be taken into account.";
     public static final String PHASED = "DEPRECATED. Will be removed in next release. Please, use ignorePhase instead. "
             + " Boolean to indicate whether phase should be considered during the annotation process";
@@ -378,21 +376,14 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String XREF_DBNAMES = "Comma separated list of source DB names"
-            + " to include in the search, e.g.: ensembl_gene,vega_gene,havana_gene."
-            + " Available db names are shown by this web service: "
-            + " https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/getDBNames";
+    public static final String XREF_DBNAMES = "Comma separated list of source DB names to include in the search, e.g.: ensembl_gene,"
+        + "vega_gene,havana_gene.";
 
     // ---------------------------------------------
 
-    //    public static final String REGULATION_FEATURE_CLASSES = "Comma separated list of regulatory region classes, e.g.:"
-//            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
-//            + "list of available regulatory types: "
-//            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass";
     public static final String REGULATION_FEATURE_TYPES = "Comma separated list of regulatory region types, e.g.: "
-            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
-            + "list of available regulatory types: "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType";
+            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned.";
+
 
     public static final String CELLTYPE = "Type of cell.";
 

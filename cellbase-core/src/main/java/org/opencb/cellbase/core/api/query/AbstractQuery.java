@@ -172,11 +172,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 }
             }
             objectMapper.updateValue(this, objectHashMap);
-
-            // Initialize the data release (0 means to use the default data release)
-            if (dataRelease == null) {
-                dataRelease = 0;
-            }
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }

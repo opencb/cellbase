@@ -1,10 +1,10 @@
 ---
-version: "v5"
+version: "v5.1"
 defaultSpecies: "hsapiens"
 
 ## These are the RESTful configurations parameters
 rest:
   hosts:
-  - "bioinfodev.hpc.cam.ac.uk/cellbase-5.0.0"
-  timeout: 2000
+  - "https://ws.zettagenomics.com/cellbase"
+  timeout: 10000
 
