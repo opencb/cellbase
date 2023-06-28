@@ -12,11 +12,6 @@ jobs:
     with:
       maven_opts: -DCELLBASE.WAR.NAME=cellbase
 
-  test:
-    uses: ./.github/workflows/test-analysis.yml
-    needs: build
-    secrets: inherit
-
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@release-4.6.x
     needs: test
