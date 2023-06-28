@@ -1959,5 +1959,14 @@ public class VariantAnnotationCalculator {
     public VariantNormalizer getNormalizer() {
         return normalizer;
     }
+
+    public String getToken() {
+        return token;
+    }
+
+    public VariantAnnotationCalculator setToken(String token) {
+        this.token = token;
+        return this;
+    }
 }
 
