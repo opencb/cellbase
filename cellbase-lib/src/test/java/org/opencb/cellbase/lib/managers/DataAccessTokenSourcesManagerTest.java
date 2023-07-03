@@ -20,7 +20,6 @@ public class DataAccessTokenSourcesManagerTest {
     @Before
     public void before() {
         String randomStr = "xPacig89igHSieEnveJEi4KCfdEslhmssC3vui1JJQGgDQ0y8v";
-//        String randomStr = RandomStringUtils.randomAlphanumeric(SECRET_KEY_MIN_LENGTH);
         System.out.println("Secret key = " + randomStr);
         datManager = new DataAccessTokenManager(randomStr);
     }

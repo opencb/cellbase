@@ -25,15 +25,11 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
-import org.opencb.commons.datastore.core.DataStoreServerAddress;
-import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
-import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.opencb.commons.exec.Command;
 import org.opencb.commons.utils.URLUtils;
 import org.slf4j.Logger;
@@ -42,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -104,18 +99,6 @@ public class GenericMongoDBAdaptorTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Deprecated
-    protected void clearDB(String dbName) throws Exception {
-        logger.info("Deprecated, nothing to do!");
-//        logger.info("Cleaning MongoDB {}", dbName);
-//        try (MongoDataStoreManager mongoManager = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost", 27017)))) {
-//            MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
-//            MongoDBConfiguration  mongoDBConfiguration = builder.build();
-//            mongoManager.get(dbName, mongoDBConfiguration);
-//            mongoManager.drop(dbName);
-//        }
     }
 
     protected void initDB() throws IOException, ExecutionException, ClassNotFoundException,
@@ -231,115 +214,6 @@ public class GenericMongoDBAdaptorTest {
         } else {
             logger.error("(" + collection + ", " + data + ") not loading: file " + filePath + "does not exist");
         }
-    }
-
-    @Deprecated
-    protected void initDB_OLD() throws IOException, ExecutionException, ClassNotFoundException,
-            InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            URISyntaxException, CellBaseException, LoaderException {
-        dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
-        dataRelease = dataReleaseManager.createRelease().getRelease();
-
-        Path path = Paths.get(getClass()
-                .getResource("/variant-annotation/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/hgvs/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
-        dataReleaseManager.update(dataRelease,"gene", "gene", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
-        dataReleaseManager.update(dataRelease,"genome_sequence", "genome_sequence", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
-        loadRunner.load(path, "regulatory_region", dataRelease);
-        dataReleaseManager.update(dataRelease,"regulatory_region", "regulatory_region", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein", dataRelease);
-        dataReleaseManager.update(dataRelease,"protein", "protein", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
-        loadRunner.load(path, "protein_functional_prediction", dataRelease);
-        dataReleaseManager.update(dataRelease,"protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        dataReleaseManager.update(dataRelease,"variation", "variation", Collections.emptyList());
-
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/repeats.json.gz").toURI());
-        loadRunner.load(path, "repeats", dataRelease);
-        dataReleaseManager.update(dataRelease,"repeats", "repeats", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variant-annotation/clinical_variants.cosmic.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
-        dataReleaseManager.update(dataRelease,"clinical_variants", "clinical_variants", Collections.emptyList());
-
-        path = Paths.get(getClass()
-                .getResource("/revel/missense_variation_functional_score.json.gz").toURI());
-        loadRunner.load(path, "missense_variation_functional_score", dataRelease);
-        dataReleaseManager.update(dataRelease, "missense_variation_functional_score", "missense_variation_functional_score", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("refseq", dataRelease);
-        dataReleaseManager.update(dataRelease, "refseq", "refseq", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("conservation", dataRelease);
-        dataReleaseManager.update(dataRelease, "conservation", "conservation", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("variation_functional_score", dataRelease);
-        dataReleaseManager.update(dataRelease, "variation_functional_score", "variation_functional_score", Collections.emptyList());
-
-        // Create empty collection
-        createEmptyCollection("splice_score", dataRelease);
-        dataReleaseManager.update(dataRelease, "splice_score", "splice_score", Collections.emptyList());
     }
 
     protected void createDataRelease() throws CellBaseException, JsonProcessingException {
