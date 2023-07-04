@@ -21,21 +21,21 @@ jobs:
       report_dir: cellbase
 
   deploy-maven:
-    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: test
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
     secrets: inherit
 
   deploy-docker:
-    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
     needs: test
     with:
       cli: python3 ./build/cloud/docker/docker-build.py push --images base
     secrets: inherit
 
   deploy-python:
-    uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
     needs: test
     with:
       cli: bash ./clients/python/python-build.sh push
@@ -43,5 +43,5 @@ jobs:
     secrets: inherit
 
   release:
-    uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@develop
     needs: [deploy-maven, deploy-docker, deploy-python]
