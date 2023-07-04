@@ -12,14 +12,6 @@ jobs:
     with:
       maven_opts: -DCELLBASE.WAR.NAME=cellbase
 
-  test:
-    uses: ./.github/workflows/test-analysis.yml
-    needs: build
-    secrets: inherit
-    with:
-      report_context: xetabase
-      report_dir: cellbase
-
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: test
