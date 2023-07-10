@@ -39,7 +39,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
     public void testGetDatabaseName() {
         // provide assembly
         String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName");
-        assertEquals("cellbase_speciesname_assemblyname_v5", databaseName);
+        assertEquals("cellbase_speciesname_assemblyname_" + cellBaseConfiguration.getVersion(), databaseName);
 
         // don't provide assembly
         InvalidParameterException thrown =
@@ -51,6 +51,6 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
         // handle special characters
         databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name");
-        assertEquals("cellbase_speciesname_myfunnyassemblyname_v5", databaseName);
+        assertEquals("cellbase_speciesname_myfunnyassemblyname_" + cellBaseConfiguration.getVersion(), databaseName);
     }
 }

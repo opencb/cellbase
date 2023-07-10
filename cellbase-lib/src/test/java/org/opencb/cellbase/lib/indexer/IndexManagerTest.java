@@ -36,7 +36,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
         super();
 
         Path path = Paths.get(getClass().getResource("/index/mongodb-indexes.json").toURI());
-        indexManager = new IndexManager(CELLBASE_DBNAME, path, cellBaseConfiguration);
+        indexManager = new IndexManager(cellBaseName, path, cellBaseConfiguration);
     }
 
     @Test
