@@ -427,7 +427,27 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <CELLBASE.VERSION>v5.6</CELLBASE.VERSION>
+                <CELLBASE.VERSION>v${parsedVersion.majorVersion}</CELLBASE.VERSION>
+                <CELLBASE.WAR.NAME>cellbase-${project.version}</CELLBASE.WAR.NAME>
+                <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
+                <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
+                <CELLBASE.DB.USER>cellbase</CELLBASE.DB.USER>
+                <CELLBASE.DB.PASSWORD>cellbase</CELLBASE.DB.PASSWORD>
+                <CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>admin</CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
+                <CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>SCRAM-SHA-256</CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>
+                <CELLBASE.DB.MONGODB.READPREFERENCE>secondaryPreferred</CELLBASE.DB.MONGODB.READPREFERENCE>
+                <CELLBASE.SERVER.REST.PORT>9090</CELLBASE.SERVER.REST.PORT>
+                <CELLBASE.MONITOR.AGENT></CELLBASE.MONITOR.AGENT>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>default-config-test</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <CELLBASE.VERSION>v${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</CELLBASE.VERSION>
                 <CELLBASE.WAR.NAME>cellbase-${project.version}</CELLBASE.WAR.NAME>
                 <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
