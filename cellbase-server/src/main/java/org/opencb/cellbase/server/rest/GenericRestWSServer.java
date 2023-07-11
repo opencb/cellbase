@@ -199,8 +199,10 @@ public class GenericRestWSServer implements IWSServer {
             }
         }
         // If no data release is present in the query, then use the default data release
-        logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
-                + " '" + version + "'");
+        if (!DONT_CHECK_SPECIES.equals(species)) {
+            logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
+                    + " '" + version + "'");
+        }
         return defaultDataRelease;
     }
 
@@ -234,7 +236,8 @@ public class GenericRestWSServer implements IWSServer {
 //        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
 //        System.out.println("version = " + version);
 //        System.out.println("*************************************");
-        if (!version.startsWith(cellBaseConfiguration.getVersion())) {
+        if (!cellBaseConfiguration.getVersion().startsWith(version)) {
+//        if (!version.startsWith(cellBaseConfiguration.getVersion())) {
             logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("Version not valid: '" + version + "'");
         }

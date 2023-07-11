@@ -427,6 +427,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <CELLBASE.VERSION>v5.6</CELLBASE.VERSION>
                 <CELLBASE.WAR.NAME>cellbase-${project.version}</CELLBASE.WAR.NAME>
                 <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>

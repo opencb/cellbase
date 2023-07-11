@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
+
 /**
  * Created by fjlopez on 18/09/15.
  */
@@ -67,7 +69,6 @@ public class GenericMongoDBAdaptorTest {
     protected static final String SPECIES = "hsapiens";
     protected static final String ASSEMBLY = "grch38";
 //    protected static final String API_VERSION = "v5";
-    protected final static String DBNAME_SEPARATOR = "_";
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
@@ -97,14 +98,11 @@ public class GenericMongoDBAdaptorTest {
 //            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationDatabase", "admin");
 //            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationMechanism", "SCRAM-SHA-256");
 
-            String buildVersion = GitRepositoryState.get().getBuildVersion().replace(".", DBNAME_SEPARATOR)
-                    .replace("-", DBNAME_SEPARATOR);
-            String[] versionSplit = buildVersion.split(DBNAME_SEPARATOR);
-            cellBaseConfiguration.setVersion("v" + versionSplit[0] + DBNAME_SEPARATOR + versionSplit[1]);
+            String[] versionSplit = GitRepositoryState.get().getBuildVersion().split("\\.");
+            cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
-            this.cellBaseName = "cellbase" + DBNAME_SEPARATOR + SPECIES + DBNAME_SEPARATOR + ASSEMBLY
-                    + DBNAME_SEPARATOR + cellBaseConfiguration.getVersion();
+            cellBaseName = MongoDBManager.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
 
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, cellBaseName, 2,
                     cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);

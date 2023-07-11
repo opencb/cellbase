@@ -20,15 +20,14 @@ import com.mongodb.MongoTimeoutException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.ReleaseMongoDBAdaptor;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -49,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MongoDBManager {
+
+    public static final String DBNAME_SEPARATOR = "_";
 
     private MongoDataStoreManager mongoDataStoreManager;
     private CellBaseConfiguration cellBaseConfiguration;
@@ -98,7 +99,7 @@ public class MongoDBManager {
             //  cellbase_speciesId_assembly_cellbaseVersion
             // Example:
             //  cellbase_hsapiens_grch37_v3
-            String database = getDatabaseName(species.getId(), species.getAssembly());
+            String database = getDatabaseName(species.getId(), species.getAssembly(), cellBaseConfiguration.getVersion());
             logger.debug("Database for the species is '{}'", database);
             return createMongoDBDatastore(database);
         } catch (CellBaseException e) {
@@ -161,7 +162,7 @@ public class MongoDBManager {
         return mongoDatastore;
     }
 
-    public String getDatabaseName(String species, String assembly) {
+    public static String getDatabaseName(String species, String assembly, String version) {
         if (StringUtils.isEmpty(species) || StringUtils.isEmpty(assembly)) {
             throw new InvalidParameterException("Species and assembly are required");
         }
@@ -170,7 +171,14 @@ public class MongoDBManager {
                 .replaceAll("\\.", "")
                 .replaceAll("-", "")
                 .replaceAll("_", "");
-        return "cellbase" + "_" + species.toLowerCase() + "_" + cleanAssembly.toLowerCase() + "_" + cellBaseConfiguration.getVersion();
+        String auxVersion = version.replace(".", DBNAME_SEPARATOR).replace("-", DBNAME_SEPARATOR);
+        String[] split = auxVersion.split(DBNAME_SEPARATOR);
+        String dbName = "cellbase" + DBNAME_SEPARATOR + species.toLowerCase() + DBNAME_SEPARATOR + cleanAssembly.toLowerCase()
+                + DBNAME_SEPARATOR + split[0];
+        if (split.length > 1) {
+            dbName += (DBNAME_SEPARATOR + split[1]);
+        }
+        return dbName;
     }
 
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
@@ -231,21 +239,17 @@ public class MongoDBManager {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         // TODO: check and get the default data release
         int dataRelease = 0;
-        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(mongoDatastore);
+        ReleaseMongoDBAdaptor releaseMongoDBAdaptor = new ReleaseMongoDBAdaptor(mongoDatastore);
+//        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(mongoDatastore);
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.setLimit(1);
-            CellBaseDataResult<Gene> cellBaseDataResult = geneMongoDBAdaptor.query(geneQuery);
-            // Query must return one gene. Otherwise there's a problem
-            if (cellBaseDataResult.getNumResults() == 1) {
-                return cellBaseDataResult.getTime() + "ms";
+            CellBaseDataResult<DataRelease> releases = releaseMongoDBAdaptor.getAll();
+            // Query must return at least one data release. Otherwise there's a problem
+            if (releases.getNumResults() >= 1) {
+                return releases.getTime() + "ms";
             } else {
                 return null;
             }
         } catch (MongoTimeoutException e) {
-            e.printStackTrace();
-            return null;
-        } catch (CellBaseException e) {
             e.printStackTrace();
             return null;
         }
