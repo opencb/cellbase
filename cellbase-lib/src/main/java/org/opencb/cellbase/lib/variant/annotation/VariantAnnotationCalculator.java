@@ -78,7 +78,8 @@ public class VariantAnnotationCalculator {
 
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
-    private boolean decompose = true;
+    private boolean decompose = false;
+    private boolean leftAlign = false;
     private boolean phased = true;
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
@@ -120,11 +121,16 @@ public class VariantAnnotationCalculator {
     }
 
     private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() {
-        return (new VariantNormalizer.VariantNormalizerConfig())
+        VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = new VariantNormalizer.VariantNormalizerConfig()
                 .setReuseVariants(false)
                 .setNormalizeAlleles(false)
-                .setDecomposeMNVs(decompose)
-                .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+                .setDecomposeMNVs(decompose);
+        if (leftAlign) {
+            variantNormalizerConfig.enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+        } else {
+            variantNormalizerConfig.disableLeftAlign();
+        }
+        return variantNormalizerConfig;
     }
 
     @Deprecated
@@ -187,8 +193,7 @@ public class VariantAnnotationCalculator {
 
         // Return only one result per CellBaseDataResult if either
         //   - size original variant list and normalised one is the same
-        //   - MNV decomposition is switched OFF, i.e. queryOptions.skipDecompose = true and therefore
-        //   this.decompose = false
+        //   - MNV decomposition is switched OFF, i.e. queryOptions.decompose = false and therefore
         if (!decompose || variantList.size() == normalizedVariantList.size()) {
             for (int i = 0; i < variantList.size(); i++) {
                 CellBaseDataResult<VariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>(variantList.get(i).toString(),
@@ -433,37 +438,6 @@ public class VariantAnnotationCalculator {
         }
         return geneMirnaTargets;
     }
-
-//    private boolean isPhased(Variant variant) {
-//        return (variant.getStudies() != null && !variant.getStudies().isEmpty())
-//            && variant.getStudies().get(0).getSampleDataKeys().contains("PS");
-//    }
-//
-//    private String getCachedVariationIncludeFields() {
-//        StringBuilder stringBuilder = new StringBuilder("annotation.chromosome,annotation.start,annotation.reference");
-//        stringBuilder.append(",annotation.alternate,annotation.id");
-//
-//        if (annotatorSet.contains("variation")) {
-//            stringBuilder.append(",annotation.id,annotation.additionalAttributes.dgvSpecificAttributes");
-//        }
-//        if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
-//            stringBuilder.append(",annotation.variantTraitAssociation");
-//        }
-//        if (annotatorSet.contains("conservation")) {
-//            stringBuilder.append(",annotation.conservation");
-//        }
-//        if (annotatorSet.contains("functionalScore")) {
-//            stringBuilder.append(",annotation.functionalScore");
-//        }
-//        if (annotatorSet.contains("consequenceType")) {
-//            stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
-//        }
-//        if (annotatorSet.contains("populationFrequencies")) {
-//            stringBuilder.append(",annotation.populationFrequencies");
-//        }
-//
-//        return stringBuilder.toString();
-//    }
 
     private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, int dataRelease)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
@@ -742,11 +716,24 @@ public class VariantAnnotationCalculator {
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
 
-        // Default behaviour decompose
-        decompose = (queryOptions.get("skipDecompose") == null || !queryOptions.getBoolean("skipDecompose"));
+        // Default behaviour decompose MNV
+        if (queryOptions.containsKey("skipDecompose")) {
+            throw new IllegalArgumentException("Param 'skipDecompose' is not supported. Please, use 'decompose' instead");
+        }
+        decompose = (boolean) queryOptions.getOrDefault("decompose", false);
         logger.debug("decompose = {}", decompose);
         // Must update normaliser configuration since normaliser was created on constructor
         normalizer.getConfig().setDecomposeMNVs(decompose);
+
+        // Default behaviour left align
+        leftAlign = (boolean) queryOptions.getOrDefault("leftAlign", false);
+        logger.debug("leftAlign = {}", leftAlign);
+        // Must update normaliser configuration since normaliser was created on constructor
+        if (leftAlign) {
+            normalizer.getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+        } else {
+            normalizer.getConfig().disableLeftAlign();
+        }
 
         // New parameter "ignorePhase" present overrides presence of old "phased" parameter
         if (queryOptions.get("ignorePhase") != null) {
@@ -1981,5 +1968,9 @@ public class VariantAnnotationCalculator {
                 }
             }
         }
+    }
+
+    public VariantNormalizer getNormalizer() {
+        return normalizer;
     }
 }

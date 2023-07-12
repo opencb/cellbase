@@ -37,6 +37,7 @@ import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
@@ -109,14 +110,31 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      * Normalises a list of variants.
      *
      * @param variants list of variant strings
+     * @param decompose boolean to set the decompose MNV behaviour
+     * @param leftAlign boolean to set the left alignment behaviour
      * @param dataRelease data release
      * @return list of normalised variants
      * @throws CellBaseException if the species is incorrect
      */
-    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, int dataRelease) throws CellBaseException {
+    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, boolean decompose, boolean leftAlign,
+                                                                 int dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 dataRelease, "", cellbaseManagerFactory);
+
+
+        // Set decompose MNV behaviour
+        variantAnnotationCalculator.getNormalizer().getConfig().setDecomposeMNVs(decompose);
+
+        // Set left alignment behaviour
+        if (leftAlign) {
+            variantAnnotationCalculator.getNormalizer().getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager,
+                    dataRelease));
+        } else {
+            variantAnnotationCalculator.getNormalizer().getConfig().disableLeftAlign();
+        }
+
+
         List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
         return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
     }
@@ -124,7 +142,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariant(QueryOptions queryOptions,
                                                                               String variants,
                                                                               Boolean normalize,
-                                                                              Boolean skipDecompose,
+                                                                              Boolean decompose,
+                                                                              Boolean leftAlign,
                                                                               Boolean ignorePhase,
                                                                               @Deprecated Boolean phased,
                                                                               Boolean imprecise,
@@ -153,8 +172,11 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (normalize != null) {
             queryOptions.put("normalize", normalize);
         }
-        if (skipDecompose != null) {
-            queryOptions.put("skipDecompose", skipDecompose);
+        if (decompose != null) {
+            queryOptions.put("decompose", decompose);
+        }
+        if (leftAlign != null) {
+            queryOptions.put("leftAlign", leftAlign);
         }
         if (imprecise != null) {
             queryOptions.put("imprecise", imprecise);
