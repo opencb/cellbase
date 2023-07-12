@@ -34,6 +34,8 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.5</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
+        <snappy.version>1.1.10.1</snappy.version>
+        <commons-compress.version>1.22</commons-compress.version>
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
@@ -139,6 +141,16 @@
             </dependency>
 
             <!-- General dependencies -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.22</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>1.1.10.1</version>
+            </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-all</artifactId>
