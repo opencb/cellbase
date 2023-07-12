@@ -80,7 +80,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
+                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA,
+                    EtlCommons.PHARMACOGENOMICS_DATA};
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
@@ -287,6 +288,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.PUBMED_DATA: {
                             // Load data, create index and update release
                             loadPubMed();
+                            break;
+                        }
+                        case EtlCommons.PHARMACOGENOMICS_DATA: {
+                            // Load data, create index and update release
+                            loadPharmacogenomica();
                             break;
                         }
                         default:
@@ -546,10 +552,37 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             // Update release (collection and sources)
             List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
-            dataReleaseManager.update(dataRelease, "pubmed", EtlCommons.REPEATS_DATA, sources);
+            dataReleaseManager.update(dataRelease, EtlCommons.PUBMED_DATA, EtlCommons.PUBMED_DATA, sources);
         } else {
             logger.warn("PubMed folder {} not found", pubmedPath);
         }
+    }
+
+    private void loadPharmacogenomica() throws IOException, CellBaseException {
+        Path pharmaPath = input.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
+
+        if (!Files.exists(pharmaPath)) {
+            logger.warn("Pharmacogenomics folder {} not found to load", pharmaPath);
+            return;
+        }
+
+        // Load data
+        Path pharmaJsonPath = pharmaPath.resolve(EtlCommons.PHARMACOGENOMICS_DATA + ".json.gz");
+        logger.info("Loading file '{}'", pharmaJsonPath.toFile().getName());
+        try {
+            loadRunner.load(pharmaJsonPath, EtlCommons.PHARMACOGENOMICS_DATA, dataRelease);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
+            logger.error("Error loading file '{}': {}", pharmaJsonPath.toFile().getName(), e.toString());
+        }
+
+        // Create index
+        createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
+
+        // Update release (collection and sources)
+        List<Path> sources = Collections.singletonList(pharmaPath.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME));
+        dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 
     private void createIndex(String collection) {

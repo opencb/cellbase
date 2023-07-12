@@ -122,7 +122,10 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     public void updateParams(Map<String, String> uriParams) {
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
+
         try {
+            validateParams(uriParams, classAttributesToType, annotations);
+
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
                 String fieldNameDotNotation = null;
@@ -172,8 +175,45 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 }
             }
             objectMapper.updateValue(this, objectHashMap);
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | QueryException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private void validateParams(Map<String, String> uriParams, Map<String, Class<?>> classAttributesToType,
+                                Map<String, QueryParameter> annotations) throws QueryException {
+        for (String uriParamName : uriParams.keySet()) {
+            boolean validUriParamName = false;
+            for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
+                String fieldNameDotNotation = null;
+                String[] fieldAliases = new String[0];
+                String fieldNameCamelCase = entry.getKey();
+                QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
+                if (queryParameter != null) {
+                    fieldNameDotNotation = queryParameter.id();
+                    fieldAliases = queryParameter.alias();
+                }
+                if (fieldNameDotNotation == null) {
+                    // field has no annotation
+                    continue;
+                }
+                String s = fieldNameDotNotation.replace("\\.", "\\\\.");
+                if (uriParamName.equals(s)) {
+                    validUriParamName = true;
+                    break;
+                } else {
+                    for (String alias : fieldAliases) {
+                        s = alias.replace("\\.", "\\\\.");
+                        if (uriParamName.equals(s)) {
+                            validUriParamName = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!validUriParamName) {
+                throw new QueryException("Unknown query parameter '" + uriParamName + "'");
+            }
         }
     }
 
