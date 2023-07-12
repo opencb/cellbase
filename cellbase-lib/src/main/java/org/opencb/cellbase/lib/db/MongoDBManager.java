@@ -171,6 +171,10 @@ public class MongoDBManager {
                 .replaceAll("\\.", "")
                 .replaceAll("-", "")
                 .replaceAll("_", "");
+
+        // Process version from the configuration file, in order to suffix the database name
+        //  - Production environment, e.g.: if version is "v5", the suffix added wil be "_v5"
+        //  - Test environment, e.g.: if version is "v5.6" or "v5.6.0-SNAPSHOT", the suffix added will be "_v5_6"
         String auxVersion = version.replace(".", DBNAME_SEPARATOR).replace("-", DBNAME_SEPARATOR);
         String[] split = auxVersion.split(DBNAME_SEPARATOR);
         String dbName = "cellbase" + DBNAME_SEPARATOR + species.toLowerCase() + DBNAME_SEPARATOR + cleanAssembly.toLowerCase()
