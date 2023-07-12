@@ -73,6 +73,7 @@ public class DownloadProperties {
     private URLProperties goAnnotation;
     private URLProperties revel;
     private URLProperties pubmed;
+    private URLProperties pharmGKB;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -472,6 +473,15 @@ public class DownloadProperties {
 
     public DownloadProperties setPubmed(URLProperties pubmed) {
         this.pubmed = pubmed;
+        return this;
+    }
+
+    public URLProperties getPharmGKB() {
+        return pharmGKB;
+    }
+
+    public DownloadProperties setPharmGKB(URLProperties pharmGKB) {
+        this.pharmGKB = pharmGKB;
         return this;
     }
 
