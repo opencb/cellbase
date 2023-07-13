@@ -21,6 +21,7 @@ import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -28,6 +29,7 @@ import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -47,6 +49,8 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
 
 /**
  * Created by imedina on 26/11/15.
@@ -545,7 +549,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         String reference = variant.getReference();
         String alternate = variant.getAlternate();
 
-        String chunkId = getChunkIdPrefix(chromosome, position, MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
+        String chunkId = getChunkIdPrefix(chromosome, position, VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE);
 
 //        QueryBuilder builder = QueryBuilder.start("_chunkIds").is(chunkId);
         Document query = new Document("_chunkIds", chunkId);
@@ -748,6 +752,28 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
         }
         return results;
+    }
+
+    public List<String> getFunctionalScoreChunkIds(Region region) {
+        Set<String> chunkIdSet = new HashSet<>();
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getStart(), VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE));
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getEnd(), VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE));
+        return new ArrayList<>(chunkIdSet);
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getFunctionalScoreRegion(List<String> chunkIds, CellBaseQueryOptions options,
+                                                                           int dataRelease)
+            throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(caddDBCollectionByRelease, dataRelease);
+
+        Bson projection = getProjection(options);
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String chunkId : chunkIds) {
+            orBsonList.add(Filters.eq("_chunkIds", chunkId));
+        }
+        Bson bson = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, GenomicScoreRegion.class, new QueryOptions()));
     }
 }
 

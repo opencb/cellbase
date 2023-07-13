@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.variant.Variant;
@@ -27,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -43,10 +45,7 @@ import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -317,7 +316,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
                 variant.getReference(), variant.getAlternate(), dataRelease);
 
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_SPLICE_SCORES_DATA)) {
             return DataAccessTokenUtils.filterDataSources(result, validSources);
         } else {
             return result;
@@ -329,17 +328,28 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
-            for (Variant variant : variants) {
-                cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
-                        variant.getAlternate(), dataRelease));
-            }
-        } else {
+        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_SPLICE_SCORES_DATA)) {
             for (Variant variant : variants) {
                 cellBaseDataResults.add(DataAccessTokenUtils.filterDataSources(spliceDBAdaptor.getScores(variant.getChromosome(),
                         variant.getStart(), variant.getReference(), variant.getAlternate(), dataRelease), validSources));
             }
+        } else {
+            for (Variant variant : variants) {
+                cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
+                        variant.getAlternate(), dataRelease));
+            }
         }
         return cellBaseDataResults;
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getFunctionalScoreRegion(List<Region> regions, CellBaseQueryOptions options,
+                                                                           int dataRelease)
+            throws CellBaseException {
+        Set<String> chunkIdSet = new HashSet<>();
+        for (Region region : regions) {
+            chunkIdSet.addAll(variantDBAdaptor.getFunctionalScoreChunkIds(region));
+        }
+
+        return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
     }
 }

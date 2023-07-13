@@ -13,6 +13,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
@@ -44,47 +45,54 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
 
     private ObjectMapper jsonObjectMapper;
     private List<Gene> geneList;
-    private GenomeMongoDBAdaptor genomeDBAdaptor;
-    protected MongoDBAdaptorFactory dbAdaptorFactory;
+//    private GenomeMongoDBAdaptor genomeDBAdaptor;
+//    protected MongoDBAdaptorFactory dbAdaptorFactory;
     private GenomeManager genomeManager;
 
-    public HgvsTranscriptCalculatorTest() {
+    public HgvsTranscriptCalculatorTest() throws CellBaseException {
+        super();
 
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        genomeManager = cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY);
     }
 
     // TODO add KeyError: '1:244856830:T:-', generated an error in the python script
 
-    @BeforeAll
-    public void setUp() {
-        try {
-            int release = 1;
-
-            clearDB(CELLBASE_DBNAME);
-            Path path = Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").toURI());
-            loadRunner.load(path, "gene", release);
-            path = Paths.get(getClass().getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
-            loadRunner.load(path, "genome_sequence", release);
-
-            jsonObjectMapper = new ObjectMapper();
-            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").getFile()));
-
-            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
-                    HgvsTranscriptCalculatorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                    CellBaseConfiguration.ConfigurationFileFormat.YAML);
-
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-//        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
-
-            CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-            genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @BeforeAll
+//    public void setUp() {
+//        try {
+//            int release = 1;
+//
+//            clearDB(CELLBASE_DBNAME);
+//            Path path = Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").toURI());
+//            loadRunner.load(path, "gene", release);
+//            path = Paths.get(getClass().getResource("/hgvs/genome_sequence_grch38.test.json.gz").toURI());
+//            loadRunner.load(path, "genome_sequence", release);
+//
+//            jsonObjectMapper = new ObjectMapper();
+//            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+//            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//            jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//
+//            geneList = loadGenes(Paths.get(getClass().getResource("/hgvs/gene_grch38.test.json.gz").getFile()));
+//
+//            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
+//                    HgvsTranscriptCalculatorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
+//                    CellBaseConfiguration.ConfigurationFileFormat.YAML);
+//
+////        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+////        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
+//
+//            CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+//            genomeManager = cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh38");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Test
     @Disabled

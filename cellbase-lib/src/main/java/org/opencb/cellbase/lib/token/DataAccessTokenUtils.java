@@ -28,12 +28,23 @@ import java.util.*;
 public final class DataAccessTokenUtils {
 
     public static final int NUM_SPLICE_SCORE_SOURCES = 2;
+    public static final Set<String> LICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("spliceai"));
     public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("mmsplice"));
 
     public static final int NUM_CLINICAL_SOURCES = 3;
+    public static final Set<String> LICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("cosmic", "hgmd"));
     public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Collections.singletonList("clinvar"));
 
     private DataAccessTokenUtils() {
+    }
+
+    public static boolean needFiltering(Set<String> inputSources, Set<String> licensedSources) {
+        for (String licensedSource : licensedSources) {
+            if (!inputSources.contains(licensedSource)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static <T> CellBaseDataResult<T> filterDataSources(CellBaseDataResult<T> results, Set<String> validSources) {

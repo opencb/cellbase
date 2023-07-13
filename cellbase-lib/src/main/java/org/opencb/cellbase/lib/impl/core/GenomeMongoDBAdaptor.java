@@ -21,14 +21,12 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -45,6 +43,9 @@ import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
+
+import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
+import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
 
 /**
  * Created by imedina on 07/12/15.
@@ -188,9 +189,9 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
 
             // The first chunk does contain 1 nt less than the rest and is 0-indexed - The rest of chunks contain
             // GENOME_SEQUENCE_CHUNK_SIZE nts and are 1 indexed (position 0 contains the GENOME_SEQUENCE_CHUNK_SIZE) nt
-            int startIndex = (region.getStart() < MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE)
-                    ? (region.getStart() - 1) % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE
-                    : region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
+            int startIndex = (region.getStart() < GENOME_SEQUENCE_CHUNK_SIZE)
+                    ? (region.getStart() - 1) % GENOME_SEQUENCE_CHUNK_SIZE
+                    : region.getStart() % GENOME_SEQUENCE_CHUNK_SIZE;
             int length = region.getEnd() - region.getStart() + 1;
             // If end is out of the right boundary, there will be no chunks containing the right boundary. This means the
             // length of stringBuilder will be < than "end", since the for above will have just appended the chunks
@@ -416,6 +417,23 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         return allScoresByRegionList;
     }
 
+    public CellBaseDataResult<GenomeSequenceChunk> getGenomeSequenceRawData(List<String> chunkIds, int dataRelease)
+            throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+
+        CellBaseQueryOptions queryOptions = new CellBaseQueryOptions();
+        queryOptions.setExcludes(Arrays.asList("_id", "_chunkIds"));
+        Bson projection = getProjection(queryOptions);
+
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String chunkId: chunkIds) {
+            orBsonList.add(Filters.eq("chunkId", chunkId));
+        }
+        Bson query = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(query, projection, GenomeSequenceChunk.class, new QueryOptions()));
+    }
+
     @Deprecated
     public CellBaseDataResult nativeGet(Query query, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson bson = parseQuery(query);
@@ -429,7 +447,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         List<Bson> andBsonList = new ArrayList<>();
 
         createRegionQuery(query, ParamConstants.QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE, andBsonList);
+                GENOME_SEQUENCE_CHUNK_SIZE, andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -549,5 +567,34 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
         } else {
             return new Document();
         }
+    }
+
+    public Collection<String> getConservationScoreChunkIds(Region region) {
+        Set<String> chunkIdSet = new HashSet<>();
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getStart(), CONSERVATION_CHUNK_SIZE));
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getEnd(), CONSERVATION_CHUNK_SIZE));
+        return new ArrayList<>(chunkIdSet);
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getConservationScoreRegion(List<String> chunkIds, CellBaseQueryOptions options,
+                                                                             int dataRelease)
+            throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(conservationMongoDBCollectionByRelease, dataRelease);
+
+        Bson projection = getProjection(options);
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String chunkId : chunkIds) {
+            orBsonList.add(Filters.eq("_chunkIds", chunkId));
+        }
+        Bson bson = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, GenomicScoreRegion.class, new QueryOptions()));
+    }
+
+    public Collection<String> getGenomeSequenceChunkId(Region region) {
+        Set<String> chunkIdSet = new HashSet<>();
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getStart(), GENOME_SEQUENCE_CHUNK_SIZE));
+        chunkIdSet.add(getChunkIdPrefix(region.getChromosome(), region.getEnd(), GENOME_SEQUENCE_CHUNK_SIZE));
+        return new ArrayList<>(chunkIdSet);
     }
 }

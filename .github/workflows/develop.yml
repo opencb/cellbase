@@ -11,7 +11,7 @@ jobs:
   build:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
     with:
-      maven_opts: -DCELLBASE.WAR.NAME=cellbase
+      maven_opts: -DCELLBASE.WAR.NAME=cellbase -P default-config-test
 
   test:
     uses: ./.github/workflows/test-analysis.yml
@@ -19,14 +19,14 @@ jobs:
     secrets: inherit
 
   deploy-maven:
-    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: test
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
     secrets: inherit
 
   deploy-docker:
-    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@release-4.6.x
+    uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
     needs: test
     with:
       cli: python3 ./build/cloud/docker/docker-build.py push --images base

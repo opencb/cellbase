@@ -17,40 +17,22 @@
 package org.opencb.cellbase.lib;
 
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.loader.LoadRunner;
-import org.opencb.cellbase.lib.managers.DataReleaseManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class SpeciesUtilsTest {
-
-    private static final String LOCALHOST = "localhost:27017";
-    protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
-    private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
-    protected CellBaseConfiguration cellBaseConfiguration;
-
-    protected final LoadRunner loadRunner;
-
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+public class SpeciesUtilsTest extends GenericMongoDBAdaptorTest {
 
     public SpeciesUtilsTest() throws IOException, CellBaseException {
-        cellBaseConfiguration = CellBaseConfiguration.load(
-                SpeciesUtilsTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                CellBaseConfiguration.ConfigurationFileFormat.YAML);
-
-        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2,
-                new DataReleaseManager(GRCH37_DBNAME, cellBaseConfiguration), cellBaseConfiguration);
+        super();
     }
 
     @Test
@@ -62,7 +44,7 @@ public class SpeciesUtilsTest {
 
         List<SpeciesConfiguration.Assembly> assemblies = new ArrayList();
         SpeciesConfiguration.Assembly assembly = new SpeciesConfiguration.Assembly();
-        assembly.setName("grch37");
+        assembly.setName(ASSEMBLY);
         assemblies.add(assembly);
         speciesConfiguration.setAssemblies(assemblies);
         shortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
@@ -73,11 +55,11 @@ public class SpeciesUtilsTest {
     public void testGetDefaultAssembly() {
         SpeciesConfiguration.Assembly assembly = null;
         try {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, "hsapiens");
+            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, SPECIES);
         } catch (CellBaseException e) {
             e.printStackTrace();
         }
-        assertEquals("GRCh37", assembly.getName());
+        assertEquals(ASSEMBLY.toLowerCase(Locale.ROOT), assembly.getName().toLowerCase(Locale.ROOT));
 
         SpeciesConfiguration speciesConfiguration = new SpeciesConfiguration();
         speciesConfiguration.setScientificName("H. sapiens");
@@ -86,7 +68,6 @@ public class SpeciesUtilsTest {
         } catch (CellBaseException e) {
             e.printStackTrace();
         }
-        assertEquals("GRCh37", assembly.getName());
-
+        assertEquals(ASSEMBLY.toLowerCase(Locale.ROOT), assembly.getName().toLowerCase(Locale.ROOT));
     }
 }
