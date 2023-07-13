@@ -174,9 +174,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed. 'all' loads everything",
-                required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation,"
+                + " conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed, pharmacogenomics."
+                + " 'all' loads everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, required = true, arity = 1,

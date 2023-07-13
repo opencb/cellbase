@@ -44,6 +44,7 @@ public class CellBaseManagerFactory {
     private Map<String, OntologyManager> ontologyManagers;
     private FileManager fileManager;
     private PublicationManager publicationManager;
+    private Map<String, PharmacogenomicsManager> pharmacogenomicsManagers;
 
     private Map<String, DataReleaseManager> dataReleaseManagers;
 
@@ -65,6 +66,7 @@ public class CellBaseManagerFactory {
         tfManagers = new HashMap<>();
         ontologyManagers = new HashMap<>();
         dataReleaseManagers = new HashMap<>();
+        pharmacogenomicsManagers = new HashMap<>();
     }
 
     private String getMultiKey(String species, String assembly) {
@@ -352,5 +354,24 @@ public class CellBaseManagerFactory {
             publicationManager = new PublicationManager(configuration);
         }
         return publicationManager;
+    }
+
+    public PharmacogenomicsManager getPharmacogenomicsManager(String species) throws CellBaseException {
+        if (species == null) {
+            throw new CellBaseException("Species is required.");
+        }
+        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+        return getPharmacogenomicsManager(species, assembly.getName());
+    }
+
+    public PharmacogenomicsManager getPharmacogenomicsManager(String species, String assembly) throws CellBaseException {
+        String multiKey = getMultiKey(species, assembly);
+        if (!pharmacogenomicsManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
+            }
+            pharmacogenomicsManagers.put(multiKey, new PharmacogenomicsManager(species, assembly, configuration));
+        }
+        return pharmacogenomicsManagers.get(multiKey);
     }
 }

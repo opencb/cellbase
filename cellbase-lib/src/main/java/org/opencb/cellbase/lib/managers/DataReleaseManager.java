@@ -107,7 +107,7 @@ public class DataReleaseManager extends AbstractManager {
                 }
             }
         }
-        throw new CellBaseException("Data release '" + release + "' does not exist.");
+        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
     }
 
     public DataRelease getDefault(String cellBaseVersion) throws CellBaseException {
@@ -119,7 +119,8 @@ public class DataReleaseManager extends AbstractManager {
                 }
             }
         }
-        throw new CellBaseException("No data release found for CellBase " + cellBaseVersion);
+        throw new CellBaseException("No data release found for CellBase " + cellBaseVersion + " (species = " + species + ", assembly = "
+                + assembly + ")");
     }
 
     public DataRelease update(int release, List<String> versions) throws CellBaseException {
@@ -172,7 +173,7 @@ public class DataReleaseManager extends AbstractManager {
 
             return currDataRelease;
         }
-        throw new CellBaseException("Data release '" + release + "' does not exist.");
+        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
     }
 
     public void update(DataRelease dataRelase) {
@@ -235,8 +236,8 @@ public class DataReleaseManager extends AbstractManager {
             }
         }
 
-        throw new CellBaseException("Invalid data release " + outRelease + ". Valid data releases are: "
-                + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease()).collect(Collectors.toList()), ",") + ". And use 0 to"
-                + " use the default data release.");
+        throw new CellBaseException("Invalid data release " + outRelease + " for species = " + species + ", assembly = " + assembly
+                + ". Valid data releases are: " + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
+                .collect(Collectors.toList()), ","));
     }
 }

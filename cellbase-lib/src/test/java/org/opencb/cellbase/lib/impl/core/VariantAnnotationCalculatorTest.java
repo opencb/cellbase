@@ -1943,9 +1943,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataUnisersalTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(UNIVERSAL_ACDES_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -1967,9 +1970,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataHgmdTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(HGMD_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -1991,9 +1997,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataCosmicTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(COSMIC_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -2015,9 +2024,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataSpliceTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(SPLICEAI_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -2039,9 +2051,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataHgmdCosmicTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(HGMD_COSMIC_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -2063,9 +2078,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataHgmdSpliceAiTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(HGMD_SPLICEAI_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -2087,9 +2105,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedDataCosmicSpliceTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
         variantAnnotationCalculator.setToken(COSMIC_SPLICEAI_ACCESS_TOKEN);
 
-        QueryOptions queryOptions = new QueryOptions("useCache", false);
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
