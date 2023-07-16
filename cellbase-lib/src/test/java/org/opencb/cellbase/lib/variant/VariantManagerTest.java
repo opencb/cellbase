@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -41,20 +42,13 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     private ObjectMapper jsonObjectMapper;
     private VariantAnnotationCalculator variantAnnotationCalculator;
     private VariantManager variantManager;
-    private DataReleaseManager dataReleaseManager;
 
-    public VariantManagerTest() throws IOException {
+    public VariantManagerTest() throws CellBaseException {
         super();
-    }
 
-    @BeforeAll
-    public void setUp() throws Exception {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        clearDB(CELLBASE_DBNAME);
-        initDB();
 
         variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
         variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
@@ -63,7 +57,7 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
     @Test
     @Disabled
     public void testNormalisation() throws Exception {
-        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", dataRelease);
+        CellBaseDataResult<Variant> results = variantManager.getNormalizationByVariant("22:18512237:-:AGTT", true, true, dataRelease);
         assertEquals(1, results.getResults().size());
     }
 

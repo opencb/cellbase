@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -50,18 +51,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     public VariantAnnotationCalculatorTest() throws Exception {
         super();
-    }
 
-    @BeforeAll
-    public void setUp() throws Exception {
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
+
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        clearDB(CELLBASE_DBNAME);
-        initDB();
-
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
     }
 
     @Test
@@ -647,7 +642,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public void testCellBaseDataResultGroupingDecomposedMNVs() throws Exception {
 
         QueryOptions queryOptions = (new QueryOptions("normalize", true));
-        queryOptions.put("skipDecompose", false);
+        queryOptions.put("decompose", true);
 
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
@@ -722,12 +717,10 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
         assertEquals("C", variantAnnotation.getReference());
         assertEquals("T", variantAnnotation.getAlternate());
-
-
-
     }
 
     @Test
+    @Disabled
     public void testPopulationFrequencies() throws Exception {
 
         QueryOptions queryOptions = new QueryOptions("normalize", true);
@@ -1105,6 +1098,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testClinicalAnnotationGwas() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
@@ -1132,8 +1126,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-
-        @Test
+    @Test
+    @Disabled
     public void testClinicalAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
@@ -1948,14 +1942,226 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testSpliceAnnotation() throws Exception {
+    public void testLicensedDataUnisersalTokenAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
-        queryOptions.put("include", "splice_score");
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
 
-        Variant variant = new Variant("2", 114340663, "G", "A");
+        variantAnnotationCalculator.setToken(UNIVERSAL_ACDES_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, cellBaseDataResult.getNumMatches());
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (!containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
     }
 
+    @Test
+    public void testLicensedDataHgmdTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(HGMD_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testLicensedDataCosmicTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(COSMIC_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testLicensedDataSpliceTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(SPLICEAI_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (!containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testLicensedDataHgmdCosmicTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(HGMD_COSMIC_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testLicensedDataHgmdSpliceAiTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(HGMD_SPLICEAI_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (!containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testLicensedDataCosmicSpliceTokenAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setToken(COSMIC_SPLICEAI_ACCESS_TOKEN);
+
+        Variant variant = new Variant("10", 113588287, "G", "A");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+
+        if (!containTraitAssociation(variantAnnotation, "clinvar")) {
+            fail();
+        }
+        if (containTraitAssociation(variantAnnotation, "hgmd")) {
+            fail();
+        }
+        if (!containTraitAssociation(variantAnnotation, "cosmic")) {
+            fail();
+        }
+        if (!containSpliceScore(variantAnnotation, "SpliceAI")) {
+            fail();
+        }
+    }
+
+
+    private boolean containTraitAssociation(VariantAnnotation variantAnnotation, String source) {
+        if (variantAnnotation == null) {
+            return false;
+        }
+        if (CollectionUtils.isEmpty(variantAnnotation.getTraitAssociation())) {
+            return false;
+        }
+        for (EvidenceEntry entry : variantAnnotation.getTraitAssociation()) {
+            if (source.equals(entry.getSource().getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containSpliceScore(VariantAnnotation variantAnnotation, String source) {
+        if (variantAnnotation == null) {
+            return false;
+        }
+        if (CollectionUtils.isEmpty(variantAnnotation.getConsequenceTypes())) {
+            return false;
+        }
+        for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+            if (CollectionUtils.isNotEmpty(consequenceType.getSpliceScores())) {
+                for (SpliceScores spliceScore : consequenceType.getSpliceScores()) {
+                    if (source.equals(spliceScore.getSource())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

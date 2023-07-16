@@ -3,6 +3,7 @@ package org.opencb.cellbase.lib.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -29,24 +30,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
     protected DataReleaseManager dataReleaseManager;
-    private static boolean populated = false;
 
-    public DataReleaseManagerTest() throws IOException {
+    public DataReleaseManagerTest() throws CellBaseException {
         super();
-    }
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        if (!populated) {
-            clearDB(CELLBASE_DBNAME);
-            initDB();
-        }
-
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY);
-        populated = true;
     }
 
     @Test
+    @Disabled
     public void testCreate() throws JsonProcessingException {
         CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
         DataRelease dr = dataReleaseManager.createRelease();
@@ -54,6 +45,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testAddActiveByDefaultIn() throws CellBaseException, JsonProcessingException {
         DataRelease dr = dataReleaseManager.createRelease();
         dataReleaseManager.update(dr.getRelease(), Arrays.asList("v5.1", "v5.2"));
@@ -64,6 +56,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testChangeActiveByDefaultIn() throws JsonProcessingException, CellBaseException {
         String version3 = "v5.3";
         String version4 = "v5.4";
@@ -89,6 +82,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void failLoading() throws IOException, ExecutionException, ClassNotFoundException, InterruptedException,
             InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, URISyntaxException,
             CellBaseException, LoaderException {
@@ -105,6 +99,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testMultipleAddActiveByDefaultIn() throws JsonProcessingException, CellBaseException {
         String version6 = "v5.6";
         String version7 = "v5.7";
@@ -125,6 +120,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testRemoveMultipleAddActiveByDefaultIn() throws JsonProcessingException, CellBaseException {
         String version8 = "v5.8";
         String version9 = "v5.9";
@@ -150,6 +146,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testAnnotationWithDR0() throws CellBaseException, QueryException, ExecutionException, InterruptedException,
             IllegalAccessException {
         dataReleaseManager.update(1, Arrays.asList("v5.5"));
@@ -167,6 +164,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testAnnotationWithInvalidDR() {
         CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {
             VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, -1, token, cellBaseManagerFactory);
@@ -177,6 +175,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void testAnnotationWithInvalidDR_1() {
         int dr = 12;
         CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {

@@ -28,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -486,5 +487,28 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         return proteinVariantAnnotation;
     }
 
+    public CellBaseDataResult<Object> getProteinSubstitutionRawData(List<String> transcriptIds, CellBaseQueryOptions options,
+                                                                    int dataRelease) throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(proteinSubstitutionMongoDBCollectionByRelease, dataRelease);
 
+        // Be sure to exclude the internal field "_id"
+        Bson projection;
+        if (options != null) {
+            options.addExcludes("_id");
+            projection = getProjection(options);
+            options.getExcludes().remove("_id");
+        } else {
+            CellBaseQueryOptions queryOptions = new CellBaseQueryOptions();
+            queryOptions.setExcludes(Collections.singletonList("_id"));
+            projection = getProjection(queryOptions);
+        }
+
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String transcriptId : transcriptIds) {
+            orBsonList.add(Filters.eq("transcriptId", transcriptId));
+        }
+        Bson bson = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Object.class, new QueryOptions()));
+    }
 }

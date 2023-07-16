@@ -119,6 +119,7 @@ public class ParamConstants {
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
             + "potentially available assemblies, please call the endpoint 'meta/species'";
 
+
     public static final String COUNT_DESCRIPTION = "Get the total number of results matching the query. ";
 
     public static final String SPLIT_RESULT_DESCRIPTION = "If TRUE, each id provided will be a separate result, even if no records are "
@@ -174,6 +175,7 @@ public class ParamConstants {
             + "e.g. Diabetes mellitus,histone kinase activity";
     public static final String ONTOLOGY_NAMESPACES = "Comma separated list of namespaces, e.g. human_phenotype,biological_process. "
             + "For a full list of potentially available namespaces, please call the endpoint 'feature/ontology/distinct?field=namespace'";
+
     public static final String ONTOLOGY_SOURCES = "Name of ontology, e.g. HP or GO";
     public static final String ONTOLOGY_SYNONYMS = "Comma separated list of synonyms, e.g. Cerebellar ataxia";
     public static final String ONTOLOGY_XREFS = "Comma separated list of cross references, e.g. MSH:D002524";
@@ -299,6 +301,7 @@ public class ParamConstants {
             + " Possible values are clinvar or cosmic";
     public static final String SOURCE_PARAM = "source";
     public static final String SEQUENCE_ONTOLOGY_DESCRIPTION = "Comma separated list of consequence types, "
+
             + "e.g. missense_variant. Exact text matches will be returned. To get list of searchable consequence types, please call"
             + " the endpoint 'genomic/variant/consequenceTypes'";
     public static final String SEQUENCE_ONTOLOGY_PARAM = "consequenceType";
@@ -332,6 +335,7 @@ public class ParamConstants {
     public static final String MODE_INHERITANCE_PARAM = "modeInheritance";
     public static final String ALLELE_ORIGIN_DESCRIPTION = "Comma separated list of allele origin labels. To get the list of searchable "
             + "allele origin  labels, please call the endpoint 'clinical/variant/alleleOriginLabels'";
+
     public static final String ALLELE_ORIGIN_PARAM = "alleleOrigin";
 
     // ---------------------------------------------
@@ -340,9 +344,11 @@ public class ParamConstants {
             + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
             + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>";
     public static final String NORMALISE = "Boolean to indicate whether input variants shall be "
-            + "normalized or not. Normalization process does NOT include decomposing ";
-    public static final String SKIP_DECOMPOSE = "Boolean to indicate whether input MNVs should be "
-            + "decomposed or not as part of the normalisation step. MNV decomposition is strongly encouraged.";
+            + "normalized or not. Normalization process does NOT include decomposing nor left alignment.";
+    public static final String DECOMPOSE = "Boolean to indicate whether input MNVs should be "
+            + "decomposed or not as part of the normalisation step.";
+    public static final String LEFT_ALIGN = "Boolean to indicate whether input ambiguous INDELS should be "
+            + "left aligned or not as part of the normalisation step.";
     public static final String IGNORE_PHASE = "Boolean to indicate whether phase data should be taken into account.";
     public static final String PHASED = "DEPRECATED. Will be removed in next release. Please, use ignorePhase instead. "
             + " Boolean to indicate whether phase should be considered during the annotation process";
@@ -377,6 +383,7 @@ public class ParamConstants {
 
     public static final String REGULATION_FEATURE_TYPES = "Comma separated list of regulatory region types, e.g.: "
             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned.";
+
 
     public static final String CELLTYPE = "Type of cell.";
 

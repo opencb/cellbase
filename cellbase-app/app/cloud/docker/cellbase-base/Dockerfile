@@ -1,5 +1,6 @@
-## Based on Debian 11 (bullseye)
-FROM openjdk:11-jre
+## Based on Ubuntu 22.04 (jammy)
+## We are now using OpenJDK 8u372 to support "cgroup v2", see https://developers.redhat.com/articles/2023/04/19/openjdk-8u372-feature-cgroup-v2-support#
+FROM eclipse-temurin:8u372-b07-jre-jammy
 
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.name="cellbase-base" \

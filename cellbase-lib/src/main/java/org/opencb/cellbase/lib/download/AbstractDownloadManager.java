@@ -28,8 +28,8 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
