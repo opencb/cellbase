@@ -4,7 +4,27 @@ on:
     secrets:
       SONAR_TOKEN:
         required: true
+<<<<<<< HEAD
+      SSH_TESTING_SERVER_HOST:
+        required: true
+      SSH_TESTING_SERVER_PORT:
+        required: true
+      SSH_TESTING_SERVER_USER:
+        required: true
+      SSH_TESTING_SERVER_PASSWORD:
+        required: true
+    inputs:
+      report_dir:
+        type: string
+        required: true
+      report_context:
+        type: string
+        required: true
+env:
+  xb_version: "1.6.0"
+=======
 
+>>>>>>> release-5.6.x
 jobs:
   test:
     name: Test and push Sonar analysis
