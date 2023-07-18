@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
+import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.pharma.PharmaChemical;
@@ -109,7 +110,6 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
 
     public Bson parseQuery(PharmaChemicalQuery pharmaQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-        boolean visited = false;
         try {
             for (Map.Entry<String, Object> entry : pharmaQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
@@ -121,8 +121,8 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
                         break;
                     case "geneName":
                         List<Bson> orBsonList = new ArrayList<>();
-                        orBsonList.add(getLogicalListFilter(new LogicalList((List) value), "variants.geneNames"));
-                        orBsonList.add(getLogicalListFilter(new LogicalList((List) value), "genes.xrefs.id"));
+                        orBsonList.add(getLogicalListFilter(new LogicalList<String>((List) value), "variants.geneNames"));
+                        orBsonList.add(getLogicalListFilter(new LogicalList<String>((List) value), "genes.xrefs.id"));
                         andBsonList.add(Filters.or(orBsonList));
                         break;
                     default:
@@ -133,8 +133,8 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        logger.debug("pharmacogenomics parsed query: " + andBsonList);
-        if (andBsonList.size() > 0) {
+        logger.debug("Pharmacogenomics parsed query: {}", andBsonList);
+        if (CollectionUtils.isNotEmpty(andBsonList)) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
