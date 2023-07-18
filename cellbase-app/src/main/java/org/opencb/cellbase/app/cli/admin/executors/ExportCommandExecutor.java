@@ -98,10 +98,10 @@ public class ExportCommandExecutor extends CommandExecutor {
      * @throws CellBaseException CellBase exception
      */
     public void execute() throws CellBaseException {
-        checkDataRelease();
-
         logger.info("Exporting from data release {}", dataRelease);
         this.managerFactory = new CellBaseManagerFactory(configuration);
+
+        checkDataRelease();
 
         if (exportCommandOptions.data != null) {
             // Get genes
@@ -138,8 +138,8 @@ public class ExportCommandExecutor extends CommandExecutor {
                 regions.addAll(Region.parseRegions(exportCommandOptions.region));
             }
 
-            logger.info("{} regions: {}", regions.size(), StringUtils.join(regions.stream().map(r -> r.toString())
-                    .collect(Collectors.toList()), ","));
+            String strRegions = StringUtils.join(regions.stream().map(Object::toString).collect(Collectors.toList()), ",");
+            logger.info("{} regions: {}", regions.size(), strRegions);
 
             List<Variant> variants = new ArrayList<>();
             if (areVariantsNeeded()) {
@@ -157,7 +157,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             GenomeManager genomeManager = managerFactory.getGenomeManager(species, assembly);
 
                             // Genome sequence
-                            CellBaseDataResult results = genomeManager.getGenomeSequenceRawData(regions, dataRelease);
+                            CellBaseDataResult<GenomeSequenceChunk> results = genomeManager.getGenomeSequenceRawData(regions, dataRelease);
                             counter = writeExportedData(results.getResults(), "genome_sequence", output);
 
                             // Genome info
@@ -342,7 +342,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve(PHARMACOGENOMICS_DATA), PHARMACOGENOMICS_DATA);
 
         PharmaChemicalQuery query = new PharmaChemicalQuery();
-        List<String> geneNames = new ArrayList<>(new HashSet<>(genes.stream().map(g -> g.getName()).collect(Collectors.toList())));
+        List<String> geneNames = new ArrayList<>(new HashSet<>(genes.stream().map(Gene::getName).collect(Collectors.toList())));
         query.setGeneNames(geneNames);
         query.setDataRelease(dataRelease);
         PharmacogenomicsManager pharmacogenomicsManager = managerFactory.getPharmacogenomicsManager(species, assembly);
@@ -358,7 +358,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
                 // Retrieve PubMed IDs from pharma chemical (discarding empty pubmed IDs)
                 for (PharmaGeneAnnotation gene : pharmaChemical.getGenes()) {
-                    List<String> ids = gene.getPubmed().stream().filter(item -> StringUtils.isNotEmpty(item)).collect(Collectors.toList());
+                    List<String> ids = gene.getPubmed().stream().filter(StringUtils::isNotEmpty).collect(Collectors.toList());
                     if (CollectionUtils.isNotEmpty(ids)) {
                         pubmedIds.addAll(ids);
                     }
@@ -400,8 +400,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         for (int i = 0; i < pubmedList.size(); i += subListSize) {
             int end = Math.min(i + subListSize, pubmedList.size());
             List<String> idList = pubmedList.subList(i, end);
-            if (CollectionUtils.isNotEmpty(idList) && idList.size() > 0) {
-                System.out.println(StringUtils.join(idList, ","));
+            if (CollectionUtils.isNotEmpty(idList)) {
                 publicationQuery.setIds(idList);
                 CellBaseDataResult<PubmedArticle> results = publicationManager.search(publicationQuery);
                 for (PubmedArticle pubmedArticle : results.getResults()) {
@@ -502,7 +501,6 @@ public class ExportCommandExecutor extends CommandExecutor {
         VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
         VariantQuery query = new VariantQuery();
         query.setDataRelease(dataRelease);
-        int batchSize = 10;
         for (Region region : regions) {
             query.setRegions(Collections.singletonList(region));
             try {
@@ -522,14 +520,13 @@ public class ExportCommandExecutor extends CommandExecutor {
             if (data.equals(EtlCommons.VARIATION_DATA)
                     || data.equals(EtlCommons.MISSENSE_VARIATION_SCORE_DATA)
                     || data.equals(EtlCommons.SPLICE_SCORE_DATA)) {
-                // || data.equals(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA)) {
                 return true;
             }
         }
         return false;
     }
 
-    private int writeExportedData(List<?> objects, String baseFilename, CellBaseFileSerializer serializer) throws IOException {
+    private int writeExportedData(List<?> objects, String baseFilename, CellBaseFileSerializer serializer) {
         int counter = 0;
         for (Object object : objects) {
             serializer.serialize(object, baseFilename);
@@ -550,31 +547,15 @@ public class ExportCommandExecutor extends CommandExecutor {
         return counter;
     }
 
-    private int writeExportedDataList(List<CellBaseDataResult<?>> results, String baseFilename, Path outDir) throws IOException {
-        checkPath(outDir);
-        int counter = 0;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outDir);
-        for (CellBaseDataResult<?> result : results) {
-            for (Object object : result.getResults()) {
-                serializer.serialize(object, baseFilename);
-                counter++;
-            }
-        }
-        serializer.close();
-        return counter;
-    }
-
     private void checkPath(Path outDir) throws IOException {
-        if (!outDir.toFile().exists()) {
-            if (!outDir.toFile().mkdirs()) {
-                throw new IOException("Impossible to create output directory: " + outDir);
-            }
+        if (!outDir.toFile().exists() && !outDir.toFile().mkdirs()) {
+            throw new IOException("Impossible to create output directory: " + outDir);
         }
     }
 
     private void checkDataRelease() throws CellBaseException {
         // Check data release
-        DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
+        DataReleaseManager dataReleaseManager = managerFactory.getDataReleaseManager(species, assembly);
         CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available");
