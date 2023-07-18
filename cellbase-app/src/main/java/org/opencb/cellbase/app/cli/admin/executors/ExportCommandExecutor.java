@@ -19,7 +19,9 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
+import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.pharma.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.app.cli.CommandExecutor;
@@ -42,8 +44,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.CLINICAL_VARIANTS_DATA;
-import static org.opencb.cellbase.lib.EtlCommons.OBO_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by jtarraga on 29/05/23.
@@ -85,7 +86,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA};
+                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -148,6 +149,7 @@ public class ExportCommandExecutor extends CommandExecutor {
             for (String loadOption : dataToExport) {
                 try {
                     int counter = 0;
+                    String counterMsg = "";
                     logger.info("Exporting '{}' data...", loadOption);
                     long dbTimeStart = System.currentTimeMillis();
                     switch (loadOption) {
@@ -163,11 +165,14 @@ public class ExportCommandExecutor extends CommandExecutor {
                             results = genomeManager.getGenomeInfo(QueryOptions.empty(), dataRelease);
                             writeExportedData(results.getResults(), "genome_info", serializer);
                             serializer.close();
+
+                            counterMsg = counter + " sequences and " + results.getNumResults() + " genome info items";
                             break;
                         }
                         case EtlCommons.GENE_DATA: {
                             // Export data
                             counter = writeExportedData(genes, "gene", output);
+                            counterMsg = counter + " Ensembl genes";
                             break;
                         }
                         case EtlCommons.REFSEQ_DATA: {
@@ -177,11 +182,13 @@ public class ExportCommandExecutor extends CommandExecutor {
 
                             CellBaseDataResult<Gene> results = geneManager.search(geneQuery);
                             counter = writeExportedData(results.getResults(), "refseq", output);
+                            counterMsg = counter + " RefSeq genes";
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
                             // Export data
                             counter = writeExportedData(variants, "variation_chr_all", output);
+                            counterMsg = counter + " variants";
                             break;
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
@@ -190,6 +197,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             CellBaseDataResult<GenomicScoreRegion> results = variantManager.getFunctionalScoreRegion(regions, null,
                                     dataRelease);
                             counter = writeExportedData(results.getResults(), "cadd", output);
+                            counterMsg = counter + " CADD items";
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -220,6 +228,8 @@ public class ExportCommandExecutor extends CommandExecutor {
                                 counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
                             }
                             serializer.close();
+
+                            counterMsg = counter + " missense variation functional scores";
                             break;
                         }
                         case EtlCommons.CONSERVATION_DATA: {
@@ -237,6 +247,8 @@ public class ExportCommandExecutor extends CommandExecutor {
                                 counter++;
                             }
                             serializer.close();
+
+                            counterMsg = counter + " conservation scores";
                             break;
                         }
                         case EtlCommons.REGULATION_DATA: {
@@ -246,6 +258,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             query.setDataRelease(dataRelease);
                             CellBaseDataResult<RegulatoryFeature> results = regulatoryManager.search(query);
                             counter = writeExportedData(results.getResults(), "regulatory_region", output);
+                            counterMsg = counter + " regulatory regions";
                             break;
                         }
                         case EtlCommons.PROTEIN_DATA: {
@@ -255,6 +268,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             query.setDataRelease(dataRelease);
                             CellBaseDataResult<Entry> results = proteinManager.search(query);
                             counter = writeExportedData(results.getResults(), "protein", output);
+                            counterMsg = counter + " proteins";
                             break;
                         }
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
@@ -275,10 +289,13 @@ public class ExportCommandExecutor extends CommandExecutor {
                                 counter += writeExportedData(results.getResults(), "prot_func_pred_chr_" + entry.getKey(), output);
                             }
                             serializer.close();
+
+                            counterMsg = counter + " protein functional predictions";
                             break;
                         }
                         case EtlCommons.CLINICAL_VARIANTS_DATA: {
                             counter = exportClinicalVariantData(regions);
+                            counterMsg = counter + " clinical variants";
                             break;
                         }
                         case EtlCommons.REPEATS_DATA: {
@@ -289,32 +306,115 @@ public class ExportCommandExecutor extends CommandExecutor {
                             repeatsQuery.setDataRelease(dataRelease);
                             CellBaseDataResult<Repeat> results = repeatsManager.search(repeatsQuery);
                             counter = writeExportedData(results.getResults(), "repeats", output);
+                            counterMsg = counter + " repeats";
                             break;
                         }
                         case OBO_DATA: {
                             counter = exportOntologyData();
+                            counterMsg = counter + " ontology items";
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
                             counter = exportSpliceScoreData(variants);
+                            counterMsg = counter + " splice scores";
                             break;
                         }
-//                        case EtlCommons.PUBMED_DATA: {
-//                            // Load data, create index and update release
-//                            loadPubMed();
-//                            break;
-//                        }
+                        case EtlCommons.PHARMACOGENOMICS_DATA: {
+                            counterMsg = exportPharmacogenomicsData(genes);
+                            break;
+                        }
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
                             break;
                     }
                     long dbTimeEnd = System.currentTimeMillis();
-                    logger.info("Exported {} '{}' items in {} ms!", counter, loadOption, dbTimeEnd - dbTimeStart);
+                    logger.info("Exported {} in {} ms!", counterMsg, dbTimeEnd - dbTimeStart);
                 } catch (IllegalAccessException | IOException | QueryException e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    private String exportPharmacogenomicsData(List<Gene> genes)
+            throws QueryException, CellBaseException, IllegalAccessException, IOException {
+        String counterMsg;
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve(PHARMACOGENOMICS_DATA), PHARMACOGENOMICS_DATA);
+
+        PharmaChemicalQuery query = new PharmaChemicalQuery();
+        List<String> geneNames = new ArrayList<>(new HashSet<>(genes.stream().map(g -> g.getName()).collect(Collectors.toList())));
+        query.setGeneNames(geneNames);
+        query.setDataRelease(dataRelease);
+        PharmacogenomicsManager pharmacogenomicsManager = managerFactory.getPharmacogenomicsManager(species, assembly);
+        CellBaseIterator<PharmaChemical> iterator = pharmacogenomicsManager.iterator(query);
+        int counter = 0;
+        Set<String> pubmedIds = new HashSet<>();
+        Set<String> chemicalIds = new HashSet<>();
+        while (iterator.hasNext()) {
+            PharmaChemical pharmaChemical = iterator.next();
+            if (!chemicalIds.contains(pharmaChemical.getId())) {
+                // Add chemical ID to avoid duplicate
+                chemicalIds.add(pharmaChemical.getId());
+
+                // Retrieve PubMed IDs from pharma chemical (discarding empty pubmed IDs)
+                for (PharmaGeneAnnotation gene : pharmaChemical.getGenes()) {
+                    List<String> ids = gene.getPubmed().stream().filter(item -> StringUtils.isNotEmpty(item)).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(ids)) {
+                        pubmedIds.addAll(ids);
+                    }
+                }
+                for (PharmaVariantAnnotation variant : pharmaChemical.getVariants()) {
+                    for (PharmaClinicalEvidence evidence : variant.getEvidences()) {
+                        if (StringUtils.isNotEmpty(evidence.getPubmed())) {
+                            pubmedIds.add(evidence.getPubmed());
+                        }
+                        for (PharmaVariantAssociation variantAssociation : evidence.getVariantAssociations()) {
+                            if (StringUtils.isNotEmpty(variantAssociation.getPubmed())) {
+                                pubmedIds.add(variantAssociation.getPubmed());
+                            }
+                        }
+                    }
+                }
+
+                // Finally, write and count chemicals
+                serializer.serialize(pharmaChemical);
+                counter++;
+                if (counter % 200 == 0) {
+                    logger.info("{} pharma chemicals written....", counter);
+                }
+            }
+        }
+        serializer.close();
+        counterMsg = counter + " pharma chemicals";
+
+        // Create new JSON serializer for pubmed articles, then retrieve and write pubmed articles
+        serializer = new CellBaseJsonFileSerializer(output.resolve(PUBMED_DATA), PUBMED_DATA);
+
+        PublicationManager publicationManager = managerFactory.getPublicationManager();
+        List<String> pubmedList = new ArrayList<>(pubmedIds);
+        PublicationQuery publicationQuery = new PublicationQuery();
+        publicationQuery.setDataRelease(dataRelease);
+        counter = 0;
+
+        int subListSize = 10;
+        for (int i = 0; i < pubmedList.size(); i += subListSize) {
+            int end = Math.min(i + subListSize, pubmedList.size());
+            List<String> idList = pubmedList.subList(i, end);
+            if (CollectionUtils.isNotEmpty(idList) && idList.size() > 0) {
+                System.out.println(StringUtils.join(idList, ","));
+                publicationQuery.setIds(idList);
+                CellBaseDataResult<PubmedArticle> results = publicationManager.search(publicationQuery);
+                for (PubmedArticle pubmedArticle : results.getResults()) {
+                    // Finally, write and count chemicals
+                    serializer.serialize(pubmedArticle);
+                    counter++;
+                }
+            }
+        }
+        serializer.close();
+        counterMsg += " and " + counter + " PubMed articles";
+
+        return counterMsg;
     }
 
     private int exportClinicalVariantData(List<Region> regions) throws CellBaseException, QueryException, IllegalAccessException,

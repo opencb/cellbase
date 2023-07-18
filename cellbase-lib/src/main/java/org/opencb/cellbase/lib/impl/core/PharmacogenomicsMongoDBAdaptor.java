@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.cellbase.core.api.PharmaChemicalQuery;
+import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -117,6 +118,12 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
                     case "dataRelease":
                     case "token":
                         // do nothing
+                        break;
+                    case "geneName":
+                        List<Bson> orBsonList = new ArrayList<>();
+                        orBsonList.add(getLogicalListFilter(new LogicalList((List) value), "variants.geneNames"));
+                        orBsonList.add(getLogicalListFilter(new LogicalList((List) value), "genes.xrefs.id"));
+                        andBsonList.add(Filters.or(orBsonList));
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

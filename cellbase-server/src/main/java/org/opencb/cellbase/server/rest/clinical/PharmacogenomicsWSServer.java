@@ -92,7 +92,8 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.haplotypes", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "geneName", value = "List of gene names, e.g.: NT5C2,VKORC1. In order to get the list of gene names,"
-                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.geneNames", dataType = "java.util.List",
+                    + "please, call the endpoint endpoints pharmacogenomics/distinct?field=variants.geneNames and "
+                    + " pharmacogenomics/distinct?field=genes.xrefs.id", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "location", value = "List of chromosomic coordinates in the format: chromosome:position, e.g.:"
                     + " 10:103109774", dataType = "java.util.List", paramType = "query"),
