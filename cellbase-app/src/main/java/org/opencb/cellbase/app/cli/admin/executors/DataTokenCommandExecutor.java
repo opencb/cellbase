@@ -21,7 +21,7 @@ import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.token.DataAccessTokenSources;
+import org.opencb.cellbase.core.token.DataAccessToken;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -51,8 +51,8 @@ public class DataTokenCommandExecutor extends CommandExecutor {
         try {
             if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
                 // Create data token
-                DataAccessTokenSources dataSources = null;
-                dataSources = DataAccessTokenSources.parse(dataTokenCommandOptions.createWithDataSources);
+                DataAccessToken dataSources = null;
+                dataSources = DataAccessToken.parse(dataTokenCommandOptions.createWithDataSources);
                 String token = datManager.encode(dataTokenCommandOptions.organization, dataSources);
                 System.out.println("Data access token generated:\n" + token);
             } else if (StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {

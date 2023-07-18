@@ -1,8 +1,10 @@
 package org.opencb.cellbase.lib.managers;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.cellbase.core.token.DataAccessTokenSources;
+import org.opencb.cellbase.core.token.DataAccessToken;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import java.text.DateFormat;
@@ -13,7 +15,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class DataAccessTokenSourcesManagerTest {
+public class DataAccessTokenManagerTest {
 
     DataAccessTokenManager datManager;
 
@@ -28,7 +30,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void test1() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
 
@@ -41,7 +43,7 @@ public class DataAccessTokenSourcesManagerTest {
         System.out.println("token = " + token);
         datManager.display(token);
 
-        DataAccessTokenSources dat1 = datManager.decode(token);
+        DataAccessToken dat1 = datManager.decode(token);
         System.out.println(dat1);
 
         datManager.validate(token);
@@ -61,7 +63,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void testNotExpired() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2025").getTime());
@@ -77,7 +79,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void testExpired() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2021").getTime());
@@ -93,7 +95,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void testInvalidSource() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2021").getTime());
@@ -108,7 +110,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void testRecodeToken() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cadd", formatter.parse("25/09/2030").getTime());
@@ -118,7 +120,7 @@ public class DataAccessTokenSourcesManagerTest {
         String token = datManager.encode("ucam", dat);
         String newToken = datManager.recode(token);
 
-        DataAccessTokenSources newDat = datManager.decode(newToken);
+        DataAccessToken newDat = datManager.decode(newToken);
         assertEquals(1, newDat.getSources().size());
         assertTrue(newDat.getSources().containsKey("cadd"));
     }
@@ -127,7 +129,7 @@ public class DataAccessTokenSourcesManagerTest {
     public void testValidSources() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+        DataAccessToken dat = new DataAccessToken();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2024").getTime());
@@ -138,5 +140,13 @@ public class DataAccessTokenSourcesManagerTest {
         String token = datManager.encode("ucam", dat);
 
         datManager.getValidSources(token);
+    }
+
+    @Test
+    public void defaultTokenTest() {
+        String defaultToken = datManager.getDefaultToken();
+        DataAccessToken dat = datManager.decode(defaultToken);
+        assertTrue(MapUtils.isEmpty(dat.getSources()));
+        assertEquals(DataAccessToken.MAX_NUM_ANOYMOUS_QUERIES, dat.getMaxNumQueries());
     }
 }

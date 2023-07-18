@@ -24,17 +24,27 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataAccessTokenSources {
+public class DataAccessToken {
 
     private String version;
     private Map<String, Long> sources;
+    private Long maxNumQueries;
 
-    public DataAccessTokenSources() {
+    public static final String CURRENT_VERSION = "1.0";
+    public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
+
+    public DataAccessToken() {
+        this(CURRENT_VERSION, new HashMap<>(), 0L);
     }
 
-    public DataAccessTokenSources(String version, Map<String, Long> sources) {
+    public DataAccessToken(String version, Map<String, Long> sources) {
+        this(version, sources, 0L);
+    }
+
+    public DataAccessToken(String version, Map<String, Long> sources, Long maxNumQueries) {
         this.version = version;
         this.sources = sources;
+        this.maxNumQueries = maxNumQueries;
     }
 
     private static DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
@@ -43,32 +53,38 @@ public class DataAccessTokenSources {
         return dateFormatter;
     }
 
-    public static DataAccessTokenSources parse(String input) throws ParseException {
-        DataAccessTokenSources dataSources = new DataAccessTokenSources();
-        Map<String, Long> sources = new HashMap<>();
-        String[] split = input.split(",");
+    public static DataAccessToken parse(String sources) throws ParseException {
+        return parse(sources, null);
+    }
+
+    public static DataAccessToken parse(String sources, Long maxNumQueries) throws ParseException {
+        DataAccessToken dataAccessToken = new DataAccessToken();
+        Map<String, Long> sourcesMap = new HashMap<>();
+        String[] split = sources.split(",");
         for (String source : split) {
             String[] splits = source.split(":");
             if (splits.length == 1) {
-                sources.put(splits[0], Long.MAX_VALUE);
+                sourcesMap.put(splits[0], Long.MAX_VALUE);
             } else {
-                sources.put(splits[0], dateFormatter.parse(splits[1]).getTime());
+                sourcesMap.put(splits[0], dateFormatter.parse(splits[1]).getTime());
             }
         }
 
-        dataSources.setVersion("1.0");
-        if (MapUtils.isNotEmpty(sources)) {
-            dataSources.setSources(sources);
+        dataAccessToken.setVersion(CURRENT_VERSION);
+        if (MapUtils.isNotEmpty(sourcesMap)) {
+            dataAccessToken.setSources(sourcesMap);
         }
+        dataAccessToken.setMaxNumQueries(maxNumQueries);
 
-        return dataSources;
+        return dataAccessToken;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataAccessTokenSources{");
+        final StringBuilder sb = new StringBuilder("DataAccessToken{");
         sb.append("version='").append(version).append('\'');
         sb.append(", sources=").append(sources);
+        sb.append(", maxNumQueries=").append(maxNumQueries);
         sb.append('}');
         return sb.toString();
     }
@@ -77,7 +93,7 @@ public class DataAccessTokenSources {
         return version;
     }
 
-    public DataAccessTokenSources setVersion(String version) {
+    public DataAccessToken setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -86,8 +102,17 @@ public class DataAccessTokenSources {
         return sources;
     }
 
-    public DataAccessTokenSources setSources(Map<String, Long> sources) {
+    public DataAccessToken setSources(Map<String, Long> sources) {
         this.sources = sources;
+        return this;
+    }
+
+    public Long getMaxNumQueries() {
+        return maxNumQueries;
+    }
+
+    public DataAccessToken setMaxNumQueries(Long maxNumQueries) {
+        this.maxNumQueries = maxNumQueries;
         return this;
     }
 }

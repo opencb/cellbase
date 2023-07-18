@@ -28,7 +28,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.*;
 
-import static org.opencb.cellbase.core.token.DataAccessTokenSources.dateFormatter;
+import static org.opencb.cellbase.core.token.DataAccessToken.MAX_NUM_ANOYMOUS_QUERIES;
+import static org.opencb.cellbase.core.token.DataAccessToken.dateFormatter;
 
 public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
@@ -36,14 +37,18 @@ public class DataAccessTokenManager {
     private Key publicKey;
     private JwtParser jwtParser;
 
+    private String defaultToken;
+
     private final Logger logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
     public static final String VERSION_FIELD_NAME = "version";
     public static final String SOURCES_FIELD_NAME = "sources";
+    public static final String MAX_NUM_QUERIES_FIELD_NAME = "maxNumQueries";
 
     public DataAccessTokenManager(String key) {
         this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(TextCodec.BASE64.decode(key), SignatureAlgorithm.HS256.getJcaName()));
+        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES));
     }
 
     public DataAccessTokenManager(String algorithm, Key secretKey) {
@@ -57,7 +62,7 @@ public class DataAccessTokenManager {
         jwtParser = Jwts.parserBuilder().build();
     }
 
-    public String encode(String organization, DataAccessTokenSources dat) {
+    public String encode(String organization, DataAccessToken dat) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         Map<String, Object> claims = new HashMap<>();
@@ -65,6 +70,7 @@ public class DataAccessTokenManager {
         if (MapUtils.isNotEmpty(dat.getSources())) {
             claims.put(SOURCES_FIELD_NAME, dat.getSources());
         }
+        claims.put(MAX_NUM_QUERIES_FIELD_NAME, dat.getMaxNumQueries());
 
         jwtBuilder.setClaims(claims)
                 .setSubject(organization)
@@ -74,8 +80,8 @@ public class DataAccessTokenManager {
         return jwtBuilder.compact();
     }
 
-    public DataAccessTokenSources decode(String token) {
-        DataAccessTokenSources dat = new DataAccessTokenSources();
+    public DataAccessToken decode(String token) {
+        DataAccessToken dat = new DataAccessToken();
 
         Claims body = parse(token);
         for (Map.Entry<String, Object> entry : body.entrySet()) {
@@ -87,6 +93,9 @@ public class DataAccessTokenManager {
                 case SOURCES_FIELD_NAME:
                     dat.setSources((Map<String, Long>) body.get(key));
                     break;
+                case MAX_NUM_QUERIES_FIELD_NAME:
+                    dat.setMaxNumQueries(((Integer)body.get(key)).longValue());
+                    break;
                 default:
                     break;
             }
@@ -96,18 +105,18 @@ public class DataAccessTokenManager {
     }
 
     public String recode(String token) {
-        DataAccessTokenSources dataAccessTokenSources = decode(token);
-        if (MapUtils.isNotEmpty(dataAccessTokenSources.getSources())) {
+        DataAccessToken dataAccessToken = decode(token);
+        if (MapUtils.isNotEmpty(dataAccessToken.getSources())) {
             Map<String, Long> sources = new HashMap<>();
-            for (Map.Entry<String, Long> entry : dataAccessTokenSources.getSources().entrySet()) {
+            for (Map.Entry<String, Long> entry : dataAccessToken.getSources().entrySet()) {
                 if (new Date().getTime() <= entry.getValue()) {
                     sources.put(entry.getKey(), entry.getValue());
                 }
             }
-            dataAccessTokenSources.setSources(sources);
+            dataAccessToken.setSources(sources);
         }
 
-        return encode(getOrganization(token), dataAccessTokenSources);
+        return encode(getOrganization(token), dataAccessToken);
     }
 
     public void validate(String token) {
@@ -115,7 +124,7 @@ public class DataAccessTokenManager {
     }
 
     public boolean hasExpiredSource(String source, String token) throws IllegalArgumentException {
-        DataAccessTokenSources dat = decode(token);
+        DataAccessToken dat = decode(token);
         if (MapUtils.isNotEmpty(dat.getSources()) && dat.getSources().containsKey(source)) {
             return (new Date().getTime() > dat.getSources().get(source));
         }
@@ -133,7 +142,7 @@ public class DataAccessTokenManager {
         }
 
         if (StringUtils.isNotEmpty(token)) {
-            DataAccessTokenSources dat = decode(token);
+            DataAccessToken dat = decode(token);
             if (MapUtils.isNotEmpty(dat.getSources())) {
                 for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
                     if (new Date().getTime() <= entry.getValue()) {
@@ -160,6 +169,10 @@ public class DataAccessTokenManager {
         return dateFormatter().format(parse.getIssuedAt());
     }
 
+    public String getDefaultToken() {
+        return defaultToken;
+    }
+
     public void display(String token) {
         Claims body = parse(token);
 
@@ -173,6 +186,7 @@ public class DataAccessTokenManager {
         for (Map.Entry<String, Long> entry : sources.entrySet()) {
             sb.append("\t- '").append(entry.getKey()).append("' until ").append(dateFormatter().format(entry.getValue())).append("\n");
         }
+        sb.append("Max. num. queries: ").append(body.get(MAX_NUM_QUERIES_FIELD_NAME)).append("\n");
 
         System.out.println(sb);
     }
