@@ -33,6 +33,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -94,6 +95,8 @@ public class GenericRestWSServer implements IWSServer {
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
+    protected static String defaultToken;
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
@@ -150,6 +153,11 @@ public class GenericRestWSServer implements IWSServer {
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+
+            // Get default token (for anonymous queries)
+            DataAccessTokenManager tokenManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            defaultToken = tokenManager.getDefaultToken();
+            logger.info("default token {}", defaultToken);
         }
     }
 
@@ -163,6 +171,13 @@ public class GenericRestWSServer implements IWSServer {
         if (uriParams.get("assembly") != null) {
             uriParams.remove("assembly");
         }
+
+        // Set default token, if necessary
+        logger.info("before checking, token {}", uriParams.get(DATA_ACCESS_TOKEN));
+        if (StringUtils.isEmpty(uriParams.get(DATA_ACCESS_TOKEN))) {
+            uriParams.put(DATA_ACCESS_TOKEN, defaultToken);
+        }
+        logger.info("after checking, token {}", uriParams.get(DATA_ACCESS_TOKEN));
 
         checkLimit();
 

@@ -17,7 +17,6 @@
 package org.opencb.cellbase.core.token;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 
@@ -47,8 +47,8 @@ public class DataAccessTokenManager {
     public static final String MAX_NUM_QUERIES_FIELD_NAME = "maxNumQueries";
 
     public DataAccessTokenManager(String key) {
-        this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(TextCodec.BASE64.decode(key), SignatureAlgorithm.HS256.getJcaName()));
-        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES));
+        this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(Base64.getEncoder().encode(key.getBytes(StandardCharsets.UTF_8)),
+                SignatureAlgorithm.HS256.getJcaName()));
     }
 
     public DataAccessTokenManager(String algorithm, Key secretKey) {
@@ -56,10 +56,7 @@ public class DataAccessTokenManager {
         this.privateKey = secretKey;
         this.publicKey = secretKey;
         jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
-    }
-
-    public DataAccessTokenManager() {
-        jwtParser = Jwts.parserBuilder().build();
+        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES));
     }
 
     public String encode(String organization, DataAccessToken dat) {
