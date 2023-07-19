@@ -19,9 +19,11 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.Quota;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
 import org.opencb.commons.monitor.DatastoreStatus;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @Deprecated
@@ -52,5 +54,26 @@ public class MetaManager extends AbstractManager {
 
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
         return this.mongoDBManager.getDatabaseStatus(species, assembly);
+    }
+
+    public CellBaseDataResult<Quota> checkAndIncNumQueries(String token, long maxNumQueries) throws CellBaseException {
+        long numQueries;
+        // Get the current year and month as yyyymm, e.g.:202309
+        LocalDate currentDate = LocalDate.now();
+        String date = currentDate.getYear() + String.format("%02d", currentDate.getMonthValue());
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        CellBaseDataResult<Quota> quotaResult = metaDBAdaptor.getQuota(token, date);
+        System.out.println("quotaResult.numResutls = " + quotaResult.getNumResults());
+        if (quotaResult.getNumResults() == 0) {
+            metaDBAdaptor.initQuota(token, date);
+            numQueries = 0;
+        } else {
+            numQueries = quotaResult.first().getNumQueries();
+        }
+        System.out.println("numQueries = " + numQueries + ", maxNumQueries = " + maxNumQueries + ", date = " + date + ", token = " + token);
+        if (numQueries >= maxNumQueries) {
+            throw new CellBaseException("Exceeded the maximum number of queries");
+        }
+        return metaDBAdaptor.update(token, date, numQueries + 1);
     }
 }

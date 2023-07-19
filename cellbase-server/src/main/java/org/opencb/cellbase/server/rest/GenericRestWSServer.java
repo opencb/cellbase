@@ -34,9 +34,11 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.Quota;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
+import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -96,6 +98,7 @@ public class GenericRestWSServer implements IWSServer {
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     protected static String defaultToken;
+    protected static DataAccessTokenManager dataAccessTokenManager;
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
@@ -153,15 +156,17 @@ public class GenericRestWSServer implements IWSServer {
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
-
-            // Get default token (for anonymous queries)
-            DataAccessTokenManager tokenManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
-            defaultToken = tokenManager.getDefaultToken();
-            logger.info("default token {}", defaultToken);
         }
     }
 
     private void initQuery() throws CellBaseException {
+        // Get default token (for anonymous queries)
+        if (dataAccessTokenManager == null) {
+            dataAccessTokenManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            defaultToken = dataAccessTokenManager.getDefaultToken();
+            logger.info("default token {}", defaultToken);
+        }
+
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
@@ -195,6 +200,9 @@ public class GenericRestWSServer implements IWSServer {
                 defaultDataRelease = releaseManager.getDefault(version).getRelease();
             }
         }
+
+        // Check quota
+        checkQuota();
     }
 
     protected int getDataRelease() throws CellBaseException {
@@ -254,6 +262,17 @@ public class GenericRestWSServer implements IWSServer {
         if (!uriInfo.getPath().contains("health") && !version.startsWith(cellBaseConfiguration.getVersion())) {
             logger.error("URL version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("URL version not valid: '" + version + "'");
+        }
+    }
+
+    private void checkQuota() throws CellBaseException {
+        if (!uriInfo.getPath().contains("health")) {
+            String token = getToken();
+            long maxNumQueries = dataAccessTokenManager.getMaxNumQueries(token);
+            MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+            CellBaseDataResult<Quota> quotaResult = metaManager.checkAndIncNumQueries(token, maxNumQueries);
+            logger.info("quotaResult.numResults = {}", quotaResult.getNumResults());
+//            logger.info("{} query of {}", quotaResult.first().getNumQueries(), maxNumQueries);
         }
     }
 

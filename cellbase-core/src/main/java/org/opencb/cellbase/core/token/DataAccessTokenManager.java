@@ -56,10 +56,15 @@ public class DataAccessTokenManager {
         this.privateKey = secretKey;
         this.publicKey = secretKey;
         jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
-        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES));
+        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES),
+                true);
     }
 
     public String encode(String organization, DataAccessToken dat) {
+        return encode(organization, dat, false);
+    }
+
+    public String encode(String organization, DataAccessToken dat, boolean skipIssuedAt) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         Map<String, Object> claims = new HashMap<>();
@@ -70,9 +75,11 @@ public class DataAccessTokenManager {
         claims.put(MAX_NUM_QUERIES_FIELD_NAME, dat.getMaxNumQueries());
 
         jwtBuilder.setClaims(claims)
-                .setSubject(organization)
-                .setIssuedAt(new Date())
-                .signWith(privateKey, algorithm);
+                .setSubject(organization);
+        if (!skipIssuedAt) {
+            jwtBuilder.setIssuedAt(new Date());
+        }
+        jwtBuilder.signWith(privateKey, algorithm);
 
         return jwtBuilder.compact();
     }
@@ -154,6 +161,11 @@ public class DataAccessTokenManager {
             }
         }
         return validSources;
+    }
+
+    public long getMaxNumQueries(String token) {
+        DataAccessToken dat = decode(token);
+        return dat.getMaxNumQueries();
     }
 
     public String getOrganization(String token) {

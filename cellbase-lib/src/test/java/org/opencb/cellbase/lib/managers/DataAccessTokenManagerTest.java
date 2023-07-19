@@ -1,6 +1,5 @@
 package org.opencb.cellbase.lib.managers;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.junit.Before;
 import org.junit.Test;
