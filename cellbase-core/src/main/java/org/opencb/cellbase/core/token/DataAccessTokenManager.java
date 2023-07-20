@@ -28,8 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 
-import static org.opencb.cellbase.core.token.DataAccessToken.MAX_NUM_ANOYMOUS_QUERIES;
-import static org.opencb.cellbase.core.token.DataAccessToken.dateFormatter;
+import static org.opencb.cellbase.core.token.QuotaPayload.MAX_NUM_ANOYMOUS_QUERIES;
+import static org.opencb.cellbase.core.token.QuotaPayload.dateFormatter;
 
 public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
@@ -56,15 +56,15 @@ public class DataAccessTokenManager {
         this.privateKey = secretKey;
         this.publicKey = secretKey;
         jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
-        defaultToken = encode("ANONYMOUS", new DataAccessToken(DataAccessToken.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES),
+        defaultToken = encode("ANONYMOUS", new QuotaPayload(QuotaPayload.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES),
                 true);
     }
 
-    public String encode(String organization, DataAccessToken dat) {
+    public String encode(String organization, QuotaPayload dat) {
         return encode(organization, dat, false);
     }
 
-    public String encode(String organization, DataAccessToken dat, boolean skipIssuedAt) {
+    public String encode(String organization, QuotaPayload dat, boolean skipIssuedAt) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         Map<String, Object> claims = new HashMap<>();
@@ -84,8 +84,8 @@ public class DataAccessTokenManager {
         return jwtBuilder.compact();
     }
 
-    public DataAccessToken decode(String token) {
-        DataAccessToken dat = new DataAccessToken();
+    public QuotaPayload decode(String token) {
+        QuotaPayload dat = new QuotaPayload();
 
         Claims body = parse(token);
         for (Map.Entry<String, Object> entry : body.entrySet()) {
@@ -109,7 +109,7 @@ public class DataAccessTokenManager {
     }
 
     public String recode(String token) {
-        DataAccessToken dataAccessToken = decode(token);
+        QuotaPayload dataAccessToken = decode(token);
         if (MapUtils.isNotEmpty(dataAccessToken.getSources())) {
             Map<String, Long> sources = new HashMap<>();
             for (Map.Entry<String, Long> entry : dataAccessToken.getSources().entrySet()) {
@@ -128,7 +128,7 @@ public class DataAccessTokenManager {
     }
 
     public boolean hasExpiredSource(String source, String token) throws IllegalArgumentException {
-        DataAccessToken dat = decode(token);
+        QuotaPayload dat = decode(token);
         if (MapUtils.isNotEmpty(dat.getSources()) && dat.getSources().containsKey(source)) {
             return (new Date().getTime() > dat.getSources().get(source));
         }
@@ -146,7 +146,7 @@ public class DataAccessTokenManager {
         }
 
         if (StringUtils.isNotEmpty(token)) {
-            DataAccessToken dat = decode(token);
+            QuotaPayload dat = decode(token);
             if (MapUtils.isNotEmpty(dat.getSources())) {
                 for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
                     if (new Date().getTime() <= entry.getValue()) {
@@ -164,7 +164,7 @@ public class DataAccessTokenManager {
     }
 
     public long getMaxNumQueries(String token) {
-        DataAccessToken dat = decode(token);
+        QuotaPayload dat = decode(token);
         return dat.getMaxNumQueries();
     }
 

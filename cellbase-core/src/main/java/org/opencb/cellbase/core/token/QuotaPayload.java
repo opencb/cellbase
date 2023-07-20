@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataAccessToken {
+public class QuotaPayload {
 
     private String version;
     private Map<String, Long> sources;
@@ -34,15 +34,15 @@ public class DataAccessToken {
     public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
     public static final Long DEFAULT_MAX_NUM_QUERIES = 10000000L;
 
-    public DataAccessToken() {
-        this(CURRENT_VERSION, new HashMap<>(), 0L);
+    public QuotaPayload() {
+        this(CURRENT_VERSION, new HashMap<>(), DEFAULT_MAX_NUM_QUERIES);
     }
 
-    public DataAccessToken(String version, Map<String, Long> sources) {
-        this(version, sources, 0L);
+    public QuotaPayload(String version, Map<String, Long> sources) {
+        this(version, sources, DEFAULT_MAX_NUM_QUERIES);
     }
 
-    public DataAccessToken(String version, Map<String, Long> sources, Long maxNumQueries) {
+    public QuotaPayload(String version, Map<String, Long> sources, Long maxNumQueries) {
         this.version = version;
         this.sources = sources;
         this.maxNumQueries = maxNumQueries;
@@ -54,12 +54,12 @@ public class DataAccessToken {
         return dateFormatter;
     }
 
-    public static DataAccessToken parse(String sources) throws ParseException {
+    public static QuotaPayload parse(String sources) throws ParseException {
         return parse(sources, null);
     }
 
-    public static DataAccessToken parse(String sources, Long maxNumQueries) throws ParseException {
-        DataAccessToken dataAccessToken = new DataAccessToken();
+    public static QuotaPayload parse(String sources, Long maxNumQueries) throws ParseException {
+        QuotaPayload dataAccessToken = new QuotaPayload();
         Map<String, Long> sourcesMap = new HashMap<>();
         String[] split = sources.split(",");
         for (String source : split) {
@@ -82,7 +82,7 @@ public class DataAccessToken {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataAccessToken{");
+        final StringBuilder sb = new StringBuilder("QuotaPayload{");
         sb.append("version='").append(version).append('\'');
         sb.append(", sources=").append(sources);
         sb.append(", maxNumQueries=").append(maxNumQueries);
@@ -94,7 +94,7 @@ public class DataAccessToken {
         return version;
     }
 
-    public DataAccessToken setVersion(String version) {
+    public QuotaPayload setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -103,7 +103,7 @@ public class DataAccessToken {
         return sources;
     }
 
-    public DataAccessToken setSources(Map<String, Long> sources) {
+    public QuotaPayload setSources(Map<String, Long> sources) {
         this.sources = sources;
         return this;
     }
@@ -112,7 +112,7 @@ public class DataAccessToken {
         return maxNumQueries;
     }
 
-    public DataAccessToken setMaxNumQueries(Long maxNumQueries) {
+    public QuotaPayload setMaxNumQueries(Long maxNumQueries) {
         this.maxNumQueries = maxNumQueries;
         return this;
     }

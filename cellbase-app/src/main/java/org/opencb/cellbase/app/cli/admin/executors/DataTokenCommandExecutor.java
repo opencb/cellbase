@@ -20,7 +20,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.token.DataAccessToken;
+import org.opencb.cellbase.core.token.QuotaPayload;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -53,7 +53,7 @@ public class DataTokenCommandExecutor extends CommandExecutor {
         try {
             if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
                 // Create data token
-                DataAccessToken dataSources = DataAccessToken.parse(dataTokenCommandOptions.createWithDataSources,
+                QuotaPayload dataSources = QuotaPayload.parse(dataTokenCommandOptions.createWithDataSources,
                         dataTokenCommandOptions.maxNumQueries);
                 String token = datManager.encode(dataTokenCommandOptions.organization, dataSources);
                 System.out.println("Data access token generated:\n" + token);

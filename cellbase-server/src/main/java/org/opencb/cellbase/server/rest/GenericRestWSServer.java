@@ -33,8 +33,8 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.QuotaPayload;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.Quota;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -268,12 +268,15 @@ public class GenericRestWSServer implements IWSServer {
     private void checkQuota() throws CellBaseException {
         if (!uriInfo.getPath().contains("health")) {
             String token = getToken();
-            long maxNumQueries = dataAccessTokenManager.getMaxNumQueries(token);
+            QuotaPayload quotaPayload = dataAccessTokenManager.decode(token);
             MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-            CellBaseDataResult<Quota> quotaResult = metaManager.checkAndIncNumQueries(token, maxNumQueries);
-            logger.info("quotaResult.numResults = {}", quotaResult.getNumResults());
-//            logger.info("{} query of {}", quotaResult.first().getNumQueries(), maxNumQueries);
+            metaManager.checkQuota(token, quotaPayload);
         }
+    }
+
+    private void incTokenStats(Response response) throws CellBaseException {
+        MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+        metaManager.incTokenStats(getToken(), 1, 0, response.getLength());
     }
 
     private Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
@@ -395,25 +398,37 @@ public class GenericRestWSServer implements IWSServer {
             list.add(obj);
         }
 
-//        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
-//                list.size());
         queryResponse.setResponses(list);
         logQuery(OK);
 
-        return createJsonResponse(queryResponse);
+        Response jsonResponse = createJsonResponse(queryResponse);
+
+        // Update token stats, if necessary
+        try {
+            if (!uriInfo.getPath().contains("health")) {
+                String token = getToken();
+                MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+                long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
+                metaManager.incTokenStats(token, 1, queryResponse.getTime(), bytes);
+            }
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
+        }
+
+        return  jsonResponse;
     }
 
-    protected Response createOkResponse(Object obj, MediaType mediaType) {
-        return buildResponse(Response.ok(obj, mediaType));
-    }
-
-    protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
-        return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
-    }
-
-    protected Response createStringResponse(String str) {
-        return buildResponse(Response.ok(str));
-    }
+//    protected Response createOkResponse(Object obj, MediaType mediaType) {
+//        return buildResponse(Response.ok(obj, mediaType));
+//    }
+//
+//    protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
+//        return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
+//    }
+//
+//    protected Response createStringResponse(String str) {
+//        return buildResponse(Response.ok(str));
+//    }
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
@@ -422,7 +437,8 @@ public class GenericRestWSServer implements IWSServer {
 //            }
             String value = jsonObjectWriter.writeValueAsString(queryResponse);
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
-            return buildResponse(ok);
+            Response response = buildResponse(ok);
+            return response;
         } catch (JsonProcessingException e) {
             logger.error("Error parsing queryResponse object", e);
             return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));

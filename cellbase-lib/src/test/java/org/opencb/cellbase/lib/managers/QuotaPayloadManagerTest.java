@@ -3,7 +3,7 @@ package org.opencb.cellbase.lib.managers;
 import org.apache.commons.collections4.MapUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.cellbase.core.token.DataAccessToken;
+import org.opencb.cellbase.core.token.QuotaPayload;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import java.text.DateFormat;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class DataAccessTokenManagerTest {
+public class QuotaPayloadManagerTest {
 
     DataAccessTokenManager datManager;
 
@@ -29,7 +29,7 @@ public class DataAccessTokenManagerTest {
     public void test1() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
 
@@ -42,7 +42,7 @@ public class DataAccessTokenManagerTest {
         System.out.println("token = " + token);
         datManager.display(token);
 
-        DataAccessToken dat1 = datManager.decode(token);
+        QuotaPayload dat1 = datManager.decode(token);
         System.out.println(dat1);
 
         datManager.validate(token);
@@ -62,7 +62,7 @@ public class DataAccessTokenManagerTest {
     public void testNotExpired() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2025").getTime());
@@ -78,7 +78,7 @@ public class DataAccessTokenManagerTest {
     public void testExpired() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2021").getTime());
@@ -94,7 +94,7 @@ public class DataAccessTokenManagerTest {
     public void testInvalidSource() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2021").getTime());
@@ -109,7 +109,7 @@ public class DataAccessTokenManagerTest {
     public void testRecodeToken() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cadd", formatter.parse("25/09/2030").getTime());
@@ -119,7 +119,7 @@ public class DataAccessTokenManagerTest {
         String token = datManager.encode("ucam", dat);
         String newToken = datManager.recode(token);
 
-        DataAccessToken newDat = datManager.decode(newToken);
+        QuotaPayload newDat = datManager.decode(newToken);
         assertEquals(1, newDat.getSources().size());
         assertTrue(newDat.getSources().containsKey("cadd"));
     }
@@ -128,7 +128,7 @@ public class DataAccessTokenManagerTest {
     public void testValidSources() throws ParseException {
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 
-        DataAccessToken dat = new DataAccessToken();
+        QuotaPayload dat = new QuotaPayload();
         dat.setVersion("1.0");
         Map<String, Long> sources = new HashMap<>();
         sources.put("cosmic", formatter.parse("25/09/2024").getTime());
@@ -144,8 +144,8 @@ public class DataAccessTokenManagerTest {
     @Test
     public void defaultTokenTest() {
         String defaultToken = datManager.getDefaultToken();
-        DataAccessToken dat = datManager.decode(defaultToken);
+        QuotaPayload dat = datManager.decode(defaultToken);
         assertTrue(MapUtils.isEmpty(dat.getSources()));
-        assertEquals(DataAccessToken.MAX_NUM_ANOYMOUS_QUERIES, dat.getMaxNumQueries());
+        assertEquals(QuotaPayload.MAX_NUM_ANOYMOUS_QUERIES, dat.getMaxNumQueries());
     }
 }

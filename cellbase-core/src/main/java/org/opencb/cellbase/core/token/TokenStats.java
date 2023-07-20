@@ -16,26 +16,36 @@
 
 package org.opencb.cellbase.core.token;
 
-public class Quota {
+public class TokenStats {
     private String token;
     private String date; // date consists of year + month, e.g.: 202304
     private long numQueries;
+    private long duration;
+    private long bytes;
 
-    public Quota() {
+    public TokenStats() {
     }
 
-    public Quota(String token, String date, long numQueries) {
+    public TokenStats(String token, String date) {
+        this(token, date, 0, 0, 0);
+    }
+
+    public TokenStats(String token, String date, long numQueries, long duration, long bytes) {
         this.token = token;
         this.date = date;
         this.numQueries = numQueries;
+        this.duration = duration;
+        this.bytes = bytes;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Quota{");
+        final StringBuilder sb = new StringBuilder("TokenStats{");
         sb.append("token='").append(token).append('\'');
         sb.append(", date='").append(date).append('\'');
         sb.append(", numQueries=").append(numQueries);
+        sb.append(", duration=").append(duration);
+        sb.append(", bytes=").append(bytes);
         sb.append('}');
         return sb.toString();
     }
@@ -44,7 +54,7 @@ public class Quota {
         return token;
     }
 
-    public Quota setToken(String token) {
+    public TokenStats setToken(String token) {
         this.token = token;
         return this;
     }
@@ -53,12 +63,7 @@ public class Quota {
         return date;
     }
 
-    public Quota setDate(int year, int month) {
-        this.date = year + String.format("%02d", month);
-        return this;
-    }
-
-    public Quota setDate(String date) {
+    public TokenStats setDate(String date) {
         this.date = date;
         return this;
     }
@@ -67,8 +72,26 @@ public class Quota {
         return numQueries;
     }
 
-    public Quota setNumQueries(long numQueries) {
+    public TokenStats setNumQueries(long numQueries) {
         this.numQueries = numQueries;
+        return this;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public TokenStats setDuration(long duration) {
+        this.duration = duration;
+        return this;
+    }
+
+    public long getBytes() {
+        return bytes;
+    }
+
+    public TokenStats setBytes(long bytes) {
+        this.bytes = bytes;
         return this;
     }
 }

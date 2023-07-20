@@ -29,7 +29,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.DataAccessToken;
+import org.opencb.cellbase.core.token.QuotaPayload;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
@@ -150,7 +150,7 @@ public class MetaWSServer extends GenericRestWSServer {
                                     @QueryParam("token") String token) {
         try {
             DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
-            DataAccessToken sources = datManager.decode(token);
+            QuotaPayload sources = datManager.decode(token);
 
             // Convert milliseconds to date in format dd/MM/yyyy
             Map<String, String> expDates = new HashMap<>();

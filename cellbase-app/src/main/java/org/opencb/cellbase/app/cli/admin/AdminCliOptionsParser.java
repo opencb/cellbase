@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
-import org.opencb.cellbase.core.token.DataAccessToken;
+import org.opencb.cellbase.core.token.QuotaPayload;
 
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +170,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--max-num-queries"}, description = "Use this parameter in conjunction with --create-token to specify the"
                 + " maximum number of queries per month", arity = 1)
-        public long maxNumQueries = DataAccessToken.DEFAULT_MAX_NUM_QUERIES;
+        public long maxNumQueries = QuotaPayload.DEFAULT_MAX_NUM_QUERIES;
 
         @Parameter(names = {"--view-token"}, description = "Token to view", arity = 1)
         public String tokenToView;
