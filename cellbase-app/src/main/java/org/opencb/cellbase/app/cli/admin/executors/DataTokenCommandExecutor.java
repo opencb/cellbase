@@ -17,7 +17,6 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
@@ -25,8 +24,10 @@ import org.opencb.cellbase.core.token.DataAccessToken;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.text.ParseException;
+import java.util.Base64;
 
 public class DataTokenCommandExecutor extends CommandExecutor {
 
@@ -45,14 +46,15 @@ public class DataTokenCommandExecutor extends CommandExecutor {
     public void execute() {
         checkParameters();
 
-        Key key = new SecretKeySpec(TextCodec.BASE64.decode(configuration.getSecretKey()), SignatureAlgorithm.HS256.getJcaName());
+        Key key = new SecretKeySpec(Base64.getEncoder().encode(configuration.getSecretKey().getBytes(StandardCharsets.UTF_8)),
+                SignatureAlgorithm.HS256.getJcaName());
         DataAccessTokenManager datManager = new DataAccessTokenManager(SignatureAlgorithm.HS256.getValue(), key);
 
         try {
             if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
                 // Create data token
-                DataAccessToken dataSources = null;
-                dataSources = DataAccessToken.parse(dataTokenCommandOptions.createWithDataSources);
+                DataAccessToken dataSources = DataAccessToken.parse(dataTokenCommandOptions.createWithDataSources,
+                        dataTokenCommandOptions.maxNumQueries);
                 String token = datManager.encode(dataTokenCommandOptions.organization, dataSources);
                 System.out.println("Data access token generated:\n" + token);
             } else if (StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {

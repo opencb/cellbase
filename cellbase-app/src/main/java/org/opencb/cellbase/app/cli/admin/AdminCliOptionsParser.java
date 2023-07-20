@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
+import org.opencb.cellbase.core.token.DataAccessToken;
 
 import java.util.HashMap;
 import java.util.List;
@@ -158,11 +159,18 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--create-token"}, description = "Create a data access token with the data sources indicated separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd. In addition the 'organization' has to be specified", arity = 1)
+        @Parameter(names = {"--create-token"}, description = "Create a data access token with the data sources indicated separated by"
+                + " commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd. In addition the"
+                + " 'organization' has to be specified", arity = 1)
         public String createWithDataSources;
 
-        @Parameter(names = {"--organization"}, description = "Organization (to be used with the --create-token parameter)", arity = 1)
+        @Parameter(names = {"--organization"}, description = "Use this parameter in conjunction with --create-token to specify the"
+                + " organization", arity = 1)
         public String organization;
+
+        @Parameter(names = {"--max-num-queries"}, description = "Use this parameter in conjunction with --create-token to specify the"
+                + " maximum number of queries per month", arity = 1)
+        public long maxNumQueries = DataAccessToken.DEFAULT_MAX_NUM_QUERIES;
 
         @Parameter(names = {"--view-token"}, description = "Token to view", arity = 1)
         public String tokenToView;

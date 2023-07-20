@@ -32,6 +32,7 @@ public class DataAccessToken {
 
     public static final String CURRENT_VERSION = "1.0";
     public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
+    public static final Long DEFAULT_MAX_NUM_QUERIES = 10000000L;
 
     public DataAccessToken() {
         this(CURRENT_VERSION, new HashMap<>(), 0L);
