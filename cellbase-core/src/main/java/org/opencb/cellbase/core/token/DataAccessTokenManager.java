@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.core.token;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,8 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 
-import static org.opencb.cellbase.core.token.QuotaPayload.MAX_NUM_ANOYMOUS_QUERIES;
-import static org.opencb.cellbase.core.token.QuotaPayload.dateFormatter;
+import static org.opencb.cellbase.core.token.TokenJwtPayload.DATE_FORMATTER;
 
 public class DataAccessTokenManager {
     private SignatureAlgorithm algorithm;
@@ -42,9 +44,6 @@ public class DataAccessTokenManager {
     private final Logger logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
-    public static final String VERSION_FIELD_NAME = "version";
-    public static final String SOURCES_FIELD_NAME = "sources";
-    public static final String MAX_NUM_QUERIES_FIELD_NAME = "maxNumQueries";
 
     public DataAccessTokenManager(String key) {
         this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(Base64.getEncoder().encode(key.getBytes(StandardCharsets.UTF_8)),
@@ -56,81 +55,57 @@ public class DataAccessTokenManager {
         this.privateKey = secretKey;
         this.publicKey = secretKey;
         jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
-        defaultToken = encode("ANONYMOUS", new QuotaPayload(QuotaPayload.CURRENT_VERSION, new HashMap<>(), MAX_NUM_ANOYMOUS_QUERIES),
-                true);
+
+        // Create the default token
+        TokenJwtPayload payload = new TokenJwtPayload();
+        payload.setSubject("ANONYMOUS");
+        payload.setVersion(TokenJwtPayload.CURRENT_VERSION);
+        payload.setQuota(new TokenQuota(TokenQuota.MAX_NUM_ANOYMOUS_QUERIES));
+        defaultToken = encode(payload);
     }
 
-    public String encode(String organization, QuotaPayload dat) {
-        return encode(organization, dat, false);
-    }
-
-    public String encode(String organization, QuotaPayload dat, boolean skipIssuedAt) {
+    public String encode(TokenJwtPayload payload) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(VERSION_FIELD_NAME, dat.getVersion());
-        if (MapUtils.isNotEmpty(dat.getSources())) {
-            claims.put(SOURCES_FIELD_NAME, dat.getSources());
-        }
-        claims.put(MAX_NUM_QUERIES_FIELD_NAME, dat.getMaxNumQueries());
-
-        jwtBuilder.setClaims(claims)
-                .setSubject(organization);
-        if (!skipIssuedAt) {
-            jwtBuilder.setIssuedAt(new Date());
-        }
-        jwtBuilder.signWith(privateKey, algorithm);
-
-        return jwtBuilder.compact();
+        return jwtBuilder.setClaims(payload)
+                .signWith(privateKey, algorithm)
+                .compact();
     }
 
-    public QuotaPayload decode(String token) {
-        QuotaPayload dat = new QuotaPayload();
-
-        Claims body = parse(token);
-        for (Map.Entry<String, Object> entry : body.entrySet()) {
-            String key = entry.getKey();
-            switch (key) {
-                case VERSION_FIELD_NAME:
-                    dat.setVersion((String) body.get(key));
-                    break;
-                case SOURCES_FIELD_NAME:
-                    dat.setSources((Map<String, Long>) body.get(key));
-                    break;
-                case MAX_NUM_QUERIES_FIELD_NAME:
-                    dat.setMaxNumQueries(((Integer)body.get(key)).longValue());
-                    break;
-                default:
-                    break;
-            }
+    public TokenJwtPayload decode(String token) {
+        if (publicKey == null) {
+            // Remove signature to parse JWT
+            token = token.substring(0, token.lastIndexOf(".") + 1);
+            return new TokenJwtPayload(jwtParser.parseClaimsJwt(token).getBody());
+        } else {
+            // Parse signed JWT (aka a 'JWS')
+            return new TokenJwtPayload(jwtParser.parseClaimsJws(token).getBody());
         }
-
-        return dat;
     }
 
     public String recode(String token) {
-        QuotaPayload dataAccessToken = decode(token);
-        if (MapUtils.isNotEmpty(dataAccessToken.getSources())) {
-            Map<String, Long> sources = new HashMap<>();
-            for (Map.Entry<String, Long> entry : dataAccessToken.getSources().entrySet()) {
-                if (new Date().getTime() <= entry.getValue()) {
+        TokenJwtPayload payload = decode(token);
+        if (MapUtils.isNotEmpty(payload.getSources())) {
+            Map<String, Date> sources = new HashMap<>();
+            for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
+                if (new Date().getTime() <= entry.getValue().getTime()) {
                     sources.put(entry.getKey(), entry.getValue());
                 }
             }
-            dataAccessToken.setSources(sources);
+            payload.setSources(sources);
         }
 
-        return encode(getOrganization(token), dataAccessToken);
+        return encode(payload);
     }
 
     public void validate(String token) {
-        parse(token);
+        decode(token);
     }
 
     public boolean hasExpiredSource(String source, String token) throws IllegalArgumentException {
-        QuotaPayload dat = decode(token);
-        if (MapUtils.isNotEmpty(dat.getSources()) && dat.getSources().containsKey(source)) {
-            return (new Date().getTime() > dat.getSources().get(source));
+        TokenJwtPayload payload = decode(token);
+        if (MapUtils.isNotEmpty(payload.getSources()) && payload.getSources().containsKey(source)) {
+            return (new Date().getTime() > payload.getSources().get(source).getTime());
         }
         throw new IllegalArgumentException("Data source '" + source + "' is not enabled for token '" + token + "'");
     }
@@ -146,14 +121,14 @@ public class DataAccessTokenManager {
         }
 
         if (StringUtils.isNotEmpty(token)) {
-            QuotaPayload dat = decode(token);
-            if (MapUtils.isNotEmpty(dat.getSources())) {
-                for (Map.Entry<String, Long> entry : dat.getSources().entrySet()) {
-                    if (new Date().getTime() <= entry.getValue()) {
+            TokenJwtPayload payload = decode(token);
+            if (MapUtils.isNotEmpty(payload.getSources())) {
+                for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
+                    if (new Date().getTime() <= entry.getValue().getTime()) {
                         validSources.add(entry.getKey());
                     } else {
-                        String msg = "CellBase token expired at " + dateFormatter().format(entry.getValue()) + " for data source '"
-                                + entry.getKey() + "'";
+                        String msg = "CellBase token expired at " + DATE_FORMATTER.format(entry.getValue())
+                                + " for data source '" + entry.getKey() + "'";
                         logger.error(msg);
                         throw new IllegalArgumentException(msg);
                     }
@@ -163,51 +138,35 @@ public class DataAccessTokenManager {
         return validSources;
     }
 
-    public long getMaxNumQueries(String token) {
-        QuotaPayload dat = decode(token);
-        return dat.getMaxNumQueries();
-    }
-
-    public String getOrganization(String token) {
-        Claims parse = parse(token);
-        return parse.getSubject();
-    }
-
-    public String getCreationDate(String token) {
-        Claims parse = parse(token);
-        return dateFormatter().format(parse.getIssuedAt());
-    }
-
     public String getDefaultToken() {
         return defaultToken;
     }
 
     public void display(String token) {
-        Claims body = parse(token);
+        TokenJwtPayload payload = decode(token);
 
         final StringBuilder sb = new StringBuilder();
         sb.append("Token: ").append(token).append("\n");
-        sb.append("Organization: ").append(body.getSubject()).append("\n");
-        sb.append("Issued at: ").append(dateFormatter().format(body.getIssuedAt())).append("\n");
-        sb.append("Version: ").append(body.get(VERSION_FIELD_NAME)).append("\n");
-        sb.append("Sources:\n");
-        Map<String, Long> sources = (Map<String, Long>) body.get(SOURCES_FIELD_NAME);
-        for (Map.Entry<String, Long> entry : sources.entrySet()) {
-            sb.append("\t- '").append(entry.getKey()).append("' until ").append(dateFormatter().format(entry.getValue())).append("\n");
+        sb.append("Organization: ").append(payload.getSubject()).append("\n");
+        if (payload.getIssuedAt() != null) {
+            sb.append("Issued at: ").append(DATE_FORMATTER.format(payload.getIssuedAt())).append("\n");
+        } else {
+            sb.append("Issued at: unknown\n");
         }
-        sb.append("Max. num. queries: ").append(body.get(MAX_NUM_QUERIES_FIELD_NAME)).append("\n");
+        if (payload.getExpiration() != null) {
+            sb.append("Expiration at: ").append(DATE_FORMATTER.format(payload.getExpiration())).append("\n");
+        } else {
+            sb.append("Expiration at: unknown\n");
+        }
+        sb.append("Version: ").append(payload.getVersion()).append("\n");
+        sb.append("Sources:\n");
+        Map<String, Date> sources = payload.getSources();
+        for (Map.Entry<String, Date> entry : sources.entrySet()) {
+            sb.append("\t- '").append(entry.getKey()).append("' until ").append(DATE_FORMATTER.format(entry.getValue())).append("\n");
+        }
+        sb.append("Quota:\n");
+        sb.append("\tMax. num. queries: ").append(payload.getQuota().getMaxNumQueries()).append("\n");
 
         System.out.println(sb);
-    }
-
-    private Claims parse(String token) {
-        if (publicKey == null) {
-            // Remove signature to parse JWT
-            token = token.substring(0, token.lastIndexOf(".") + 1);
-            return jwtParser.parseClaimsJwt(token).getBody();
-        } else {
-            // Parse signed JWT (aka a 'JWS')
-            return jwtParser.parseClaimsJws(token).getBody();
-        }
     }
 }

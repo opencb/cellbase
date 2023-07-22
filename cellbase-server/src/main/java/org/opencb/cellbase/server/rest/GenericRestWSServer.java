@@ -33,8 +33,8 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.QuotaPayload;
 import org.opencb.cellbase.core.token.DataAccessTokenManager;
+import org.opencb.cellbase.core.token.TokenJwtPayload;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -202,7 +202,7 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         // Check quota
-        checkQuota();
+        checkToken();
     }
 
     protected int getDataRelease() throws CellBaseException {
@@ -265,12 +265,20 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void checkQuota() throws CellBaseException {
+    private void checkToken() throws CellBaseException {
         if (!uriInfo.getPath().contains("health")) {
             String token = getToken();
-            QuotaPayload quotaPayload = dataAccessTokenManager.decode(token);
+            TokenJwtPayload payload = dataAccessTokenManager.decode(token);
+
+            // Check token expiration date
+            if (payload.getExpiration() != null
+                    && payload.getExpiration().getTime() < new Date().getTime()) {
+                throw new CellBaseException("CellBase token has expired");
+            }
+
+            // Check token quota
             MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-            metaManager.checkQuota(token, quotaPayload);
+            metaManager.checkQuota(token, payload);
         }
     }
 

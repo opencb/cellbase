@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.QuotaPayload;
+import org.opencb.cellbase.core.token.TokenJwtPayload;
 import org.opencb.cellbase.core.token.TokenStats;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
 import org.opencb.commons.monitor.DatastoreStatus;
@@ -57,7 +57,7 @@ public class MetaManager extends AbstractManager {
         return this.mongoDBManager.getDatabaseStatus(species, assembly);
     }
 
-    public void checkQuota(String token, QuotaPayload quotaPayload) throws CellBaseException {
+    public void checkQuota(String token, TokenJwtPayload payload) throws CellBaseException {
         String date = getTokenStatsDate();
 
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
@@ -69,7 +69,7 @@ public class MetaManager extends AbstractManager {
         } else {
             numQueries = quotaResult.first().getNumQueries();
         }
-        if (numQueries >= quotaPayload.getMaxNumQueries()) {
+        if (numQueries >= payload.getQuota().getMaxNumQueries()) {
             throw new CellBaseException("Exceeded the maximum number of queries");
         }
     }

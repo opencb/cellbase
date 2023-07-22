@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
-import org.opencb.cellbase.core.token.QuotaPayload;
+import org.opencb.cellbase.core.token.TokenQuota;
 
 import java.util.HashMap;
 import java.util.List;
@@ -164,13 +164,17 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " 'organization' has to be specified", arity = 1)
         public String createWithDataSources;
 
+        @Parameter(names = {"--expiration"}, description = "Use this parameter in conjunction with --create-token to specify the"
+                + " expiration date in format dd/mm/yyyy, e.g.: 03/09/2030", arity = 1)
+        public String expiration;
+
         @Parameter(names = {"--organization"}, description = "Use this parameter in conjunction with --create-token to specify the"
                 + " organization", arity = 1)
         public String organization;
 
         @Parameter(names = {"--max-num-queries"}, description = "Use this parameter in conjunction with --create-token to specify the"
                 + " maximum number of queries per month", arity = 1)
-        public long maxNumQueries = QuotaPayload.DEFAULT_MAX_NUM_QUERIES;
+        public long maxNumQueries = TokenQuota.DEFAULT_MAX_NUM_QUERIES;
 
         @Parameter(names = {"--view-token"}, description = "Token to view", arity = 1)
         public String tokenToView;
