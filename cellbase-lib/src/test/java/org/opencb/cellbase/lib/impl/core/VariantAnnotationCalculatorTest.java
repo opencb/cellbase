@@ -26,13 +26,16 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.result.QueryResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -1995,4 +1998,150 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertEquals(1, cellBaseDataResult.getNumMatches());
     }
 
+    private void initGrch38() throws Exception {
+
+        clearDB(CELLBASE_DBNAME);
+
+        createDataRelease();
+        dataRelease = 1;
+
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+
+
+        Path path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene", dataRelease);
+        updateDataRelease(dataRelease, "gene", Collections.emptyList());
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence", dataRelease);
+        updateDataRelease(dataRelease, "genome_sequence", Collections.emptyList());
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/grch38/clinical_variants.full.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants", dataRelease);
+        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("regulatory_region", dataRelease);
+        updateDataRelease(dataRelease, "regulatory_region", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("protein", dataRelease);
+        updateDataRelease(dataRelease, "protein", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("missense_variation_functional_score", dataRelease);
+        updateDataRelease(dataRelease, "missense_variation_functional_score", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("protein_functional_prediction", dataRelease);
+        updateDataRelease(dataRelease, "protein_functional_prediction", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("refseq", dataRelease);
+        updateDataRelease(dataRelease, "refseq", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("conservation", dataRelease);
+        updateDataRelease(dataRelease, "conservation", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("variation_functional_score", dataRelease);
+        updateDataRelease(dataRelease, "variation_functional_score", Collections.emptyList());
+
+        // Create empty collection
+        createEmptyCollection("splice_score", dataRelease);
+        updateDataRelease(dataRelease, "splice_score", Collections.emptyList());
+
+        variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens",  "GRCh37", dataRelease,
+                cellBaseManagerFactory);
+    }
+
+    private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
+    private static final String VARIANT_STRING_FORMAT = "\\+";
+
+    @Test
+    public void testMNVAdditionalProperties() throws Exception {
+
+        initGrch38();
+
+//        chr19:13025339:C:A+1|1+999 - synonymous
+//        chr19:13025341:G:T+1|1+999 - synonymous
+
+        Variant variant1 = parseVariant("chr19:13025339:C:A+1|1+999");
+        Variant variant2 = parseVariant("chr19:13025341:G:T+1|1+999");
+
+        List<Variant> variantList = new ArrayList<>();
+        variantList.add(variant1);
+        variantList.add(variant2);
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType, reference, alternate, clinical");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        queryOptions.put("checkAminoAcidChange", false);
+        queryOptions.put("imprecise", true);
+        queryOptions.put("phased", true);
+        queryOptions.put("dataRelease", 1);
+
+        List<CellBaseDataResult<VariantAnnotation>> queryResult = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
+                queryOptions);
+
+        assertEquals(2, queryResult.size());
+
+        VariantAnnotation v1 = queryResult.get(0).getResults().get(0);
+        VariantAnnotation v2 = queryResult.get(1).getResults().get(0);
+
+        assertEquals("missense_variant", v1.getDisplayConsequenceType());
+        assertEquals("missense_variant", v2.getDisplayConsequenceType());
+
+        Map<String, String> additionalAttributes1 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
+        Map<String, String> additionalAttributes2 = (Map<String, String>) v1.getAdditionalAttributes().get("phasedTranscripts").get("attribute");
+
+        //System.out.println(additionalAttributes1);
+
+        assertEquals(12, additionalAttributes1.size());
+        assertEquals(12, additionalAttributes2.size());
+    }
+
+    private Variant parseVariant(String variantString) {
+        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
+
+        VariantBuilder variantBuilder;
+        if (variantStringPartArray.length > 0) {
+            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
+            // Either 1 or 3 parts expected variant+GT+PS
+            if (variantStringPartArray.length == 3) {
+                List<String> formatList = new ArrayList<>(2);
+                // If phase set tag is not provided not phase data is added at all to the Variant object
+                if (!variantStringPartArray[2].isEmpty()) {
+                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
+                    List<String> sampleData = new ArrayList<>(2);
+                    sampleData.add(variantStringPartArray[2]);
+                    // Genotype field might be empty - just PS would be added to Variant object in that case
+                    if (!variantStringPartArray[1].isEmpty()) {
+                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
+                        sampleData.add(variantStringPartArray[1]);
+                    }
+                    variantBuilder.setSampleDataKeys(formatList);
+                    SampleEntry sampleEntry = new SampleEntry();
+                    sampleEntry.setData(sampleData);
+                    variantBuilder.setSamples(Collections.singletonList(sampleEntry));
+                }
+            } else if (variantStringPartArray.length > 3) {
+                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+            }
+        } else {
+            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+        }
+
+        return variantBuilder.build();
+    }
 }

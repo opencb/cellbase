@@ -616,6 +616,28 @@ public class VariantAnnotationUtils {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
+
+    public static String buildVariantId(Variant variant) {
+        if (variant == null) {
+            return null;
+        }
+        return buildVariantId(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate());
+    }
+
+    public static String buildVariantIds(List<Variant> variants) {
+        StringBuilder variantIds = new StringBuilder();
+        for (Variant variant : variants) {
+            if (variant == null) {
+                continue;
+            }
+            variantIds.append(buildVariantId(variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate()));
+        }
+        if (variantIds == null) {
+            return null;
+        }
+        return variantIds.toString();
+    }
+
     public static String buildVariantId(String chromosome, int start, String reference, String alternate) {
         StringBuilder stringBuilder = new StringBuilder();
 

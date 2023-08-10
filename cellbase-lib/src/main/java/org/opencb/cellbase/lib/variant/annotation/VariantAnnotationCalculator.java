@@ -858,7 +858,8 @@ public class VariantAnnotationCalculator {
                         consequenceType3.setSequenceOntologyTerms(soTerms);
 
                         // Flag these transcripts as already updated for this variant
-                        flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId());
+                        flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId(),
+                                Arrays.asList(variant0, variant1));
 
                         variant2DisplayCTNeedsUpdate = true;
 
@@ -905,8 +906,8 @@ public class VariantAnnotationCalculator {
                     consequenceType2.setSequenceOntologyTerms(soTerms);
 
                     // Flag these transcripts as already updated for this variant
-                    flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
-                    flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
+                    flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId(), Arrays.asList((variant1)));
+                    flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId(), Arrays.asList((variant0)));
 
                     variant0DisplayCTNeedsUpdate = true;
                     variant1DisplayCTNeedsUpdate = true;
@@ -931,24 +932,25 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
+    private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId, List<Variant> phasedVariants) {
         Map<String, AdditionalAttribute> additionalAttributesMap = variant.getAnnotation().getAdditionalAttributes();
         if (additionalAttributesMap == null) {
             additionalAttributesMap = new HashMap<>();
             AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
-            transcriptsSet.put(ensemblTranscriptId, null);
+            transcriptsSet.put(ensemblTranscriptId, VariantAnnotationUtils.buildVariantIds(phasedVariants));
             additionalAttribute.setAttribute(transcriptsSet);
             additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
             variant.getAnnotation().setAdditionalAttributes(additionalAttributesMap);
         } else if (additionalAttributesMap.get("phasedTranscripts") == null) {
             AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
-            transcriptsSet.put(ensemblTranscriptId, null);
+            transcriptsSet.put(ensemblTranscriptId, VariantAnnotationUtils.buildVariantIds(phasedVariants));
             additionalAttribute.setAttribute(transcriptsSet);
             additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
         } else {
-            additionalAttributesMap.get("phasedTranscripts").getAttribute().put(ensemblTranscriptId, null);
+            additionalAttributesMap.get("phasedTranscripts").getAttribute().put(ensemblTranscriptId,
+                    VariantAnnotationUtils.buildVariantIds(phasedVariants));
         }
     }
 
@@ -1277,7 +1279,8 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(Variant variant) throws QueryException, IllegalAccessException, CellBaseException {
+    private boolean[] getRegulatoryRegionOverlaps(Variant variant, int dataRelease)
+            throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
@@ -1285,15 +1288,15 @@ public class VariantAnnotationCalculator {
         // Variant type checked in expected order of frequency of occurrence to minimize number of checks
         // Most queries will be SNVs - it's worth implementing an special case for them
         if (VariantType.SNV.equals(variant.getType())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart());
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), dataRelease);
         } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd(), dataRelease);
             // Short deletions and symbolic variants except breakends
         } else if (!VariantType.BREAKEND.equals(variant.getType())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd());
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd(), dataRelease);
             // Breakend "variants" only annotate features overlapping the exact positions
         } else  {
-            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant.getChromosome(), Math.max(1, variant.getStart()));
+            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant.getChromosome(), Math.max(1, variant.getStart()), dataRelease);
             // If already found one overlapping regulatory region there's no need to keep checking
             if (overlapsRegulatoryRegion[0]) {
                 return overlapsRegulatoryRegion;
@@ -1302,7 +1305,7 @@ public class VariantAnnotationCalculator {
                 if (variant.getSv() != null && variant.getSv().getBreakend() != null
                         && variant.getSv().getBreakend().getMate() != null) {
                     return getRegulatoryRegionOverlaps(variant.getSv().getBreakend().getMate().getChromosome(),
-                            Math.max(1, variant.getSv().getBreakend().getMate().getPosition()));
+                            Math.max(1, variant.getSv().getBreakend().getMate().getPosition()), dataRelease);
                 } else {
                     return overlapsRegulatoryRegion;
                 }
@@ -1310,7 +1313,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position)
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position, int dataRelease)
             throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
@@ -1319,6 +1322,7 @@ public class VariantAnnotationCalculator {
         RegulationQuery query = new RegulationQuery();
         query.setIncludes(Collections.singletonList(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE));
         query.setRegions(Collections.singletonList(new Region(chromosome, position)));
+        query.setDataRelease(dataRelease);
         CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
 
         if (cellBaseDataResult.getNumResults() > 0) {
@@ -1337,7 +1341,7 @@ public class VariantAnnotationCalculator {
         return overlapsRegulatoryRegion;
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end)
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end, int dataRelease)
             throws QueryException, IllegalAccessException, CellBaseException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
@@ -1349,7 +1353,7 @@ public class VariantAnnotationCalculator {
         query.setLimit(1);
         query.setRegions(Collections.singletonList(new Region(chromosome, start, end)));
         query.setFeatureTypes(Collections.singletonList(TF_BINDING_SITE));
-
+        query.setDataRelease(dataRelease);
         CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
 
         // Overlaps transcription factor binding site - it's therefore a regulatory variant
@@ -1387,7 +1391,7 @@ public class VariantAnnotationCalculator {
             throws QueryException, IllegalAccessException, CellBaseException {
         boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
-            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
+            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant, dataRelease);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
