@@ -1259,7 +1259,7 @@ public class VariantAnnotationCalculator {
             case CNV:
             case COPY_NUMBER_GAIN:
             case COPY_NUMBER:
-                if (variant.getSv().getCopyNumber() == null) {
+                if (variant.getSv().getCopyNumber() == null || variant.getSv().getCopyNumber() == 2) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
                     return new ConsequenceTypeCNVGainCalculator();
