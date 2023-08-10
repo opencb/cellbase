@@ -20,6 +20,7 @@ import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.ParamConstants;
@@ -43,8 +44,9 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = getEnd(svExtraPadding);
-        variantStart = getStart(svExtraPadding);
+        int extraPadding = VariantType.CNV.equals(variant.getType()) ? cnvExtraPadding : svExtraPadding;
+        variantEnd = getEnd(extraPadding);
+        variantStart = getStart(extraPadding);
 //        isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {

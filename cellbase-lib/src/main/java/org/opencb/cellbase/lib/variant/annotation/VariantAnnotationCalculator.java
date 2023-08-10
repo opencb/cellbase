@@ -562,8 +562,8 @@ public class VariantAnnotationCalculator {
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true, QueryOptions.empty(),
-                            dataRelease);
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true,
+                            new QueryOptions().append("imprecise", imprecise).append("cnvExtraPadding", cnvExtraPadding), dataRelease);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(variant, variantBuffer, dataRelease);
@@ -1288,6 +1288,9 @@ public class VariantAnnotationCalculator {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart());
         } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
+        } else if (VariantType.CNV.equals(variant.getType())) {
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
+                    variant.getEnd() + cnvExtraPadding);
             // Short deletions and symbolic variants except breakends
         } else if (!VariantType.BREAKEND.equals(variant.getType())) {
             return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd());
