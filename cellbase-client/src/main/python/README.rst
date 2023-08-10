@@ -202,7 +202,12 @@ ID converter
 ````````````
 
 This tool annotates genomic features with all their associated IDs, making use of 74 different sources for human, including most common databases such as Ensembl, NCBI, RefSeq, Reactome, OMIM, PDB, miRBase or UniProt among others.
-In addition, it supports heterogeneous input files with IDs from different sources.
+
+.. code-block:: bash
+
+    $ cbtools.py xref BRCA1
+
+A file with multiple variants can also be used.
 
 .. code-block:: bash
 
