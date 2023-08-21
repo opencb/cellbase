@@ -340,6 +340,9 @@ public class ExportCommandExecutor extends CommandExecutor {
             throws QueryException, CellBaseException, IllegalAccessException, IOException {
         String counterMsg;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output.resolve(PHARMACOGENOMICS_DATA), PHARMACOGENOMICS_DATA);
+        if (!serializer.getOutdir().toFile().exists()) {
+            serializer.getOutdir().toFile().mkdirs();
+        }
 
         PharmaChemicalQuery query = new PharmaChemicalQuery();
         List<String> geneNames = new ArrayList<>(new HashSet<>(genes.stream().map(Gene::getName).collect(Collectors.toList())));
@@ -389,6 +392,9 @@ public class ExportCommandExecutor extends CommandExecutor {
 
         // Create new JSON serializer for pubmed articles, then retrieve and write pubmed articles
         serializer = new CellBaseJsonFileSerializer(output.resolve(PUBMED_DATA), PUBMED_DATA);
+        if (!serializer.getOutdir().toFile().exists()) {
+            serializer.getOutdir().toFile().mkdirs();
+        }
 
         PublicationManager publicationManager = managerFactory.getPublicationManager();
         List<String> pubmedList = new ArrayList<>(pubmedIds);
