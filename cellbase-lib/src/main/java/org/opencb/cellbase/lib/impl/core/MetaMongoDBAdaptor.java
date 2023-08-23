@@ -26,7 +26,7 @@ import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.TokenStats;
+import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -40,11 +40,10 @@ import java.util.List;
 /**
  * Created by fjlopez on 07/06/16.
  */
-@Deprecated
 public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private MongoDBCollection mongoDBCollection;
-    private MongoDBCollection tokenStatsMongoDBCollection;
+    private MongoDBCollection apiKeyStatsMongoDBCollection;
 
     public MetaMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -56,7 +55,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void init() {
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
         mongoDBCollection = mongoDataStore.getCollection("metadata");
-        tokenStatsMongoDBCollection = mongoDataStore.getCollection("token_stats");
+        apiKeyStatsMongoDBCollection = mongoDataStore.getCollection("apikey_stats");
     }
 
     public CellBaseDataResult getAll() {
@@ -90,7 +89,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     }
 
     @Override
-    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease, String token) {
+    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey) {
         return null;
     }
 
@@ -104,28 +103,28 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         return null;
     }
 
-    public CellBaseDataResult getQuota(String token, String date) {
+    public CellBaseDataResult getQuota(String apiKey, String date) {
         List<Bson> andBsonList = new ArrayList<>();
-        andBsonList.add(Filters.eq("token", token));
+        andBsonList.add(Filters.eq("apiKey", apiKey));
         andBsonList.add(Filters.eq("date", date));
         Bson query = Filters.and(andBsonList);
 
-        return new CellBaseDataResult<>(tokenStatsMongoDBCollection.find(query, null, TokenStats.class, QueryOptions.empty()));
+        return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.find(query, null, ApiKeyStats.class, QueryOptions.empty()));
     }
 
-    public CellBaseDataResult initTokenStats(String token, String date) throws CellBaseException {
+    public CellBaseDataResult initApiKeyStats(String apiKey, String date) throws CellBaseException {
         try {
-            TokenStats tokenStats = new TokenStats(token, date);
-            Document document = Document.parse(new ObjectMapper().writeValueAsString(tokenStats));
-            return new CellBaseDataResult<>(tokenStatsMongoDBCollection.insert(document, QueryOptions.empty()));
+            ApiKeyStats apiKeyStats = new ApiKeyStats(apiKey, date);
+            Document document = Document.parse(new ObjectMapper().writeValueAsString(apiKeyStats));
+            return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.insert(document, QueryOptions.empty()));
         } catch (IOException e) {
-            throw new CellBaseException("Error initializing quota for token '" + token.substring(0, 10) + "...': " + e.getMessage());
+            throw new CellBaseException("Error initializing quota for API key '" + apiKey.substring(0, 10) + "...': " + e.getMessage());
         }
     }
 
-    public CellBaseDataResult incTokenStats(String token, String date, long incNumQueries, long incDuration, long incBytes) {
+    public CellBaseDataResult incApiKeyStats(String apiKey, String date, long incNumQueries, long incDuration, long incBytes) {
         List<Bson> andBsonList = new ArrayList<>();
-        andBsonList.add(Filters.eq("token", token));
+        andBsonList.add(Filters.eq("apiKey", apiKey));
         andBsonList.add(Filters.eq("date", date));
         Bson query = Filters.and(andBsonList);
 
@@ -139,7 +138,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
         QueryOptions queryOptions = new QueryOptions("replace", true);
 
-        return new CellBaseDataResult<>(tokenStatsMongoDBCollection.findAndUpdate(query, projection, null, update, TokenStats.class,
+        return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.findAndUpdate(query, projection, null, update, ApiKeyStats.class,
                 queryOptions));
     }
 }

@@ -31,6 +31,8 @@ public class CellBaseClient {
     private final String species;
     private final String assembly;
     private final String dataRelease;
+    private final String apiKey;
+    @Deprecated
     private final String token;
     private ClientConfiguration clientConfiguration;
 
@@ -53,14 +55,15 @@ public class CellBaseClient {
         this(species, assembly, dataRelease, null, clientConfiguration);
     }
 
-    public CellBaseClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
+    public CellBaseClient(String species, String assembly, String dataRelease, String apiKey, ClientConfiguration clientConfiguration) {
         if (StringUtils.isBlank(species)) {
             throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
         }
         this.species = species;
         this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
         this.dataRelease = StringUtils.isEmpty(dataRelease) ? null : dataRelease;
-        this.token = token;
+        this.token = apiKey;
+        this.apiKey = apiKey;
         if (clientConfiguration != null && clientConfiguration.getRest() != null
                 && clientConfiguration.getRest().getHosts() != null
                 && !clientConfiguration.getRest().getHosts().isEmpty()
@@ -75,11 +78,11 @@ public class CellBaseClient {
     }
 
     public GeneClient getGeneClient() {
-        return getClient("GENE", () -> new GeneClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("GENE", () -> new GeneClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
 //    public VariationClient getVariationClient() {
@@ -87,27 +90,27 @@ public class CellBaseClient {
 //    }
 
     public VariantClient getVariantClient() {
-        return getClient("VARIANT", () -> new VariantClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("VARIANT", () -> new VariantClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public MetaClient getMetaClient() {
-        return getClient("META", () -> new MetaClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("META", () -> new MetaClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public ClinicalVariantClient getClinicalClient() {
-        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     public GenericClient getGenericClient() {
-        return getClient("GENERIC", () -> new GenericClient(species, assembly, dataRelease, token, clientConfiguration));
+        return getClient("GENERIC", () -> new GenericClient(species, assembly, dataRelease, apiKey, clientConfiguration));
     }
 
     @SuppressWarnings("unchecked")
@@ -144,8 +147,13 @@ public class CellBaseClient {
         return dataRelease;
     }
 
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    @Deprecated
     public String getToken() {
-        return token;
+        return apiKey;
     }
 
     public ClientConfiguration getClientConfiguration() {

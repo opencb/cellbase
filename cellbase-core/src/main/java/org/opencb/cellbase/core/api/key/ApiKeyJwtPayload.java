@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.token;
+package org.opencb.cellbase.core.api.key;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -26,9 +26,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TokenJwtPayload extends DefaultClaims {
+public class ApiKeyJwtPayload extends DefaultClaims {
 
-    // CellBase token claim names
+    // CellBase API key claim names
     private static final String VERSION = "version";
     private static final String SOURCES = "sources";
     private static final String QUOTA = "quota";
@@ -36,14 +36,14 @@ public class TokenJwtPayload extends DefaultClaims {
     public static final String CURRENT_VERSION = "1.0";
     public static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy");
 
-    public TokenJwtPayload() {
+    public ApiKeyJwtPayload() {
         super();
     }
 
-    public TokenJwtPayload(Claims claims) {
+    public ApiKeyJwtPayload(Claims claims) {
         super(claims);
     }
-    // Getters and setters for the new fields
+
     public String getVersion() {
         return get(VERSION, String.class);
     }
@@ -67,16 +67,16 @@ public class TokenJwtPayload extends DefaultClaims {
         put(SOURCES, sources);
     }
 
-    public TokenQuota getQuota() {
+    public ApiKeyQuota getQuota() {
         LinkedHashMap input = get(QUOTA, LinkedHashMap.class);
-        TokenQuota output = new TokenQuota();
+        ApiKeyQuota output = new ApiKeyQuota();
         if (input != null) {
             output.setMaxNumQueries(((Integer) input.get("maxNumQueries")).longValue());
         }
         return output;
     }
 
-    public void setQuota(TokenQuota quota) {
+    public void setQuota(ApiKeyQuota quota) {
         put(QUOTA, quota);
     }
 }

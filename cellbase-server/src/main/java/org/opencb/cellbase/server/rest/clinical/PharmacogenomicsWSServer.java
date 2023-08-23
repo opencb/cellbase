@@ -52,11 +52,13 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
             defaultValue = DEFAULT_VERSION) String apiVersion,
                                     @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
                                     @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
-                                    String assembly,
+                                            String assembly,
                                     @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                                     @QueryParam("dataRelease") int dataRelease,
-                                    @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                    String token,
+                                    @ApiParam(name = "token", value = API_KEY_DESCRIPTION, hidden = true) @DefaultValue("")
+                                    @QueryParam("token") String token,
+                                    @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
+                                            String apiKey,
                                     @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -144,11 +146,11 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfo(@PathParam("chemicals") @ApiParam(name = "chemicals", value = "Chemical/drug names", required = true)
-                                        String chemicals) {
+                                    String chemicals) {
         try {
             PharmaChemicalQuery pharmaQuery = new PharmaChemicalQuery(uriParams);
             List<CellBaseDataResult<PharmaChemical>> queryResults = pharmacogenomicsManager.info(Arrays.asList(chemicals.split(",")),
-                    pharmaQuery, getDataRelease(), getToken());
+                    pharmaQuery, getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -46,7 +46,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     public static final int DEFAULT_SKIP = 0;
 
     public static final String DATA_RELEASE = "dataRelease";
-    public static final String DATA_ACCESS_TOKEN = "token";
+    public static final String API_KEY_PARAM = "apiKey";
+    @Deprecated
+    public static final String TOKEN_PARAM = "token";
 
     // list of fields in this class
     private Map<String, Field> classFields;
@@ -60,8 +62,8 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     @QueryParameter(id = DATA_RELEASE)
     private Integer dataRelease;
 
-    @QueryParameter(id = DATA_ACCESS_TOKEN)
-    private String token;
+    @QueryParameter(id = API_KEY_PARAM)
+    private String apiKey;
 
     public AbstractQuery() {
         init();
@@ -459,12 +461,23 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return this;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
+    public AbstractQuery setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+        return this;
+    }
+
+    @Deprecated
+    public String getToken() {
+        return apiKey;
+    }
+
+    @Deprecated
     public AbstractQuery setToken(String token) {
-        this.token = token;
+        this.apiKey = token;
         return this;
     }
 }

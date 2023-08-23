@@ -52,8 +52,10 @@ public class PublicationWSServer extends GenericRestWSServer {
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                                @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                                @QueryParam("dataRelease") int dataRelease,
-                               @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
+                               @ApiParam(name = "token", value = API_KEY_DESCRIPTION, hidden = true) @DefaultValue("") @QueryParam("token")
                                        String token,
+                               @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
+                                       String apiKey,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, uriInfo, hsr);

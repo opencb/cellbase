@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.token;
+package org.opencb.cellbase.core.api.key;
 
-public class TokenStats {
-    private String token;
+public class ApiKeyStats {
+    private String apiKey;
     private String date; // date consists of year + month, e.g.: 202304
     private long numQueries;
     private long duration;
     private long bytes;
 
-    public TokenStats() {
+    public ApiKeyStats() {
     }
 
-    public TokenStats(String token, String date) {
-        this(token, date, 0, 0, 0);
+    public ApiKeyStats(String apiKey, String date) {
+        this(apiKey, date, 0, 0, 0);
     }
 
-    public TokenStats(String token, String date, long numQueries, long duration, long bytes) {
-        this.token = token;
+    public ApiKeyStats(String apiKey, String date, long numQueries, long duration, long bytes) {
+        this.apiKey = apiKey;
         this.date = date;
         this.numQueries = numQueries;
         this.duration = duration;
@@ -41,7 +41,7 @@ public class TokenStats {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TokenStats{");
-        sb.append("token='").append(token).append('\'');
+        sb.append("apiKey='").append(apiKey).append('\'');
         sb.append(", date='").append(date).append('\'');
         sb.append(", numQueries=").append(numQueries);
         sb.append(", duration=").append(duration);
@@ -50,12 +50,12 @@ public class TokenStats {
         return sb.toString();
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public TokenStats setToken(String token) {
-        this.token = token;
+    public ApiKeyStats setApiKey(String apiKey) {
+        this.apiKey = apiKey;
         return this;
     }
 
@@ -63,7 +63,7 @@ public class TokenStats {
         return date;
     }
 
-    public TokenStats setDate(String date) {
+    public ApiKeyStats setDate(String date) {
         this.date = date;
         return this;
     }
@@ -72,7 +72,7 @@ public class TokenStats {
         return numQueries;
     }
 
-    public TokenStats setNumQueries(long numQueries) {
+    public ApiKeyStats setNumQueries(long numQueries) {
         this.numQueries = numQueries;
         return this;
     }
@@ -81,7 +81,7 @@ public class TokenStats {
         return duration;
     }
 
-    public TokenStats setDuration(long duration) {
+    public ApiKeyStats setDuration(long duration) {
         this.duration = duration;
         return this;
     }
@@ -90,7 +90,7 @@ public class TokenStats {
         return bytes;
     }
 
-    public TokenStats setBytes(long bytes) {
+    public ApiKeyStats setBytes(long bytes) {
         this.bytes = bytes;
         return this;
     }

@@ -113,7 +113,7 @@ public class ParamConstants {
     public static final String VERSION_DESCRIPTION = "API version, e.g.: " + DEFAULT_VERSION;
     public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. To get the list"
             + " of available data release, please call the endpoint 'meta/dataReleases'";
-    public static final String DATA_ACCESS_TOKEN_DESCRIPTION = "Data token to allow access to licensed/restricted data sources such as"
+    public static final String API_KEY_DESCRIPTION = "Data token to allow access to licensed/restricted data sources such as"
             + " Cosmic or HGMD";
     public static final String DEFAULT_ASSEMBLY = "grch38";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "

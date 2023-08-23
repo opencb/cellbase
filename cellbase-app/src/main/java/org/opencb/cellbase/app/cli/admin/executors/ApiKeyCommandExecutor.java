@@ -20,9 +20,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.TokenJwtPayload;
-import org.opencb.cellbase.core.token.TokenQuota;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
+import org.opencb.cellbase.core.api.key.ApiKeyQuota;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -35,17 +35,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataTokenCommandExecutor extends CommandExecutor {
+public class ApiKeyCommandExecutor extends CommandExecutor {
 
-    private AdminCliOptionsParser.DataTokenCommandOptions dataTokenCommandOptions;
+    private AdminCliOptionsParser.ApiKeyCommandOptions apiKeyCommandOptions;
 
     private DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
 
 
-    public DataTokenCommandExecutor(AdminCliOptionsParser.DataTokenCommandOptions dataTokenCommandOptions) {
-        super(dataTokenCommandOptions.commonOptions.logLevel, dataTokenCommandOptions.commonOptions.conf);
+    public ApiKeyCommandExecutor(AdminCliOptionsParser.ApiKeyCommandOptions apiKeyCommandOptions) {
+        super(apiKeyCommandOptions.commonOptions.logLevel, apiKeyCommandOptions.commonOptions.conf);
 
-        this.dataTokenCommandOptions = dataTokenCommandOptions;
+        this.apiKeyCommandOptions = apiKeyCommandOptions;
     }
 
 
@@ -57,27 +57,27 @@ public class DataTokenCommandExecutor extends CommandExecutor {
 
         Key key = new SecretKeySpec(Base64.getEncoder().encode(configuration.getSecretKey().getBytes(StandardCharsets.UTF_8)),
                 SignatureAlgorithm.HS256.getJcaName());
-        DataAccessTokenManager datManager = new DataAccessTokenManager(SignatureAlgorithm.HS256.getValue(), key);
+        ApiKeyManager apiKeyManager = new ApiKeyManager(SignatureAlgorithm.HS256.getValue(), key);
 
         try {
-            if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
-                // Create the token payload
-                TokenJwtPayload payload = new TokenJwtPayload();
-                payload.setSubject(dataTokenCommandOptions.organization);
-                payload.setVersion(TokenJwtPayload.CURRENT_VERSION);
+            if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)) {
+                // Create the API key JWT payload
+                ApiKeyJwtPayload payload = new ApiKeyJwtPayload();
+                payload.setSubject(apiKeyCommandOptions.organization);
+                payload.setVersion(ApiKeyJwtPayload.CURRENT_VERSION);
                 payload.setIssuedAt(new Date());
-                if (dataTokenCommandOptions.expiration != null) {
-                    payload.setExpiration(parseDate(dataTokenCommandOptions.expiration));
+                if (apiKeyCommandOptions.expiration != null) {
+                    payload.setExpiration(parseDate(apiKeyCommandOptions.expiration));
                 }
-                payload.setSources(parseSources(dataTokenCommandOptions.createWithDataSources));
-                payload.setQuota(new TokenQuota(dataTokenCommandOptions.maxNumQueries));
+                payload.setSources(parseSources(apiKeyCommandOptions.createWithDataSources));
+                payload.setQuota(new ApiKeyQuota(apiKeyCommandOptions.maxNumQueries));
 
-                // Create token
-                String token = datManager.encode(payload);
-                System.out.println("Data access token generated:\n" + token);
-            } else if (StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {
-                // View data token
-                datManager.display(dataTokenCommandOptions.tokenToView);
+                // Create API key
+                String apiKey = apiKeyManager.encode(payload);
+                System.out.println("API key generated:\n" + apiKey);
+            } else if (StringUtils.isNotEmpty(apiKeyCommandOptions.apiKeyToView)) {
+                // View API key
+                apiKeyManager.display(apiKeyCommandOptions.apiKeyToView);
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -86,18 +86,18 @@ public class DataTokenCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() {
-        if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)
-                && StringUtils.isNotEmpty(dataTokenCommandOptions.tokenToView)) {
+        if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)
+                && StringUtils.isNotEmpty(apiKeyCommandOptions.apiKeyToView)) {
             throw new IllegalArgumentException("Please, select only one of these input parameters: create or view");
         }
-        if (StringUtils.isEmpty(dataTokenCommandOptions.createWithDataSources)
-                && StringUtils.isEmpty(dataTokenCommandOptions.tokenToView)) {
+        if (StringUtils.isEmpty(apiKeyCommandOptions.createWithDataSources)
+                && StringUtils.isEmpty(apiKeyCommandOptions.apiKeyToView)) {
             throw new IllegalArgumentException("Please, it is mandatory to select one of these input parameters: create or view");
         }
 
         // Check create parameters
-        if (StringUtils.isNotEmpty(dataTokenCommandOptions.createWithDataSources)) {
-            if (StringUtils.isEmpty(dataTokenCommandOptions.organization)) {
+        if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)) {
+            if (StringUtils.isEmpty(apiKeyCommandOptions.organization)) {
                 throw new IllegalArgumentException("Missing organization");
             }
         }

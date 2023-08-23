@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.token;
+package org.opencb.cellbase.core.api.key;
 
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
@@ -31,40 +31,40 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 
-import static org.opencb.cellbase.core.token.TokenJwtPayload.DATE_FORMATTER;
+import static org.opencb.cellbase.core.api.key.ApiKeyJwtPayload.DATE_FORMATTER;
 
-public class DataAccessTokenManager {
+public class ApiKeyManager {
     private SignatureAlgorithm algorithm;
     private Key privateKey;
     private Key publicKey;
     private JwtParser jwtParser;
 
-    private String defaultToken;
+    private String defaultApiKey;
 
-    private final Logger logger = LoggerFactory.getLogger(DataAccessTokenManager.class);
+    private final Logger logger = LoggerFactory.getLogger(ApiKeyManager.class);
 
     public static final int SECRET_KEY_MIN_LENGTH = 50;
 
-    public DataAccessTokenManager(String key) {
+    public ApiKeyManager(String key) {
         this(SignatureAlgorithm.HS256.getValue(), new SecretKeySpec(Base64.getEncoder().encode(key.getBytes(StandardCharsets.UTF_8)),
                 SignatureAlgorithm.HS256.getJcaName()));
     }
 
-    public DataAccessTokenManager(String algorithm, Key secretKey) {
+    public ApiKeyManager(String algorithm, Key secretKey) {
         this.algorithm = SignatureAlgorithm.forName(algorithm);
         this.privateKey = secretKey;
         this.publicKey = secretKey;
         jwtParser = Jwts.parserBuilder().setSigningKey(publicKey).build();
 
-        // Create the default token
-        TokenJwtPayload payload = new TokenJwtPayload();
+        // Create the default API key
+        ApiKeyJwtPayload payload = new ApiKeyJwtPayload();
         payload.setSubject("ANONYMOUS");
-        payload.setVersion(TokenJwtPayload.CURRENT_VERSION);
-        payload.setQuota(new TokenQuota(TokenQuota.MAX_NUM_ANOYMOUS_QUERIES));
-        defaultToken = encode(payload);
+        payload.setVersion(ApiKeyJwtPayload.CURRENT_VERSION);
+        payload.setQuota(new ApiKeyQuota(ApiKeyQuota.MAX_NUM_ANOYMOUS_QUERIES));
+        defaultApiKey = encode(payload);
     }
 
-    public String encode(TokenJwtPayload payload) {
+    public String encode(ApiKeyJwtPayload payload) {
         JwtBuilder jwtBuilder = Jwts.builder();
 
         return jwtBuilder.setClaims(payload)
@@ -72,19 +72,19 @@ public class DataAccessTokenManager {
                 .compact();
     }
 
-    public TokenJwtPayload decode(String token) {
+    public ApiKeyJwtPayload decode(String apiKey) {
         if (publicKey == null) {
             // Remove signature to parse JWT
-            token = token.substring(0, token.lastIndexOf(".") + 1);
-            return new TokenJwtPayload(jwtParser.parseClaimsJwt(token).getBody());
+            apiKey = apiKey.substring(0, apiKey.lastIndexOf(".") + 1);
+            return new ApiKeyJwtPayload(jwtParser.parseClaimsJwt(apiKey).getBody());
         } else {
             // Parse signed JWT (aka a 'JWS')
-            return new TokenJwtPayload(jwtParser.parseClaimsJws(token).getBody());
+            return new ApiKeyJwtPayload(jwtParser.parseClaimsJws(apiKey).getBody());
         }
     }
 
-    public String recode(String token) {
-        TokenJwtPayload payload = decode(token);
+    public String recode(String apiKey) {
+        ApiKeyJwtPayload payload = decode(apiKey);
         if (MapUtils.isNotEmpty(payload.getSources())) {
             Map<String, Date> sources = new HashMap<>();
             for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
@@ -98,36 +98,36 @@ public class DataAccessTokenManager {
         return encode(payload);
     }
 
-    public void validate(String token) {
-        decode(token);
+    public void validate(String apiKey) {
+        decode(apiKey);
     }
 
-    public boolean hasExpiredSource(String source, String token) throws IllegalArgumentException {
-        TokenJwtPayload payload = decode(token);
+    public boolean hasExpiredSource(String source, String apiKey) throws IllegalArgumentException {
+        ApiKeyJwtPayload payload = decode(apiKey);
         if (MapUtils.isNotEmpty(payload.getSources()) && payload.getSources().containsKey(source)) {
             return (new Date().getTime() > payload.getSources().get(source).getTime());
         }
-        throw new IllegalArgumentException("Data source '" + source + "' is not enabled for token '" + token + "'");
+        throw new IllegalArgumentException("Data source '" + source + "' is not enabled for API key '" + apiKey + "'");
     }
 
-    public Set<String> getValidSources(String token) throws IllegalArgumentException {
-        return getValidSources(token, new HashSet<>());
+    public Set<String> getValidSources(String apiKey) throws IllegalArgumentException {
+        return getValidSources(apiKey, new HashSet<>());
     }
 
-    public Set<String> getValidSources(String token, Set<String> init) throws IllegalArgumentException {
+    public Set<String> getValidSources(String apiKey, Set<String> init) throws IllegalArgumentException {
         Set<String> validSources = new HashSet<>();
         if (CollectionUtils.isNotEmpty(init)) {
             validSources.addAll(init);
         }
 
-        if (StringUtils.isNotEmpty(token)) {
-            TokenJwtPayload payload = decode(token);
+        if (StringUtils.isNotEmpty(apiKey)) {
+            ApiKeyJwtPayload payload = decode(apiKey);
             if (MapUtils.isNotEmpty(payload.getSources())) {
                 for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
                     if (new Date().getTime() <= entry.getValue().getTime()) {
                         validSources.add(entry.getKey());
                     } else {
-                        String msg = "CellBase token expired at " + DATE_FORMATTER.format(entry.getValue())
+                        String msg = "CellBase API key expired at " + DATE_FORMATTER.format(entry.getValue())
                                 + " for data source '" + entry.getKey() + "'";
                         logger.error(msg);
                         throw new IllegalArgumentException(msg);
@@ -138,15 +138,15 @@ public class DataAccessTokenManager {
         return validSources;
     }
 
-    public String getDefaultToken() {
-        return defaultToken;
+    public String getDefaultApiKey() {
+        return defaultApiKey;
     }
 
-    public void display(String token) {
-        TokenJwtPayload payload = decode(token);
+    public void display(String apiKey) {
+        ApiKeyJwtPayload payload = decode(apiKey);
 
         final StringBuilder sb = new StringBuilder();
-        sb.append("Token: ").append(token).append("\n");
+        sb.append("API key: ").append(apiKey).append("\n");
         sb.append("Organization: ").append(payload.getSubject()).append("\n");
         if (payload.getIssuedAt() != null) {
             sb.append("Issued at: ").append(DATE_FORMATTER.format(payload.getIssuedAt())).append("\n");

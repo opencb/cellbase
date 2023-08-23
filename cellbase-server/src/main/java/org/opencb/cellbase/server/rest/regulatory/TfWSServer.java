@@ -58,11 +58,12 @@ public class TfWSServer extends RegulatoryWSServer {
                       @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly") String assembly,
                       @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                               int dataRelease,
-                      @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
+                      @ApiParam(name = "token", value = API_KEY_DESCRIPTION, hidden = true) @DefaultValue("") @QueryParam("token")
                               String token,
+                      @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
-        super(apiVersion, species, assembly, dataRelease, token, uriInfo, hsr);
+        super(apiVersion, species, assembly, dataRelease, token, apiKey, uriInfo, hsr);
 
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
         tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);

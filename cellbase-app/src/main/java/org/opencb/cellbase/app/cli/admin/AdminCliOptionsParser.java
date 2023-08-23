@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
-import org.opencb.cellbase.core.token.TokenQuota;
+import org.opencb.cellbase.core.api.key.ApiKeyQuota;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +35,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private DataReleaseCommandOptions dataReleaseCommandOptions;
-    private DataTokenCommandOptions dataTokenCommandOptions;
+    private ApiKeyCommandOptions apiKeyCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private ExportCommandOptions exportCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
@@ -52,7 +52,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         dataReleaseCommandOptions = new DataReleaseCommandOptions();
-        dataTokenCommandOptions = new DataTokenCommandOptions();
+        apiKeyCommandOptions = new ApiKeyCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         exportCommandOptions = new ExportCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
@@ -64,7 +64,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("data-release", dataReleaseCommandOptions);
-        jCommander.addCommand("data-token", dataTokenCommandOptions);
+        jCommander.addCommand("api-key", apiKeyCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("export", exportCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
@@ -153,31 +153,31 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public String versions;
     }
 
-    @Parameters(commandNames = {"data-token"}, commandDescription = "Manage data access tokens in order to access to restricted/licensed data sources")
-    public class DataTokenCommandOptions {
+    @Parameters(commandNames = {"api-key"}, commandDescription = "Manage API keys in order to access to restricted/licensed data sources and set quota")
+    public class ApiKeyCommandOptions {
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--create-token"}, description = "Create a data access token with the data sources indicated separated by"
+        @Parameter(names = {"--create-api-key"}, description = "Create an API key with the licensed data sources indicated separated by"
                 + " commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd. In addition the"
                 + " 'organization' has to be specified", arity = 1)
         public String createWithDataSources;
 
-        @Parameter(names = {"--expiration"}, description = "Use this parameter in conjunction with --create-token to specify the"
+        @Parameter(names = {"--expiration"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
                 + " expiration date in format dd/mm/yyyy, e.g.: 03/09/2030", arity = 1)
         public String expiration;
 
-        @Parameter(names = {"--organization"}, description = "Use this parameter in conjunction with --create-token to specify the"
+        @Parameter(names = {"--organization"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
                 + " organization", arity = 1)
         public String organization;
 
-        @Parameter(names = {"--max-num-queries"}, description = "Use this parameter in conjunction with --create-token to specify the"
+        @Parameter(names = {"--max-num-queries"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
                 + " maximum number of queries per month", arity = 1)
-        public long maxNumQueries = TokenQuota.DEFAULT_MAX_NUM_QUERIES;
+        public long maxNumQueries = ApiKeyQuota.DEFAULT_MAX_NUM_QUERIES;
 
-        @Parameter(names = {"--view-token"}, description = "Token to view", arity = 1)
-        public String tokenToView;
+        @Parameter(names = {"--view-api-key"}, description = "API key to view", arity = 1)
+        public String apiKeyToView;
     }
 
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
@@ -245,8 +245,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--data-release"}, description = "Data release for exporting data.", required = true, arity = 1)
         public int dataRelease;
 
-        @Parameter(names = {"--token"}, description = "Data token to export licensed data.", arity = 1)
-        public String token;
+        @Parameter(names = {"--api-key"}, description = "API key to export licensed data.", arity = 1)
+        public String apiKey;
 
         @Parameter(names = {"--gene"}, description = "List of genes (separated by commas). Exported data will be related to these genes"
                 + " (gene coordinates will be taken into account).", required = true, arity = 1)
@@ -353,8 +353,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter to 0", required = false, arity = 1)
         public int dataRelease = 0;
 
-        @Parameter(names = {"--token"}, description = "Data token to get access to licensed/restricted data sources such as COSMIC or HGMD", required = false, arity = 1)
-        public String token;
+        @Parameter(names = {"--api-key"}, description = "API key to get access to licensed/restricted data sources such as COSMIC or HGMD", required = false, arity = 1)
+        public String apiKey;
 
         @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
         public String inputFile;
@@ -405,9 +405,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         return dataReleaseCommandOptions;
     }
 
-    public DataTokenCommandOptions getDataTokenCommandOptions() {
-        return dataTokenCommandOptions;
-    }
+    public ApiKeyCommandOptions getApiKeyCommandOptions() {return apiKeyCommandOptions; }
 
     public LoadCommandOptions getLoadCommandOptions() { return loadCommandOptions; }
 

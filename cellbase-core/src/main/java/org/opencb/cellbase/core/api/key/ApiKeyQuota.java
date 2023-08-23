@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.token;
+package org.opencb.cellbase.core.api.key;
 
-public class TokenQuota {
+public class ApiKeyQuota {
 
     private long maxNumQueries;
 
     public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
     public static final Long DEFAULT_MAX_NUM_QUERIES = 10000000L;
 
-    public TokenQuota() {
+    public ApiKeyQuota() {
         this(DEFAULT_MAX_NUM_QUERIES);
     }
 
-    public TokenQuota(long maxNumQueries) {
+    public ApiKeyQuota(long maxNumQueries) {
         this.maxNumQueries = maxNumQueries;
     }
 
@@ -43,7 +43,7 @@ public class TokenQuota {
         return maxNumQueries;
     }
 
-    public TokenQuota setMaxNumQueries(long maxNumQueries) {
+    public ApiKeyQuota setMaxNumQueries(long maxNumQueries) {
         this.maxNumQueries = maxNumQueries;
         return this;
     }

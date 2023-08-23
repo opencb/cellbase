@@ -16,18 +16,17 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.TokenJwtPayload;
-import org.opencb.cellbase.core.token.TokenStats;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
 import org.opencb.commons.monitor.DatastoreStatus;
 
 import java.time.LocalDate;
 import java.util.Map;
 
-@Deprecated
 public class MetaManager extends AbstractManager {
 
     public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
@@ -57,15 +56,15 @@ public class MetaManager extends AbstractManager {
         return this.mongoDBManager.getDatabaseStatus(species, assembly);
     }
 
-    public void checkQuota(String token, TokenJwtPayload payload) throws CellBaseException {
-        String date = getTokenStatsDate();
+    public void checkQuota(String apiKey, ApiKeyJwtPayload payload) throws CellBaseException {
+        String date = getApiKeyStatsDate();
 
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
-        CellBaseDataResult<TokenStats> quotaResult = metaDBAdaptor.getQuota(token, date);
+        CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getQuota(apiKey, date);
 
         long numQueries = 0;
         if (quotaResult.getNumResults() == 0) {
-            metaDBAdaptor.initTokenStats(token, date);
+            metaDBAdaptor.initApiKeyStats(apiKey, date);
         } else {
             numQueries = quotaResult.first().getNumQueries();
         }
@@ -74,14 +73,14 @@ public class MetaManager extends AbstractManager {
         }
     }
 
-    public CellBaseDataResult incTokenStats(String token, long incNumQueries, long incDuration, long incBytes) {
-        String date = getTokenStatsDate();
+    public CellBaseDataResult incApiKeyStats(String apiKey, long incNumQueries, long incDuration, long incBytes) {
+        String date = getApiKeyStatsDate();
 
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
-        return metaDBAdaptor.incTokenStats(token, date, incNumQueries, incDuration, incBytes);
+        return metaDBAdaptor.incApiKeyStats(apiKey, date, incNumQueries, incDuration, incBytes);
     }
 
-    private String getTokenStatsDate() {
+    private String getApiKeyStatsDate() {
         // Get the current year and month as yyyymm, e.g.:202309
         LocalDate currentDate = LocalDate.now();
         return currentDate.getYear() + String.format("%02d", currentDate.getMonthValue());

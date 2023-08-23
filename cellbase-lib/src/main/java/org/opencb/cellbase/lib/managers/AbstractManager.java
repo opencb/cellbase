@@ -17,19 +17,23 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.opencb.cellbase.core.api.query.AbstractQuery.API_KEY_PARAM;
+import static org.opencb.cellbase.core.api.query.AbstractQuery.TOKEN_PARAM;
 
 public class AbstractManager implements AutoCloseable {
 
@@ -41,7 +45,7 @@ public class AbstractManager implements AutoCloseable {
     protected MongoDataStore mongoDatastore;
     protected MongoDBAdaptorFactory dbAdaptorFactory;
 
-    protected DataAccessTokenManager tokenManager;
+    protected ApiKeyManager tokenManager;
 
     protected Logger logger;
 
@@ -55,7 +59,7 @@ public class AbstractManager implements AutoCloseable {
         mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
 
-        tokenManager = new DataAccessTokenManager(configuration.getSecretKey());
+        tokenManager = new ApiKeyManager(configuration.getSecretKey());
     }
 
     public AbstractManager(String species, String assembly, CellBaseConfiguration configuration)
@@ -76,9 +80,15 @@ public class AbstractManager implements AutoCloseable {
         mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
 
-        tokenManager = new DataAccessTokenManager(configuration.getSecretKey());
+        tokenManager = new ApiKeyManager(configuration.getSecretKey());
     }
 
+    protected String getApiKey(QueryOptions queryOptions) {
+        if (queryOptions.containsKey(API_KEY_PARAM)) {
+            return queryOptions.getString(API_KEY_PARAM);
+        }
+        return queryOptions.getString(TOKEN_PARAM);
+    }
 
     @Deprecated
     protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {

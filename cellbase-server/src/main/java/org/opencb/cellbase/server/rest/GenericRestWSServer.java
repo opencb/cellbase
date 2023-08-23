@@ -33,8 +33,8 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.TokenJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -60,7 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
+import static org.opencb.cellbase.core.api.query.AbstractQuery.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -97,8 +97,8 @@ public class GenericRestWSServer implements IWSServer {
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
-    protected static String defaultToken;
-    protected static DataAccessTokenManager dataAccessTokenManager;
+    protected static String defaultApiKey;
+    protected static ApiKeyManager apiKeyManager;
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
@@ -160,11 +160,11 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private void initQuery() throws CellBaseException {
-        // Get default token (for anonymous queries)
-        if (dataAccessTokenManager == null) {
-            dataAccessTokenManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
-            defaultToken = dataAccessTokenManager.getDefaultToken();
-            logger.info("default token {}", defaultToken);
+        // Get default API key (for anonymous queries)
+        if (apiKeyManager == null) {
+            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+            defaultApiKey = apiKeyManager.getDefaultApiKey();
+            logger.info("default API key {}", defaultApiKey);
         }
 
         startTime = System.currentTimeMillis();
@@ -177,12 +177,15 @@ public class GenericRestWSServer implements IWSServer {
             uriParams.remove("assembly");
         }
 
-        // Set default token, if necessary
-        logger.info("before checking, token {}", uriParams.get(DATA_ACCESS_TOKEN));
-        if (StringUtils.isEmpty(uriParams.get(DATA_ACCESS_TOKEN))) {
-            uriParams.put(DATA_ACCESS_TOKEN, defaultToken);
+        // Set default API key, if necessary
+        // For back-compatibility, we get 'token' parameter after checking 'apiKey' parameter
+        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get(TOKEN_PARAM);
+        logger.info("before checking, API key {}", apiKey);
+        if (StringUtils.isEmpty(apiKey)) {
+            apiKey = defaultApiKey;
         }
-        logger.info("after checking, token {}", uriParams.get(DATA_ACCESS_TOKEN));
+        uriParams.put(API_KEY_PARAM, apiKey);
+        logger.info("after checking, API key {}", uriParams.get(API_KEY_PARAM));
 
         checkLimit();
 
@@ -201,8 +204,8 @@ public class GenericRestWSServer implements IWSServer {
             }
         }
 
-        // Check quota
-        checkToken();
+        // Check API key (expiration date, quota,...)
+        checkApiKey();
     }
 
     protected int getDataRelease() throws CellBaseException {
@@ -229,8 +232,8 @@ public class GenericRestWSServer implements IWSServer {
         return defaultDataRelease;
     }
 
-    protected String getToken() {
-        return uriParams.get(DATA_ACCESS_TOKEN);
+    protected String getApiKey() {
+        return uriParams.get(API_KEY_PARAM);
     }
 
     /**
@@ -265,26 +268,20 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void checkToken() throws CellBaseException {
+    private void checkApiKey() throws CellBaseException {
         if (!uriInfo.getPath().contains("health")) {
-            String token = getToken();
-            TokenJwtPayload payload = dataAccessTokenManager.decode(token);
+            String apiKey = getApiKey();
+            ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
 
-            // Check token expiration date
-            if (payload.getExpiration() != null
-                    && payload.getExpiration().getTime() < new Date().getTime()) {
-                throw new CellBaseException("CellBase token has expired");
+            // Check API key expiration date
+            if (payload.getExpiration() != null && payload.getExpiration().getTime() < new Date().getTime()) {
+                throw new CellBaseException("CellBase API key has expired");
             }
 
-            // Check token quota
+            // Check quota
             MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-            metaManager.checkQuota(token, payload);
+            metaManager.checkQuota(apiKey, payload);
         }
-    }
-
-    private void incTokenStats(Response response) throws CellBaseException {
-        MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-        metaManager.incTokenStats(getToken(), 1, 0, response.getLength());
     }
 
     private Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
@@ -357,7 +354,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException ex) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
-        queryResponse.setToken(getToken());
+        queryResponse.setApiKey(getApiKey());
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -388,7 +385,7 @@ public class GenericRestWSServer implements IWSServer {
         } catch (CellBaseException e) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
-        queryResponse.setToken(getToken());
+        queryResponse.setApiKey(getApiKey());
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);
@@ -411,13 +408,13 @@ public class GenericRestWSServer implements IWSServer {
 
         Response jsonResponse = createJsonResponse(queryResponse);
 
-        // Update token stats, if necessary
+        // Update API key stats, if necessary
         try {
             if (!uriInfo.getPath().contains("health")) {
-                String token = getToken();
+                String apiKey = getApiKey();
                 MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
                 long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
-                metaManager.incTokenStats(token, 1, queryResponse.getTime(), bytes);
+                metaManager.incApiKeyStats(apiKey, 1, queryResponse.getTime(), bytes);
             }
         } catch (CellBaseException e) {
             return createErrorResponse(e);
