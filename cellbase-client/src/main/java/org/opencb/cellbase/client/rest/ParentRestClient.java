@@ -447,8 +447,8 @@ public class ParentRestClient<T> {
             if (assembly != null && StringUtils.isEmpty(queryOptions.getString("assembly"))) {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
-            if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_RELEASE))) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+            if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_RELEASE_PARAM))) {
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE_PARAM, dataRelease);
             }
             if (apiKey != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.API_KEY_PARAM))) {
                 callUrl = callUrl.queryParam(AbstractQuery.API_KEY_PARAM, apiKey);
@@ -458,7 +458,7 @@ public class ParentRestClient<T> {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
             if (dataRelease != null) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE_PARAM, dataRelease);
             }
             if (apiKey != null) {
                 callUrl = callUrl.queryParam(AbstractQuery.API_KEY_PARAM, apiKey);

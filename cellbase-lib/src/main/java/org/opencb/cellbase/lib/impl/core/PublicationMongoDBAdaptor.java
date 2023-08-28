@@ -73,7 +73,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
 
     @Override
     public List<CellBaseDataResult<PubmedArticle>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                                        String token) throws CellBaseException {
+                                                        String apiKey) throws CellBaseException {
         List<CellBaseDataResult<PubmedArticle>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);

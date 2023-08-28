@@ -64,6 +64,10 @@ public class ApiKeyManager {
         defaultApiKey = encode(payload);
     }
 
+    public ApiKeyManager() {
+        jwtParser = Jwts.parserBuilder().build();
+    }
+
     public String encode(ApiKeyJwtPayload payload) {
         JwtBuilder jwtBuilder = Jwts.builder();
 

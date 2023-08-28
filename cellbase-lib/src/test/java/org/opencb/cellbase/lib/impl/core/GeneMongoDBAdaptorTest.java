@@ -17,8 +17,6 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Constraint;
@@ -32,8 +30,6 @@ import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.GeneManager;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,7 +53,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("id", "ENSG00000248746");
         paramMap.put("include", "id,name,start,end");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
 
         GeneQuery geneQuery = new GeneQuery(paramMap);
         geneQuery.setCount(Boolean.TRUE);
@@ -77,7 +73,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         paramMap.put("annotation.expression.tissue", "brain");
         paramMap.put("annotation.expression.value", "UP");
         paramMap.put("include", "id,name");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
 
         GeneQuery geneQuery = new GeneQuery(paramMap);
         geneQuery.setCount(Boolean.TRUE);
@@ -129,7 +125,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_lof<=0.85585");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
         GeneQuery geneQuery = new GeneQuery(paramMap);
         CellBaseDataResult<Gene> cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(12, cellBaseDataResult.getNumResults());
@@ -138,28 +134,28 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_mis>0.8");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
         geneQuery = new GeneQuery(paramMap);
         cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(9, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", "oe_syn=0.91766");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
         geneQuery = new GeneQuery(paramMap);
         cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(0, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", " exac_pLI<0.17633");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
         geneQuery = new GeneQuery(paramMap);
         cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(0, cellBaseDataResult.getNumResults());
 
         paramMap = new HashMap<>();
         paramMap.put("constraints", "exac_oe_lof>=0.45091");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(AbstractQuery.DATA_RELEASE_PARAM, String.valueOf(dataRelease));
         geneQuery = new GeneQuery(paramMap);
         cellBaseDataResult = geneManager.search(geneQuery);
         assertEquals(7, cellBaseDataResult.getNumResults());

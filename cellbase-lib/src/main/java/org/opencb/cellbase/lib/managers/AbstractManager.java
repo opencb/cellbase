@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencb.cellbase.core.api.query.AbstractQuery.API_KEY_PARAM;
-import static org.opencb.cellbase.core.api.query.AbstractQuery.TOKEN_PARAM;
 
 public class AbstractManager implements AutoCloseable {
 
@@ -84,10 +83,7 @@ public class AbstractManager implements AutoCloseable {
     }
 
     protected String getApiKey(QueryOptions queryOptions) {
-        if (queryOptions.containsKey(API_KEY_PARAM)) {
-            return queryOptions.getString(API_KEY_PARAM);
-        }
-        return queryOptions.getString(TOKEN_PARAM);
+        return queryOptions.getString(API_KEY_PARAM);
     }
 
     @Deprecated

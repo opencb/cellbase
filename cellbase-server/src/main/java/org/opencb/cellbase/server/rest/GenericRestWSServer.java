@@ -28,13 +28,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.api.key.ApiKeyManager;
-import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -60,7 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.*;
+import static org.opencb.cellbase.core.api.query.AbstractQuery.API_KEY_PARAM;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -179,7 +179,7 @@ public class GenericRestWSServer implements IWSServer {
 
         // Set default API key, if necessary
         // For back-compatibility, we get 'token' parameter after checking 'apiKey' parameter
-        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get(TOKEN_PARAM);
+        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get("token");
         logger.info("before checking, API key {}", apiKey);
         if (StringUtils.isEmpty(apiKey)) {
             apiKey = defaultApiKey;

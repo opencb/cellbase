@@ -103,7 +103,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
-                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE_PARAM, 0));
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
@@ -111,7 +111,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
-                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE_PARAM, 0));
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
@@ -128,7 +128,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         logger.debug("queryOptions: {}", options.toJson());
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
-                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE_PARAM, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
@@ -140,7 +140,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         logger.debug("queryOptions: {}", options.toJson());
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
-                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE_PARAM, 0));
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
@@ -152,7 +152,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson bson = parseQuery(query);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease,
-                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE, 0));
+                (Integer) query.getOrDefault(AbstractQuery.DATA_RELEASE_PARAM, 0));
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
@@ -223,6 +223,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "token":
+                    case "apiKey":
                     case "dataRelease":
                         // Do nothing
                         break;
@@ -416,8 +417,8 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
             }
 
             // Add data release to query
-            if (!query.containsKey(AbstractQuery.DATA_RELEASE)) {
-                query.put(AbstractQuery.DATA_RELEASE, dataRelease);
+            if (!query.containsKey(AbstractQuery.DATA_RELEASE_PARAM)) {
+                query.put(AbstractQuery.DATA_RELEASE_PARAM, dataRelease);
             }
         }
 
@@ -471,7 +472,7 @@ public class ClinicalMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 
     @Override
     public List<CellBaseDataResult<ClinicalVariant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                                          String token) {
+                                                          String apiKey) {
         return null;
     }
 

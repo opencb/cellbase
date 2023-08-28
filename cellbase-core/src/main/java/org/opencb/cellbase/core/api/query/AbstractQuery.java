@@ -45,10 +45,10 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
-    public static final String DATA_RELEASE = "dataRelease";
+    public static final String DATA_RELEASE_PARAM = "dataRelease";
     public static final String API_KEY_PARAM = "apiKey";
-    @Deprecated
-    public static final String TOKEN_PARAM = "token";
+//    @Deprecated
+//    public static final String TOKEN_PARAM = "token";
 
     // list of fields in this class
     private Map<String, Field> classFields;
@@ -59,7 +59,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
 
-    @QueryParameter(id = DATA_RELEASE)
+    @QueryParameter(id = DATA_RELEASE_PARAM)
     private Integer dataRelease;
 
     @QueryParameter(id = API_KEY_PARAM)
@@ -467,17 +467,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     public AbstractQuery setApiKey(String apiKey) {
         this.apiKey = apiKey;
-        return this;
-    }
-
-    @Deprecated
-    public String getToken() {
-        return apiKey;
-    }
-
-    @Deprecated
-    public AbstractQuery setToken(String token) {
-        this.apiKey = token;
         return this;
     }
 }
