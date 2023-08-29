@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
+
 /**
  * Helper object used to construct queries consumed by the dbadapters.
  */
@@ -44,11 +47,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
-
-    public static final String DATA_RELEASE_PARAM = "dataRelease";
-    public static final String API_KEY_PARAM = "apiKey";
-//    @Deprecated
-//    public static final String TOKEN_PARAM = "token";
 
     // list of fields in this class
     private Map<String, Field> classFields;

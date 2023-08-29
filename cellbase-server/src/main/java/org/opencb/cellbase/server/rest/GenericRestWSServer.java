@@ -60,7 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -179,13 +179,13 @@ public class GenericRestWSServer implements IWSServer {
 
         // Set default API key, if necessary
         // For back-compatibility, we get 'token' parameter after checking 'apiKey' parameter
-        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get("token");
-        logger.info("before checking, API key {}", apiKey);
+        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get(TOKEN_PARAM);
+        logger.info("Before checking, API key {}", apiKey);
         if (StringUtils.isEmpty(apiKey)) {
             apiKey = defaultApiKey;
         }
         uriParams.put(API_KEY_PARAM, apiKey);
-        logger.info("after checking, API key {}", uriParams.get(API_KEY_PARAM));
+        logger.info("After checking, API key {}", uriParams.get(API_KEY_PARAM));
 
         checkLimit();
 
@@ -209,9 +209,9 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected int getDataRelease() throws CellBaseException {
-        if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
+        if (uriParams.containsKey(DATA_RELEASE_PARAM) && StringUtils.isNotEmpty(uriParams.get(DATA_RELEASE_PARAM))) {
             try {
-                int dataRelease = Integer.parseInt(uriParams.get("dataRelease"));
+                int dataRelease = Integer.parseInt(uriParams.get(DATA_RELEASE_PARAM));
                 // If data release is 0, then use the default data release
                 if (dataRelease == 0) {
                     logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease + "' for CellBase"
@@ -221,7 +221,7 @@ public class GenericRestWSServer implements IWSServer {
                     return dataRelease;
                 }
             } catch (NumberFormatException e) {
-                throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
+                throw new CellBaseException("Invalid data release number '" + uriParams.get(DATA_RELEASE_PARAM) + "'");
             }
         }
         // If no data release is present in the query, then use the default data release

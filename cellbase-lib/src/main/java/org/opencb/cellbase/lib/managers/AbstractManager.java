@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 
 public class AbstractManager implements AutoCloseable {
 
