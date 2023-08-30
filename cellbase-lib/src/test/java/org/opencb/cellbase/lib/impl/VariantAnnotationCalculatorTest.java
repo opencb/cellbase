@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -39,7 +41,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
-
 
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
@@ -2379,7 +2380,53 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                                 "splice_acceptor_variant"))
         );
     }
+    @Test
+    public void testLongMNVConsequenceTypes() throws Exception{
+        Variant variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "CC");
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType");
+        queryOptions.put("decompose", false);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        List<ConsequenceType> consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertFalse(consequenceTypeList.isEmpty());
+        String sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
+        assertEquals("[{\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
 
+        // Deletion instead of MNV produces feature_truncation in addition to intron_variant
+        variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertFalse(consequenceTypeList.isEmpty());
+        sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
+        assertEquals("[{\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
+    }
+
+    @Test(expected = UnsupportedURLVariantFormat.class)
+    public void testLongMNVConsequenceTypesFailsForTooLongMNV() throws Exception{
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType");
+        queryOptions.put("decompose", false);
+        // Very long MNV > MAX_MNV_THRESHOLD should return no consequence type
+        String alt = "C" + StringUtils.repeat('A', 1001);
+        Variant aboveThresholdVariant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC",alt);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(aboveThresholdVariant, queryOptions);
+        List<ConsequenceType> consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertTrue(consequenceTypeList.isEmpty());
+        // Very long MNV > MAX_MNV_THRESHOLD throws UnsupportedURLVariantFormat
+        variantAnnotationCalculator.getAllConsequenceTypesByVariant(aboveThresholdVariant, queryOptions);
+    }
+
+    public String getSequenceOntologyTerms(String transcriptID, List<ConsequenceType> consequenceTypeList){
+        for (ConsequenceType consequenceType : consequenceTypeList) {
+            if (consequenceType.getEnsemblTranscriptId().equals("ENST00000399839")){
+                return consequenceType.getSequenceOntologyTerms().toString();
+            };
+        }
+        return null;
+    }
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
                                             Class<T> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper

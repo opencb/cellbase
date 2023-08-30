@@ -1102,6 +1102,10 @@ public class VariantAnnotationCalculator {
             case BREAKEND:
                 return new ConsequenceTypeBNDCalculator();
             default:
+                logger.error("There is no ConsequenceTypeCalculator for variant %s of type %s",
+                        variant,
+                        VariantAnnotationUtils.getVariantType(variant)
+                );
                 throw new UnsupportedURLVariantFormat();
         }
     }
