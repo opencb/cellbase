@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.EtlCommons.PHARMACOGENOMICS_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 
 /**
@@ -209,10 +211,10 @@ public class GenericMongoDBAdaptorTest {
         loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
 
         // pharmacogenomics.json.gz
-        loadData("pharmacogenomics", "pharmacogenomics", baseDir.resolve("pharmacogenomics/pharmacogenomics.json.gz"));
+        loadData(PHARMACOGENOMICS_DATA, PHARMACOGENOMICS_DATA, baseDir.resolve("pharmacogenomics/pharmacogenomics.json.gz"));
 
         // pubmed.json.gz
-        loadData("pubmed", "pubmed", baseDir.resolve("pubmed/pubmed.json.gz"));
+        loadData(PUBMED_DATA, PUBMED_DATA, baseDir.resolve("pubmed/pubmed.json.gz"));
 
         // Clean temporary dir
     }
