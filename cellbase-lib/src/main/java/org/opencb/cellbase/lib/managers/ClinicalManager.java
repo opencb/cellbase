@@ -28,8 +28,8 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
-import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
-import org.opencb.cellbase.lib.token.TokenFilteredVariantIterator;
+import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
+import org.opencb.cellbase.lib.iterator.ApiKeyFilteredVariantIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -68,11 +68,11 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         query.validate();
         CellBaseDataResult<Variant> results = getDBAdaptor().query(query);
 
-        Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
-            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
+            return ApiKeyLicensedDataUtils.filterDataSources(results, validSources);
         } else {
             return results;
         }
@@ -93,11 +93,11 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease, token);
 
-        Set<String> validSources = apiKeyManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(token, ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
-            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
+            return ApiKeyLicensedDataUtils.filterDataSources(results, validSources);
         } else {
             return results;
         }
@@ -105,11 +105,11 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     @Override
     public CellBaseIterator<Variant> iterator(ClinicalVariantQuery query) throws CellBaseException {
-        Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
         // Check if is necessary to use the token licensed variant iterator
-        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
-            return new TokenFilteredVariantIterator(getDBAdaptor().iterator(query), validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
+            return new ApiKeyFilteredVariantIterator(getDBAdaptor().iterator(query), validSources);
         } else {
             return getDBAdaptor().iterator(query);
         }
@@ -118,7 +118,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) throws CellBaseException {
         CellBaseDataResult<Variant> result = clinicalDBAdaptor.nativeGet(query, queryOptions);
 
-        Set<String> validSources = apiKeyManager.getValidSources(getApiKey(queryOptions), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(getApiKey(queryOptions), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
         List<String> includes = null;
         if (queryOptions.containsKey(INCLUDE)) {
@@ -130,8 +130,8 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         }
 
         // Check if is necessary to use the token licensed variant iterator
-        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
-            return DataAccessTokenUtils.filterDataSources(result, validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
+            return ApiKeyLicensedDataUtils.filterDataSources(result, validSources);
         } else {
             return result;
         }
@@ -176,7 +176,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
                                                           QueryOptions queryOptions, int dataRelease) throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions, dataRelease);
 
-        Set<String> validSources = apiKeyManager.getValidSources(getApiKey(queryOptions), DataAccessTokenUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(getApiKey(queryOptions), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
         // TODO: take into account includes and excludes
         List<String> includes = null;
@@ -189,8 +189,8 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         }
 
         // Check if is necessary to use the API key licensed variant iterator
-        if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_CLINICAL_DATA)) {
-            return DataAccessTokenUtils.filterDataSources(results, validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
+            return ApiKeyLicensedDataUtils.filterDataSources(results, validSources);
         } else {
             return results;
         }
