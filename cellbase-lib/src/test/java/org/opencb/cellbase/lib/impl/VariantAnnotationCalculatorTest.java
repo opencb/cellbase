@@ -2385,7 +2385,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         Variant variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "CC");
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
-        queryOptions.put("decompose", false);
+        queryOptions.put("skipDecompose", true);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         List<ConsequenceType> consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
@@ -2404,10 +2404,10 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test(expected = UnsupportedURLVariantFormat.class)
-    public void testLongMNVConsequenceTypesFailsForTooLongMNV() throws Exception {
+    public void testLongMNVConsequenceTypesFailsForAboveThresholdLength() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
-        queryOptions.put("decompose", false);
+        queryOptions.put("skipDecompose", true);
         // Very long MNV > MAX_MNV_THRESHOLD should return no consequence type
         String alt = "C" + StringUtils.repeat('A', 1001);
         Variant aboveThresholdVariant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC",alt);
