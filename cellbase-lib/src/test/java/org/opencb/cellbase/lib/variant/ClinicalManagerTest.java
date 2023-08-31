@@ -57,7 +57,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedHGMD() throws CellBaseException, QueryException, IllegalAccessException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
@@ -73,7 +73,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNotLicensed() throws CellBaseException, QueryException, IllegalAccessException {
-        // Any token, so only CLINVAR is allowed
+        // Without API key, so only CLINVAR is allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
@@ -93,7 +93,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testIteratorOnlyClinvar() throws CellBaseException, QueryException, IllegalAccessException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
@@ -113,7 +113,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testIteratorLicensedHGMD() throws CellBaseException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();

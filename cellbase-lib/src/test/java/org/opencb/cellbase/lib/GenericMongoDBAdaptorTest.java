@@ -51,7 +51,7 @@ public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
     protected int dataRelease;
-    protected String token;
+    protected String apiKey;
 
     protected String cellBaseName;
 
@@ -68,6 +68,7 @@ public class GenericMongoDBAdaptorTest {
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
 
+    // API keys for testing
     protected String UNIVERSAL_ACCES_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4MzczODZ9.ALdEFGmVuatoUEj-K3HAHt2KlqeNm2Fv7m-DODhz0LU";
     protected String HGMD_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4Mzc0MjZ9.zqEU-WhIzhbpbmwGWnAjgmgfOtBbP5nXq2uqX5wV5uY";
     protected String COSMIC_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwN30sIm1heE51bVF1ZXJpZXMiOjEwMDAwMDAwLCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiVEVTVCIsImlhdCI6MTY4OTgzNzQ2MX0.K6SEGvScpJ2a99SLPaUi4KRJ8FJ_LNPduoHW_LSSNGU";
@@ -77,8 +78,6 @@ public class GenericMongoDBAdaptorTest {
     protected String COSMIC_SPLICEAI_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4Mzc1MzZ9.CkXvpNg0NWAXL3N06R2gCqe0kF4ptBk0MPvaAdDSEpQ";
 
     protected LoadRunner loadRunner = null;
-//    protected MongoDBAdaptorFactory dbAdaptorFactory;
-
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -87,11 +86,6 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration = CellBaseConfiguration.load(
                     GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
-//            cellBaseConfiguration.getDatabases().getMongodb().setHost("localhost:27037");
-//            cellBaseConfiguration.getDatabases().getMongodb().setUser("cellbase");
-//            cellBaseConfiguration.getDatabases().getMongodb().setPassword("cellbase");
-//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationDatabase", "admin");
-//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationMechanism", "SCRAM-SHA-256");
 
             String[] versionSplit = GitRepositoryState.get().getBuildVersion().split("\\.");
             cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);

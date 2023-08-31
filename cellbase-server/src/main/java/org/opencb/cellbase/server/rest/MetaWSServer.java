@@ -348,12 +348,6 @@ public class MetaWSServer extends GenericRestWSServer {
             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
                     String assembly,
             @DefaultValue("")
-            @QueryParam("token")
-            @ApiParam(name = "token", hidden = true,
-                    value = "API token for health check. When passed all of the "
-                            + "dependencies and their status will be displayed. The dependencies will be checked if "
-                            + "this parameter is not used, but they won't be part of the response") String token,
-            @DefaultValue("")
             @QueryParam("apiKey")
             @ApiParam(name = "apiKey",
                     value = "API key for health check. When passed all of the "
@@ -373,8 +367,7 @@ public class MetaWSServer extends GenericRestWSServer {
                     + assembly + "'");
         }
 
-        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species,
-                assembly, StringUtils.isNotEmpty(apiKey) ? apiKey : token);
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, assembly, apiKey);
         return createJsonResponse(health);
 
     }
@@ -386,15 +379,9 @@ public class MetaWSServer extends GenericRestWSServer {
             response = HealthCheckResponse.class)
     public Response status(
             @DefaultValue("")
-            @QueryParam("token")
-            @ApiParam(name = "token", hidden = true,
-                    value = "API token for health check. When passed all of the "
-                            + "dependencies and their status will be displayed. The dependencies will be checked if "
-                            + "this parameter is not used, but they won't be part of the response") String token,
-            @DefaultValue("")
             @QueryParam("apiKey")
             @ApiParam(name = "apiKey",
-                    value = "API token for health check. When passed all of the "
+                    value = "API key for health check. When passed all of the "
                             + "dependencies and their status will be displayed. The dependencies will be checked if "
                             + "this parameter is not used, but they won't be part of the response") String apiKey) {
 
@@ -405,7 +392,7 @@ public class MetaWSServer extends GenericRestWSServer {
         String assemblyHealthcheck = "grch38";
 
         HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
-                assemblyHealthcheck, StringUtils.isNotEmpty(apiKey) ? apiKey : token);
+                assemblyHealthcheck, apiKey);
         return createJsonResponse(health);
     }
 

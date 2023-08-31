@@ -70,7 +70,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
         Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
-        // Check if is necessary to use the token licensed variant iterator
+        // Check if is necessary to use the API key licensed variant iterator
         if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
             return ApiKeyLicensedDataUtils.filterDataSources(results, validSources);
         } else {
@@ -89,13 +89,13 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
-        List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease, token);
+        List<CellBaseDataResult<Variant>> results = getDBAdaptor().info(ids, queryOptions, dataRelease, apiKey);
 
-        Set<String> validSources = apiKeyManager.getValidSources(token, ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(apiKey, ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
-        // Check if is necessary to use the token licensed variant iterator
+        // Check if is necessary to use the API key licensed variant iterator
         if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
             return ApiKeyLicensedDataUtils.filterDataSources(results, validSources);
         } else {
@@ -107,7 +107,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
     public CellBaseIterator<Variant> iterator(ClinicalVariantQuery query) throws CellBaseException {
         Set<String> validSources = apiKeyManager.getValidSources(query.getApiKey(), ApiKeyLicensedDataUtils.UNLICENSED_CLINICAL_DATA);
 
-        // Check if is necessary to use the token licensed variant iterator
+        // Check if is necessary to use the API key licensed variant iterator
         if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
             return new ApiKeyFilteredVariantIterator(getDBAdaptor().iterator(query), validSources);
         } else {
@@ -129,7 +129,7 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
             includes = Arrays.asList(queryOptions.getString(EXCLUDE).split(","));
         }
 
-        // Check if is necessary to use the token licensed variant iterator
+        // Check if is necessary to use the API key licensed variant iterator
         if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_CLINICAL_DATA)) {
             return ApiKeyLicensedDataUtils.filterDataSources(result, validSources);
         } else {

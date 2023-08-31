@@ -449,7 +449,7 @@ public class ParentRestClient<T> {
         String apiKeyParam = null;
         if (VersionUtils.isMinVersion("v5.7", configuration.getVersion())) {
             apiKeyParam = API_KEY_PARAM;
-        } else if (VersionUtils.isMinVersion("v5.3", configuration.getVersion())) {
+        } else if (VersionUtils.isMinVersion("v5.4", configuration.getVersion())) {
             apiKeyParam = TOKEN_PARAM;
         }
 

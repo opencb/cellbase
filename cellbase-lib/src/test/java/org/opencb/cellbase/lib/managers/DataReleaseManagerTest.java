@@ -2,7 +2,6 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -151,7 +150,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
             IllegalAccessException {
         dataReleaseManager.update(1, Arrays.asList("v5.5"));
 
-        VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, 0, token, cellBaseManagerFactory);
+        VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, 0, apiKey, cellBaseManagerFactory);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
@@ -167,7 +166,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     @Disabled
     public void testAnnotationWithInvalidDR() {
         CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {
-            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, -1, token, cellBaseManagerFactory);
+            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, -1, apiKey, cellBaseManagerFactory);
             Variant variant = new Variant("10", 113588287, "G", "A");
             CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
         });
@@ -179,7 +178,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     public void testAnnotationWithInvalidDR_1() {
         int dr = 12;
         CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {
-            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dr, token, cellBaseManagerFactory);
+            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dr, apiKey, cellBaseManagerFactory);
             Variant variant = new Variant("10", 113588287, "G", "A");
             CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
         });

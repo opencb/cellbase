@@ -51,7 +51,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public VariantAnnotationCalculatorTest() throws Exception {
         super();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey, cellBaseManagerFactory);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -646,7 +646,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
         VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
-                token, cellBaseManagerFactory);
+                apiKey, cellBaseManagerFactory);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
@@ -1941,7 +1941,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataUnisersalTokenAnnotation() throws Exception {
+    public void testLicensedDataUnisersalApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -1968,7 +1968,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataHgmdTokenAnnotation() throws Exception {
+    public void testLicensedDataHgmdApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -1995,7 +1995,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataCosmicTokenAnnotation() throws Exception {
+    public void testLicensedDataCosmicApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -2022,7 +2022,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataSpliceTokenAnnotation() throws Exception {
+    public void testLicensedDataSpliceApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -2049,7 +2049,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataHgmdCosmicTokenAnnotation() throws Exception {
+    public void testLicensedDataHgmdCosmicApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -2076,7 +2076,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataHgmdSpliceAiTokenAnnotation() throws Exception {
+    public void testLicensedDataHgmdSpliceAiApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
@@ -2103,7 +2103,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testLicensedDataCosmicSpliceTokenAnnotation() throws Exception {
+    public void testLicensedDataCosmicSpliceApiKeyAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);

@@ -19,20 +19,16 @@ package org.opencb.cellbase.lib.variant;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +46,7 @@ public class VariantManagerTest extends GenericMongoDBAdaptorTest {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, token, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey, cellBaseManagerFactory);
         variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 

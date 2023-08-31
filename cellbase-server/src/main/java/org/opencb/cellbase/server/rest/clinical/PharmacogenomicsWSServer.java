@@ -55,8 +55,6 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                                             String assembly,
                                     @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                                     @QueryParam("dataRelease") int dataRelease,
-                                    @ApiParam(name = "token", value = API_KEY_DESCRIPTION, hidden = true) @DefaultValue("")
-                                    @QueryParam("token") String token,
                                     @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
                                             String apiKey,
                                     @Context UriInfo uriInfo, @Context HttpServletRequest hsr)

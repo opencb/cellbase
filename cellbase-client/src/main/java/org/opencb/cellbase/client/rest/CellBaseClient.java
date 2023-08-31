@@ -32,8 +32,6 @@ public class CellBaseClient {
     private final String assembly;
     private final String dataRelease;
     private final String apiKey;
-    @Deprecated
-    private final String token;
     private ClientConfiguration clientConfiguration;
 
     private final Map<String, ParentRestClient> clients;
@@ -62,7 +60,6 @@ public class CellBaseClient {
         this.species = species;
         this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
         this.dataRelease = StringUtils.isEmpty(dataRelease) ? null : dataRelease;
-        this.token = apiKey;
         this.apiKey = apiKey;
         if (clientConfiguration != null && clientConfiguration.getRest() != null
                 && clientConfiguration.getRest().getHosts() != null
@@ -148,11 +145,6 @@ public class CellBaseClient {
     }
 
     public String getApiKey() {
-        return apiKey;
-    }
-
-    @Deprecated
-    public String getToken() {
         return apiKey;
     }
 

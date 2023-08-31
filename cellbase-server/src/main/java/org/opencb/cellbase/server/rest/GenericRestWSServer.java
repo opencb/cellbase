@@ -178,13 +178,12 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         // Set default API key, if necessary
-        // For back-compatibility, we get 'token' parameter after checking 'apiKey' parameter
-        String apiKey = uriParams.containsKey(API_KEY_PARAM) ? uriParams.get(API_KEY_PARAM) : uriParams.get(TOKEN_PARAM);
+        String apiKey = uriParams.getOrDefault(API_KEY_PARAM, null);
         logger.info("Before checking, API key {}", apiKey);
         if (StringUtils.isEmpty(apiKey)) {
             apiKey = defaultApiKey;
+            uriParams.put(API_KEY_PARAM, apiKey);
         }
-        uriParams.put(API_KEY_PARAM, apiKey);
         logger.info("After checking, API key {}", uriParams.get(API_KEY_PARAM));
 
         checkLimit();

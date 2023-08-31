@@ -119,7 +119,7 @@ public class ParamConstants {
     public static final String API_KEY_PARAM = "apiKey";
     public static final String API_KEY_DESCRIPTION = "API key to allow access to licensed/restricted data sources such as"
             + " Cosmic or HGMD";
-    // For backward-compatibility, but it should be deprecated
+    // For backward-compatibility, from v5.7 "token" is not used anymore
     public static final String TOKEN_PARAM = "token";
 
 
