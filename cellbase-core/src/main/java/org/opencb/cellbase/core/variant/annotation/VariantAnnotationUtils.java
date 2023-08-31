@@ -5,6 +5,8 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -146,6 +148,8 @@ public class VariantAnnotationUtils {
 
     public static final String MT = "MT";
     public static final String UNKNOWN_AMINOACID = "X";
+    private static final int MAX_MNV_THRESHOLD = 1000;
+    private static Logger logger = LoggerFactory.getLogger(VariantAnnotationUtils.class);
 
     static {
 
@@ -669,6 +673,12 @@ public class VariantAnnotationUtils {
                 return VariantType.DELETION;
             } else {
                 return VariantType.MNV;
+            }
+        } else if (!variant.isSymbolic() && variant.getReference().length() > 1 && variant.getAlternate().length() > 1) {
+            if (variant.getReference().length() <= MAX_MNV_THRESHOLD && variant.getAlternate().length() <= MAX_MNV_THRESHOLD) {
+                return VariantType.MNV;
+            } else {
+                logger.warn("Provided alleles for variant are too long to be considered an MNV: %s", variant);
             }
         }
         return variant.getType();
