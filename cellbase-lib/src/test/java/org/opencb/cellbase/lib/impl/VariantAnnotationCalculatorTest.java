@@ -2381,7 +2381,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         );
     }
     @Test
-    public void testLongMNVConsequenceTypes() throws Exception{
+    public void testLongMNVConsequenceTypes() throws Exception {
         Variant variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "CC");
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
@@ -2404,7 +2404,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test(expected = UnsupportedURLVariantFormat.class)
-    public void testLongMNVConsequenceTypesFailsForTooLongMNV() throws Exception{
+    public void testLongMNVConsequenceTypesFailsForTooLongMNV() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
         queryOptions.put("decompose", false);
