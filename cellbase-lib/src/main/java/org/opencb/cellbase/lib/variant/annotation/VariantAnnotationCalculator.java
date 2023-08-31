@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
 
 /**
@@ -72,7 +73,7 @@ public class VariantAnnotationCalculator {
     private ProteinManager proteinManager;
     private PharmacogenomicsManager pharmacogenomicsManager;
     private int dataRelease;
-    private String token;
+    private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
 
@@ -95,7 +96,7 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String token,
+    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String apiKey,
                                        CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
@@ -109,7 +110,7 @@ public class VariantAnnotationCalculator {
         // Check data release
         this.dataRelease = cellbaseManagerFactory.getDataReleaseManager(species, assembly).checkDataRelease(dataRelease);
         logger.info("Variant annotation calculator using data release {}", this.dataRelease);
-        this.token = token;
+        this.apiKey = apiKey;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
@@ -483,7 +484,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
-            queryOptions.add("token", token);
+            queryOptions.add(API_KEY_PARAM, apiKey);
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
@@ -1922,7 +1923,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query splice");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, token, dataRelease));
+                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, apiKey, dataRelease));
             }
             logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
@@ -1974,12 +1975,12 @@ public class VariantAnnotationCalculator {
         return normalizer;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public VariantAnnotationCalculator setToken(String token) {
-        this.token = token;
+    public VariantAnnotationCalculator setApiKey(String apiKey) {
+        this.apiKey = apiKey;
         return this;
     }
 }

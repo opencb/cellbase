@@ -1946,7 +1946,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(UNIVERSAL_ACCES_API_KEY);
+        variantAnnotationCalculator.setApiKey(UNIVERSAL_ACCES_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -1973,7 +1973,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(HGMD_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(HGMD_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -2000,7 +2000,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(COSMIC_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(COSMIC_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -2027,7 +2027,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(SPLICEAI_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(SPLICEAI_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -2054,7 +2054,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(HGMD_COSMIC_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(HGMD_COSMIC_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -2081,7 +2081,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(HGMD_SPLICEAI_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(HGMD_SPLICEAI_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
@@ -2108,7 +2108,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("exclude", "pharmacogenomics");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator.setToken(COSMIC_SPLICEAI_ACCESS_API_KEY);
+        variantAnnotationCalculator.setApiKey(COSMIC_SPLICEAI_ACCESS_API_KEY);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator

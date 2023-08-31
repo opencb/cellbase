@@ -44,7 +44,7 @@ public class AbstractManager implements AutoCloseable {
     protected MongoDataStore mongoDatastore;
     protected MongoDBAdaptorFactory dbAdaptorFactory;
 
-    protected ApiKeyManager tokenManager;
+    protected ApiKeyManager apiKeyManager;
 
     protected Logger logger;
 
@@ -58,7 +58,7 @@ public class AbstractManager implements AutoCloseable {
         mongoDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
 
-        tokenManager = new ApiKeyManager(configuration.getSecretKey());
+        apiKeyManager = new ApiKeyManager(configuration.getSecretKey());
     }
 
     public AbstractManager(String species, String assembly, CellBaseConfiguration configuration)
@@ -79,7 +79,7 @@ public class AbstractManager implements AutoCloseable {
         mongoDatastore = mongoDBManager.createMongoDBDatastore(species, assembly);
         dbAdaptorFactory = new MongoDBAdaptorFactory(mongoDatastore);
 
-        tokenManager = new ApiKeyManager(configuration.getSecretKey());
+        apiKeyManager = new ApiKeyManager(configuration.getSecretKey());
     }
 
     protected String getApiKey(QueryOptions queryOptions) {

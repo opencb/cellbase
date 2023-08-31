@@ -311,7 +311,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     }
 
     public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, String token, int dataRelease) throws CellBaseException {
-        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
                 variant.getReference(), variant.getAlternate(), dataRelease);
@@ -325,7 +325,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 
     public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, String token, int dataRelease)
             throws CellBaseException {
-        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
         if (DataAccessTokenUtils.needFiltering(validSources, DataAccessTokenUtils.LICENSED_SPLICE_SCORES_DATA)) {
