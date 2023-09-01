@@ -2439,7 +2439,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     public String getSequenceOntologyTerms(String transcriptID, List<ConsequenceType> consequenceTypeList){
         for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (consequenceType.getEnsemblTranscriptId().equals("ENST00000399839")){
+            if (consequenceType.getEnsemblTranscriptId().equals(transcriptID)){
                 return consequenceType.getSequenceOntologyTerms().toString();
             };
         }
