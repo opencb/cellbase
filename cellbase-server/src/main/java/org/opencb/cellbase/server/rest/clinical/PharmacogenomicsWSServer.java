@@ -126,6 +126,7 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<PharmaChemical> queryResults = pharmacogenomicsManager.search(query);
 
             return createOkResponse(queryResults);
@@ -171,6 +172,7 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = pharmacogenomicsManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
