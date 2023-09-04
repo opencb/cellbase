@@ -2401,6 +2401,24 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertFalse(consequenceTypeList.isEmpty());
         sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
         assertEquals("[{\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
+
+        // MNV with ref length = 1
+        variant = new  Variant("22", 17668822, "T", "CTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertFalse(consequenceTypeList.isEmpty());
+        sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
+        assertEquals("[{\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
+
+        // MNV with alt length = 1
+        variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "C");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertFalse(consequenceTypeList.isEmpty());
+        sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
+        assertEquals("[{\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
     }
 
     @Test(expected = UnsupportedURLVariantFormat.class)
@@ -2421,7 +2439,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     public String getSequenceOntologyTerms(String transcriptID, List<ConsequenceType> consequenceTypeList){
         for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (consequenceType.getEnsemblTranscriptId().equals("ENST00000399839")){
+            if (consequenceType.getEnsemblTranscriptId().equals(transcriptID)){
                 return consequenceType.getSequenceOntologyTerms().toString();
             };
         }

@@ -674,7 +674,10 @@ public class VariantAnnotationUtils {
             } else {
                 return VariantType.MNV;
             }
-        } else if (!variant.isSymbolic() && variant.getReference().length() > 1 && variant.getAlternate().length() > 1) {
+        } else if (!variant.isSymbolic() && (variant.getReference().length() > 1 || variant.getAlternate().length() > 1)
+                &&
+                (!variant.getReference().startsWith(variant.getAlternate()) && !variant.getAlternate().startsWith(variant.getReference()))
+        ) {
             if (variant.getReference().length() <= MAX_MNV_THRESHOLD && variant.getAlternate().length() <= MAX_MNV_THRESHOLD) {
                 return VariantType.MNV;
             } else {
