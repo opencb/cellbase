@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.EtlCommons.PHARMACOGENOMICS_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 
 /**
@@ -60,7 +62,7 @@ public class GenericMongoDBAdaptorTest {
 
     protected String cellBaseName;
 
-    private static final String DATASET_BASENAME = "cellbase-v5.6-dr4";
+    private static final String DATASET_BASENAME = "cellbase-v5.7-dr6";
     private static final String DATASET_EXTENSION = ".tar.gz";
     private static final String DATASET_URL = "http://reports.test.zettagenomics.com/cellbase/test-data/";
     private static final String DATASET_TMP_DIR = "/tmp/cb";
@@ -135,7 +137,9 @@ public class GenericMongoDBAdaptorTest {
         Path tmpPath = Paths.get(DATASET_TMP_DIR);
         tmpPath.toFile().mkdirs();
 
+        logger.info("Downloading " + url + " into " + tmpPath);
         URLUtils.download(url, tmpPath);
+
         Path tmpFile = tmpPath.resolve(DATASET_BASENAME + DATASET_EXTENSION);
         String commandline = "tar -xvzf " + tmpFile.toAbsolutePath() + " -C " + tmpPath;
         logger.info("Running: " + commandline);
@@ -205,6 +209,12 @@ public class GenericMongoDBAdaptorTest {
 
         // clinical_variants.full.json.gz
         loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
+
+        // pharmacogenomics.json.gz
+        loadData(PHARMACOGENOMICS_DATA, PHARMACOGENOMICS_DATA, baseDir.resolve("pharmacogenomics/pharmacogenomics.json.gz"));
+
+        // pubmed.json.gz
+        loadData(PUBMED_DATA, PUBMED_DATA, baseDir.resolve("pubmed/pubmed.json.gz"));
 
         // Clean temporary dir
     }

@@ -50,7 +50,7 @@ public class PharmaChemicalQuery extends AbstractQuery {
     @QueryParameter(id = "variants.haplotypes", alias = {"haplotype"})
     private List<String> hapolotypes;
 
-    @QueryParameter(id = "variants.geneNames", alias = {"geneName"})
+    @QueryParameter(id = "geneName")
     private List<String> geneNames;
 
     @QueryParameter(id = "variants.phenotypes", alias = {"phenotype"})
