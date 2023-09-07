@@ -124,7 +124,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         annotations = getAnnotations();
 
         try {
-            validateParams(uriParams, classAttributesToType, annotations);
+            // Skip this validation because some CellBase endpoint URL parameters are not included
+            // in the query (such as GeneQuery, VariantQuery,...)
+            //validateParams(uriParams, classAttributesToType, annotations);
 
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
@@ -175,7 +177,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 }
             }
             objectMapper.updateValue(this, objectHashMap);
-        } catch (JsonProcessingException | QueryException e) {
+        } catch (JsonProcessingException e) { // | QueryException e) {
             throw new IllegalArgumentException(e);
         }
     }

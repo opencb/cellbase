@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +101,9 @@ public class LoadRunner {
         // protein_functional_prediction documents are extremely big. Increasing the batch size will probably
         // lead to an OutOfMemory error for this collection. Batch size can be much higher for the rest of
         // collections though
-        if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)) {
+        if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)
+                || data.equals(EtlCommons.PHARMACOGENOMICS_DATA)
+                || data.equals(EtlCommons.PUBMED_DATA)) {
             batchSize = 50;
         } else {
             batchSize = 200;
