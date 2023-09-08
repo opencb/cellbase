@@ -88,7 +88,8 @@ public class ParentRestClient<T> {
     protected static final String META = "meta";
     protected static final String WEBSERVICES = "webservices";
     protected static final String REST = "rest";
-
+    private String apiKeyParam;
+    private String serverVersion;
 
     @Deprecated
     ParentRestClient(ClientConfiguration configuration) {
@@ -233,6 +234,8 @@ public class ParentRestClient<T> {
         if (idList == null || idList.isEmpty()) {
             return new CellBaseDataResponse<>();
         }
+
+        lazyInit();
 
         // If the list contain less than REST_CALL_BATCH_SIZE variants then we can make a normal REST call.
         if (idList.size() <= REST_CALL_BATCH_SIZE) {
@@ -445,13 +448,6 @@ public class ParentRestClient<T> {
         // Add the last URL part, the 'action' or 'resource'
         callUrl = callUrl.path(resource);
 
-        // Attention: parameter 'token' was renamed to 'apiKey' in CelBase v5.7
-        String apiKeyParam = null;
-        if (VersionUtils.isMinVersion("v5.7", configuration.getVersion())) {
-            apiKeyParam = API_KEY_PARAM;
-        } else if (VersionUtils.isMinVersion("v5.4", configuration.getVersion())) {
-            apiKeyParam = TOKEN_PARAM;
-        }
 
         if (queryOptions != null) {
             for (String s : queryOptions.keySet()) {
@@ -463,7 +459,7 @@ public class ParentRestClient<T> {
             if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(DATA_RELEASE_PARAM))) {
                 callUrl = callUrl.queryParam(DATA_RELEASE_PARAM, dataRelease);
             }
-            if (apiKeyParam != null && apiKey != null && StringUtils.isEmpty(queryOptions.getString(API_KEY_PARAM))) {
+            if (apiKeyParam != null && apiKey != null && StringUtils.isEmpty(queryOptions.getString(apiKeyParam))) {
                 callUrl = callUrl.queryParam(apiKeyParam, apiKey);
             }
         } else {
@@ -488,6 +484,39 @@ public class ParentRestClient<T> {
         }
 
         return parseResult(jsonString, clazz);
+    }
+
+    private void lazyInit() throws IOException {
+        // Lazy init other variables.
+        if (apiKey != null) {
+            String serverVersion = getServerVersion();
+
+            // Attention: parameter 'token' was renamed to 'apiKey' in CelBase v5.7
+            if (VersionUtils.isMinVersion("5.7.0", serverVersion)) {
+                apiKeyParam = API_KEY_PARAM;
+            } else if (VersionUtils.isMinVersion("5.4.0", serverVersion)) {
+                apiKeyParam = TOKEN_PARAM;
+            } // else { throw exception, api key not supported } ???
+        }
+    }
+
+    /**
+     * Get CellBase server version.
+     * @return CellBase full version
+     * @throws IOException on IOException
+     */
+    public String getServerVersion() throws IOException {
+        if (serverVersion == null) {
+            initServerVersion();
+        }
+        return serverVersion;
+    }
+
+    private synchronized void initServerVersion() throws IOException {
+        if (serverVersion == null) {
+            ObjectMap about = new MetaClient(species, assembly, dataRelease, null, configuration).about().firstResult();
+            serverVersion = about.getString("Version");
+        }
     }
 
     protected WebTarget getBaseUrl(List<String> hosts, String version) {
