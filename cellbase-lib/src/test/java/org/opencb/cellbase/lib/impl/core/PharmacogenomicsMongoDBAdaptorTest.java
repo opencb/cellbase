@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 
 /**
  * Created by jtarraga on 08/21/23.
@@ -56,7 +57,7 @@ public class PharmacogenomicsMongoDBAdaptorTest extends GenericMongoDBAdaptorTes
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("name", "galantamine");
         paramMap.put("include", "id,name");
-        paramMap.put(AbstractQuery.DATA_RELEASE, String.valueOf(dataRelease));
+        paramMap.put(DATA_RELEASE_PARAM, String.valueOf(dataRelease));
 
         PharmaChemicalQuery chemicalQuery = new PharmaChemicalQuery(paramMap);
         chemicalQuery.setCount(Boolean.TRUE);

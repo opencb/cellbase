@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib.token;
+package org.opencb.cellbase.core.api.key;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.*;
 
-public final class DataAccessTokenUtils {
+public final class ApiKeyLicensedDataUtils {
 
     public static final int NUM_SPLICE_SCORE_SOURCES = 2;
     public static final Set<String> LICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("spliceai"));
@@ -35,7 +35,7 @@ public final class DataAccessTokenUtils {
     public static final Set<String> LICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("cosmic", "hgmd"));
     public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Collections.singletonList("clinvar"));
 
-    private DataAccessTokenUtils() {
+    private ApiKeyLicensedDataUtils() {
     }
 
     public static boolean needFiltering(Set<String> inputSources, Set<String> licensedSources) {

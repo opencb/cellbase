@@ -25,6 +25,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -56,14 +57,14 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedHGMD() throws CellBaseException, QueryException, IllegalAccessException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setToken(HGMD_ACCESS_TOKEN);
+        query.setApiKey(HGMD_ACCESS_API_KEY);
 
         CellBaseDataResult<Variant> results = clinicalManager.search(query);
         Assert.assertEquals(1, results.getResults().size());
@@ -72,7 +73,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNotLicensed() throws CellBaseException, QueryException, IllegalAccessException {
-        // Any token, so only CLINVAR is allowed
+        // Without API key, so only CLINVAR is allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
@@ -92,7 +93,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testIteratorOnlyClinvar() throws CellBaseException, QueryException, IllegalAccessException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
@@ -101,27 +102,33 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         query.setDataRelease(dataRelease);
 
         CellBaseIterator<Variant> iterator = clinicalManager.iterator(query);
+        int count = 0;
         while (iterator.hasNext()) {
             Variant variant = iterator.next();
             Assert.assertEquals(1, variant.getAnnotation().getTraitAssociation().size());
+            count++;
         }
+        Assert.assertEquals(1, count);
     }
 
     @Test
     public void testIteratorLicensedHGMD() throws CellBaseException {
-        // Token with licensed HGMD, so only CLINVAR and HGMD are allowed
+        // API key with licensed HGMD, so only CLINVAR and HGMD are allowed
         ClinicalVariantQuery query = new ClinicalVariantQuery();
 
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
         query.setDataRelease(dataRelease);
-        query.setToken(HGMD_ACCESS_TOKEN);
+        query.setApiKey(HGMD_ACCESS_API_KEY);
 
+        int count = 0;
         CellBaseIterator<Variant> iterator = clinicalManager.iterator(query);
         while (iterator.hasNext()) {
             Variant variant = iterator.next();
             Assert.assertEquals(2, variant.getAnnotation().getTraitAssociation().size());
+            count++;
         }
+        Assert.assertEquals(1, count);
     }
 }

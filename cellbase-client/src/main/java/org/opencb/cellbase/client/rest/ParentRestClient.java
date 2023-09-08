@@ -32,10 +32,13 @@ import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
-import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.*;
+import org.opencb.commons.datastore.core.Event;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.utils.VersionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +56,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static org.opencb.cellbase.core.ParamConstants.*;
+
 /**
  * Created by imedina on 12/05/16.
  */
@@ -61,7 +66,7 @@ public class ParentRestClient<T> {
     protected final String species;
     protected final String assembly;
     protected final String dataRelease;
-    protected final String token;
+    protected final String apiKey;
     protected final Client client;
 
     // TODO: Should this be final?
@@ -95,11 +100,11 @@ public class ParentRestClient<T> {
         this(species, assembly, null, null, configuration);
     }
 
-    ParentRestClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
+    ParentRestClient(String species, String assembly, String dataRelease, String apiKey, ClientConfiguration configuration) {
         this.species = species;
         this.assembly = assembly;
         this.dataRelease = dataRelease;
-        this.token = token;
+        this.apiKey = apiKey;
         this.configuration = configuration;
         logger = LoggerFactory.getLogger(this.getClass().toString());
 
@@ -122,8 +127,8 @@ public class ParentRestClient<T> {
         return dataRelease;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
     static {
@@ -408,11 +413,11 @@ public class ParentRestClient<T> {
                 logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
                 Event event = new Event(Event.Type.ERROR, "CellBase REST error. Skipping id " + idList.get(0));
                 CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), 0, Collections.emptyList(), 0, null, 0);
-                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), 0, Collections.singletonList(event),
+                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, getApiKey(), 0, Collections.singletonList(event),
                         new ObjectMap(queryOptions), Collections.singletonList(result));
             }
             List<CellBaseDataResult<U>> cellBaseDataResultList = new LinkedList<>();
-            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, getToken(), -1, null, queryOptions,
+            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), 0, getApiKey(), -1, null, queryOptions,
                     cellBaseDataResultList);
             logger.info("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
@@ -440,6 +445,14 @@ public class ParentRestClient<T> {
         // Add the last URL part, the 'action' or 'resource'
         callUrl = callUrl.path(resource);
 
+        // Attention: parameter 'token' was renamed to 'apiKey' in CelBase v5.7
+        String apiKeyParam = null;
+        if (VersionUtils.isMinVersion("v5.7", configuration.getVersion())) {
+            apiKeyParam = API_KEY_PARAM;
+        } else if (VersionUtils.isMinVersion("v5.4", configuration.getVersion())) {
+            apiKeyParam = TOKEN_PARAM;
+        }
+
         if (queryOptions != null) {
             for (String s : queryOptions.keySet()) {
                 callUrl = callUrl.queryParam(s, queryOptions.get(s));
@@ -447,21 +460,21 @@ public class ParentRestClient<T> {
             if (assembly != null && StringUtils.isEmpty(queryOptions.getString("assembly"))) {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
-            if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_RELEASE))) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+            if (dataRelease != null && StringUtils.isEmpty(queryOptions.getString(DATA_RELEASE_PARAM))) {
+                callUrl = callUrl.queryParam(DATA_RELEASE_PARAM, dataRelease);
             }
-            if (token != null && StringUtils.isEmpty(queryOptions.getString(AbstractQuery.DATA_ACCESS_TOKEN))) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_ACCESS_TOKEN, token);
+            if (apiKeyParam != null && apiKey != null && StringUtils.isEmpty(queryOptions.getString(API_KEY_PARAM))) {
+                callUrl = callUrl.queryParam(apiKeyParam, apiKey);
             }
         } else {
             if (assembly != null) {
                 callUrl = callUrl.queryParam("assembly", assembly);
             }
             if (dataRelease != null) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_RELEASE, dataRelease);
+                callUrl = callUrl.queryParam(DATA_RELEASE_PARAM, dataRelease);
             }
-            if (token != null) {
-                callUrl = callUrl.queryParam(AbstractQuery.DATA_ACCESS_TOKEN, token);
+            if (apiKeyParam != null && apiKey != null) {
+                callUrl = callUrl.queryParam(apiKeyParam, apiKey);
             }
         }
 

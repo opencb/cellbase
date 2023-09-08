@@ -523,7 +523,7 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
     }
 
     @Override
-    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
         List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -548,8 +548,9 @@ public class GenomeMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseC
                     case "name":
                         createAndOrQuery(value, "chromosomes.name", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "dataRelease":
                     case "token":
+                    case "apiKey":
+                    case "dataRelease":
                         // Do nothing
                         break;
                     default:

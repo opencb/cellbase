@@ -111,10 +111,18 @@ public class ParamConstants {
             + "or dot notation (e.g. transcripts.biotype).";
     public static final String DEFAULT_VERSION = "v5.5";
     public static final String VERSION_DESCRIPTION = "API version, e.g.: " + DEFAULT_VERSION;
+
+    public static final String DATA_RELEASE_PARAM = "dataRelease";
     public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. To get the list"
             + " of available data release, please call the endpoint 'meta/dataReleases'";
-    public static final String DATA_ACCESS_TOKEN_DESCRIPTION = "Data token to allow access to licensed/restricted data sources such as"
+
+    public static final String API_KEY_PARAM = "apiKey";
+    public static final String API_KEY_DESCRIPTION = "API key to allow access to licensed/restricted data sources such as"
             + " Cosmic or HGMD";
+    // For backward-compatibility, from v5.7 "token" is not used anymore
+    public static final String TOKEN_PARAM = "token";
+
+
     public static final String DEFAULT_ASSEMBLY = "grch38";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
             + "potentially available assemblies, please call the endpoint 'meta/species'";
@@ -294,8 +302,6 @@ public class ParamConstants {
             + " Exact text matches will be returned";
 
     // ---------------------------------------------
-    public static final String DATA_TOKEN_DESCRIPTION = "Token to allow access to licensed/restricted data sources";
-    public static final String DATA_TOKEN_PARAM = "dataToken";
 
     public static final String SOURCE_DESCRIPTION = "Comma separated list of database sources of the documents to be returned."
             + " Possible values are clinvar or cosmic";

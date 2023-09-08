@@ -30,8 +30,8 @@ import java.io.IOException;
  */
 public class ClinicalVariantClient extends ParentRestClient<Variant> {
 
-    ClinicalVariantClient(String species, String assembly, String dataRelease, String token, ClientConfiguration configuration) {
-        super(species, assembly, dataRelease, token, configuration);
+    ClinicalVariantClient(String species, String assembly, String dataRelease, String apiKey, ClientConfiguration configuration) {
+        super(species, assembly, dataRelease, apiKey, configuration);
 
         this.clazz = Variant.class;
 

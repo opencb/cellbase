@@ -71,7 +71,7 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
 
     @Override
     public List<CellBaseDataResult<PharmaChemical>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                                         String token) throws CellBaseException {
+                                                         String apiKey) throws CellBaseException {
         List<CellBaseDataResult<PharmaChemical>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {
@@ -115,8 +115,9 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
-                    case "dataRelease":
                     case "token":
+                    case "apiKey":
+                    case "dataRelease":
                         // do nothing
                         break;
                     case "geneName":

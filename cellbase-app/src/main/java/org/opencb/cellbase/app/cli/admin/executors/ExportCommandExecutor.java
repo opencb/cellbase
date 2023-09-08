@@ -59,7 +59,7 @@ public class ExportCommandExecutor extends CommandExecutor {
     private Path output;
     private String[] dataToExport;
     private int dataRelease;
-    private String token;
+    private String apiKey;
 
     private String database;
     private CellBaseManagerFactory managerFactory;
@@ -72,7 +72,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         this.exportCommandOptions = exportCommandOptions;
 
         this.dataRelease = exportCommandOptions.dataRelease;
-        this.token = exportCommandOptions.token;
+        this.apiKey = exportCommandOptions.apiKey;
 
         this.output = Paths.get(exportCommandOptions.output);
 
@@ -429,7 +429,7 @@ public class ExportCommandExecutor extends CommandExecutor {
         ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
         ClinicalVariantQuery query = new ClinicalVariantQuery();
         query.setDataRelease(dataRelease);
-        query.setToken(token);
+        query.setApiKey(apiKey);
         int counter = 0;
         for (Region region : regions) {
             query.setRegions(Collections.singletonList(region));

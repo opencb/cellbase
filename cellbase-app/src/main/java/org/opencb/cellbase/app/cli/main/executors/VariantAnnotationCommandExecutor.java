@@ -204,7 +204,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, this.assembly, variantAnnotationCommandOptions.dataRelease,
-                                    variantAnnotationCommandOptions.token, cellBaseManagerFactory);
+                                    variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -480,7 +480,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // equals the number of returned annotations
             CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    variantAnnotationCommandOptions.dataRelease, variantAnnotationCommandOptions.token, cellBaseManagerFactory),
+                    variantAnnotationCommandOptions.dataRelease, variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory),
                     serverQueryOptions);
         } else {
             try {
