@@ -801,6 +801,106 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+
+    @Test
+    public void testDecomposedMNVReturnsCorrectCodonChange() throws Exception {
+        QueryOptions queryOptions = (new QueryOptions("normalize", true));
+        queryOptions.put("skipDecompose", true);
+        queryOptions.put("include", "consequenceType,hgvs");
+        Variant variant = new Variant("18", 30517979, "CC", "AA");
+        String transcriptID = "ENST00000581852";
+        // Negative strand with no decompose
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        List<ConsequenceType> consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        assertFalse(consequenceTypeList.isEmpty());
+        ConsequenceType consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("-", consequenceType.getStrand());
+        assertEquals("GGT/TTT", consequenceType.getCodon());
+        assertEquals("GLY", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(262, consequenceType.getCdnaPosition().intValue());
+        assertEquals(214, consequenceType.getCdsPosition().intValue());
+        // For negative strand with decompose, amino acid change should be similar to the non-decomposed one
+        queryOptions.put("skipDecompose", false);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        // First variant
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("-", consequenceType.getStrand());
+        assertEquals("GGt/TTt", consequenceType.getCodon());
+        assertEquals("GLY", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(30517979, queryResult.getResult().get(0).getStart().intValue());
+        assertEquals(263, consequenceType.getCdnaPosition().intValue());
+        assertEquals(215, consequenceType.getCdsPosition().intValue());
+        // Second variant
+        consequenceTypeList  = queryResult.getResult().get(1).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("-", consequenceType.getStrand());
+        assertEquals("GGt/TTt", consequenceType.getCodon());
+        assertEquals("GLY", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(30517980, queryResult.getResult().get(1).getStart().intValue());
+        assertEquals(262, consequenceType.getCdnaPosition().intValue());
+        assertEquals(214, consequenceType.getCdsPosition().intValue());
+
+        // Test for negative strand decomposed mnv made of 3 changes in the same codon
+        variant = new Variant("18", 30517978, "ACC", "GGG");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("-", consequenceType.getStrand());
+        assertEquals("GGT/CCC", consequenceType.getCodon());
+        assertEquals("GLY", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PRO", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(30517978, queryResult.getResult().get(0).getStart().intValue());
+        assertEquals(264, consequenceType.getCdnaPosition().intValue());
+        assertEquals(216, consequenceType.getCdsPosition().intValue());
+
+        // Positive strand, no decompose
+        variant = new Variant("19", 33167329, "AC", "TT");
+        transcriptID = "ENST00000334176";
+        queryOptions.put("skipDecompose", true);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("+", consequenceType.getStrand());
+        assertEquals("ACC/TTC", consequenceType.getCodon());
+        assertEquals("THR", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(33167329, queryResult.getResult().get(0).getStart().intValue());
+        assertEquals(1017, consequenceType.getCdnaPosition().intValue());
+        assertEquals(160, consequenceType.getCdsPosition().intValue());
+        // Positive strand with decompose
+        queryOptions.put("skipDecompose", false);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        // First variant
+        consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("+", consequenceType.getStrand());
+        assertEquals("ACc/TTc", consequenceType.getCodon());
+        assertEquals("THR", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(33167329, queryResult.getResult().get(0).getStart().intValue());
+        assertEquals(1017, consequenceType.getCdnaPosition().intValue());
+        assertEquals(160, consequenceType.getCdsPosition().intValue());
+        // Second variant
+        consequenceTypeList  = queryResult.getResult().get(1).getConsequenceTypes();
+        consequenceType = getConsequenceType(consequenceTypeList,transcriptID);
+        assertEquals("+", consequenceType.getStrand());
+        assertEquals("ACc/TTc", consequenceType.getCodon());
+        assertEquals("THR", consequenceType.getProteinVariantAnnotation().getReference());
+        assertEquals("PHE", consequenceType.getProteinVariantAnnotation().getAlternate());
+        assertEquals(33167330, queryResult.getResult().get(1).getStart().intValue());
+        assertEquals(1018, consequenceType.getCdnaPosition().intValue());
+        assertEquals(161, consequenceType.getCdsPosition().intValue());
+    }
+
     @Test
     public void testPopulationFrequencies() throws Exception {
 

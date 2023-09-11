@@ -652,9 +652,6 @@ public class VariantAnnotationCalculator {
                         = findCodingOverlappingConsequenceType(consequenceType1, variant1.getAnnotation().getConsequenceTypes());
                 // The two first variants affect the same codon
                 if (consequenceType2 != null) {
-                    // WARNING: assumes variants are sorted according to their coordinates
-                    int cdnaPosition = consequenceType1.getCdnaPosition();
-                    int cdsPosition = consequenceType1.getCdsPosition();
                     String codon = null;
                     String alternateAA = null;
                     List<SequenceOntologyTerm> soTerms = null;
@@ -673,10 +670,10 @@ public class VariantAnnotationCalculator {
                         String alternateCodon = null;
 
                         // negative strand
-                        if ("-".equals(variant0.getStrand())) {
-                            alternateCodon = "" + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate())
-                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate())
-                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate());
+                        if ("-".equals(consequenceType1.getStrand())) {
+                            alternateCodon = "" + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate().toUpperCase().toCharArray()[0])
+                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0])
+                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
                         } else {
                             alternateCodon = variant0.getAlternate() + variant1.getAlternate() + variant2.getAlternate();
                         }
@@ -689,8 +686,6 @@ public class VariantAnnotationCalculator {
                                 variant1.getChromosome().equals("MT"));
 
                         // Update consequenceType3
-                        consequenceType3.setCdnaPosition(cdnaPosition);
-                        consequenceType3.setCdsPosition(cdsPosition);
                         consequenceType3.setCodon(codon);
                         consequenceType3.getProteinVariantAnnotation().setAlternate(alternateAA);
                         newProteinVariantAnnotation = getProteinAnnotation(consequenceType3);
@@ -716,7 +711,7 @@ public class VariantAnnotationCalculator {
                         char[] alternateCodonArray = referenceCodonArray.clone();
 
                         // negative strand
-                        if ("-".equals(variant0.getStrand())) {
+                        if ("-".equals(consequenceType1.getStrand())) {
                             alternateCodonArray[codonIdx1] =
                                     VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
                             alternateCodonArray[codonIdx2] =
@@ -739,8 +734,6 @@ public class VariantAnnotationCalculator {
                     consequenceType1.setProteinVariantAnnotation(newProteinVariantAnnotation == null
                             ? getProteinAnnotation(consequenceType1) : newProteinVariantAnnotation);
                     consequenceType1.setSequenceOntologyTerms(soTerms);
-                    consequenceType2.setCdnaPosition(cdnaPosition);
-                    consequenceType2.setCdsPosition(cdsPosition);
                     consequenceType2.setCodon(codon);
                     consequenceType2.getProteinVariantAnnotation().setAlternate(alternateAA);
                     consequenceType2.setProteinVariantAnnotation(consequenceType1.getProteinVariantAnnotation());
