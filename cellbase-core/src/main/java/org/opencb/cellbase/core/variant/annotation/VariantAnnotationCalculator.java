@@ -675,7 +675,7 @@ public class VariantAnnotationCalculator {
                                             + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0])
                                             + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
                         } else {
-                            alternateCodon = variant0.getAlternate() + variant1.getAlternate() + variant2.getAlternate();
+                            alternateCodon = variant0.getAlternate().toUpperCase() + variant1.getAlternate().toUpperCase() + variant2.getAlternate().toUpperCase();
                         }
 
 
