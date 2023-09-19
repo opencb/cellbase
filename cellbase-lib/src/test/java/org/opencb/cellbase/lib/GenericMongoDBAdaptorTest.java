@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.GitRepositoryState;
@@ -25,12 +24,10 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.db.MongoDBManager;
-import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.exec.Command;
 import org.opencb.commons.utils.URLUtils;
 import org.slf4j.Logger;
@@ -47,6 +44,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.EtlCommons.PHARMACOGENOMICS_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 
 /**
@@ -56,11 +55,11 @@ public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
     protected int dataRelease;
-    protected String token;
+    protected String apiKey;
 
     protected String cellBaseName;
 
-    private static final String DATASET_BASENAME = "cellbase-v5.6-dr4";
+    private static final String DATASET_BASENAME = "cellbase-v5.7-dr6";
     private static final String DATASET_EXTENSION = ".tar.gz";
     private static final String DATASET_URL = "http://reports.test.zettagenomics.com/cellbase/test-data/";
     private static final String DATASET_TMP_DIR = "/tmp/cb";
@@ -73,17 +72,16 @@ public class GenericMongoDBAdaptorTest {
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
 
-    protected String UNIVERSAL_ACDES_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiWkVUVEFHRU5PTUlDUyIsImlhdCI6MTY4Nzk0NDYxN30.9puZMYMlmbH1qdH4tUW6vvjfdYdLcAq-6Ts6CRlnLAs";
-    protected String HGMD_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiWkVUVEEiLCJpYXQiOjE2NzU4NzI1MDd9.f3JgVRt7_VrifNWTaRMW3aQfrKbtDbIxlzoenJRYJo0";
-    protected String COSMIC_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwN30sInZlcnNpb24iOiIxLjAiLCJzdWIiOiJaRVRUQUdFTk9NSUNTIiwiaWF0IjoxNjg3OTQ3MDYwfQ.wjEfSmCSxGd4TFuYEzoCUXrDNE7rNPoqfb7BYwRtTlw";
-    protected String SPLICEAI_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7InNwbGljZWFpIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlpFVFRBR0VOT01JQ1MiLCJpYXQiOjE2ODc5NDcwODR9.8CVEQe313N9dP6lKkqRv__mR854VcCvM2RlFMpPtRrk";
-    protected String HGMD_COSMIC_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwN30sInZlcnNpb24iOiIxLjAiLCJzdWIiOiJaRVRUQSIsImlhdCI6MTY3NTg3MjUyN30.NCCFc4SAhjUsN5UU0wXGY6nCZx8jLglvaO1cNZYI0u4";
-    protected String HGMD_SPLICEAI_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDcsInNwbGljZWFpIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlpFVFRBR0VOT01JQ1MiLCJpYXQiOjE2ODc5NDcxMDh9.Qa_VRbu6dbrrUlqk7ToVQkIA258R4L_kNtLZaeITRFA";
-    protected String COSMIC_SPLICEAI_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiWkVUVEFHRU5PTUlDUyIsImlhdCI6MTY4Nzk0NzEyOX0.7WrMgLVgUP1LKYE6v3tDCVvy4XxQfpMPgVU011t8aPM";
+    // API keys for testing
+    protected String UNIVERSAL_ACCES_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4MzczODZ9.ALdEFGmVuatoUEj-K3HAHt2KlqeNm2Fv7m-DODhz0LU";
+    protected String HGMD_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4Mzc0MjZ9.zqEU-WhIzhbpbmwGWnAjgmgfOtBbP5nXq2uqX5wV5uY";
+    protected String COSMIC_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwN30sIm1heE51bVF1ZXJpZXMiOjEwMDAwMDAwLCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiVEVTVCIsImlhdCI6MTY4OTgzNzQ2MX0.K6SEGvScpJ2a99SLPaUi4KRJ8FJ_LNPduoHW_LSSNGU";
+    protected String SPLICEAI_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7InNwbGljZWFpIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwibWF4TnVtUXVlcmllcyI6MTAwMDAwMDAsInZlcnNpb24iOiIxLjAiLCJzdWIiOiJURVNUIiwiaWF0IjoxNjg5ODM3NDc4fQ.zDECxkcPrIA4czkpRHYmS3dSJZkr0aXT9XF2KqkTIRU";
+    protected String HGMD_COSMIC_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywiaGdtZCI6OTIyMzM3MjAzNjg1NDc3NTgwN30sIm1heE51bVF1ZXJpZXMiOjEwMDAwMDAwLCJ2ZXJzaW9uIjoiMS4wIiwic3ViIjoiVEVTVCIsImlhdCI6MTY4OTgzNzQ5OX0.ZsTxFaSzsLwyQMLwNIODerfaOTLywoRwkxvpsnjVTSE";
+    protected String HGMD_SPLICEAI_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImhnbWQiOjkyMjMzNzIwMzY4NTQ3NzU4MDcsInNwbGljZWFpIjo5MjIzMzcyMDM2ODU0Nzc1ODA3fSwibWF4TnVtUXVlcmllcyI6MTAwMDAwMDAsInZlcnNpb24iOiIxLjAiLCJzdWIiOiJURVNUIiwiaWF0IjoxNjg5ODM3NTE4fQ.rDH2BR2EkUgs3fz7hAuCbmAHgE0rHmp9JhD-5gFZmfI";
+    protected String COSMIC_SPLICEAI_ACCESS_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VzIjp7ImNvc21pYyI6OTIyMzM3MjAzNjg1NDc3NTgwNywic3BsaWNlYWkiOjkyMjMzNzIwMzY4NTQ3NzU4MDd9LCJtYXhOdW1RdWVyaWVzIjoxMDAwMDAwMCwidmVyc2lvbiI6IjEuMCIsInN1YiI6IlRFU1QiLCJpYXQiOjE2ODk4Mzc1MzZ9.CkXvpNg0NWAXL3N06R2gCqe0kF4ptBk0MPvaAdDSEpQ";
 
     protected LoadRunner loadRunner = null;
-//    protected MongoDBAdaptorFactory dbAdaptorFactory;
-
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -92,11 +90,6 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration = CellBaseConfiguration.load(
                     GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
-//            cellBaseConfiguration.getDatabases().getMongodb().setHost("localhost:27037");
-//            cellBaseConfiguration.getDatabases().getMongodb().setUser("cellbase");
-//            cellBaseConfiguration.getDatabases().getMongodb().setPassword("cellbase");
-//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationDatabase", "admin");
-//            cellBaseConfiguration.getDatabases().getMongodb().getOptions().put("authenticationMechanism", "SCRAM-SHA-256");
 
             String[] versionSplit = GitRepositoryState.get().getBuildVersion().split("\\.");
             cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
@@ -135,7 +128,9 @@ public class GenericMongoDBAdaptorTest {
         Path tmpPath = Paths.get(DATASET_TMP_DIR);
         tmpPath.toFile().mkdirs();
 
+        logger.info("Downloading " + url + " into " + tmpPath);
         URLUtils.download(url, tmpPath);
+
         Path tmpFile = tmpPath.resolve(DATASET_BASENAME + DATASET_EXTENSION);
         String commandline = "tar -xvzf " + tmpFile.toAbsolutePath() + " -C " + tmpPath;
         logger.info("Running: " + commandline);
@@ -205,6 +200,12 @@ public class GenericMongoDBAdaptorTest {
 
         // clinical_variants.full.json.gz
         loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
+
+        // pharmacogenomics.json.gz
+        loadData(PHARMACOGENOMICS_DATA, PHARMACOGENOMICS_DATA, baseDir.resolve("pharmacogenomics/pharmacogenomics.json.gz"));
+
+        // pubmed.json.gz
+        loadData(PUBMED_DATA, PUBMED_DATA, baseDir.resolve("pubmed/pubmed.json.gz"));
 
         // Clean temporary dir
     }

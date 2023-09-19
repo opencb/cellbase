@@ -27,7 +27,7 @@ public class CellBaseDataResponse<T> {
 
     private String apiVersion;
     private int dataRelease;
-    private String token;
+    private String apiKey;
     private int time;
     private List<Event> events;
     private ObjectMap params;
@@ -40,11 +40,11 @@ public class CellBaseDataResponse<T> {
         this("", 0, "", -1, Collections.emptyList(), params, responses);
     }
 
-    public CellBaseDataResponse(String apiVersion, int dataRelease, String token, int time, List<Event> events, ObjectMap params,
+    public CellBaseDataResponse(String apiVersion, int dataRelease, String apiKey, int time, List<Event> events, ObjectMap params,
                                 List<CellBaseDataResult<T>> responses) {
         this.apiVersion = apiVersion;
         this.dataRelease = dataRelease;
-        this.token = token;
+        this.apiKey = apiKey;
         this.time = time;
         this.events = events;
         this.params = params;
@@ -152,7 +152,7 @@ public class CellBaseDataResponse<T> {
         final StringBuilder sb = new StringBuilder("CellBaseDataResponse{");
         sb.append("apiVersion='").append(apiVersion).append('\'');
         sb.append(", dataRelease=").append(dataRelease);
-        sb.append(", token=").append(token);
+        sb.append(", apiKey=").append(apiKey);
         sb.append(", time=").append(time);
         sb.append(", events=").append(events);
         sb.append(", params=").append(params);
@@ -179,12 +179,12 @@ public class CellBaseDataResponse<T> {
         return this;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public CellBaseDataResponse<T> setToken(String token) {
-        this.token = token;
+    public CellBaseDataResponse<T> setApiKey(String apiKey) {
+        this.apiKey = apiKey;
         return this;
     }
 

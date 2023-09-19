@@ -17,10 +17,12 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
+import org.apache.commons.collections4.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.cellbase.core.api.PharmaChemicalQuery;
+import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -69,7 +71,7 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
 
     @Override
     public List<CellBaseDataResult<PharmaChemical>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                                         String token) throws CellBaseException {
+                                                         String apiKey) throws CellBaseException {
         List<CellBaseDataResult<PharmaChemical>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {
@@ -108,15 +110,21 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
 
     public Bson parseQuery(PharmaChemicalQuery pharmaQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-        boolean visited = false;
         try {
             for (Map.Entry<String, Object> entry : pharmaQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
-                    case "dataRelease":
                     case "token":
+                    case "apiKey":
+                    case "dataRelease":
                         // do nothing
+                        break;
+                    case "geneName":
+                        List<Bson> orBsonList = new ArrayList<>();
+                        orBsonList.add(getLogicalListFilter(new LogicalList<String>((List) value), "variants.geneNames"));
+                        orBsonList.add(getLogicalListFilter(new LogicalList<String>((List) value), "genes.xrefs.id"));
+                        andBsonList.add(Filters.or(orBsonList));
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -126,8 +134,8 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        logger.debug("pharmacogenomics parsed query: " + andBsonList);
-        if (andBsonList.size() > 0) {
+        logger.debug("Pharmacogenomics parsed query: {}", andBsonList);
+        if (CollectionUtils.isNotEmpty(andBsonList)) {
             return Filters.and(andBsonList);
         } else {
             return new Document();

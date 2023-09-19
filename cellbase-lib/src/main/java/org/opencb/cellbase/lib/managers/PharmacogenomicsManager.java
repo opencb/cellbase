@@ -51,7 +51,7 @@ public class PharmacogenomicsManager extends AbstractManager implements Aggregat
     }
 
     public List<CellBaseDataResult<PharmaChemical>> info(List<String> ids, ProjectionQueryOptions query, int dataRelease,
-                                               String token) throws CellBaseException {
-        return pharmacogenomicsDBAdaptor.info(ids, query, dataRelease, token);
+                                               String apiKey) throws CellBaseException {
+        return pharmacogenomicsDBAdaptor.info(ids, query, dataRelease, apiKey);
     }
 }

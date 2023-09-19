@@ -52,11 +52,11 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
             defaultValue = DEFAULT_VERSION) String apiVersion,
                                     @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
                                     @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
-                                    String assembly,
+                                            String assembly,
                                     @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                                     @QueryParam("dataRelease") int dataRelease,
-                                    @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                    String token,
+                                    @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
+                                            String apiKey,
                                     @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -92,7 +92,8 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.haplotypes", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "geneName", value = "List of gene names, e.g.: NT5C2,VKORC1. In order to get the list of gene names,"
-                    + "please, call the endpoint endpoint pharmacogenomics/distinct?field=variants.geneNames", dataType = "java.util.List",
+                    + "please, call the endpoint endpoints pharmacogenomics/distinct?field=variants.geneNames and "
+                    + " pharmacogenomics/distinct?field=genes.xrefs.id", dataType = "java.util.List",
                     paramType = "query"),
             @ApiImplicitParam(name = "location", value = "List of chromosomic coordinates in the format: chromosome:position, e.g.:"
                     + " 10:103109774", dataType = "java.util.List", paramType = "query"),
@@ -125,6 +126,7 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<PharmaChemical> queryResults = pharmacogenomicsManager.search(query);
 
             return createOkResponse(queryResults);
@@ -144,11 +146,11 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfo(@PathParam("chemicals") @ApiParam(name = "chemicals", value = "Chemical/drug names", required = true)
-                                        String chemicals) {
+                                    String chemicals) {
         try {
             PharmaChemicalQuery pharmaQuery = new PharmaChemicalQuery(uriParams);
             List<CellBaseDataResult<PharmaChemical>> queryResults = pharmacogenomicsManager.info(Arrays.asList(chemicals.split(",")),
-                    pharmaQuery, getDataRelease(), getToken());
+                    pharmaQuery, getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -170,6 +172,7 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = pharmacogenomicsManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

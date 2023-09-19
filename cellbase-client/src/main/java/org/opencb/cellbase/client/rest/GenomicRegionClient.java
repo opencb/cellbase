@@ -32,8 +32,8 @@ import java.util.List;
  */
 public class GenomicRegionClient extends ParentRestClient<GenomeSequenceFeature> {
 
-    GenomicRegionClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
-        super(species, assembly, dataRelease, token, clientConfiguration);
+    GenomicRegionClient(String species, String assembly, String dataRelease, String apiKey, ClientConfiguration clientConfiguration) {
+        super(species, assembly, dataRelease, apiKey, clientConfiguration);
 
         this.clazz = GenomeSequenceFeature.class;
 

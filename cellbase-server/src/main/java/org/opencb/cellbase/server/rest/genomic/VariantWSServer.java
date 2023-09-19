@@ -55,8 +55,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                    String assembly,
                            @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                    int dataRelease,
-                           @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                   String token,
+                           @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
@@ -350,7 +349,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, decompose, leftAlign, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources, getDataRelease(), getToken());
+                    checkAminoAcidChange, consequenceTypeSources, getDataRelease(), getApiKey());
 
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -407,7 +406,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query,
-                    getDataRelease(), getToken());
+                    getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

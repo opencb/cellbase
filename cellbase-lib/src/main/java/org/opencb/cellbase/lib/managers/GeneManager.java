@@ -59,8 +59,8 @@ public class GeneManager extends AbstractManager implements AggregationApi<GeneQ
     }
 
     public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions query, String source, int dataRelease,
-                                               String token) throws CellBaseException {
-        return geneDBAdaptor.info(ids, query, source, dataRelease, token);
+                                               String apiKey) throws CellBaseException {
+        return geneDBAdaptor.info(ids, query, source, dataRelease, apiKey);
     }
 
     public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) throws CellBaseException {

@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
+
 /**
  * Helper object used to construct queries consumed by the dbadapters.
  */
@@ -45,9 +48,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
-    public static final String DATA_RELEASE = "dataRelease";
-    public static final String DATA_ACCESS_TOKEN = "token";
-
     // list of fields in this class
     private Map<String, Field> classFields;
     // key = transcripts.biotype, value = transcriptsBiotype
@@ -57,11 +57,11 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
 
-    @QueryParameter(id = DATA_RELEASE)
+    @QueryParameter(id = DATA_RELEASE_PARAM)
     private Integer dataRelease;
 
-    @QueryParameter(id = DATA_ACCESS_TOKEN)
-    private String token;
+    @QueryParameter(id = API_KEY_PARAM)
+    private String apiKey;
 
     public AbstractQuery() {
         init();
@@ -124,7 +124,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         annotations = getAnnotations();
 
         try {
-            validateParams(uriParams, classAttributesToType, annotations);
+            // Skip this validation because some CellBase endpoint URL parameters are not included
+            // in the query (such as GeneQuery, VariantQuery,...)
+            //validateParams(uriParams, classAttributesToType, annotations);
 
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
@@ -175,7 +177,7 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 }
             }
             objectMapper.updateValue(this, objectHashMap);
-        } catch (JsonProcessingException | QueryException e) {
+        } catch (JsonProcessingException e) { // | QueryException e) {
             throw new IllegalArgumentException(e);
         }
     }
@@ -459,12 +461,12 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return this;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public AbstractQuery setToken(String token) {
-        this.token = token;
+    public AbstractQuery setApiKey(String apiKey) {
+        this.apiKey = apiKey;
         return this;
     }
 }

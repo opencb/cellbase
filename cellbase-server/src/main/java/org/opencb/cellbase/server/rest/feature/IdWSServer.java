@@ -59,7 +59,7 @@ public class IdWSServer extends GenericRestWSServer {
                       @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly") String assembly,
                       @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                               int dataRelease,
-                      @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token") String token,
+                      @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
@@ -89,7 +89,7 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             XrefQuery query = new XrefQuery(uriParams);
             List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
-                    getToken());
+                    getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -182,7 +182,7 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             GeneQuery query = new GeneQuery(uriParams);
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
-                    getToken());
+                    getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

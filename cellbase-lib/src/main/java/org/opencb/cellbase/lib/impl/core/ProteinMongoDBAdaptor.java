@@ -300,7 +300,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
         List<CellBaseDataResult<Entry>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -364,8 +364,9 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                     case "keyword":
                         createAndOrQuery(value, "keyword.value", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "dataRelease":
                     case "token":
+                    case "apiKey":
+                    case "dataRelease":
                         // Do nothing
                         break;
                     default:

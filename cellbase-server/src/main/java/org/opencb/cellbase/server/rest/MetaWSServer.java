@@ -28,8 +28,8 @@ import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.DataAccessTokenSources;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
@@ -144,18 +144,18 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/getLicensedData")
-    @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input token and their expiration date",
+    @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input API key and their expiration date",
             response = Map.class, responseContainer = "QueryResponse")
-    public Response getLicensedData(@ApiParam(name = "token", required = true, value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION)
-                                    @QueryParam("token") String token) {
+    public Response getLicensedData(@ApiParam(name = "apiKey", required = true, value = ParamConstants.API_KEY_DESCRIPTION)
+                                    @QueryParam("apiKey") String apiKey) {
         try {
-            DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
-            DataAccessTokenSources sources = datManager.decode(token);
+            ApiKeyManager datManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+            ApiKeyJwtPayload payload = datManager.decode(apiKey);
 
             // Convert milliseconds to date in format dd/MM/yyyy
             Map<String, String> expDates = new HashMap<>();
             DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-            for (Map.Entry<String, Long> entry : sources.getSources().entrySet()) {
+            for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
                 expDates.put(entry.getKey(), dateFormatter.format(entry.getValue()));
             }
 
@@ -167,15 +167,15 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/removeExpiredLicensedData")
-    @ApiOperation(httpMethod = "GET", value = "Create a new token by removing the expired licensed data sources from the input token",
+    @ApiOperation(httpMethod = "GET", value = "Create a new API key by removing the expired licensed data sources from the input API key",
             response = String.class, responseContainer = "QueryResponse")
-    public Response removeExpiredLicensedData(@ApiParam(name = "token", required = true,
-            value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION) @QueryParam("token") String token) {
+    public Response removeExpiredLicensedData(@ApiParam(name = "apiKey", required = true,
+            value = ParamConstants.API_KEY_DESCRIPTION) @QueryParam("apiKey") String apiKey) {
         try {
-            DataAccessTokenManager dataManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            ApiKeyManager dataManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
 
             return createOkResponse(new CellBaseDataResult<>(null, 1, Collections.emptyList(), 1,
-                    Collections.singletonList(dataManager.recode(token)), 1));
+                    Collections.singletonList(dataManager.recode(apiKey)), 1));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -342,17 +342,17 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
-    public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                                   String species,
-                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                   String assembly,
-                           @DefaultValue("")
-                           @QueryParam("token")
-                           @ApiParam(name = "token",
-                                   value = "API token for health check. When passed all of the "
-                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
-                                           + "this parameter is not used, but they won't be part of the response",
-                                   required = false) String token) {
+    public Response status(
+            @PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
+                    String species,
+            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
+                    String assembly,
+            @DefaultValue("")
+            @QueryParam("apiKey")
+            @ApiParam(name = "apiKey",
+                    value = "API key for health check. When passed all of the "
+                            + "dependencies and their status will be displayed. The dependencies will be checked if "
+                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
 
         if (StringUtils.isEmpty(assembly)) {
             try {
@@ -367,8 +367,7 @@ public class MetaWSServer extends GenericRestWSServer {
                     + assembly + "'");
         }
 
-        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species,
-                assembly, token);
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, assembly, apiKey);
         return createJsonResponse(health);
 
     }
@@ -378,13 +377,13 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = HealthCheckResponse.class)
-    public Response status(@DefaultValue("")
-                           @QueryParam("token")
-                           @ApiParam(name = "token",
-                                   value = "API token for health check. When passed all of the "
-                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
-                                           + "this parameter is not used, but they won't be part of the response",
-                                   required = false) String token) {
+    public Response status(
+            @DefaultValue("")
+            @QueryParam("apiKey")
+            @ApiParam(name = "apiKey",
+                    value = "API key for health check. When passed all of the "
+                            + "dependencies and their status will be displayed. The dependencies will be checked if "
+                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
 
         /**
          * Hardcode the species and assembly for required heath check. This is fine and will not cause problems in the future.
@@ -393,7 +392,7 @@ public class MetaWSServer extends GenericRestWSServer {
         String assemblyHealthcheck = "grch38";
 
         HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
-                assemblyHealthcheck, token);
+                assemblyHealthcheck, apiKey);
         return createJsonResponse(health);
     }
 

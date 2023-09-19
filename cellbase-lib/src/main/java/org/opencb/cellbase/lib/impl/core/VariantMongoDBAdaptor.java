@@ -50,6 +50,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
 
 /**
@@ -252,7 +253,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                     case "region":
                         createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
-                    case VariantQuery.DATA_RELEASE:
+                    case DATA_RELEASE_PARAM:
                     case "svType":
                         // don't do anything, this is parsed later
                         break;
@@ -740,7 +741,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Variant>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
