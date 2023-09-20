@@ -30,11 +30,13 @@ import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.managers.*;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.ProteinManager;
+import org.opencb.cellbase.lib.managers.TranscriptManager;
+import org.opencb.cellbase.lib.managers.VariantManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +45,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.*;
 
@@ -70,21 +71,24 @@ public class GeneWSServer extends GenericRestWSServer {
                         @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                 int dataRelease,
                         @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException,
-            CellBaseException {
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
-        if (CollectionUtils.isNotEmpty(assemblies)) {
-            assembly = assemblies.get(0);
-        }
-        if (StringUtils.isEmpty(assembly)) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
+            if (CollectionUtils.isNotEmpty(assemblies)) {
+                assembly = assemblies.get(0);
+            }
+            if (StringUtils.isEmpty(assembly)) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+            transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+            variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+            proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
