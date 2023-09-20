@@ -19,10 +19,9 @@ package org.opencb.cellbase.server.rest;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeQuery;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -30,7 +29,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
 
@@ -54,10 +52,13 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
                                    String token,
                            @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
+                           @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        try {
+            genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET

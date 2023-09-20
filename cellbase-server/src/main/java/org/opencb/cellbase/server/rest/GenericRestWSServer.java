@@ -28,7 +28,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -38,6 +37,7 @@ import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -96,21 +96,25 @@ public class GenericRestWSServer implements IWSServer {
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
 
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
         this.species = species;
 
-        init();
-        initQuery();
+        try {
+            init();
+            initQuery();
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     private void init() throws IOException, CellBaseException {
