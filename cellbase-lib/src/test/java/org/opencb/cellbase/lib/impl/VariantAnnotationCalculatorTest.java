@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -2435,6 +2436,26 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertTrue(consequenceTypeList.isEmpty());
         // Very long MNV > MAX_MNV_THRESHOLD throws UnsupportedURLVariantFormat
         variantAnnotationCalculator.getAllConsequenceTypesByVariant(aboveThresholdVariant, queryOptions);
+    }
+
+    @Test
+    public void testSpanningDeletionAnnotation() throws ExecutionException, InterruptedException {
+        Variant variant = new Variant("10:133754330:GCCC:*");
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType,hgvs");
+        queryOptions.put("normalize", true);
+        queryOptions.put("skipDecompose", false);
+        QueryResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertTrue(cellBaseDataResult.getResult().get(0).getConsequenceTypes().isEmpty());
+        assertTrue(cellBaseDataResult.getResult().get(0).getHgvs().isEmpty());
+    }
+
+    @Test(expected = UnsupportedURLVariantFormat.class)
+    public void testSpanningDeletionConsequenceTypeThrowsException() {
+        Variant variant = new Variant("10:133754330:GCCC:*");
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
     }
 
     public String getSequenceOntologyTerms(String transcriptID, List<ConsequenceType> consequenceTypeList){
