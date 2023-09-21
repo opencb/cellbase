@@ -1071,7 +1071,12 @@ public class VariantAnnotationCalculator {
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        switch (VariantAnnotationUtils.getVariantType(variant)) {
+        VariantType variantType = VariantAnnotationUtils.getVariantType(variant);
+        if (variantType == null) {
+            logger.error("There is no ConsequenceTypeCalculator for variant %s because it doesn't have a valid type", variant);
+            throw new UnsupportedURLVariantFormat("Invalid variant type");
+        }
+        switch (variantType) {
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
             case INSERTION:
@@ -1097,7 +1102,7 @@ public class VariantAnnotationCalculator {
             default:
                 logger.error("There is no ConsequenceTypeCalculator for variant %s of type %s",
                         variant,
-                        VariantAnnotationUtils.getVariantType(variant)
+                        variantType
                 );
                 throw new UnsupportedURLVariantFormat();
         }

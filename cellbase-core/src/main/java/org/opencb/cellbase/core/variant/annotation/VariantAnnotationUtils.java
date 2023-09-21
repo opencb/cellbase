@@ -658,6 +658,9 @@ public class VariantAnnotationUtils {
     }
 
     public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+        if (variant.isSpanningDeletion()) {
+            return null;
+        }
         if (variant.getType() == null) {
             variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
         }
