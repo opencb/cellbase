@@ -2512,14 +2512,14 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
         assertEquals("[{\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
 
-        // MNV with alt length = 1
+        // Deletion instead of MNV produces feature_truncation in addition to intron_variant
         variant = new  Variant("22", 17668822, "TCTCTACTAAAAATACAAAAAATTAGCCAGGCGTGGTGGCAGGTGCCTGTAGTAC", "C");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         consequenceTypeList  = queryResult.getResult().get(0).getConsequenceTypes();
         assertFalse(consequenceTypeList.isEmpty());
         sequenceOntologyTerms = getSequenceOntologyTerms("ENST00000399839", consequenceTypeList);
-        assertEquals("[{\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
+        assertEquals("[{\"accession\": \"SO:0001906\", \"name\": \"feature_truncation\"}, {\"accession\": \"SO:0001627\", \"name\": \"intron_variant\"}]", sequenceOntologyTerms);
     }
 
     @Test(expected = UnsupportedURLVariantFormat.class)

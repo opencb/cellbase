@@ -667,7 +667,12 @@ public class VariantAnnotationUtils {
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions
 //        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
-        if (variant.getType().equals(VariantType.INDEL)) {
+        if (variant.getType().equals(VariantType.INDEL)
+                || (variant.getType().equals(VariantType.SV)
+                && !variant.isSymbolic()
+                && variant.getReference().length() <= MAX_MNV_THRESHOLD
+                && variant.getAlternate().length() <= MAX_MNV_THRESHOLD)
+        ) {
             if (variant.getReference().isEmpty()) {
 //                variant.setType(VariantType.INSERTION);
                 return VariantType.INSERTION;
@@ -676,15 +681,6 @@ public class VariantAnnotationUtils {
                 return VariantType.DELETION;
             } else {
                 return VariantType.MNV;
-            }
-        } else if (!variant.isSymbolic() && (variant.getReference().length() > 1 || variant.getAlternate().length() > 1)
-                &&
-                (!variant.getReference().startsWith(variant.getAlternate()) && !variant.getAlternate().startsWith(variant.getReference()))
-        ) {
-            if (variant.getReference().length() <= MAX_MNV_THRESHOLD && variant.getAlternate().length() <= MAX_MNV_THRESHOLD) {
-                return VariantType.MNV;
-            } else {
-                logger.warn("Provided alleles for variant are too long to be considered an MNV: %s", variant);
             }
         }
         return variant.getType();

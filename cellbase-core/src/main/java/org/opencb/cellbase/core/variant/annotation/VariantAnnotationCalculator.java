@@ -671,11 +671,14 @@ public class VariantAnnotationCalculator {
 
                         // negative strand
                         if ("-".equals(consequenceType1.getStrand())) {
-                            alternateCodon = "" + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate().toUpperCase().toCharArray()[0])
-                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0])
-                                            + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
+                            alternateCodon = ""
+                                    + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant2.getAlternate().toUpperCase().toCharArray()[0])
+                                    + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant1.getAlternate().toUpperCase().toCharArray()[0])
+                                    + VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant0.getAlternate().toUpperCase().toCharArray()[0]);
                         } else {
-                            alternateCodon = variant0.getAlternate().toUpperCase() + variant1.getAlternate().toUpperCase() + variant2.getAlternate().toUpperCase();
+                            alternateCodon = variant0.getAlternate().toUpperCase()
+                                    + variant1.getAlternate().toUpperCase()
+                                    + variant2.getAlternate().toUpperCase();
                         }
 
 
