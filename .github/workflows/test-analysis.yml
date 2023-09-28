@@ -20,11 +20,9 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Start MongoDB v6.0
-        uses: supercharge/mongodb-github-action@1.8.0
-        with:
-          mongodb-version: 6.0
-          mongodb-replica-set: rs-test
+      - name: Create tunel to data
+        uses: ./.github/workflows/azure-tunnel.yml
+        secrets: inherit
       - name: Install dependencies branches
         run: |
           if [ -f "./.github/workflows/scripts/get_same_branch.sh" ]; then
