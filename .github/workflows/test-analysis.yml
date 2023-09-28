@@ -10,6 +10,7 @@ jobs:
   test:
     name: Test and push Sonar analysis
     runs-on: ubuntu-22.04
+    secrets: inherit
     steps:
       - uses: actions/checkout@v3
         with:
@@ -22,7 +23,6 @@ jobs:
           cache: 'maven'
       - name: Create tunel to data
         uses: ./.github/workflows/azure-tunnel.yml
-        secrets: inherit
       - name: Install dependencies branches
         run: |
           if [ -f "./.github/workflows/scripts/get_same_branch.sh" ]; then
