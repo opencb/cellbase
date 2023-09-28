@@ -1,4 +1,5 @@
 name: Azure tunnel
+
 on:
   workflow_call:
     secrets:
