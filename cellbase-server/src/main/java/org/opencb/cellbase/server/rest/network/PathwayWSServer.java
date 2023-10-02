@@ -16,8 +16,7 @@
 
 package org.opencb.cellbase.server.rest.network;
 
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,14 +27,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 
 @Path("/{version}/{species}/network/pathway")
 @Produces("text/plain")
 public class PathwayWSServer extends GenericRestWSServer {
 
     public PathwayWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
+                           @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(version, species, uriInfo, hsr);
     }
 

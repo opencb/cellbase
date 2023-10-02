@@ -19,7 +19,6 @@ package org.opencb.cellbase.server.rest;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -27,11 +26,12 @@ import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.token.DataAccessTokenManager;
 import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
 import org.opencb.cellbase.server.rest.feature.IdWSServer;
@@ -49,7 +49,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.text.DateFormat;
@@ -72,9 +71,13 @@ public class MetaWSServer extends GenericRestWSServer {
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, uriInfo, hsr);
-        metaManager = cellBaseManagerFactory.getMetaManager();
+        try {
+            metaManager = cellBaseManagerFactory.getMetaManager();
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
