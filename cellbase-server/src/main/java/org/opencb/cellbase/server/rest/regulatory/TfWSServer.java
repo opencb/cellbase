@@ -22,12 +22,11 @@ import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.lib.managers.TfbsManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -35,7 +34,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,12 +58,15 @@ public class TfWSServer extends RegulatoryWSServer {
                               int dataRelease,
                       @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, species, assembly, dataRelease, apiKey, uriInfo, hsr);
-
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        try {
+            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+            tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
@@ -117,7 +118,7 @@ public class TfWSServer extends RegulatoryWSServer {
     @GET
     @Path("/{tf}/gene")
     @ApiOperation(httpMethod = "GET", value = "Retrieves gene info for a (list of) TF(s)", response = Gene.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",

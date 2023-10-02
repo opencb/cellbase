@@ -30,7 +30,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.api.key.ApiKeyManager;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
@@ -40,6 +39,7 @@ import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -60,7 +60,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.ParamConstants.*;
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -101,21 +102,25 @@ public class GenericRestWSServer implements IWSServer {
     protected static ApiKeyManager apiKeyManager;
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
 
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
         this.species = species;
 
-        init();
-        initQuery();
+        try {
+            init();
+            initQuery();
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     private void init() throws IOException, CellBaseException {
