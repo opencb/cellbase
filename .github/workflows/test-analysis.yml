@@ -20,7 +20,7 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Create tunel to data
+      - name: Create tunnel to data
         uses: ./.github/workflows/azure-tunnel.yml
         with:
           secrets: inherit
