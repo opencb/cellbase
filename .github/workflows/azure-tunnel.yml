@@ -13,8 +13,9 @@ on:
         required: true
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  tunnel:
+    name: Create tunnel
+    runs-on: ubuntu-22.04
     steps:
       - name: Az CLI login
         uses: azure/login@v1
