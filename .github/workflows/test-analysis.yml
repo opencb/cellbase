@@ -22,7 +22,7 @@ jobs:
           cache: 'maven'
       - name: Create tunnel to data
         run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          curl -sL https://aka.ms/InstallAzureCLIDeb | bash 
           wget https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl
           chmod +x ./kubectl
           az login --service-principal -u "${{ secrets.AZURE_CLIENT_ID }}" -p "${{secrets.AZURE_CREDENTIALS}}" --tenant "${{ secrets.AZURE_TENANT_ID }}"
