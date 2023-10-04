@@ -25,8 +25,8 @@ jobs:
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           wget https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl
           chmod +x ./kubectl
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{secrets.AZURE_CREDENTIALS}} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          az aks get-credentials --resource-group opencga --name aks-uks-opencga-test-001 --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}  
+          az login --service-principal -u "${{ secrets.AZURE_CLIENT_ID }}" -p "${{secrets.AZURE_CREDENTIALS}}" --tenant "${{ secrets.AZURE_TENANT_ID }}"
+          az aks get-credentials --resource-group opencga --name aks-uks-opencga-test-001 --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"  
           ./kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 &
       - name: Install dependencies branches
         run: |
