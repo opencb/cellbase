@@ -10,6 +10,11 @@ jobs:
   test:
     name: Test and push Sonar analysis
     runs-on: ubuntu-22.04
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v3
         with:
