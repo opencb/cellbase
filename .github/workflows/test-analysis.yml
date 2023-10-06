@@ -35,9 +35,7 @@ jobs:
         env:
           KUBE_CONFIG: cat ~/.kube/config | base64
         with:
-          args: get pods
-      -
-            kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 &
+          args: kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 &
       - name: Install dependencies branches
         run: |
           if [ -f "./.github/workflows/scripts/get_same_branch.sh" ]; then
