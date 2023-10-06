@@ -33,7 +33,7 @@ jobs:
       - name: Run kubectl tunnel
         uses: actions-hub/kubectl@master
         env:
-          KUBE_CONFIG: cat ~/.kube/config | base64
+          KUBE_CONFIG: cat ~/.kube/config
         with:
           args: -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 &
       - name: Install dependencies branches
