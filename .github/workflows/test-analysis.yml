@@ -20,22 +20,12 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
           cache: 'maven'
-      - name: Az CLI login
-        uses: azure/login@v1
-        with:
-          creds: ${{secrets.AZURE_CREDENTIALS}}
-      - name: Azure CLI script
-        uses: azure/CLI@v1
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az aks get-credentials --resource-group opencga --file ~\.kube\config --name aks-uks-opencga-test-001 --subscription  ${{secrets.AZURE_SUBSCRIPTION_ID}}
-      - name: Run kubectl tunnel
-        uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: cat ~/.kube/config
-        with:
-          args: -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 &
+      - name: Tunnel MongoDB
+        run: |
+          wget https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          echo "${{ secrets.KUBE_CONFIG }}" > admin.conf 
+          ./kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 --kubeconfig ./admin.conf &
       - name: Install dependencies branches
         run: |
           if [ -f "./.github/workflows/scripts/get_same_branch.sh" ]; then
