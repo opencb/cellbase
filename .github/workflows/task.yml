@@ -9,7 +9,9 @@ on:
 jobs:
   build:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-
+    with:
+      maven_opts: -DCELLBASE.WAR.NAME=cellbase -P default-config-test
+      
   test:
     uses: ./.github/workflows/test-analysis.yml
     needs: build
