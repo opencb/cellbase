@@ -29,7 +29,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az aks get-credentials --resource-group opencga --name aks-uks-opencga-test-001
+            az aks get-credentials --resource-group opencga --file ~\.kube\config --name aks-uks-opencga-test-001 --subscription  ${{secrets.AZURE_SUBSCRIPTION_ID}}
       - name: Run kubectl tunnel
         uses: actions-hub/kubectl@master
         env:
