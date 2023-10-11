@@ -8,10 +8,11 @@ secretKey: "xPacig89igHSieEnveJEi4KCfdEslhmssC3vui1JJQGgDQ0y8v"
 databases:
   mongodb:
     host: localhost:27017
-    user: ''
-    password: ''
+    user: 'cellbase'
+    password: 'cellbase'
     options:
-      authenticationDatabase: ''
+      authenticationDatabase: 'admin'
+      authenticationMechanism: 'SCRAM-SHA-256'
       readPreference: ''
       replicaSet: ''
       connectionsPerHost: 20
