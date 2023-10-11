@@ -57,10 +57,8 @@
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
-
         <sonar.organization>opencb</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-
         <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -172,7 +170,6 @@
                 <artifactId>biodata-models</artifactId>
                 <version>${biodata.version}</version>
             </dependency>
-
             <!-- General dependencies -->
             <dependency>
                 <groupId>io.grpc</groupId>
@@ -304,7 +301,6 @@
                 <artifactId>jjwt-impl</artifactId>
                 <version>${jjwt.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>

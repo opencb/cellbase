@@ -39,7 +39,6 @@
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-models</artifactId>
         </dependency>
-
         <!-- General dependencies -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
