@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
+
 /**
  * Helper object used to construct queries consumed by the dbadapters.
  */
@@ -45,9 +48,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     //    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 
-    public static final String DATA_RELEASE = "dataRelease";
-    public static final String DATA_ACCESS_TOKEN = "token";
-
     // list of fields in this class
     private Map<String, Field> classFields;
     // key = transcripts.biotype, value = transcriptsBiotype
@@ -57,11 +57,11 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
 
-    @QueryParameter(id = DATA_RELEASE)
+    @QueryParameter(id = DATA_RELEASE_PARAM)
     private Integer dataRelease;
 
-    @QueryParameter(id = DATA_ACCESS_TOKEN)
-    private String token;
+    @QueryParameter(id = API_KEY_PARAM)
+    private String apiKey;
 
     public AbstractQuery() {
         init();
@@ -122,7 +122,12 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     public void updateParams(Map<String, String> uriParams) {
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
+
         try {
+            // Skip this validation because some CellBase endpoint URL parameters are not included
+            // in the query (such as GeneQuery, VariantQuery,...)
+            //validateParams(uriParams, classAttributesToType, annotations);
+
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
                 String fieldNameDotNotation = null;
@@ -172,13 +177,45 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 }
             }
             objectMapper.updateValue(this, objectHashMap);
-
-            // Initialize the data release (0 means to use the default data release)
-            if (dataRelease == null) {
-                dataRelease = 0;
-            }
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) { // | QueryException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private void validateParams(Map<String, String> uriParams, Map<String, Class<?>> classAttributesToType,
+                                Map<String, QueryParameter> annotations) throws QueryException {
+        for (String uriParamName : uriParams.keySet()) {
+            boolean validUriParamName = false;
+            for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
+                String fieldNameDotNotation = null;
+                String[] fieldAliases = new String[0];
+                String fieldNameCamelCase = entry.getKey();
+                QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
+                if (queryParameter != null) {
+                    fieldNameDotNotation = queryParameter.id();
+                    fieldAliases = queryParameter.alias();
+                }
+                if (fieldNameDotNotation == null) {
+                    // field has no annotation
+                    continue;
+                }
+                String s = fieldNameDotNotation.replace("\\.", "\\\\.");
+                if (uriParamName.equals(s)) {
+                    validUriParamName = true;
+                    break;
+                } else {
+                    for (String alias : fieldAliases) {
+                        s = alias.replace("\\.", "\\\\.");
+                        if (uriParamName.equals(s)) {
+                            validUriParamName = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!validUriParamName) {
+                throw new QueryException("Unknown query parameter '" + uriParamName + "'");
+            }
         }
     }
 
@@ -424,12 +461,12 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return this;
     }
 
-    public String getToken() {
-        return token;
+    public String getApiKey() {
+        return apiKey;
     }
 
-    public AbstractQuery setToken(String token) {
-        this.token = token;
+    public AbstractQuery setApiKey(String apiKey) {
+        this.apiKey = apiKey;
         return this;
     }
 }

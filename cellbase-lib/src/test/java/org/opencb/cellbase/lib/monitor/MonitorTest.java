@@ -37,7 +37,6 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
     public void run() throws Exception {
 
         // "Local" monitoring all OK
-        clearDB(CELLBASE_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
@@ -52,7 +51,6 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         assertEquals(HealthCheckResponse.Status.OK, health.getStatus());
 
         // Empty gene collection
-        clearDB(CELLBASE_DBNAME);
         monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         health = monitor.run("localhost", cellBaseConfiguration, SPECIES, ASSEMBLY, null);
         assertEquals(HealthCheckResponse.Status.DOWN, health.getStatus());

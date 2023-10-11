@@ -91,6 +91,10 @@ public class MongoDBAdaptorFactory {
         return new PublicationMongoDBAdaptor(mongoDatastore);
     }
 
+    public PharmacogenomicsMongoDBAdaptor getPharmacogenomicsMongoDBAdaptor() {
+        return new PharmacogenomicsMongoDBAdaptor(mongoDatastore);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MongoDBAdaptorFactory{");

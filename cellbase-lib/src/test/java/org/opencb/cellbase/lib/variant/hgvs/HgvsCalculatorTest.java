@@ -15,6 +15,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.GeneManager;
 
 import java.io.IOException;
@@ -36,25 +37,28 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private GeneMongoDBAdaptor geneDBAdaptor;
     private GeneManager geneManager;
 
-    public HgvsCalculatorTest() throws IOException {
+    public HgvsCalculatorTest() throws CellBaseException {
+        super();
+        geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
+        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
     }
 
-    @BeforeAll
-    public void init() throws Exception {
-        dataRelease = 1;
-
-        clearDB(CELLBASE_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/hgvs/gene.test.json.gz").toURI());
-        loadRunner.load(path, "gene", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
-        loadRunner.load(path, "genome_sequence", dataRelease);
-        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
-        geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
-        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"), dataRelease);
-//        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
-    }
+//    @BeforeAll
+//    public void init() throws Exception {
+//        clearDB(CELLBASE_DBNAME);
+//        DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager("hsapiens", "GRCh37");
+//        dataRelease = dataReleaseManager.createRelease().getRelease();
+//        Path path = Paths.get(getClass()
+//                .getResource("/hgvs/gene.test.json.gz").toURI());
+//        loadRunner.load(path, "gene", dataRelease);
+//        path = Paths.get(getClass()
+//                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
+//        loadRunner.load(path, "genome_sequence", dataRelease);
+//        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+//        geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
+//        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"), dataRelease);
+////        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+//    }
 
 //    @Test
 //    public void testProteinHgvsInsertion() throws Exception {

@@ -28,16 +28,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
+import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.lib.monitor.Monitor;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -58,7 +60,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.api.query.AbstractQuery.DATA_ACCESS_TOKEN;
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -95,22 +98,29 @@ public class GenericRestWSServer implements IWSServer {
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
+    protected static String defaultApiKey;
+    protected static ApiKeyManager apiKeyManager;
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
 
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
         this.species = species;
 
-        init();
-        initQuery();
+        try {
+            init();
+            initQuery();
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     private void init() throws IOException, CellBaseException {
@@ -155,6 +165,13 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private void initQuery() throws CellBaseException {
+        // Get default API key (for anonymous queries)
+        if (apiKeyManager == null) {
+            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+            defaultApiKey = apiKeyManager.getDefaultApiKey();
+            logger.info("default API key {}", defaultApiKey);
+        }
+
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
@@ -165,53 +182,62 @@ public class GenericRestWSServer implements IWSServer {
             uriParams.remove("assembly");
         }
 
+        // Set default API key, if necessary
+        String apiKey = uriParams.getOrDefault(API_KEY_PARAM, null);
+        logger.info("Before checking, API key {}", apiKey);
+        if (StringUtils.isEmpty(apiKey)) {
+            apiKey = defaultApiKey;
+            uriParams.put(API_KEY_PARAM, apiKey);
+        }
+        logger.info("After checking, API key {}", uriParams.get(API_KEY_PARAM));
+
         checkLimit();
 
         // check version. species is validated later
         checkVersion();
 
-        // Check data release and retrieve the default data release
-        if (!DONT_CHECK_SPECIES.equals(species)) {
-            // Prepare data release (do we need to get the default one?)
-            if (StringUtils.isEmpty(uriParams.get("dataRelease")) || uriParams.get("dataRelease").equals("0")) {
-                if (defaultDataRelease == 0) {
-                    if (StringUtils.isEmpty(assembly)) {
-                        assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, species, assembly).getAssembly();
-                    }
-                    if (StringUtils.isNotEmpty(assembly)) {
-                        DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-                        DataRelease dr = releaseManager.getDefault();
-                        if (dr != null) {
-                            defaultDataRelease = dr.getRelease();
-                        }
-                    }
-                }
+        // Set default data release if necessary
+        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease < 1) {
+            // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
+            assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
+
+            if (StringUtils.isNotEmpty(assembly)) {
+                DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+                // getDefault launches an exception if no data release is found for that CellBase version
+                defaultDataRelease = releaseManager.getDefault(version).getRelease();
             }
         }
+
+        // Check API key (expiration date, quota,...)
+        checkApiKey();
     }
 
     protected int getDataRelease() throws CellBaseException {
-        if (uriParams.containsKey("dataRelease") && StringUtils.isNotEmpty(uriParams.get("dataRelease"))) {
+        if (uriParams.containsKey(DATA_RELEASE_PARAM) && StringUtils.isNotEmpty(uriParams.get(DATA_RELEASE_PARAM))) {
             try {
-                return Integer.parseInt(uriParams.get("dataRelease"));
+                int dataRelease = Integer.parseInt(uriParams.get(DATA_RELEASE_PARAM));
+                // If data release is 0, then use the default data release
+                if (dataRelease == 0) {
+                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease + "' for CellBase"
+                            + " version '" + version + "'");
+                    return defaultDataRelease;
+                } else {
+                    return dataRelease;
+                }
             } catch (NumberFormatException e) {
-                throw new CellBaseException("Invalid data release number '" + uriParams.get("dataRelease") + "'");
+                throw new CellBaseException("Invalid data release number '" + uriParams.get(DATA_RELEASE_PARAM) + "'");
             }
         }
-        // It means to use the default data release
+        // If no data release is present in the query, then use the default data release
+        if (!DONT_CHECK_SPECIES.equals(species)) {
+            logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
+                    + " '" + version + "'");
+        }
         return defaultDataRelease;
     }
 
-    protected int getDataReleaseUsed() throws CellBaseException {
-        int dataRelease = getDataRelease();
-        if (dataRelease == 0) {
-            return defaultDataRelease;
-        }
-        return dataRelease;
-    }
-
-    protected String getToken() {
-        return uriParams.get(DATA_ACCESS_TOKEN);
+    protected String getApiKey() {
+        return uriParams.get(API_KEY_PARAM);
     }
 
     /**
@@ -240,9 +266,25 @@ public class GenericRestWSServer implements IWSServer {
 //        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
 //        System.out.println("version = " + version);
 //        System.out.println("*************************************");
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
-            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-            throw new CellBaseException("Version not valid: '" + version + "'");
+        if (!uriInfo.getPath().contains("health") && !version.startsWith(cellBaseConfiguration.getVersion())) {
+            logger.error("URL version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
+            throw new CellBaseException("URL version not valid: '" + version + "'");
+        }
+    }
+
+    private void checkApiKey() throws CellBaseException {
+        if (!uriInfo.getPath().contains("health")) {
+            String apiKey = getApiKey();
+            ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
+
+            // Check API key expiration date
+            if (payload.getExpiration() != null && payload.getExpiration().getTime() < new Date().getTime()) {
+                throw new CellBaseException("CellBase API key has expired");
+            }
+
+            // Check quota
+            MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+            metaManager.checkQuota(apiKey, payload);
         }
     }
 
@@ -312,11 +354,11 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         try {
-            queryResponse.setDataRelease(getDataReleaseUsed());
+            queryResponse.setDataRelease(getDataRelease());
         } catch (CellBaseException ex) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
-        queryResponse.setToken(getToken());
+        queryResponse.setApiKey(getApiKey());
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -343,11 +385,11 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         try {
-            queryResponse.setDataRelease(getDataReleaseUsed());
+            queryResponse.setDataRelease(getDataRelease());
         } catch (CellBaseException e) {
             logger.warn("Impossible to set the data release used in the query response", e);
         }
-        queryResponse.setToken(getToken());
+        queryResponse.setApiKey(getApiKey());
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);
@@ -365,25 +407,37 @@ public class GenericRestWSServer implements IWSServer {
             list.add(obj);
         }
 
-//        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
-//                list.size());
         queryResponse.setResponses(list);
         logQuery(OK);
 
-        return createJsonResponse(queryResponse);
+        Response jsonResponse = createJsonResponse(queryResponse);
+
+        // Update API key stats, if necessary
+        try {
+            if (!uriInfo.getPath().contains("health")) {
+                String apiKey = getApiKey();
+                MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+                long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
+                metaManager.incApiKeyStats(apiKey, 1, queryResponse.getTime(), bytes);
+            }
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
+        }
+
+        return  jsonResponse;
     }
 
-    protected Response createOkResponse(Object obj, MediaType mediaType) {
-        return buildResponse(Response.ok(obj, mediaType));
-    }
-
-    protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
-        return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
-    }
-
-    protected Response createStringResponse(String str) {
-        return buildResponse(Response.ok(str));
-    }
+//    protected Response createOkResponse(Object obj, MediaType mediaType) {
+//        return buildResponse(Response.ok(obj, mediaType));
+//    }
+//
+//    protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
+//        return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
+//    }
+//
+//    protected Response createStringResponse(String str) {
+//        return buildResponse(Response.ok(str));
+//    }
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
@@ -392,7 +446,8 @@ public class GenericRestWSServer implements IWSServer {
 //            }
             String value = jsonObjectWriter.writeValueAsString(queryResponse);
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
-            return buildResponse(ok);
+            Response response = buildResponse(ok);
+            return response;
         } catch (JsonProcessingException e) {
             logger.error("Error parsing queryResponse object", e);
             return createErrorResponse("", "Error parsing QueryResponse object:\n" + Arrays.toString(e.getStackTrace()));
@@ -417,6 +472,4 @@ public class GenericRestWSServer implements IWSServer {
                 .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 .build();
     }
-
-
 }

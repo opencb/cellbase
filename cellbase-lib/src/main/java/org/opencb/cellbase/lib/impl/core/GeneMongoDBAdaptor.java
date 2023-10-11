@@ -82,13 +82,13 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     }
 
     @Override
-    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
-        return info(ids, queryOptions, null, dataRelease, token);
+        return info(ids, queryOptions, null, dataRelease, apiKey);
     }
 
     public List<CellBaseDataResult<Gene>> info(List<String> ids, ProjectionQueryOptions queryOptions, String source, int dataRelease,
-                                               String token) throws CellBaseException {
+                                               String apiKey) throws CellBaseException {
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {
@@ -205,9 +205,10 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
                     case "mirna":
                         createMirnaQuery(value, andBsonList);
                         break;
+                    case "token":
+                    case "apiKey":
                     case "source":
                     case "dataRelease":
-                    case "token":
                         // do nothing
                         break;
                     default:

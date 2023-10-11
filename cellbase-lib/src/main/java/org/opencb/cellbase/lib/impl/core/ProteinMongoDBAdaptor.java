@@ -28,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -233,6 +234,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
             TranscriptQuery query = new TranscriptQuery();
             query.setTranscriptsId(Collections.singletonList(ensemblTranscriptId));
+            query.setDataRelease(dataRelease);
             proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, position, aaAlternate).getResults());
         }
 
@@ -298,7 +300,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Override
-    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
+    public List<CellBaseDataResult<Entry>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
         List<CellBaseDataResult<Entry>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -362,8 +364,9 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                     case "keyword":
                         createAndOrQuery(value, "keyword.value", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "dataRelease":
                     case "token":
+                    case "apiKey":
+                    case "dataRelease":
                         // Do nothing
                         break;
                     default:
@@ -485,5 +488,28 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         return proteinVariantAnnotation;
     }
 
+    public CellBaseDataResult<Object> getProteinSubstitutionRawData(List<String> transcriptIds, CellBaseQueryOptions options,
+                                                                    int dataRelease) throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(proteinSubstitutionMongoDBCollectionByRelease, dataRelease);
 
+        // Be sure to exclude the internal field "_id"
+        Bson projection;
+        if (options != null) {
+            options.addExcludes("_id");
+            projection = getProjection(options);
+            options.getExcludes().remove("_id");
+        } else {
+            CellBaseQueryOptions queryOptions = new CellBaseQueryOptions();
+            queryOptions.setExcludes(Collections.singletonList("_id"));
+            projection = getProjection(queryOptions);
+        }
+
+        List<Bson> orBsonList = new ArrayList<>();
+        for (String transcriptId : transcriptIds) {
+            orBsonList.add(Filters.eq("transcriptId", transcriptId));
+        }
+        Bson bson = Filters.or(orBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Object.class, new QueryOptions()));
+    }
 }

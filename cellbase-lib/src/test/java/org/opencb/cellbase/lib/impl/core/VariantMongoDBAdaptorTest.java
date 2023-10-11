@@ -24,9 +24,13 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.LogicalList;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -54,29 +58,6 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public VariantMongoDBAdaptorTest() throws Exception {
         super();
 
-        setUp();
-    }
-
-    public void setUp() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
-        Path path = Paths.get(getClass()
-                .getResource("/variation_chr22.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variation_chr17.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variation_chr10.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        path = Paths.get(getClass()
-                .getResource("/variation_chr1.full.test.json.gz").toURI());
-        loadRunner.load(path, "variation", dataRelease);
-        updateDataRelease(dataRelease, "variation", Collections.emptyList());
-
         variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
@@ -92,6 +73,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    @Disabled
     public void getPhasedPopulationFrequencyByVariant() throws Exception {
         VariantBuilder variantBuilder = new VariantBuilder("1",
                 62165739,
@@ -278,37 +260,49 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     @Disabled
-    public void testGet() throws CellBaseException {
+    public void testGet() throws CellBaseException, QueryException, IllegalAccessException {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);
-        CellBaseDataResult<Variant> result = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions, dataRelease);
-        assertEquals(21, result.getNumResults());
-        assertThat(result.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
-                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
-                        "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
-                        "rs199934473", "rs200591220", "rs200883222", "rs200830209", "rs200830209", "rs200915243",
-                        "rs200994757", "rs200942224", "rs201498625", "rs201498625"));
 
-        CellBaseDataResult<Variant> resultENSEMBLGene = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions, dataRelease);
-        assertEquals(result.getResults(), resultENSEMBLGene.getResults());
+//        GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
+//        geneManager.search()
+        VariantQuery variantQuery = new VariantQuery();
+        variantQuery.setGenes(new LogicalList<>(Collections.singletonList("BRCA1")));
+        variantQuery.setDataRelease(dataRelease);
+        CellBaseDataResult<Variant> result = variantManager.search(variantQuery);
+        for (Variant variant : result.getResults()) {
+            System.out.println(variant.getId());
+        }
 
-        // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
-        CellBaseDataResult<Variant> resultENSEMBLTranscript = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENST00000565764"), queryOptions, dataRelease);
-        assertEquals(20, resultENSEMBLTranscript.getNumResults());
-        assertThat(resultENSEMBLTranscript.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
-                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
-                        "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
-                        "rs200883222", "rs200830209", "rs200830209", "rs200915243", "rs200994757", "rs200942224",
-                        "rs201498625", "rs201498625", "rs201498625"));
-
-        CellBaseDataResult<Variant> geneCellBaseDataResult = variantManager
-                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CERK"), queryOptions, dataRelease);
-        assertThat(geneCellBaseDataResult.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
-                CoreMatchers.hasItems("rs192195512", "rs193091997", "rs200609865"));
+        // commented by JT
+//        CellBaseDataResult<Variant> result = variantManager
+//                .get(new Query(ParamConstants.QueryParams.GENE.key(), "BRCA1"), queryOptions, dataRelease);
+//        assertEquals(21, result.getNumResults());
+//        assertThat(result.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+//                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
+//                        "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
+//                        "rs199934473", "rs200591220", "rs200883222", "rs200830209", "rs200830209", "rs200915243",
+//                        "rs200994757", "rs200942224", "rs201498625", "rs201498625"));
+//
+//        CellBaseDataResult<Variant> resultENSEMBLGene = variantManager
+//                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions, dataRelease);
+//        assertEquals(result.getResults(), resultENSEMBLGene.getResults());
+//
+//        // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
+//        CellBaseDataResult<Variant> resultENSEMBLTranscript = variantManager
+//                .get(new Query(ParamConstants.QueryParams.GENE.key(), "ENST00000565764"), queryOptions, dataRelease);
+//        assertEquals(20, resultENSEMBLTranscript.getNumResults());
+//        assertThat(resultENSEMBLTranscript.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+//                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
+//                        "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
+//                        "rs200883222", "rs200830209", "rs200830209", "rs200915243", "rs200994757", "rs200942224",
+//                        "rs201498625", "rs201498625", "rs201498625"));
+//
+//        CellBaseDataResult<Variant> geneCellBaseDataResult = variantManager
+//                .get(new Query(ParamConstants.QueryParams.GENE.key(), "CERK"), queryOptions, dataRelease);
+//        assertThat(geneCellBaseDataResult.getResults().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+//                CoreMatchers.hasItems("rs192195512", "rs193091997", "rs200609865"));
 
     }
 

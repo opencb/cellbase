@@ -16,15 +16,17 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
 import org.opencb.commons.monitor.DatastoreStatus;
 
+import java.time.LocalDate;
 import java.util.Map;
 
-@Deprecated
 public class MetaManager extends AbstractManager {
 
     public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
@@ -52,5 +54,36 @@ public class MetaManager extends AbstractManager {
 
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
         return this.mongoDBManager.getDatabaseStatus(species, assembly);
+    }
+
+    public void checkQuota(String apiKey, ApiKeyJwtPayload payload) throws CellBaseException {
+        String date = getApiKeyStatsDate();
+
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getQuota(apiKey, date);
+
+        long numQueries = 0;
+        if (quotaResult.getNumResults() == 0) {
+            metaDBAdaptor.initApiKeyStats(apiKey, date);
+        } else {
+            numQueries = quotaResult.first().getNumQueries();
+        }
+        if (numQueries >= payload.getQuota().getMaxNumQueries()) {
+            throw new CellBaseException("Maximum query limit reached: Your current API key has a quota of "
+                    + payload.getQuota().getMaxNumQueries() + " queries");
+        }
+    }
+
+    public CellBaseDataResult incApiKeyStats(String apiKey, long incNumQueries, long incDuration, long incBytes) {
+        String date = getApiKeyStatsDate();
+
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        return metaDBAdaptor.incApiKeyStats(apiKey, date, incNumQueries, incDuration, incBytes);
+    }
+
+    private String getApiKeyStatsDate() {
+        // Get the current year and month as yyyymm, e.g.:202309
+        LocalDate currentDate = LocalDate.now();
+        return currentDate.getYear() + String.format("%02d", currentDate.getMonthValue());
     }
 }

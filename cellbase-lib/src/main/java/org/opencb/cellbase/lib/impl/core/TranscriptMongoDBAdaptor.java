@@ -84,12 +84,12 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
 
     @Override
     public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, int dataRelease,
-                                                     String token) throws CellBaseException {
-        return info(ids, projectionQueryOptions, null, dataRelease, token);
+                                                     String apiKey) throws CellBaseException {
+        return info(ids, projectionQueryOptions, null, dataRelease, apiKey);
     }
 
     public List<CellBaseDataResult<Transcript>> info(List<String> ids, ProjectionQueryOptions projectionQueryOptions, String source,
-                                                     int dataRelease, String token) throws CellBaseException {
+                                                     int dataRelease, String apiKey) throws CellBaseException {
         List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
         QueryOptions queryOptions = getInfoQueryOptions(projectionQueryOptions);
         for (String id : ids) {
@@ -221,9 +221,10 @@ public class TranscriptMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
                     case "transcripts.supportLevel":
                         andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
-                    case "source":
-                    case "dataRelease":
                     case "token":
+                    case "source":
+                    case "apiKey":
+                    case "dataRelease":
                         // Do nothing
                         break;
                     default:

@@ -67,13 +67,13 @@ public class ValidationCommandExecutor extends CommandExecutor {
     public void execute() {
         checkFilesExist();
 
-        CellBaseManagerFactory cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
+        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
 //        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
         VariantAnnotationCalculator variantAnnotationCalculator = null;
         try {
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
-                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, validationCommandOptions.token,
-                    cellbaseManagerFactory);
+                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, validationCommandOptions.apiKey,
+                    cellBaseManagerFactory);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;

@@ -30,11 +30,13 @@ import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.managers.*;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.ProteinManager;
+import org.opencb.cellbase.lib.managers.TranscriptManager;
+import org.opencb.cellbase.lib.managers.VariantManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +45,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.*;
 
@@ -69,23 +70,25 @@ public class GeneWSServer extends GenericRestWSServer {
                                 String assembly,
                         @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                 int dataRelease,
-                        @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                String token,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws QueryException, IOException,
-            CellBaseException {
+                        @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
-        if (CollectionUtils.isNotEmpty(assemblies)) {
-            assembly = assemblies.get(0);
-        }
-        if (StringUtils.isEmpty(assembly)) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
+            if (CollectionUtils.isNotEmpty(assemblies)) {
+                assembly = assemblies.get(0);
+            }
+            if (StringUtils.isEmpty(assembly)) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+            transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+            variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+            proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
@@ -137,6 +140,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             CellBaseDataResult<Gene> queryResults = geneManager.groupBy(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -185,6 +189,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -283,6 +288,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 logger.info("/search identifiers: {} ", identifiers);
                 for (String identifier : identifiers) {
                     GeneQuery geneQuery = new GeneQuery(uriParams);
+                    geneQuery.setDataRelease(getDataRelease());
                     geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
                     geneQueries.add(geneQuery);
                     logger.info("/search geneQuery: {}", geneQuery.toString());
@@ -291,6 +297,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 return createOkResponse(queryResults);
             } else {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
+                geneQuery.setDataRelease(getDataRelease());
                 logger.info("/search GeneQuery: {} ", geneQuery.toString());
                 CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
                 return createOkResponse(queryResults);
@@ -357,12 +364,13 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getInfo(@PathParam("genes") @ApiParam(name = "genes", value = GENE_IDS, required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             String source = "ensembl";
             if (geneQuery.getSource() != null && !geneQuery.getSource().isEmpty()) {
                 source = geneQuery.getSource().get(0);
             }
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(genes.split(",")), geneQuery, source,
-                    getDataRelease(), getToken());
+                    getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -416,6 +424,7 @@ public class GeneWSServer extends GenericRestWSServer {
             String[] ids = genes.split(",");
             for (String id : ids) {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setTranscriptsXrefs(new LogicalList<String>(Collections.singletonList(id)));
                 queries.add(query);
             }
@@ -468,6 +477,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = geneManager.distinct(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -505,6 +515,7 @@ public class GeneWSServer extends GenericRestWSServer {
             String[] ids = genes.split(",");
             for (String id : ids) {
                 VariantQuery query = new VariantQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setGenes(new LogicalList<String>(Collections.singletonList(id)));
                 queries.add(query);
             }
@@ -529,6 +540,7 @@ public class GeneWSServer extends GenericRestWSServer {
             required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             geneQuery.setIds(Arrays.asList(genes.split(",")));
             List<CellBaseDataResult<TranscriptTfbs>> queryResults = geneManager.getTfbs(geneQuery);
             return createOkResponse(queryResults);
@@ -551,6 +563,7 @@ public class GeneWSServer extends GenericRestWSServer {
             required = true) String genes) {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setGenes(Arrays.asList(genes.split(",")));
             logger.info("REST proteinQuery: {}", query.toString());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
@@ -577,6 +590,7 @@ public class GeneWSServer extends GenericRestWSServer {
             String[] identifiers =  genes.split(",");
             for (String identifier : identifiers) {
                 GeneQuery query = new GeneQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setTranscriptsXrefs(Arrays.asList(identifier));
                 queries.add(query);
                 logger.info("REST GeneQuery: {} ", query.toString());

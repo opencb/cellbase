@@ -19,11 +19,10 @@ package org.opencb.cellbase.server.rest.clinical;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,16 +31,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
 
-/**
- * Created by fjlopez on 06/12/16.
- */
-@Path("/{apiVersion}/{species}/clinical")
+
+@Path("/{apiVersion}/{species}/clinical/variant")
 @Produces(MediaType.APPLICATION_JSON)
-@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
+@Api(value = "Clinical Variants", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
     private ClinicalManager clinicalManager;
@@ -53,20 +49,23 @@ public class ClinicalWSServer extends GenericRestWSServer {
                                     String assembly,
                             @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                     int dataRelease,
-                            @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                    String token,
+                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        if (assembly == null) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            if (assembly == null) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+            clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
-    @Path("/variant/search")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
             + DOT_NOTATION_NOTE,
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
@@ -117,6 +116,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
 
             return createOkResponse(queryResults);
@@ -126,7 +126,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/alleleOriginLabels")
+    @Path("/alleleOriginLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available allele origin labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -139,7 +139,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/modeInheritanceLabels")
+    @Path("/modeInheritanceLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available mode of inheritance labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -152,7 +152,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/clinsigLabels")
+    @Path("/clinsigLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available clinical significance labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -165,7 +165,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/consistencyLabels")
+    @Path("/consistencyLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available consistency labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -178,7 +178,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/type")
+    @Path("/type")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available variant types", response = Variant.class,
             responseContainer = "QueryResponse")

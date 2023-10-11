@@ -66,11 +66,14 @@ public class AdminMain {
                     case "data-release":
                         commandExecutor = new DataReleaseCommandExecutor(cliOptionsParser.getDataReleaseCommandOptions());
                         break;
-                    case "data-token":
-                        commandExecutor = new DataTokenCommandExecutor(cliOptionsParser.getDataTokenCommandOptions());
+                    case "api-key":
+                        commandExecutor = new ApiKeyCommandExecutor(cliOptionsParser.getApiKeyCommandOptions());
                         break;
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
+                        break;
+                    case "export":
+                        commandExecutor = new ExportCommandExecutor(cliOptionsParser.getExportCommandOptions());
                         break;
                     case "index":
                         commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());

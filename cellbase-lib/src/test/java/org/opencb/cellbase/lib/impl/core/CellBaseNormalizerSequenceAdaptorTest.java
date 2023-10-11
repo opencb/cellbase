@@ -16,17 +16,10 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,36 +28,13 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
 
     private CellBaseNormalizerSequenceAdaptor cellBaseNormalizerSequenceAdaptor;
 
-    public CellBaseNormalizerSequenceAdaptorTest() {
-    }
-
-    @BeforeEach
-    public void setUp() {
-        try {
-            clearDB(CELLBASE_DBNAME);
-
-            dataRelease = 1;
-            createDataRelease();
-
-            Path path = Paths.get(getClass()
-                    .getResource("/genome/genome_info.json").toURI());
-            loadRunner.load(path, "genome_info", dataRelease);
-            updateDataRelease(dataRelease, "genome_info", Collections.emptyList());
-
-            path = Paths.get(getClass()
-                    .getResource("/genome/genome_sequence.test.json.gz").toURI());
-            loadRunner.load(path, "genome_sequence", dataRelease);
-            updateDataRelease(dataRelease, "genome_sequence", Collections.emptyList());
-
-            cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
-                    cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public CellBaseNormalizerSequenceAdaptorTest() throws CellBaseException {
+        super();
+        cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
+                cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
     }
 
     @Test
-    @Disabled
     public void testGenomicSequenceChromosomeNotPresent() throws Exception {
         Throwable exception = assertThrows(RuntimeException.class, () -> {
             cellBaseNormalizerSequenceAdaptor.query("1234", 1, 1999);
@@ -73,31 +43,29 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     }
 
     @Test
-    @Disabled
     public void testGenomicSequenceQueryStartEndOutOfRightBound() throws Exception {
         // Both start & end out of the right bound
         Throwable exception = assertThrows(RuntimeException.class, () -> {
             cellBaseNormalizerSequenceAdaptor.query("17", 73973989, 73974999);
         });
         assertEquals("Unable to find entry for 17:73973989-73974999", exception.getMessage());
-
     }
 
     @Test
-    @Disabled
     public void testGenomicSequenceQueryEndOutOfRightBound() throws Exception {
         // start within the bounds, end out of the right bound. Should return last 10 nts.
-        String result = cellBaseNormalizerSequenceAdaptor.query("17", 63973989, 63974999);
-        assertEquals("TCAAGACCAGC", result);
-
+        //        { "sequenceName" : "13", "start" : 39856000, "end" : 39857999 }
+        //        { "sequenceName" : "13", "start" : 39858000, "end" : 39859999 }
+        String result = cellBaseNormalizerSequenceAdaptor.query("13", 39859989, 39869999);
+        assertEquals("ACAAATGATTT", result);
     }
 
     @Test
-    @Disabled
     public void testGenomicSequenceQueryStartOutOfLeftBound() throws Exception {
         // the left coordinate is out of bounds, but the right one is not.
-        String result = cellBaseNormalizerSequenceAdaptor.query("17", 63969989, 63970000);
-        assertEquals("GGAGAGAGAAA", result);
+        //        { "sequenceName" : "13", "start" : 39856000, "end" : 39857999 }
+        //        { "sequenceName" : "13", "start" : 39858000, "end" : 39859999 }
+        String result = cellBaseNormalizerSequenceAdaptor.query("13", 39857989, 39858000);
+        assertEquals("TTTATTAATGGC", result);
     }
-
 }

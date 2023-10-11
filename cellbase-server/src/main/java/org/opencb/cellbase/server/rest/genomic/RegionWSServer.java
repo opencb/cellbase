@@ -22,11 +22,11 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.*;
-import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +35,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,22 +62,25 @@ public class RegionWSServer extends GenericRestWSServer {
                                   String assembly,
                           @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                   int dataRelease,
-                          @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                  String token,
+                          @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                           @Context UriInfo uriInfo,
-                          @Context HttpServletRequest hsr) throws QueryException, IOException, CellBaseException {
+                          @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        if (assembly == null) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            if (assembly == null) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
-        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+            variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+            genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+            transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+            clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+            repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
@@ -181,12 +183,13 @@ public class RegionWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
-                                             required = true) String regions) {
+            required = true) String regions) {
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] coordinates = regions.split(",");
             for (String coordinate : coordinates) {
                 GeneQuery query = new GeneQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
                 queries.add(query);
                 logger.info("REST GeneQuery: {}", query.toString());
@@ -233,6 +236,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = regions.split(",");
             for (String coordinate : coordinates) {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST TranscriptQuery: {}", query.toString());
@@ -266,12 +270,13 @@ public class RegionWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
-                                                  value = REGION_DESCRIPTION, required = true) String region) {
+            value = REGION_DESCRIPTION, required = true) String region) {
         try {
             List<RepeatsQuery> queries = new ArrayList<>();
             String[] coordinates = region.split(",");
             for (String coordinate : coordinates) {
                 RepeatsQuery query = new RepeatsQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST RepeatsQuery: {}", query.toString());
@@ -308,7 +313,7 @@ public class RegionWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getVariantByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
-                                                 required = true) String regions) {
+            required = true) String regions) {
         try {
             List<VariantQuery> queries = new ArrayList<>();
             if (!variantManager.validateRegionInput(regions)) {
@@ -317,6 +322,7 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regionList = Region.parseRegions(regions);
             for (Region region : regionList) {
                 VariantQuery query = new VariantQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(region));
                 queries.add(query);
                 logger.info("REST variantQuery: {}", query.toString());
@@ -355,9 +361,10 @@ public class RegionWSServer extends GenericRestWSServer {
                                                 required = true) String regions,
                                         @DefaultValue("1") @QueryParam("strand")
                                         @ApiParam(name = "strand", value = STRAND,
-                                            allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
+                                                allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setRegions(Region.parseRegions(regions));
             List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(query);
             return createOkResponse(queryResults);
@@ -370,9 +377,9 @@ public class RegionWSServer extends GenericRestWSServer {
     @Path("/{regions}/clinical")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants",
             notes = "No more than 1000 objects are allowed to be returned at a time. "
-            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
-            + "a look at "
-            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
+                    + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
+                    + "a look at "
+                    + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
             response = Document.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "so", value = SEQUENCE_ONTOLOGY_DESCRIPTION,
@@ -457,6 +464,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] regionArray = regions.split(",");
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(regionString));
                 logger.info("REST RegulationQuery: {}", query.toString());
                 queries.add(query);
@@ -493,6 +501,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] regionArray = regions.split(",");
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
                 query.setFeatureTypes(Collections.singletonList("TF_binding_site"));
                 logger.info("REST RegulationQuery: {}", query.toString());
@@ -508,7 +517,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @GET
     @Path("/{regions}/conservation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores", response = GenomicScoreRegion.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     public Response conservation(@PathParam("regions")
                                  @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                          required = true) String regions) {

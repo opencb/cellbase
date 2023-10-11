@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.indexer;
 
 import org.bson.Document;
+import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
@@ -19,6 +20,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -29,47 +31,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
     private IndexManager indexManager;
-    private DataReleaseManager dataReleaseManager;
-    private String databaseName = "cellbase_hsapiens_grch37_v4";
 
-    public IndexManagerTest() {
-        try {
-            int release = 1;
+    public IndexManagerTest() throws URISyntaxException {
+        super();
 
-            Path path = Paths.get(getClass().getResource("/index/mongodb-indexes.json").toURI());
-            indexManager = new IndexManager(databaseName, path, cellBaseConfiguration);
-            dataReleaseManager = new DataReleaseManager(databaseName, cellBaseConfiguration);
-
-            clearDB(CELLBASE_DBNAME);
-
-            dataReleaseManager.createRelease();
-            path = Paths.get(getClass().getResource("/gene/gene-test.json.gz").toURI());
-            loadRunner.load(path, "gene", release);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Path path = Paths.get(getClass().getResource("/index/mongodb-indexes.json").toURI());
+        indexManager = new IndexManager(cellBaseName, path, cellBaseConfiguration);
     }
 
     @Test
-    @Disabled
     public void testIndexes() throws IOException, CellBaseException, QueryException, IllegalAccessException {
         String collectionName = "gene" + CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR + dataRelease;
 
         indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
 
         MongoDBManager mongoDBManager = new MongoDBManager(cellBaseConfiguration);
-        MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore("hsapiens", "grch37");
+        MongoDataStore mongoDataStore = mongoDBManager.createMongoDBDatastore(SPECIES, ASSEMBLY);
         MongoDBCollection mongoDBCollection = mongoDataStore.getCollection(collectionName);
         DataResult<Document> index = mongoDBCollection.getIndex();
         assertNotNull(index);
 
-        CellBaseManagerFactory factory = new CellBaseManagerFactory(cellBaseConfiguration);
-        GeneManager geneManager = factory.getGeneManager("hsapiens", "grch37");
+        GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
         GeneQuery query = new GeneQuery();
-        query.setIds(Collections.singletonList("ENSG00000279457"));
+        query.setNames(Collections.singletonList("BRCA1"));
+        query.setDataRelease(dataRelease);
         CellBaseDataResult<Gene> result = geneManager.search(query);
         assertEquals(1, result.getNumResults());
-        assertEquals("ENSG00000279457", result.getResults().get(0).getId());
-        assertEquals("WASH9P", result.getResults().get(0).getName());
+        assertEquals("BRCA1", result.getResults().get(0).getName());
+        assertEquals("ENSG00000012048", result.getResults().get(0).getId());
     }
 }

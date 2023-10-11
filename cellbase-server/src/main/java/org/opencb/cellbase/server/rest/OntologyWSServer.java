@@ -21,11 +21,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -33,7 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -53,20 +51,23 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @QueryParam("assembly") String assembly,
                             @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                     int dataRelease,
-                            @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                    String token,
+                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
-        if (CollectionUtils.isNotEmpty(assemblies)) {
-            assembly = assemblies.get(0);
-        }
-        if (StringUtils.isEmpty(assembly)) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
+            if (CollectionUtils.isNotEmpty(assemblies)) {
+                assembly = assemblies.get(0);
+            }
+            if (StringUtils.isEmpty(assembly)) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
+            ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
@@ -112,6 +113,7 @@ public class OntologyWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search OntologyQuery: " + query.toString());
             CellBaseDataResult<OntologyTerm> queryResults = ontologyManager.search(query);
             return createOkResponse(queryResults);
@@ -135,7 +137,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query,
-                    getDataRelease(), getToken());
+                    getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -167,6 +169,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = ontologyManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

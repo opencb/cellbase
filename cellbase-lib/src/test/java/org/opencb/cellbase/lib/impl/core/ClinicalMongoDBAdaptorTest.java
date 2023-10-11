@@ -17,21 +17,21 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.conversions.Bson;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ClinicalVariantQuery;
+import org.opencb.cellbase.core.api.GeneQuery;
+import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -55,13 +55,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    public ClinicalMongoDBAdaptorTest() throws IOException {
+    public ClinicalMongoDBAdaptorTest() {
+        super();
     }
 
     @Test
-    @Disabled
     public void parseQueryTest() throws CellBaseException {
-        ClinicalManager manager = cellBaseManagerFactory.getClinicalManager("hsapiens");
+        ClinicalManager manager = cellBaseManagerFactory.getClinicalManager(SPECIES);
         ClinicalMongoDBAdaptor dbAdaptor = (ClinicalMongoDBAdaptor) manager.getDBAdaptor();
         ClinicalVariantQuery query = new ClinicalVariantQuery();
         query.setId("12370");
@@ -78,16 +78,11 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     @Disabled
     public void phasedQueriesTest() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
-        // Load test data
-        Path path = Paths.get(getClass()
-                .getResource("/clinicalMongoDBAdaptor/phasedQueries/clinical_variants.full.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
-        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
+//        // Load test data
+//        Path path = Paths.get(getClass()
+//                .getResource("/clinicalMongoDBAdaptor/phasedQueries/clinical_variants.full.test.json.gz").toURI());
+//        loadRunner.load(path, "clinical_variants", dataRelease);
+//        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
 
         ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager(SPECIES, ASSEMBLY);
         // Two variants being queried with PS and genotype. The PS is different in each of them. In the database, these
@@ -539,16 +534,11 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     @Disabled
     public void proteinChangeMatchTest() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
-        // Load test data
-        Path path = Paths.get(getClass()
-                .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
-        loadRunner.load(path, "clinical_variants", dataRelease);
-        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
+//        // Load test data
+//        Path path = Paths.get(getClass()
+//                .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
+//        loadRunner.load(path, "clinical_variants", dataRelease);
+//        updateDataRelease(dataRelease, "clinical_variants", Collections.emptyList());
 
         ClinicalManager clinicalManager = cellBaseManagerFactory.getClinicalManager(SPECIES, ASSEMBLY);
 
@@ -564,23 +554,27 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    private List<Gene> loadGeneList() throws URISyntaxException, IOException {
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-//        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        Path path = Paths.get(getClass()
-                .getResource("/clinicalMongoDBAdaptor/gene_list.json.gz").toURI());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))));
-
-        List<Gene> geneList = new ArrayList<>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            Gene gene = jsonObjectMapper.convertValue(JSON.parse(line), Gene.class);
-            geneList.add(gene);
-        }
-
-        return geneList;
+    private List<Gene> loadGeneList() throws CellBaseException, QueryException, IllegalAccessException {
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setDataRelease(dataRelease);
+        CellBaseDataResult<Gene> results = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY).search(geneQuery);
+        return results.getResults();
+//        ObjectMapper jsonObjectMapper = new ObjectMapper();
+//        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+////        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//        Path path = Paths.get(getClass()
+//                .getResource("/clinicalMongoDBAdaptor/gene_list.json.gz").toURI());
+//        BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))));
+//
+//        List<Gene> geneList = new ArrayList<>();
+//        String line;
+//        while ((line = reader.readLine()) != null) {
+//            Gene gene = jsonObjectMapper.convertValue(JSON.parse(line), Gene.class);
+//            geneList.add(gene);
+//        }
+//
+//        return geneList;
     }
 
 //    @Test

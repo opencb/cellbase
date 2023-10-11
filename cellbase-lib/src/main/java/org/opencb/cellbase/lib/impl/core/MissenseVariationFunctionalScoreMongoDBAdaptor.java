@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -93,4 +94,24 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
         return new CellBaseDataResult<>(id, -1, new ArrayList<>(), 0, null, 0);
     }
 
+    public CellBaseDataResult<MissenseVariantFunctionalScore> getScores(String chromosome, List<Integer> positions,
+                                                                        CellBaseQueryOptions options, int dataRelease)
+            throws CellBaseException {
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+
+        Bson projection = getProjection(options);
+
+        List<Bson> orBsonList = new ArrayList<>();
+        for (int position : positions) {
+            orBsonList.add(Filters.eq("position", position));
+        }
+
+        List<Bson> andBsonList = new ArrayList<>();
+        andBsonList.add(Filters.eq("chromosome", chromosome));
+        andBsonList.add(Filters.or(orBsonList));
+        Bson query = Filters.and(andBsonList);
+
+        return new CellBaseDataResult<>(mongoDBCollection.find(query, projection, MissenseVariantFunctionalScore.class,
+                new QueryOptions()));
+    }
 }
