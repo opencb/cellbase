@@ -35,7 +35,7 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
-        <jwt.version>0.11.5</jwt.version>
+        <jjwt.version>0.11.5</jjwt.version>
         <swagger-annotations.version>1.6.5</swagger-annotations.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <poi.version>4.1.2</poi.version>
@@ -50,7 +50,6 @@
         <grpc.version>1.48.0</grpc.version>
         <commons-lang.version>2.4</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
-        <jjwt.version>0.11.5</jjwt.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
         <commons-collections4.version>4.4</commons-collections4.version>
@@ -62,6 +61,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <swagger-jersey2-jaxrs.version>1.6.5</swagger-jersey2-jaxrs.version>
     </properties>
     <scm>
         <url>https://github.com/opencb/cellbase</url>
@@ -416,6 +416,16 @@
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
                 <version>${jackson-asl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-jersey2-jaxrs</artifactId>
+                <version>${swagger-jersey2-jaxrs.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
