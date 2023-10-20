@@ -47,8 +47,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                                       String assembly,
                               @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                               @QueryParam("dataRelease") int dataRelease,
-                              @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                      String token,
+                              @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -81,6 +80,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -100,6 +100,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setFacet("featureType");
             CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
@@ -122,6 +123,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setFacet("featureClass");
             CellBaseDataResult queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
@@ -163,6 +165,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<RegulatoryFeature> queryResults = regulatoryManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

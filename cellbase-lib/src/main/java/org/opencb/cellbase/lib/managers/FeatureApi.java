@@ -45,9 +45,9 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
         return results;
     }
 
-    default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String token)
+    default List<CellBaseDataResult<T>> info(List<String> ids, CellBaseQueryOptions queryOptions, int dataRelease, String apiKey)
             throws CellBaseException {
-        return getDBAdaptor().info(ids, queryOptions, dataRelease, token);
+        return getDBAdaptor().info(ids, queryOptions, dataRelease, apiKey);
     }
 
     default CellBaseDataResult<String> distinct(Q query) throws CellBaseException {

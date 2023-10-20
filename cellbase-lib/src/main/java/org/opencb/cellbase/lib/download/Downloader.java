@@ -93,4 +93,9 @@ public class Downloader {
         PubMedDownloadManager manager = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadPharmKGB() throws IOException, CellBaseException, InterruptedException {
+        PharmGKBDownloadManager manager = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }

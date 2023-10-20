@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib.token;
+package org.opencb.cellbase.lib.iterator;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
 
 import java.util.Set;
 
-public class TokenFilteredVariantIterator extends CellBaseIterator<Variant> {
+public class ApiKeyFilteredVariantIterator extends CellBaseIterator<Variant> {
 
     private Set<String> validSources;
 
-    public TokenFilteredVariantIterator(CellBaseIterator iterator, Set<String> validSources) {
+    public ApiKeyFilteredVariantIterator(CellBaseIterator iterator, Set<String> validSources) {
         super(iterator);
         this.validSources = validSources;
     }
@@ -34,7 +34,7 @@ public class TokenFilteredVariantIterator extends CellBaseIterator<Variant> {
     public Variant next() {
         // Check clinical data sources
         Variant variant = iterator.next();
-        return DataAccessTokenUtils.filterDataSources(variant, validSources);
+        return ApiKeyLicensedDataUtils.filterDataSources(variant, validSources);
     }
 
     @Override

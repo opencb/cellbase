@@ -17,12 +17,14 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class DataReleaseCommandExecutor extends CommandExecutor {
@@ -51,29 +53,28 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
 
             DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
+            DataRelease dataRelease;
             if (dataReleaseCommandOptions.create) {
                 // Create release
-                DataRelease dataRelease = dataReleaseManager.createRelease();
+                dataRelease = dataReleaseManager.createRelease();
                 System.out.println("\nData release " + dataRelease.getRelease() + " was created.");
                 System.out.println("Data release description (in JSON format):");
                 System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
-            } else if (dataReleaseCommandOptions.active > 0) {
-                // Set-active release
-                CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
-                for (DataRelease dr : results.getResults()) {
-                    if (dr.isActive() && dr.getRelease() == dataReleaseCommandOptions.active) {
-                        logger.info("Data release " + dataReleaseCommandOptions.active + " is already active");
-                        return;
-                    }
+            } else if (dataReleaseCommandOptions.update > 0) {
+                if (StringUtils.isEmpty(dataReleaseCommandOptions.versions)) {
+                    throw new IllegalArgumentException("Missing CellBase versions to be added when updating data release");
                 }
-                DataRelease dataRelease = dataReleaseManager.active(dataReleaseCommandOptions.active);
-                if (dataRelease != null) {
-                    System.out.println("\nThe data release " + dataRelease.getRelease() + " is the active one.");
-                    System.out.println("Data release description (in JSON format):");
-                    System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
-                } else {
-                    logger.error("It could not set to active the data release " + dataReleaseCommandOptions.active);
-                }
+
+                // Versions to be added
+                List<String> versions = Arrays.asList(dataReleaseCommandOptions.versions.split(","));
+
+                // Update data release
+                dataReleaseManager.update(dataReleaseCommandOptions.update, versions);
+
+                dataRelease = dataReleaseManager.get(dataReleaseCommandOptions.update);
+                System.out.println("\nData release " + dataRelease.getRelease() + " was updated.");
+                System.out.println("Data release description (in JSON format):");
+                System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.list) {
                 // List releases
                 CellBaseDataResult<DataRelease> dataReleases = dataReleaseManager.getReleases();
@@ -94,11 +95,11 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
         if (dataReleaseCommandOptions.list) {
             opts++;
         }
-        if (dataReleaseCommandOptions.active > 0) {
+        if (dataReleaseCommandOptions.update > 0) {
             opts++;
         }
-        if (opts > 1) {
-            throw new IllegalArgumentException("Please, select only one of these input parameters: create, list or set-active");
+        if (opts != 1) {
+            throw new IllegalArgumentException("Please, select only one of these input parameters: create, update or list");
         }
     }
 }

@@ -53,8 +53,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                                    String assembly,
                            @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                    int dataRelease,
-                           @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                   String token,
+                           @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -92,7 +91,7 @@ public class ProteinWSServer extends GenericRestWSServer {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
-                    getToken());
+                    getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -140,6 +139,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -177,6 +177,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                   required = false) String aa) {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setTranscriptsXrefs(Arrays.asList(id.split(",")));
             CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResult);
@@ -221,6 +222,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             required = true) String proteins) throws QueryException {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setAccessions(Arrays.asList(proteins.split(",")));
             CellBaseDataResult<String> queryResult = proteinManager.getSequence(query);
             return createOkResponse(queryResult);

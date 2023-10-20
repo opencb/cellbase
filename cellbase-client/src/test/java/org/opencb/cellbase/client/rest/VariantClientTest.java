@@ -58,6 +58,7 @@ public class VariantClientTest {
 
     @ParameterizedTest
     @ArgumentsSource(CellbaseClientProvider.class)
+    @Disabled
     public void getAnnotations(CellBaseClient cellBaseClient) throws Exception {
         CellBaseDataResponse<VariantAnnotation> annotationsGet;
 

@@ -46,7 +46,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
     public CellBaseQueryOptions() {
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String token) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
         this.limit = limit;
         this.skip = skip;
         this.count = count;
@@ -55,7 +55,7 @@ public class CellBaseQueryOptions extends ProjectionQueryOptions {
         this.facet = facet;
     }
 
-    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet, String token,
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
                                 List<String> includes, List<String> excludes) {
         super(includes, excludes);
 

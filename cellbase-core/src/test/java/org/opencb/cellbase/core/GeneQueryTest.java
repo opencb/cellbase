@@ -144,11 +144,11 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testValidate() throws QueryException, NoSuchFieldException, IllegalAccessException {
+    public void testValidate() throws QueryException {
         paramMap.put("id", "1");
         paramMap.put("name", "42");
         paramMap.put("biotype", "a,b,c");
-        paramMap.put("annotation.drugs.gene", "x,y");
+        paramMap.put("annotation.drugs.drugName", "x,y");
 
         paramMap.put("limit", "11");
         paramMap.put("skip", "-1");

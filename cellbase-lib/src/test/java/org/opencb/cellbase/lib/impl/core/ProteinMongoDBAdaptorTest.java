@@ -16,8 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinQuery;
@@ -25,12 +23,11 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -41,24 +38,9 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ProteinMongoDBAdaptorTest() throws Exception {
         super();
-
-        setUp();
-    }
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        clearDB(CELLBASE_DBNAME);
-
-        createDataRelease();
-        dataRelease = 1;
-
-        Path path = Paths.get(getClass().getResource("/protein/protein.test.json.gz").toURI());
-        loadRunner.load(path, "protein", dataRelease);
-        updateDataRelease(dataRelease, "protein", Collections.emptyList());
     }
 
     @Test
-    @Disabled
     public void testQuery() throws Exception {
         ProteinManager proteinManager = cellBaseManagerFactory.getProteinManager(SPECIES, ASSEMBLY);
         ProteinQuery query = new ProteinQuery();
@@ -67,31 +49,22 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setIncludes(new ArrayList<>(Arrays.asList("accession", "name")));
         query.setCount(Boolean.TRUE);
         query.setDataRelease(dataRelease);
-//        QueryOptions queryOptions = new QueryOptions(QueryOptions.EXCLUDE, new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-//        queryOptions.put(QueryOptions.LIMIT, 3);
-//        queryOptions.put(QueryOptions.INCLUDE, "accession,name");
         CellBaseDataResult<Entry> CellBaseDataResult = proteinManager.search(query);
         assertEquals(3, CellBaseDataResult.getResults().size());
-        assertEquals(4, CellBaseDataResult.getNumMatches());
+        assertEquals(17, CellBaseDataResult.getNumMatches());
 
         query = new ProteinQuery();
-        query.setAccessions(new ArrayList<>(Arrays.asList("B2R8Q1","Q9UKT9")));
+        query.setAccessions(new ArrayList<>(Arrays.asList("P02649","Q86VF7","Q16535")));
         query.setDataRelease(dataRelease);
-//        CellBaseDataResult = proteinDBAdaptor.search(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
-//                "B2R8Q1,Q9UKT9"), queryOptions);
         CellBaseDataResult = proteinManager.search(query);
-        assertEquals("B2R8Q1", CellBaseDataResult.getResults().get(0).getAccession().get(1));
-        assertEquals("Q9UKT9", CellBaseDataResult.getResults().get(1).getAccession().get(0));
-//        CellBaseDataResult = proteinDBAdaptor.search(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
-//                "MKS1_HUMAN"), queryOptions);
+        assertTrue(CellBaseDataResult.getResults().get(0).getAccession().contains("P02649"));
+        assertTrue(CellBaseDataResult.getResults().get(1).getAccession().contains("Q86VF7"));
+        assertTrue(CellBaseDataResult.getResults().get(2).getAccession().contains("Q16535"));
 
         query = new ProteinQuery();
-        query.setNames(new ArrayList<>(Collections.singletonList("MKS1_HUMAN")));
+        query.setNames(new ArrayList<>(Collections.singletonList("FMR1_HUMAN")));
         query.setDataRelease(dataRelease);
         CellBaseDataResult = proteinManager.search(query);
-//        CellBaseDataResult = proteinDBAdaptor.query(new Query(ProteinDBAdaptor.QueryParams.NAME.key(),
-//                "MKS1_HUMAN"), queryOptions);
-        assertEquals("MKS1_HUMAN", CellBaseDataResult.getResults().get(0).getName().get(0));
+        assertTrue(CellBaseDataResult.getResults().get(0).getName().contains("FMR1_HUMAN"));
     }
-
 }

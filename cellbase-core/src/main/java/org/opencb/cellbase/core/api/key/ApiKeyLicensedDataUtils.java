@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib.token;
+package org.opencb.cellbase.core.api.key;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,15 +25,26 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.*;
 
-public final class DataAccessTokenUtils {
+public final class ApiKeyLicensedDataUtils {
 
     public static final int NUM_SPLICE_SCORE_SOURCES = 2;
+    public static final Set<String> LICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("spliceai"));
     public static final Set<String> UNLICENSED_SPLICE_SCORES_DATA = new HashSet<>(Collections.singletonList("mmsplice"));
 
     public static final int NUM_CLINICAL_SOURCES = 3;
+    public static final Set<String> LICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("cosmic", "hgmd"));
     public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Collections.singletonList("clinvar"));
 
-    private DataAccessTokenUtils() {
+    private ApiKeyLicensedDataUtils() {
+    }
+
+    public static boolean needFiltering(Set<String> inputSources, Set<String> licensedSources) {
+        for (String licensedSource : licensedSources) {
+            if (!inputSources.contains(licensedSource)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static <T> CellBaseDataResult<T> filterDataSources(CellBaseDataResult<T> results, Set<String> validSources) {
