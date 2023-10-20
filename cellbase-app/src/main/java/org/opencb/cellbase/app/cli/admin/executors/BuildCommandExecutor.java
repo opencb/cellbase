@@ -38,6 +38,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
+
 /**
  * Created by imedina on 03/02/15.
  */
@@ -162,6 +164,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.PUBMED_DATA:
                             parser = buildPubMed();
+                            break;
+                        case EtlCommons.PHARMACOGENOMICS_DATA:
+                            parser = buildPharmacogenomics();
                             break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
@@ -413,5 +418,23 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pubmedOutputFolder);
         return new PubMedBuilder(pubmedInputFolder, serializer);
+    }
+
+    private CellBaseBuilder buildPharmacogenomics() throws IOException {
+        Path inFolder = downloadFolder.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
+        Path outFolder = buildFolder.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
+        if (!outFolder.toFile().exists()) {
+            outFolder.toFile().mkdirs();
+        }
+
+        logger.info("Copying PharmGKB version file...");
+        if (inFolder.resolve(PHARMGKB_DATA).resolve(EtlCommons.PHARMGKB_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inFolder.resolve(PHARMGKB_DATA).resolve(EtlCommons.PHARMGKB_VERSION_FILENAME),
+                    outFolder.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder);
+        return new PharmGKBBuilder(inFolder, serializer);
     }
 }

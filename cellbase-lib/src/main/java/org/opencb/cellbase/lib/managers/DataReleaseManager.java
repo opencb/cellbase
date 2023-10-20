@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataReleaseManager extends AbstractManager {
     private ReleaseMongoDBAdaptor releaseDBAdaptor;
@@ -78,7 +80,6 @@ public class DataReleaseManager extends AbstractManager {
             // Create the first release, collections and sources are empty
             lastRelease = new DataRelease()
                     .setRelease(1)
-                    .setActive(false)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
         } else {
@@ -86,7 +87,7 @@ public class DataReleaseManager extends AbstractManager {
             if (MapUtils.isNotEmpty(lastRelease.getCollections())) {
                 // Increment the release number, only if the previous release has collections
                 lastRelease.setRelease(lastRelease.getRelease() + 1)
-                        .setActive(false)
+                        .setActiveByDefaultIn(new ArrayList<>())
                         .setDate(sdf.format(new Date()));
                 // Write it to the database
                 releaseDBAdaptor.insert(lastRelease);
@@ -97,7 +98,7 @@ public class DataReleaseManager extends AbstractManager {
         return lastRelease;
     }
 
-    public DataRelease get(int release) {
+    public DataRelease get(int release) throws CellBaseException {
         CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
             for (DataRelease dataRelease : result.getResults()) {
@@ -106,22 +107,28 @@ public class DataReleaseManager extends AbstractManager {
                 }
             }
         }
-        return null;
+        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
     }
 
-    public DataRelease getDefault() {
+    public DataRelease getDefault(String cellBaseVersion) throws CellBaseException {
         CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
             for (DataRelease dataRelease : result.getResults()) {
-                if (dataRelease.isActive()) {
+                if (dataRelease.getActiveByDefaultIn().contains(cellBaseVersion)) {
                     return dataRelease;
                 }
             }
         }
-        return null;
+        throw new CellBaseException("No data release found for CellBase " + cellBaseVersion + " (species = " + species + ", assembly = "
+                + assembly + ")");
     }
 
-    public void update(int release, String collection, String data, List<Path> dataSourcePaths) {
+    public DataRelease update(int release, List<String> versions) throws CellBaseException {
+        return releaseDBAdaptor.update(release, versions).first();
+    }
+
+    public DataRelease update(int release, String collection, String data, List<Path> dataSourcePaths)
+            throws CellBaseException {
         DataRelease currDataRelease = get(release);
         if (currDataRelease != null) {
             // Update collections
@@ -163,7 +170,10 @@ public class DataReleaseManager extends AbstractManager {
 
             // Update data release in the database
             update(currDataRelease);
+
+            return currDataRelease;
         }
+        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
     }
 
     public void update(DataRelease dataRelase) {
@@ -197,39 +207,6 @@ public class DataReleaseManager extends AbstractManager {
         }
     }
 
-    public DataRelease active(int release) throws JsonProcessingException {
-        // Gel all releases and check if the input release exists
-        DataRelease prevActive = null;
-        DataRelease newActive = null;
-        CellBaseDataResult<DataRelease> releaseResult = getReleases();
-        if (CollectionUtils.isEmpty(releaseResult.getResults())) {
-            // Nothing to do, maybe exception or warning
-            return null;
-        }
-        for (DataRelease dataRelease : releaseResult.getResults()) {
-            if (dataRelease.isActive()) {
-                prevActive = dataRelease;
-            } else if (dataRelease.getRelease() == release) {
-                newActive = dataRelease;
-            }
-        }
-        if (prevActive != null && newActive != null && newActive.getRelease() == prevActive.getRelease()) {
-            // Nothing to do
-            return newActive;
-        }
-
-        // Change active by default
-        if (prevActive != null) {
-            prevActive.setActive(false);
-            releaseDBAdaptor.update(prevActive.getRelease(), "active", prevActive.isActive());
-        }
-        if (newActive != null) {
-            newActive.setActive(true);
-            releaseDBAdaptor.update(newActive.getRelease(), "active", newActive.isActive());
-        }
-        return newActive;
-    }
-
     public String getMaintenanceFlagFile() {
         return configuration.getMaintenanceFlagFile();
     }
@@ -238,4 +215,29 @@ public class DataReleaseManager extends AbstractManager {
         return configuration.getMaintainerContact();
     }
 
+    public int checkDataRelease(int inRelease) throws CellBaseException {
+        int outRelease = inRelease;
+        if (outRelease < 0) {
+            throw new CellBaseException("Invalid data release " + outRelease + ". Data release must be greater or equal to 0");
+        }
+        if (outRelease == 0) {
+            String[] split = GitRepositoryState.get().getBuildVersion().split("[.-]");
+            String version = "v" + split[0] + "." + split[1];
+            outRelease = getDefault(version).getRelease();
+            logger.info("Using data release 0: it means to take default data release '" + outRelease + "' for CellBase version '"
+                    + version + "'");
+            return outRelease;
+        }
+
+        List<DataRelease> dataReleases = getReleases().getResults();
+        for (DataRelease dataRelease : dataReleases) {
+            if (outRelease == dataRelease.getRelease()) {
+                return outRelease;
+            }
+        }
+
+        throw new CellBaseException("Invalid data release " + outRelease + " for species = " + species + ", assembly = " + assembly
+                + ". Valid data releases are: " + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
+                .collect(Collectors.toList()), ","));
+    }
 }

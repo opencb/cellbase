@@ -53,8 +53,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                    String assembly,
                            @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                    int dataRelease,
-                           @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                   String token,
+                           @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -96,10 +95,23 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "FIXME: description needed", response = Map.class,
             responseContainer = "QueryResponse")
     public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
-            required = true) String id) {
+            required = true) String id,
+                                     @QueryParam("decompose")
+                                     @ApiParam(name = "decompose",
+                                             value = "Boolean to indicate whether input MNVs should be "
+                                                     + "decomposed or not as part of the normalisation step.",
+                                             allowableValues = "false,true",
+                                             defaultValue = "false") Boolean decompose,
+                                     @QueryParam("leftAlign")
+                                     @ApiParam(name = "leftAlign",
+                                             value = "Boolean to indicate whether input ambiguous INDELS should be "
+                                                     + "left aligned or not as part of the normalisation step.",
+                                             allowableValues = "false,true",
+                                             defaultValue = "false") Boolean leftAlign) {
 
         try {
-            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, getDataRelease());
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, Boolean.TRUE.equals(decompose),
+                    Boolean.TRUE.equals(leftAlign), getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -138,15 +150,20 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 @ApiParam(name = "normalize",
                                                         value = "Boolean to indicate whether input variants shall be "
                                                                 + "normalized or not. Normalization process does NOT "
-                                                                + "include decomposing ", allowableValues = "false,true",
-                                                        defaultValue = "false", required = false) Boolean normalize,
-                                                @QueryParam("skipDecompose")
-                                                @ApiParam(name = "skipDecompose",
+                                                                + "include decomposing MNV nor left alignment",
+                                                        allowableValues = "false,true", defaultValue = "false") Boolean normalize,
+                                                @QueryParam("decompose")
+                                                @ApiParam(name = "decompose",
                                                         value = "Boolean to indicate whether input MNVs should be "
-                                                                + "decomposed or not as part of the normalisation step."
-                                                                + " MNV decomposition is strongly encouraged.",
+                                                                + "decomposed or not as part of the normalisation step.",
                                                         allowableValues = "false,true",
-                                                        defaultValue = "false", required = false) Boolean skipDecompose,
+                                                        defaultValue = "false") Boolean decompose,
+                                                @QueryParam("leftAlign")
+                                                @ApiParam(name = "leftAlign",
+                                                        value = "Boolean to indicate whether input ambiguous INDELS should be "
+                                                                + "left aligned or not as part of the normalisation step.",
+                                                        allowableValues = "false,true",
+                                                        defaultValue = "false") Boolean leftAlign,
                                                 @QueryParam("ignorePhase")
                                                 @ApiParam(name = "ignorePhase",
                                                         value = "Boolean to indicate whether phase data should be "
@@ -190,9 +207,17 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         required = false) String consequenceTypeSource
     ) {
 
+        try {
+            checkNormalizationConfig();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e);
+        }
+
+
         return getAnnotationByVariant(variants,
                 normalize,
-                skipDecompose,
+                decompose,
+                leftAlign,
                 ignorePhase,
                 phased,
                 imprecise,
@@ -233,10 +258,14 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @ApiParam(name = "normalize", value = NORMALISE,
                                                        allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean normalize,
-                                               @QueryParam("skipDecompose")
-                                               @ApiParam(name = "skipDecompose", value = SKIP_DECOMPOSE,
+                                               @QueryParam("decompose")
+                                               @ApiParam(name = "decompose", value = DECOMPOSE,
                                                        allowableValues = "false,true",
-                                                       defaultValue = "false", required = false) Boolean skipDecompose,
+                                                       defaultValue = "false") Boolean decompose,
+                                               @QueryParam("leftAlign")
+                                               @ApiParam(name = "leftAlign", value = LEFT_ALIGN,
+                                                       allowableValues = "false,true",
+                                                       defaultValue = "false") Boolean leftAlign,
                                                @QueryParam("ignorePhase")
                                                @ApiParam(name = "ignorePhase", value = IGNORE_PHASE,
                                                        allowableValues = "false,true",
@@ -267,10 +296,18 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                        + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
                                                        defaultValue = "ensembl", required = false) String consequenceTypeSource
+
     ) {
+        try {
+            checkNormalizationConfig();
+        } catch (IllegalArgumentException e) {
+            return createErrorResponse(e);
+        }
+
         return getAnnotationByVariant(variants,
                 normalize,
-                skipDecompose,
+                decompose,
+                leftAlign,
                 ignorePhase,
                 phased,
                 imprecise,
@@ -280,9 +317,26 @@ public class VariantWSServer extends GenericRestWSServer {
                 consequenceTypeSource);
     }
 
+    private void checkNormalizationConfig() throws IllegalArgumentException {
+        if (uriParams.containsKey("skipDecompose")) {
+            throw new IllegalArgumentException("Param 'skipDecompose' is not supported anymore. Please, use 'decompose' instead");
+        }
+        if (uriParams.containsKey("normalize")) {
+            if (!Boolean.parseBoolean(uriParams.get("normalize"))) {
+                if (uriParams.containsKey("decompose") && Boolean.parseBoolean(uriParams.get("decompose"))) {
+                    throw new IllegalArgumentException("Incompatible parameter usage: 'normalize'=false and 'decompose'=true");
+                }
+                if (uriParams.containsKey("leftAlign") && Boolean.parseBoolean(uriParams.get("leftAlign"))) {
+                    throw new IllegalArgumentException("Incompatible parameter usage: 'normalize'=false and 'leftAlign'=true");
+                }
+            }
+        }
+    }
+
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
-                                            Boolean skipDecompose,
+                                            Boolean decompose,
+                                            Boolean leftAlign,
                                             Boolean ignorePhase,
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
@@ -296,8 +350,9 @@ public class VariantWSServer extends GenericRestWSServer {
             String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource
                     : uriParams.get("consequenceTypeSource"));
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
-                    variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
-                    checkAminoAcidChange, consequenceTypeSources, getDataRelease(), getToken());
+                    variants, normalize, decompose, leftAlign, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
+                    checkAminoAcidChange, consequenceTypeSources, getDataRelease(), getApiKey());
+
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -353,7 +408,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query,
-                    getDataRelease(), getToken());
+                    getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -397,6 +452,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response search() {
         try {
             VariantQuery query = new VariantQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search VariantQuery: {}", query.toString());
             CellBaseDataResult<Variant> queryResults = variantManager.search(query);
             return createOkResponse(queryResults);

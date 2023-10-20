@@ -60,8 +60,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                       String assembly,
                               @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                               @QueryParam("dataRelease") int dataRelease,
-                              @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                      String token,
+                              @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -108,7 +107,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 source = query.getSource().get(0);
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")), query,
-                    source, getDataRelease(), getToken());
+                    source, getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -132,6 +131,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             String[] ids = id.split(",");
             for (String transcriptId : ids) {
                 GeneQuery query = new GeneQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setTranscriptsXrefs(Collections.singletonList(transcriptId));
                 queries.add(query);
             }
@@ -194,6 +194,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search TranscriptQuery: {}", query.toString());
             CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query);
             return createOkResponse(queryResult);
@@ -230,7 +231,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             value = TRANSCRIPT_XREFS_DESCRIPTION,
             required = true) String id) {
         try {
-            List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id);
+            List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id, getDataRelease());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -254,6 +255,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             String[] ids = transcripts.split(",");
             for (String transcriptId : ids) {
                 ProteinQuery query = new ProteinQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setXrefs(Collections.singletonList(transcriptId));
                 queries.add(query);
             }
@@ -278,6 +280,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                       required = false) String aa) {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setTranscriptsXrefs(Arrays.asList(id));
             CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResults);

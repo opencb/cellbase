@@ -16,25 +16,34 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.BsonDocument;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by fjlopez on 07/06/16.
  */
-@Deprecated
 public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private MongoDBCollection mongoDBCollection;
+    private MongoDBCollection apiKeyStatsMongoDBCollection;
 
     public MetaMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -46,6 +55,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void init() {
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
         mongoDBCollection = mongoDataStore.getCollection("metadata");
+        apiKeyStatsMongoDBCollection = mongoDataStore.getCollection("apikey_stats");
     }
 
     public CellBaseDataResult getAll() {
@@ -79,7 +89,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     }
 
     @Override
-    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease, String token) {
+    public List<CellBaseDataResult> info(List ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey) {
         return null;
     }
 
@@ -91,5 +101,44 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     @Override
     public CellBaseDataResult groupBy(AbstractQuery query) {
         return null;
+    }
+
+    public CellBaseDataResult getQuota(String apiKey, String date) {
+        List<Bson> andBsonList = new ArrayList<>();
+        andBsonList.add(Filters.eq("apiKey", apiKey));
+        andBsonList.add(Filters.eq("date", date));
+        Bson query = Filters.and(andBsonList);
+
+        return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.find(query, null, ApiKeyStats.class, QueryOptions.empty()));
+    }
+
+    public CellBaseDataResult initApiKeyStats(String apiKey, String date) throws CellBaseException {
+        try {
+            ApiKeyStats apiKeyStats = new ApiKeyStats(apiKey, date);
+            Document document = Document.parse(new ObjectMapper().writeValueAsString(apiKeyStats));
+            return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.insert(document, QueryOptions.empty()));
+        } catch (IOException e) {
+            throw new CellBaseException("Error initializing quota for API key '" + apiKey.substring(0, 10) + "...': " + e.getMessage());
+        }
+    }
+
+    public CellBaseDataResult incApiKeyStats(String apiKey, String date, long incNumQueries, long incDuration, long incBytes) {
+        List<Bson> andBsonList = new ArrayList<>();
+        andBsonList.add(Filters.eq("apiKey", apiKey));
+        andBsonList.add(Filters.eq("date", date));
+        Bson query = Filters.and(andBsonList);
+
+        Bson update = Updates.combine(Updates.inc("numQueries", incNumQueries),
+                Updates.inc("duration", incDuration),
+                Updates.inc("bytes", incBytes));
+
+        Document projection = new Document("numQueries", true)
+                .append("duration", true)
+                .append("bytes", true);
+
+        QueryOptions queryOptions = new QueryOptions("replace", true);
+
+        return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.findAndUpdate(query, projection, null, update, ApiKeyStats.class,
+                queryOptions));
     }
 }

@@ -102,6 +102,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.PUBMED_DATA:
                         downloadFiles.addAll(downloader.downloadPubMed());
                         break;
+                    case EtlCommons.PHARMACOGENOMICS_DATA:
+                        downloadFiles.addAll(downloader.downloadPharmKGB());
+                        break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
                                 + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"

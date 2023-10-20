@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.variant.Variant;
@@ -27,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -35,8 +37,9 @@ import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
-import org.opencb.cellbase.lib.token.DataAccessTokenUtils;
+import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
@@ -106,14 +109,31 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      * Normalises a list of variants.
      *
      * @param variants list of variant strings
+     * @param decompose boolean to set the decompose MNV behaviour
+     * @param leftAlign boolean to set the left alignment behaviour
      * @param dataRelease data release
      * @return list of normalised variants
      * @throws CellBaseException if the species is incorrect
      */
-    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, int dataRelease) throws CellBaseException {
+    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, boolean decompose, boolean leftAlign,
+                                                                 int dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 dataRelease, "", cellbaseManagerFactory);
+
+
+        // Set decompose MNV behaviour
+        variantAnnotationCalculator.getNormalizer().getConfig().setDecomposeMNVs(decompose);
+
+        // Set left alignment behaviour
+        if (leftAlign) {
+            variantAnnotationCalculator.getNormalizer().getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager,
+                    dataRelease));
+        } else {
+            variantAnnotationCalculator.getNormalizer().getConfig().disableLeftAlign();
+        }
+
+
         List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
         return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
     }
@@ -121,7 +141,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariant(QueryOptions queryOptions,
                                                                               String variants,
                                                                               Boolean normalize,
-                                                                              Boolean skipDecompose,
+                                                                              Boolean decompose,
+                                                                              Boolean leftAlign,
                                                                               Boolean ignorePhase,
                                                                               @Deprecated Boolean phased,
                                                                               Boolean imprecise,
@@ -130,7 +151,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
                                                                               int dataRelease,
-                                                                              String token)
+                                                                              String apiKey)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
@@ -150,8 +171,11 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (normalize != null) {
             queryOptions.put("normalize", normalize);
         }
-        if (skipDecompose != null) {
-            queryOptions.put("skipDecompose", skipDecompose);
+        if (decompose != null) {
+            queryOptions.put("decompose", decompose);
+        }
+        if (leftAlign != null) {
+            queryOptions.put("leftAlign", leftAlign);
         }
         if (imprecise != null) {
             queryOptions.put("imprecise", imprecise);
@@ -170,7 +194,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, token, cellbaseManagerFactory);
+                dataRelease, apiKey, cellbaseManagerFactory);
         List<CellBaseDataResult<VariantAnnotation>> queryResults = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
                 queryOptions);
         return queryResults;
@@ -286,35 +310,46 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions, dataRelease);
     }
 
-    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, String token, int dataRelease) throws CellBaseException {
-        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+    public CellBaseDataResult<SpliceScore> getSpliceScoreVariant(Variant variant, String apiKey, int dataRelease) throws CellBaseException {
+        Set<String> validSources = apiKeyManager.getValidSources(apiKey, ApiKeyLicensedDataUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         CellBaseDataResult<SpliceScore> result = spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(),
                 variant.getReference(), variant.getAlternate(), dataRelease);
 
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
-            return DataAccessTokenUtils.filterDataSources(result, validSources);
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_SPLICE_SCORES_DATA)) {
+            return ApiKeyLicensedDataUtils.filterDataSources(result, validSources);
         } else {
             return result;
         }
     }
 
-    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, String token, int dataRelease)
+    public List<CellBaseDataResult<SpliceScore>> getSpliceScoreVariant(List<Variant> variants, String apiKey, int dataRelease)
             throws CellBaseException {
-        Set<String> validSources = tokenManager.getValidSources(token, DataAccessTokenUtils.UNLICENSED_SPLICE_SCORES_DATA);
+        Set<String> validSources = apiKeyManager.getValidSources(apiKey, ApiKeyLicensedDataUtils.UNLICENSED_SPLICE_SCORES_DATA);
 
         List<CellBaseDataResult<SpliceScore>> cellBaseDataResults = new ArrayList<>(variants.size());
-        if (validSources.size() != DataAccessTokenUtils.NUM_SPLICE_SCORE_SOURCES) {
+        if (ApiKeyLicensedDataUtils.needFiltering(validSources, ApiKeyLicensedDataUtils.LICENSED_SPLICE_SCORES_DATA)) {
+            for (Variant variant : variants) {
+                cellBaseDataResults.add(ApiKeyLicensedDataUtils.filterDataSources(spliceDBAdaptor.getScores(variant.getChromosome(),
+                        variant.getStart(), variant.getReference(), variant.getAlternate(), dataRelease), validSources));
+            }
+        } else {
             for (Variant variant : variants) {
                 cellBaseDataResults.add(spliceDBAdaptor.getScores(variant.getChromosome(), variant.getStart(), variant.getReference(),
                         variant.getAlternate(), dataRelease));
             }
-        } else {
-            for (Variant variant : variants) {
-                cellBaseDataResults.add(DataAccessTokenUtils.filterDataSources(spliceDBAdaptor.getScores(variant.getChromosome(),
-                        variant.getStart(), variant.getReference(), variant.getAlternate(), dataRelease), validSources));
-            }
         }
         return cellBaseDataResults;
+    }
+
+    public CellBaseDataResult<GenomicScoreRegion> getFunctionalScoreRegion(List<Region> regions, CellBaseQueryOptions options,
+                                                                           int dataRelease)
+            throws CellBaseException {
+        Set<String> chunkIdSet = new HashSet<>();
+        for (Region region : regions) {
+            chunkIdSet.addAll(variantDBAdaptor.getFunctionalScoreChunkIds(region));
+        }
+
+        return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
     }
 }

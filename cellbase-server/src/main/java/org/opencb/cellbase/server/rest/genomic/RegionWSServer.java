@@ -62,8 +62,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                   String assembly,
                           @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                   int dataRelease,
-                          @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                  String token,
+                          @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -190,6 +189,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = regions.split(",");
             for (String coordinate : coordinates) {
                 GeneQuery query = new GeneQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
                 queries.add(query);
                 logger.info("REST GeneQuery: {}", query.toString());
@@ -236,6 +236,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = regions.split(",");
             for (String coordinate : coordinates) {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST TranscriptQuery: {}", query.toString());
@@ -275,6 +276,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = region.split(",");
             for (String coordinate : coordinates) {
                 RepeatsQuery query = new RepeatsQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST RepeatsQuery: {}", query.toString());
@@ -320,6 +322,7 @@ public class RegionWSServer extends GenericRestWSServer {
             List<Region> regionList = Region.parseRegions(regions);
             for (Region region : regionList) {
                 VariantQuery query = new VariantQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(region));
                 queries.add(query);
                 logger.info("REST variantQuery: {}", query.toString());
@@ -361,6 +364,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                                 allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             query.setRegions(Region.parseRegions(regions));
             List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(query);
             return createOkResponse(queryResults);
@@ -460,6 +464,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] regionArray = regions.split(",");
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Region.parseRegions(regionString));
                 logger.info("REST RegulationQuery: {}", query.toString());
                 queries.add(query);
@@ -496,6 +501,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] regionArray = regions.split(",");
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
                 query.setFeatureTypes(Collections.singletonList("TF_binding_site"));
                 logger.info("REST RegulationQuery: {}", query.toString());

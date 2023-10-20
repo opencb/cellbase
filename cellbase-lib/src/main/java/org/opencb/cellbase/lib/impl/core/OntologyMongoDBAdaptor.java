@@ -69,8 +69,8 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String token)
-            throws CellBaseException {
+    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
+                                                       String apiKey) throws CellBaseException {
         List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);

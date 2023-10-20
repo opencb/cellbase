@@ -74,8 +74,8 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--data-release"}, description = "Data release. To use the default data relese, please, set this parameter to 0", required = false, arity = 1)
         public int dataRelease = 0;
 
-        @Parameter(names = {"--token"}, description = "Data token to get access to licensed/restricted data sources such as COSMIC or HGMD", required = false, arity = 1)
-        public String token;
+        @Parameter(names = {"--api-key"}, description = "API key to get access to licensed/restricted data sources such as COSMIC or HGMD", required = false, arity = 1)
+        public String apiKey;
 
         @Parameter(names = {"-l", "--local"}, description = "Database credentials for local annotation are read from configuration.json file", required = false, arity = 0)
         public boolean local;
@@ -145,30 +145,30 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
                 required = false, arity = 1)
         public String referenceFasta;
 
-        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Should not be used"
+        @Parameter(names = {"normalize"}, description = "Normalize input variants. Should be used"
                 + " when the input (-i, --input-file) is a VCF file. Normalization includes splitting multi-allele positions "
                 + "read from a VCF, allele trimming and decomposing MNVs. Has"
                 + " no effect if reading variants from a CellBase variation collection "
                 + "(\"--input-variation-collection\") or running a variant annotation benchmark (\"--benchmark\"): in"
                 + " these two cases variant normalization is never carried out.",
                 required = false, arity = 0)
-        public boolean skipNormalize = false;
+        public boolean normalize = false;
 
-        @Parameter(names = {"--skip-decompose"}, description = "Use this flag to avoid decomposition of "
+        @Parameter(names = {"--decompose"}, description = "Use this flag to decompose of "
                 + "multi-nucleotide-variants (MNVs) / block substitutions as part of the normalization process. If this"
-                + " flag is NOT activated, as a step during the normalization process reference and alternate alleles"
+                + " flag is activated, as a step during the normalization process reference and alternate alleles"
                 + " from MNVs/Block substitutions will be aligned and decomposed into their forming simple variants. "
-                + " This flag has no effect if --skip-normalize is present.",
+                + " This flag has no effect without normalization.",
                 required = false, arity = 0)
-        public boolean skipDecompose = false;
+        public boolean decompose = false;
 
-        @Parameter(names = {"--skip-left-align"}, description = "Use this flag to avoid left alignment as part of the"
+        @Parameter(names = {"--left-align"}, description = "Use this flag left align as part of the"
                 + " normalization process. If this"
-                + " flag is NOT activated, as a step during the normalization process will left align the variant with"
+                + " flag is activated, as a step during the normalization process will left align the variant with"
                 + " respect to the reference genome."
-                + " This flag has no effect if --skip-normalize is present.",
+                + " This flag has no effect without normalization.",
                 required = false, arity = 0)
-        public boolean skipLeftAlign = false;
+        public boolean leftAlign = false;
 
         // TODO: remove "phased" CLI parameter in next release. Default behavior from here onwards should be
         //  ignorePhase = false

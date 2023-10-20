@@ -9,32 +9,26 @@ on:
 jobs:
   build:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-
-  test:
-    uses: ./.github/workflows/test-analysis.yml
-    needs: build
-    secrets: inherit
     with:
-      report_context: xetabase
-      report_dir: cellbase
+      maven_opts: -DCELLBASE.WAR.NAME=cellbase
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
-    needs: test
+    needs: build
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
     secrets: inherit
 
   deploy-docker:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
-    needs: test
+    needs: build
     with:
       cli: python3 ./build/cloud/docker/docker-build.py push --images base
     secrets: inherit
 
   deploy-python:
     uses: opencb/java-common-libs/.github/workflows/deploy-python-workflow.yml@develop
-    needs: test
+    needs: build
     with:
       cli: bash ./clients/python/python-build.sh push
       artifact: build-folder

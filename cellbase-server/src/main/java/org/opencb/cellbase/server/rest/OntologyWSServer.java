@@ -51,8 +51,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @QueryParam("assembly") String assembly,
                             @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                                     int dataRelease,
-                            @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                                    String token,
+                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
@@ -114,6 +113,7 @@ public class OntologyWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             logger.info("/search OntologyQuery: " + query.toString());
             CellBaseDataResult<OntologyTerm> queryResults = ontologyManager.search(query);
             return createOkResponse(queryResults);
@@ -137,7 +137,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query,
-                    getDataRelease(), getToken());
+                    getDataRelease(), getApiKey());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -169,6 +169,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             OntologyQuery query = new OntologyQuery(uriParams);
+            query.setDataRelease(getDataRelease());
             CellBaseDataResult<String> queryResults = ontologyManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

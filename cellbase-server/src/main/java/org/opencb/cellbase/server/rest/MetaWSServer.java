@@ -17,8 +17,11 @@
 package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -26,8 +29,6 @@ import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.token.DataAccessTokenManager;
-import org.opencb.cellbase.core.token.DataAccessTokenSources;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
@@ -85,9 +86,10 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
             + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
-                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
-                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                       String assembly) {
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -124,9 +126,7 @@ public class MetaWSServer extends GenericRestWSServer {
     public Response getDataRelease(@PathParam("species")
                                    @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
                                    @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                           String assembly,
-                                   @ApiParam(name = "onlyActive", value = "Set to true if you only want to get the active data relaease")
-                                   @QueryParam("onlyActive") @DefaultValue("false") boolean onlyActive) {
+                                           String assembly) {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -139,17 +139,7 @@ public class MetaWSServer extends GenericRestWSServer {
                         + assembly + "'");
             }
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-            CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
-            if (onlyActive) {
-                for (DataRelease release : result.getResults()) {
-                    if (release.isActive()) {
-                        return createOkResponse(new CellBaseDataResult<>(result.getId(), result.getTime(), result.getEvents(), 1,
-                                Collections.singletonList(release), 1));
-                    }
-                }
-            }
-
-            return createOkResponse(result);
+            return createOkResponse(dataReleaseManager.getReleases());
         } catch (CellBaseException e) {
             return createErrorResponse(e);
         }
@@ -157,18 +147,18 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/getLicensedData")
-    @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input token and their expiration date",
+    @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input API key and their expiration date",
             response = Map.class, responseContainer = "QueryResponse")
-    public Response getLicensedData(@ApiParam(name = "token", required = true, value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION)
-                                           @QueryParam("token") String token) {
+    public Response getLicensedData(@ApiParam(name = "apiKey", required = true, value = ParamConstants.API_KEY_DESCRIPTION)
+                                    @QueryParam("apiKey") String apiKey) {
         try {
-            DataAccessTokenManager datManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
-            DataAccessTokenSources sources = datManager.decode(token);
+            ApiKeyManager datManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+            ApiKeyJwtPayload payload = datManager.decode(apiKey);
 
             // Convert milliseconds to date in format dd/MM/yyyy
             Map<String, String> expDates = new HashMap<>();
             DateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-            for (Map.Entry<String, Long> entry : sources.getSources().entrySet()) {
+            for (Map.Entry<String, Date> entry : payload.getSources().entrySet()) {
                 expDates.put(entry.getKey(), dateFormatter.format(entry.getValue()));
             }
 
@@ -180,15 +170,15 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/removeExpiredLicensedData")
-    @ApiOperation(httpMethod = "GET", value = "Create a new token by removing the expired licensed data sources from the input token",
+    @ApiOperation(httpMethod = "GET", value = "Create a new API key by removing the expired licensed data sources from the input API key",
             response = String.class, responseContainer = "QueryResponse")
-    public Response removeExpiredLicensedData(@ApiParam(name = "token", required = true,
-            value = ParamConstants.DATA_ACCESS_TOKEN_DESCRIPTION) @QueryParam("token") String token) {
+    public Response removeExpiredLicensedData(@ApiParam(name = "apiKey", required = true,
+            value = ParamConstants.API_KEY_DESCRIPTION) @QueryParam("apiKey") String apiKey) {
         try {
-            DataAccessTokenManager dataManager = new DataAccessTokenManager(cellBaseConfiguration.getSecretKey());
+            ApiKeyManager dataManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
 
             return createOkResponse(new CellBaseDataResult<>(null, 1, Collections.emptyList(), 1,
-                    Collections.singletonList(dataManager.recode(token)), 1));
+                    Collections.singletonList(dataManager.recode(apiKey)), 1));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -302,12 +292,33 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Returns info about current CellBase code.",
             response = Map.class, responseContainer = "QueryResponse")
     public Response getAbout() {
-        Map<String, String> info = new HashMap<>(3);
+        Map<String, String> info = new LinkedHashMap<>();
         info.put("Program", "CellBase (OpenCB)");
+        info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+        info.put("API version", version);
         info.put("Version", GitRepositoryState.get().getBuildVersion());
         info.put("Git branch", GitRepositoryState.get().getBranch());
         info.put("Git commit", GitRepositoryState.get().getCommitId());
-        info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+
+        // Get default data releases
+        species = "hsapiens";
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, species);
+        List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
+        if (CollectionUtils.isNotEmpty(assemblies)) {
+            DataReleaseManager dataReleaseManager;
+            for (SpeciesConfiguration.Assembly assembly : assemblies) {
+                String key = "Default data release for " + version + " (" + species + "/" + assembly.getName() + ")";
+                try {
+                    dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly.getName());
+                    DataRelease defaultDataRelease = dataReleaseManager.getDefault(version);
+                    info.put(key, String.valueOf(defaultDataRelease.getRelease()));
+                } catch (CellBaseException e) {
+                    info.put(key, "ERROR: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+
         CellBaseDataResult queryResult = new CellBaseDataResult();
         queryResult.setId("about");
         queryResult.setTime(0);
@@ -334,17 +345,17 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
-    public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                                   String species,
-                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                   String assembly,
-                           @DefaultValue("")
-                           @QueryParam("token")
-                           @ApiParam(name = "token",
-                                   value = "API token for health check. When passed all of the "
-                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
-                                           + "this parameter is not used, but they won't be part of the response",
-                                   required = false) String token) {
+    public Response status(
+            @PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
+                    String species,
+            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
+                    String assembly,
+            @DefaultValue("")
+            @QueryParam("apiKey")
+            @ApiParam(name = "apiKey",
+                    value = "API key for health check. When passed all of the "
+                            + "dependencies and their status will be displayed. The dependencies will be checked if "
+                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
 
         if (StringUtils.isEmpty(assembly)) {
             try {
@@ -359,8 +370,7 @@ public class MetaWSServer extends GenericRestWSServer {
                     + assembly + "'");
         }
 
-        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species,
-                assembly, token);
+        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, species, assembly, apiKey);
         return createJsonResponse(health);
 
     }
@@ -370,13 +380,13 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = HealthCheckResponse.class)
-    public Response status(@DefaultValue("")
-                           @QueryParam("token")
-                           @ApiParam(name = "token",
-                                   value = "API token for health check. When passed all of the "
-                                           + "dependencies and their status will be displayed. The dependencies will be checked if "
-                                           + "this parameter is not used, but they won't be part of the response",
-                                   required = false) String token) {
+    public Response status(
+            @DefaultValue("")
+            @QueryParam("apiKey")
+            @ApiParam(name = "apiKey",
+                    value = "API key for health check. When passed all of the "
+                            + "dependencies and their status will be displayed. The dependencies will be checked if "
+                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
 
         /**
          * Hardcode the species and assembly for required heath check. This is fine and will not cause problems in the future.
@@ -385,7 +395,7 @@ public class MetaWSServer extends GenericRestWSServer {
         String assemblyHealthcheck = "grch38";
 
         HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
-                assemblyHealthcheck, token);
+                assemblyHealthcheck, apiKey);
         return createJsonResponse(health);
     }
 

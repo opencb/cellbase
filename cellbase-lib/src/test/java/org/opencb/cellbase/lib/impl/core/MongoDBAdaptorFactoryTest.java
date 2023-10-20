@@ -16,56 +16,48 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
     private MongoDBManager mongoDBManager;
-    private CellBaseConfiguration cellBaseConfiguration;
 
-
-    public MongoDBAdaptorFactoryTest() throws IOException {
+    public MongoDBAdaptorFactoryTest() {
         super();
-    }
-
-    @BeforeAll
-    public void setUp() throws Exception {
-        dataRelease = 1;
-
-        cellBaseConfiguration = CellBaseConfiguration.load(
-                MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
-                CellBaseConfiguration.ConfigurationFileFormat.YAML);
-
-        mongoDBManager = new MongoDBManager(cellBaseConfiguration);
+        this.mongoDBManager = new MongoDBManager(cellBaseConfiguration);
     }
 
     @Test
-    public void testGetDatabaseName() throws Exception {
+    public void testGetDatabaseName() {
+        String auxVersion = cellBaseConfiguration.getVersion().replace(".", DBNAME_SEPARATOR).replace("-", DBNAME_SEPARATOR);
+        String[] split = auxVersion.split(DBNAME_SEPARATOR);
+        String version = split[0];
+        if (split.length > 1) {
+            version += (DBNAME_SEPARATOR + split[1]);
+        }
+
         // provide assembly
-        String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName");
-        assertEquals("cellbase_speciesname_assemblyname_v5", databaseName);
+        String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName", cellBaseConfiguration.getVersion());
+        assertEquals("cellbase_speciesname_assemblyname_" + version, databaseName);
 
         // don't provide assembly
         InvalidParameterException thrown =
                 assertThrows(InvalidParameterException.class,
-                        () -> mongoDBManager.getDatabaseName("speciesName", null),
+                        () -> mongoDBManager.getDatabaseName("speciesName", null, cellBaseConfiguration.getVersion()),
                         "Expected getDatabaseName() to throw an exception, but it didn't");
-
         assertTrue(thrown.getMessage().contains("Species and assembly are required"));
 
         // handle special characters
-        databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name");
-        assertEquals("cellbase_speciesname_myfunnyassemblyname_v5", databaseName);
+        databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name", cellBaseConfiguration.getVersion());
+        assertEquals("cellbase_speciesname_myfunnyassemblyname_" + version, databaseName);
     }
 }

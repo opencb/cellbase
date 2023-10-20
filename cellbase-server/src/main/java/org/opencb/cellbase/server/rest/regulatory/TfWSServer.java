@@ -56,11 +56,10 @@ public class TfWSServer extends RegulatoryWSServer {
                       @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly") String assembly,
                       @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
                               int dataRelease,
-                      @ApiParam(name = "token", value = DATA_ACCESS_TOKEN_DESCRIPTION) @DefaultValue("") @QueryParam("token")
-                              String token,
+                      @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, species, assembly, dataRelease, token, uriInfo, hsr);
+        super(apiVersion, species, assembly, dataRelease, apiKey, uriInfo, hsr);
         try {
             regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
             tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
@@ -69,7 +68,6 @@ public class TfWSServer extends RegulatoryWSServer {
             throw new CellBaseServerException(e.getMessage());
         }
     }
-
 
     @GET
     @Path("/{tf}/tfbs")
@@ -104,6 +102,7 @@ public class TfWSServer extends RegulatoryWSServer {
             String[] identifiers = tf.split(",");
             for (String identifier : identifiers) {
                 RegulationQuery query = new RegulationQuery(uriParams);
+                query.setDataRelease(getDataRelease());
                 query.setNames(Arrays.asList(identifier));
                 query.setFeatureTypes(Arrays.asList("TF_binding_site"));
                 queries.add(query);
@@ -119,7 +118,7 @@ public class TfWSServer extends RegulatoryWSServer {
     @GET
     @Path("/{tf}/gene")
     @ApiOperation(httpMethod = "GET", value = "Retrieves gene info for a (list of) TF(s)", response = Gene.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = COUNT_DESCRIPTION,
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
@@ -154,6 +153,7 @@ public class TfWSServer extends RegulatoryWSServer {
     public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = TFBS_IDS, required = true) String tf) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setDataRelease(getDataRelease());
             LogicalList<String> logicalList = new LogicalList(Arrays.asList(tf.split(",")));
             geneQuery.setTranscriptsTfbsId(logicalList);
             CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);

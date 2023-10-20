@@ -32,17 +32,16 @@ import java.util.List;
  */
 public class GenericClient extends ParentRestClient<ObjectMap> {
 
-    GenericClient(String species, String assembly, String dataRelease, String token, ClientConfiguration clientConfiguration) {
-        super(species, assembly, dataRelease, token, clientConfiguration);
+    GenericClient(String species, String assembly, String dataRelease, String apiKey, ClientConfiguration clientConfiguration) {
+        super(species, assembly, dataRelease, apiKey, clientConfiguration);
     }
 
-    public <T> CellBaseDataResponse<T> get(String category, String resource, QueryOptions queryOptions,
-                                   Class<T> clazz) throws IOException {
+    public <T> CellBaseDataResponse<T> get(String category, String resource, QueryOptions queryOptions, Class<T> clazz) throws IOException {
         return this.get(category, null, EMPTY_STRING, resource, queryOptions, clazz);
     }
 
-    public <T> CellBaseDataResponse<T> get(String category, String subcategory, String ids, String resource,
-                                           QueryOptions queryOptions, Class<T> clazz) throws IOException {
+    public <T> CellBaseDataResponse<T> get(String category, String subcategory, String ids, String resource, QueryOptions queryOptions,
+                                           Class<T> clazz) throws IOException {
         this.category = category;
         this.subcategory = subcategory;
         return execute(ids, resource, queryOptions, clazz);
