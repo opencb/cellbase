@@ -69,7 +69,8 @@ public class MetaManager extends AbstractManager {
             numQueries = quotaResult.first().getNumQueries();
         }
         if (numQueries >= payload.getQuota().getMaxNumQueries()) {
-            throw new CellBaseException("Exceeded the maximum number of queries");
+            throw new CellBaseException("Maximum query limit reached: Your current API key has a quota of "
+                    + payload.getQuota().getMaxNumQueries() + " queries");
         }
     }
 

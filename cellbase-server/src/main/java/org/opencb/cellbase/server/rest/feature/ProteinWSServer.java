@@ -21,10 +21,10 @@ import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ProteinManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,13 +55,17 @@ public class ProteinWSServer extends GenericRestWSServer {
                                    int dataRelease,
                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, species, uriInfo, hsr);
-        if (assembly == null) {
-            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-        }
+        try {
+            if (assembly == null) {
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
 
-        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+            proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET

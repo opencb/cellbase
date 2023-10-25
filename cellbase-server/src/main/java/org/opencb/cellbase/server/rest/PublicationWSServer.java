@@ -20,17 +20,15 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.PublicationQuery;
-import org.opencb.cellbase.core.api.query.QueryException;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.PublicationManager;
+import org.opencb.cellbase.server.exception.CellBaseServerException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.util.Map;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
@@ -55,9 +53,13 @@ public class PublicationWSServer extends GenericRestWSServer {
                                @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
                                        String apiKey,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws QueryException, IOException, CellBaseException {
+            throws CellBaseServerException {
         super(apiVersion, uriInfo, hsr);
-        publicationManager = cellBaseManagerFactory.getPublicationManager();
+        try {
+            publicationManager = cellBaseManagerFactory.getPublicationManager();
+        } catch (Exception e) {
+            throw new CellBaseServerException(e.getMessage());
+        }
     }
 
     @GET
