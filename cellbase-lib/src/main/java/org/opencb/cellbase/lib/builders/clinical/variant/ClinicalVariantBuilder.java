@@ -120,20 +120,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
             }
 
-            // ClinVar
-            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
-                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
-                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
-                clinvarIndexer.index();
-            } else {
-                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
-                        + "Please, ensure that these two files exist:\n"
-                        + "{}\n"
-                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
-            }
-
             // IARC TP53
             if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null
                     && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
@@ -176,6 +162,20 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 }
             } else {
                 logger.warn("The GWAS catalog file {} is missing. Skipping GWAS catalog data.", gwasFile);
+            }
+
+            // ClinVar
+            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
+                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
+                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
+                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
+                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
+                clinvarIndexer.index();
+            } else {
+                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
+                        + "Please, ensure that these two files exist:\n"
+                        + "{}\n"
+                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
             }
 
             serializeRDB(rdb);
