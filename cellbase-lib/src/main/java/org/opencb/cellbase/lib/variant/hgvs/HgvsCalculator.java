@@ -114,7 +114,13 @@ public class HgvsCalculator {
                 // Normalization set to false - if needed, it would have been done already two lines above
                 //return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
                 HgvsProteinCalculator hgvsProteinCalculator = new HgvsProteinCalculator(normalizedVariant, transcript);
-                HgvsProtein hgvsProtein = hgvsProteinCalculator.calculate();
+                HgvsProtein hgvsProtein = null;
+                try {
+                    hgvsProtein = hgvsProteinCalculator.calculate();
+                } catch (Exception e) {
+                    logger.warn("Error computing HGVS protein for " + normalizedVariant.toString() + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
                 if (hgvsProtein != null) {
                     for (String id : hgvsProtein.getIds()) {
                         String hgvsString = id + ":" + hgvsProtein.getHgvs();
@@ -166,8 +172,8 @@ public class HgvsCalculator {
     }
 
     protected void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
-                                          String genomicAlternate, Transcript transcript,
-                                          BuildingComponents buildingComponents) {
+                                            String genomicAlternate, Transcript transcript,
+                                            BuildingComponents buildingComponents) {
         int start;
         int end;
         String reference;
@@ -224,7 +230,7 @@ public class HgvsCalculator {
      * @param strand String {"+", "-"}.
      */
     protected void justify(Variant variant, int startOffset, int endOffset, String allele, String genomicSequence,
-                         String strand) {
+                           String strand) {
         StringBuilder stringBuilder = new StringBuilder(allele);
         // Justify to the left
         if ("-".equals(strand)) {
@@ -236,7 +242,7 @@ public class HgvsCalculator {
                 variant.setStart(variant.getStart() - 1);
                 variant.setEnd(variant.getEnd() - 1);
             }
-        // Justify to the right
+            // Justify to the right
         } else {
             while ((endOffset + 1) < genomicSequence.length() && genomicSequence.charAt(endOffset + 1) == stringBuilder.charAt(0)) {
                 stringBuilder.deleteCharAt(0);
@@ -250,7 +256,7 @@ public class HgvsCalculator {
         // Insertion
         if (variant.getReference().isEmpty()) {
             variant.setAlternate(stringBuilder.toString());
-        // Deletion
+            // Deletion
         } else {
             variant.setReference(stringBuilder.toString());
         }
@@ -287,14 +293,14 @@ public class HgvsCalculator {
                 cdnaCoord.setOffset(genomicPosition - nearestExon.getStart()); // TODO: probably needs +-1 bp adjust
                 cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getStart()));
                 cdnaCoord.setLandmark(CdnaCoord.Landmark.TRANSCRIPT_START);
-            // Exonic variant
-            // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Exonic variant
+                // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else if (genomicPosition - nearestExon.getEnd() < 0) {
                 // no offset
                 cdnaCoord.setReferencePosition(getCdnaPosition(transcript, genomicPosition));
                 cdnaCoord.setLandmark(CdnaCoord.Landmark.TRANSCRIPT_START);
-            // Non-exonic variant: intronic, intergenic
-            // -------------S||||||E-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Non-exonic variant: intronic, intergenic
+                // -------------S||||||E-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else {
                 // offset must be positive
                 cdnaCoord.setOffset(genomicPosition - nearestExon.getEnd()); // TODO: probably needs +-1 bp adjust
@@ -312,14 +318,14 @@ public class HgvsCalculator {
                 cdnaCoord.setOffset(nearestExon.getStart() - genomicPosition); // TODO: probably needs +-1 bp adjust
                 cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getStart()));
                 cdnaCoord.setLandmark(CdnaCoord.Landmark.TRANSCRIPT_START);
-            // Exonic variant
-            // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Exonic variant
+                // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else if (genomicPosition - nearestExon.getEnd() < 0) {
                 // no offset
                 cdnaCoord.setReferencePosition(getCdnaPosition(transcript, genomicPosition));
                 cdnaCoord.setLandmark(CdnaCoord.Landmark.TRANSCRIPT_START);
-            // Non-exonic variant: intronic, intergenic
-            // -------------E||||||S-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Non-exonic variant: intronic, intergenic
+                // -------------E||||||S-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else {
                 // offset must be negative
                 cdnaCoord.setOffset(nearestExon.getEnd() - genomicPosition); // TODO: probably needs +-1 bp adjust
@@ -355,49 +361,49 @@ public class HgvsCalculator {
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getStart());
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getStart()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // After coding end
+                    // After coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getStart());
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getStart()) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // offset must be negative
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getStart()); // TODO: probably needs +-1 bp adjust
                     cdnaCoord.setReferencePosition(nearestExon.getCdsStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
-            // Exonic variant
-            // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Exonic variant
+                // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // After coding end
+                    // After coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // no offset
                     cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + (genomicPosition - nearestExon.getGenomicCodingStart()));
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
-            // Non-exonic variant: intronic, intergenic
-            // -------------S||||||E-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Non-exonic variant: intronic, intergenic
+                // -------------S||||||E-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else {
                 // Before coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getEnd());
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getEnd()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // After coding end
+                    // After coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getEnd());
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getEnd()) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // offset must be positive
                     cdnaCoord.setOffset(genomicPosition - nearestExon.getEnd()); // TODO: probably needs +-1 bp adjust
@@ -417,49 +423,49 @@ public class HgvsCalculator {
                     cdnaCoord.setOffset(nearestExon.getStart() - genomicPosition);
                     cdnaCoord.setReferencePosition(transcript.getCdnaCodingEnd() - getCdnaPosition(transcript, nearestExon.getStart()));
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // After (genomic) coding end
+                    // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(nearestExon.getStart() - genomicPosition);
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getStart()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // offset must be positive
                     cdnaCoord.setOffset(nearestExon.getStart() - genomicPosition); // TODO: probably needs +-1 bp adjust
                     cdnaCoord.setReferencePosition(nearestExon.getCdsEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
-            // Exonic variant
-            // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Exonic variant
+                // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // After (genomic) coding end
+                    // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // no offset
                     cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + nearestExon.getGenomicCodingEnd() - genomicPosition);
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
-            // Non-exonic variant: intronic, intergenic
-            // -------------E||||||S-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
+                // Non-exonic variant: intronic, intergenic
+                // -------------E||||||S-----p------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
             } else {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(nearestExon.getEnd() - genomicPosition);
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getEnd()) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
-                // After (genomic) coding end
+                    // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setOffset(nearestExon.getEnd() - genomicPosition);
                     cdnaCoord.setReferencePosition(getCdnaPosition(transcript, nearestExon.getEnd()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
-                // Within coding start and end
+                    // Within coding start and end
                 } else {
                     // offset must be negative
                     cdnaCoord.setOffset(nearestExon.getEnd() - genomicPosition); // TODO: probably needs +-1 bp adjust
