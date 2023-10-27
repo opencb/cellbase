@@ -1,4 +1,5 @@
 name: Build and test the project
+
 on:
   workflow_call:
     secrets:
