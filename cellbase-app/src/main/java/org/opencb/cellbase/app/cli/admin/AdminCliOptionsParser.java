@@ -159,10 +159,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--create-api-key"}, description = "Create an API key with the licensed data sources indicated separated by"
-                + " commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.: cosmic:31/01/2025,hgmd. In addition the"
-                + " 'organization' has to be specified", arity = 1)
-        public String createWithDataSources;
+        @Parameter(names = {"--create-api-key"}, description = "Create an API key", arity = 0)
+        public boolean createApiKey;
+
+        @Parameter(names = {"--licensed-data-sources"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
+                + " licensed data sources separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.:"
+                + " cosmic:31/01/2025,hgmd", arity = 1)
+        public String dataSources;
 
         @Parameter(names = {"--expiration"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
                 + " expiration date in format dd/mm/yyyy, e.g.: 03/09/2030", arity = 1)
