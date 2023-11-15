@@ -567,8 +567,7 @@
                                 <ignoredUnusedDeclaredDependency>*</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                             <ignoredNonTestScopedDependencies>
-                                <ignoredNonTestScopedDependency>org.apache.avro:avro</ignoredNonTestScopedDependency>
-                                <ignoredNonTestScopedDependency>io.jsonwebtoken:jjwt-api</ignoredNonTestScopedDependency>
+                                <ignoredNonTestScopedDependency>*</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
