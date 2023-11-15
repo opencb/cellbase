@@ -48,7 +48,6 @@ public class ApiKeyCommandExecutor extends CommandExecutor {
         this.apiKeyCommandOptions = apiKeyCommandOptions;
     }
 
-
     /**
      * Execute one of the selected actions according to the input parameters.
      */
@@ -60,7 +59,7 @@ public class ApiKeyCommandExecutor extends CommandExecutor {
         ApiKeyManager apiKeyManager = new ApiKeyManager(SignatureAlgorithm.HS256.getValue(), key);
 
         try {
-            if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)) {
+            if (apiKeyCommandOptions.createApiKey) {
                 // Create the API key JWT payload
                 ApiKeyJwtPayload payload = new ApiKeyJwtPayload();
                 payload.setSubject(apiKeyCommandOptions.organization);
@@ -69,7 +68,7 @@ public class ApiKeyCommandExecutor extends CommandExecutor {
                 if (apiKeyCommandOptions.expiration != null) {
                     payload.setExpiration(parseDate(apiKeyCommandOptions.expiration));
                 }
-                payload.setSources(parseSources(apiKeyCommandOptions.createWithDataSources));
+                payload.setSources(parseSources(apiKeyCommandOptions.dataSources));
                 payload.setQuota(new ApiKeyQuota(apiKeyCommandOptions.maxNumQueries));
 
                 // Create API key
@@ -86,19 +85,22 @@ public class ApiKeyCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() {
-        if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)
-                && StringUtils.isNotEmpty(apiKeyCommandOptions.apiKeyToView)) {
-            throw new IllegalArgumentException("Please, select only one of these input parameters: create or view");
+        if (apiKeyCommandOptions.createApiKey && StringUtils.isNotEmpty(apiKeyCommandOptions.apiKeyToView)) {
+            throw new IllegalArgumentException("Please, select only one of these input parameters: create-api-key or view-api-key");
         }
-        if (StringUtils.isEmpty(apiKeyCommandOptions.createWithDataSources)
-                && StringUtils.isEmpty(apiKeyCommandOptions.apiKeyToView)) {
-            throw new IllegalArgumentException("Please, it is mandatory to select one of these input parameters: create or view");
+        if (!apiKeyCommandOptions.createApiKey && StringUtils.isEmpty(apiKeyCommandOptions.apiKeyToView)) {
+            throw new IllegalArgumentException("Please, it is mandatory to select one of these input parameters: create-api-key or"
+                    + " view-api-key");
         }
 
         // Check create parameters
-        if (StringUtils.isNotEmpty(apiKeyCommandOptions.createWithDataSources)) {
+        if (apiKeyCommandOptions.createApiKey) {
             if (StringUtils.isEmpty(apiKeyCommandOptions.organization)) {
                 throw new IllegalArgumentException("Missing organization");
+            }
+            if (StringUtils.isEmpty(apiKeyCommandOptions.dataSources) && apiKeyCommandOptions.maxNumQueries <= 0) {
+                throw new IllegalArgumentException("Please, it is mandatory to specify either the licensed data sources, the maximum number"
+                        + " of queries, or both");
             }
         }
 

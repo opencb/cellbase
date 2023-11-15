@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -105,6 +106,10 @@ public class VariantClientTest {
                 c.getProteinVariantAnnotation().getFeatures().sort(Comparator.comparing(SpecificRecordBase::hashCode));
             }
         });
+
+        if (CollectionUtils.isNotEmpty(va.getFunctionalScore())) {
+            va.getFunctionalScore().sort(Comparator.comparing(SpecificRecordBase::hashCode));
+        }
     }
 
 //    @Test
