@@ -116,16 +116,18 @@ public class GenericRestWSServer implements IWSServer {
         this.species = species;
 
         try {
-            init();
+            if (!INITIALIZED.get()) {
+                init();
+            }
             initQuery();
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }
     }
 
-    private void init() throws IOException, CellBaseException {
+    private synchronized void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
-        if (INITIALIZED.compareAndSet(false, true)) {
+        if (!INITIALIZED.get()) {
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();
             WATCH.start();
@@ -159,19 +161,21 @@ public class GenericRestWSServer implements IWSServer {
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
             logger.info("***************************************************");
 
+            // Get default API key (for anonymous queries)
+            if (apiKeyManager == null) {
+                apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+                defaultApiKey = apiKeyManager.getDefaultApiKey();
+                logger.info("default API key {}", defaultApiKey);
+            }
+
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+
+            INITIALIZED.set(true);
         }
     }
 
     private void initQuery() throws CellBaseException {
-        // Get default API key (for anonymous queries)
-        if (apiKeyManager == null) {
-            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
-            defaultApiKey = apiKeyManager.getDefaultApiKey();
-            logger.info("default API key {}", defaultApiKey);
-        }
-
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
@@ -184,12 +188,10 @@ public class GenericRestWSServer implements IWSServer {
 
         // Set default API key, if necessary
         String apiKey = uriParams.getOrDefault(API_KEY_PARAM, null);
-        logger.info("Before checking, API key {}", apiKey);
         if (StringUtils.isEmpty(apiKey)) {
             apiKey = defaultApiKey;
             uriParams.put(API_KEY_PARAM, apiKey);
         }
-        logger.info("After checking, API key {}", uriParams.get(API_KEY_PARAM));
 
         checkLimit();
 
@@ -227,11 +229,6 @@ public class GenericRestWSServer implements IWSServer {
             } catch (NumberFormatException e) {
                 throw new CellBaseException("Invalid data release number '" + uriParams.get(DATA_RELEASE_PARAM) + "'");
             }
-        }
-        // If no data release is present in the query, then use the default data release
-        if (!DONT_CHECK_SPECIES.equals(species)) {
-            logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
-                    + " '" + version + "'");
         }
         return defaultDataRelease;
     }
@@ -273,7 +270,8 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private void checkApiKey() throws CellBaseException {
-        if (!uriInfo.getPath().contains("health")) {
+        // Update the API key content only for non-meta endpoints
+        if (!uriInfo.getPath().contains("/meta/")) {
             String apiKey = getApiKey();
             ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
 
@@ -414,7 +412,7 @@ public class GenericRestWSServer implements IWSServer {
 
         // Update API key stats, if necessary
         try {
-            if (!uriInfo.getPath().contains("health")) {
+            if (!uriInfo.getPath().contains("/meta/")) {
                 String apiKey = getApiKey();
                 MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
                 long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
