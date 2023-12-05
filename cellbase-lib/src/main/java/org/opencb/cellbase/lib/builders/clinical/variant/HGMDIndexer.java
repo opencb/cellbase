@@ -167,7 +167,7 @@ public class HGMDIndexer extends ClinicalIndexer {
 
         if (normalisedVariantStringList != null) {
             for (String normalisedVariantString : normalisedVariantStringList) {
-                VariantAnnotation variantAnnotation = getVariantAnnotation(variant.toString().getBytes());
+                VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
 
                 // Add haplotype property to all EvidenceEntry objects in variant if there are more than 1 variants in
                 // normalisedVariantStringList, i.e. if this variant is part of an MNV (haplotype)
