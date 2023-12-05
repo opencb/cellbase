@@ -116,16 +116,18 @@ public class GenericRestWSServer implements IWSServer {
         this.species = species;
 
         try {
-            init();
+            if (!INITIALIZED.get()) {
+                init();
+            }
             initQuery();
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }
     }
 
-    private void init() throws IOException, CellBaseException {
+    private synchronized void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
-        if (INITIALIZED.compareAndSet(false, true)) {
+        if (!INITIALIZED.get()) {
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();
             WATCH.start();
@@ -168,6 +170,8 @@ public class GenericRestWSServer implements IWSServer {
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+
+            INITIALIZED.set(true);
         }
     }
 
