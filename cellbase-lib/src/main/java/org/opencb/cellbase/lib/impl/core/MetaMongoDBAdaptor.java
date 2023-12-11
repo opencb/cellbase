@@ -16,17 +16,17 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
