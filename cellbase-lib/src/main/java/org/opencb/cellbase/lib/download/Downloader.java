@@ -98,4 +98,9 @@ public class Downloader {
         PharmGKBDownloadManager manager = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadPolygenicScores() throws IOException, CellBaseException, InterruptedException {
+        PgsDownloadManager manager = new PgsDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }

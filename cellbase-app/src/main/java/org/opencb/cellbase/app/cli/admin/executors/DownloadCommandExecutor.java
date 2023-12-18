@@ -105,10 +105,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.PHARMACOGENOMICS_DATA:
                         downloadFiles.addAll(downloader.downloadPharmKGB());
                         break;
+                    case EtlCommons.PGS_DATA:
+                        downloadFiles.addAll(downloader.downloadPolygenicScores());
+                        break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
                                 + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"
-                                + " regulation, protein, conservation, clinical_variants, ontology, pubmed}");
+                                + " regulation, protein, conservation, clinical_variants, ontology, pubmed, polygenic_score}");
                         break;
                 }
             }

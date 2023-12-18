@@ -74,6 +74,7 @@ public class DownloadProperties {
     private URLProperties revel;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
+    private URLProperties pgs;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -485,6 +486,15 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getPgs() {
+        return pgs;
+    }
+
+    public DownloadProperties setPgs(URLProperties pgs) {
+        this.pgs = pgs;
+        return this;
+    }
+
     public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {
         this.refSeqProteinFasta = refSeqProteinFasta;
         return this;
@@ -579,6 +589,5 @@ public class DownloadProperties {
             this.files = files;
             return this;
         }
-
     }
 }
