@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.PGS_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
 
 /**
@@ -450,9 +449,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
         logger.info("Copying PGS version file...");
-        if (inFolder.resolve(PGS_DATA).resolve(EtlCommons.PGS_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(inFolder.resolve(PGS_DATA).resolve(EtlCommons.PGS_VERSION_FILENAME),
-                    outFolder.resolve(EtlCommons.PGS_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        if (inFolder.resolve(EtlCommons.PGS_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inFolder.resolve(EtlCommons.PGS_VERSION_FILENAME), outFolder.resolve(EtlCommons.PGS_VERSION_FILENAME),
+                    StandardCopyOption.REPLACE_EXISTING);
         }
 
         String basename = PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME.split("\\.")[0];
