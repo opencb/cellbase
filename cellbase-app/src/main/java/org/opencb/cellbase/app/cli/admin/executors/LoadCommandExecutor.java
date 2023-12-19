@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.builders.PolygenicScoreBuilder;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
@@ -81,7 +82,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
                     EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA,
-                    EtlCommons.PHARMACOGENOMICS_DATA};
+                    EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
@@ -297,6 +298,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.PHARMACOGENOMICS_DATA: {
                             // Load data, create index and update release
                             loadPharmacogenomica();
+                            break;
+                        }
+                        case EtlCommons.PGS_DATA: {
+                            // Load data, create index and update release
+                            loadPolygenicScores();
                             break;
                         }
                         default:
@@ -587,6 +593,49 @@ public class LoadCommandExecutor extends CommandExecutor {
         // Update release (collection and sources)
         List<Path> sources = Collections.singletonList(pharmaPath.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
+    }
+
+    private void loadPolygenicScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
+            IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, CellBaseException, LoaderException {
+        Path pgsPath = input.resolve(EtlCommons.PGS_DATA);
+
+        if (!Files.exists(pgsPath)) {
+            logger.warn("Polygenic scores (PGS) folder {} not found to load", pgsPath);
+            return;
+        }
+
+        // Load common polygenic scores data
+        Path pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.COMMON_POLYGENIC_SCORE_FILENAME);
+        logger.info("Loading file '{}'", pathToLoad.toFile().getName());
+        try {
+            loadRunner.load(pathToLoad, "common_polygenic_score", dataRelease);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
+            logger.error("Error loading file '{}': {}", pathToLoad.toFile().getName(), e.toString());
+        }
+
+        // Load variant polygenic scores data
+        pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME);
+        logger.info("Loading file '{}'", pathToLoad.toFile().getName());
+        try {
+            loadRunner.load(pathToLoad, "variant_polygenic_score", dataRelease);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
+            logger.error("Error loading file '{}': {}", pathToLoad.toFile().getName(), e.toString());
+        }
+
+        // Create index
+        createIndex("variant_polygenic_score");
+        createIndex("common_polygenic_score");
+
+        // Update release (collection and sources)
+        List<Path> sources = new ArrayList<>(Arrays.asList(
+                input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_VERSION_FILENAME)
+        ));
+        dataReleaseManager.update(dataRelease, "variant_polygenic_score", EtlCommons.PGS_DATA, sources);
+        dataReleaseManager.update(dataRelease, "common_polygenic_score", null, null);
     }
 
     private void createIndex(String collection) {
