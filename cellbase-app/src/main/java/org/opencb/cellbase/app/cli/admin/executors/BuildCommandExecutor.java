@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.PGS_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
 
 /**
@@ -167,6 +168,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.PHARMACOGENOMICS_DATA:
                             parser = buildPharmacogenomics();
+                            break;
+                        case EtlCommons.PGS_DATA:
+                            parser = buildPolygenicScores();
                             break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
@@ -436,5 +440,24 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder);
         return new PharmGKBBuilder(inFolder, serializer);
+    }
+
+    private CellBaseBuilder buildPolygenicScores() throws IOException {
+        Path inFolder = downloadFolder.resolve(EtlCommons.PGS_DATA);
+        Path outFolder = buildFolder.resolve(EtlCommons.PGS_DATA);
+        if (!outFolder.toFile().exists()) {
+            outFolder.toFile().mkdirs();
+        }
+
+        logger.info("Copying PGS version file...");
+        if (inFolder.resolve(PGS_DATA).resolve(EtlCommons.PGS_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inFolder.resolve(PGS_DATA).resolve(EtlCommons.PGS_VERSION_FILENAME),
+                    outFolder.resolve(EtlCommons.PGS_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        String basename = PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME.split("\\.")[0];
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder, basename);
+        return new PolygenicScoreBuilder(configuration.getDownload().getPgs().getSourceName(),
+                configuration.getDownload().getPgs().getVersion(), inFolder, serializer);
     }
 }

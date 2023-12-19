@@ -179,6 +179,7 @@ download:
       - https://api.pharmgkb.org/v1/download/file/data/relationships.zip
   pgs:
     host: https://www.pgscatalog.org/
+    sourceName: "PGS Catalog"
     version: "Dec. 15, 2023"
     files:
       - https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv

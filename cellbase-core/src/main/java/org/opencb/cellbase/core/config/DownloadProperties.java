@@ -561,6 +561,7 @@ public class DownloadProperties {
     public static class URLProperties {
 
         private String host;
+        private String sourceName;
         private String version;
         private List<String> files;
 
@@ -570,6 +571,15 @@ public class DownloadProperties {
 
         public void setHost(String host) {
             this.host = host;
+        }
+
+        public String getSourceName() {
+            return sourceName;
+        }
+
+        public URLProperties setSourceName(String sourceName) {
+            this.sourceName = sourceName;
+            return this;
         }
 
         public String getVersion() {

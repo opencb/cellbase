@@ -43,7 +43,7 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
         DownloadProperties.URLProperties pgsUrlProperties = configuration.getDownload().getPgs();
 
-        Path pgsFolder = downloadFolder.resolve("pgs");
+        Path pgsFolder = downloadFolder.resolve(EtlCommons.PGS_DATA);
         Files.createDirectories(pgsFolder);
 
         List<String> urls = new ArrayList<>();
@@ -56,7 +56,6 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
         // Downloads PGS files
         List<DownloadFile> list = new ArrayList<>();
-        System.out.println(urlAllMeta);
         list.add(downloadFile(urlAllMeta, pgsFolder.resolve(filename).toString()));
 
         String baseUrl = urlAllMeta.replace(filename, "").replace("metadata", "scores");
@@ -78,8 +77,8 @@ public class PgsDownloadManager extends AbstractDownloadManager {
         br.close();
 
         // Save version file
-        saveVersionData(EtlCommons.PGS_DATA, EtlCommons.PGS_DATA, pgsUrlProperties.getVersion(), getTimeStamp(), urls,
-                pgsFolder.resolve("pgsVersion.json"));
+        saveVersionData(EtlCommons.PGS_DATA, pgsUrlProperties.getSourceName(), pgsUrlProperties.getVersion(), getTimeStamp(), urls,
+                pgsFolder.resolve(EtlCommons.PGS_VERSION_FILENAME));
 
         logger.info("Done. Downloaded PGS files!");
 
