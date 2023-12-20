@@ -74,6 +74,7 @@ public class DownloadProperties {
     private URLProperties revel;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
+    private URLProperties alphaMissense;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -482,6 +483,15 @@ public class DownloadProperties {
 
     public DownloadProperties setPharmGKB(URLProperties pharmGKB) {
         this.pharmGKB = pharmGKB;
+        return this;
+    }
+
+    public URLProperties getAlphaMissense() {
+        return alphaMissense;
+    }
+
+    public DownloadProperties setAlphaMissense(URLProperties alphaMissense) {
+        this.alphaMissense = alphaMissense;
         return this;
     }
 

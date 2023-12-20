@@ -98,4 +98,9 @@ public class Downloader {
         PharmGKBDownloadManager manager = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
+
+    public List<DownloadFile> downloadAlphaMissense() throws IOException, CellBaseException, InterruptedException {
+        AlphaMissenseDownloadManager manager = new AlphaMissenseDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
 }

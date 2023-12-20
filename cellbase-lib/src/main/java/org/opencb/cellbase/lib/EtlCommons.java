@@ -92,6 +92,9 @@ public class EtlCommons {
 
     public static final String PUBMED_DATA = "pubmed";
 
+    public static final String ALPHAMISSENSE_DATA = "alphamissense";
+    public static final String ALPHAMISSENSE_VERSION_FILENAME = "alphamissenseVersion.json";
+
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
 

@@ -177,6 +177,11 @@ download:
       - https://api.pharmgkb.org/v1/download/file/data/clinicalVariants.zip
       - https://api.pharmgkb.org/v1/download/file/data/drugLabels.zip
       - https://api.pharmgkb.org/v1/download/file/data/relationships.zip
+  alphaMissense:
+    host: https://github.com/google-deepmind/alphamissense
+    version: "Aug. 3, 2023"
+    files:
+      - https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz
 species:
   vertebrates:
     - id: hsapiens
