@@ -168,6 +168,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.PHARMACOGENOMICS_DATA:
                             parser = buildPharmacogenomics();
                             break;
+                        case EtlCommons.ALPHAMISSENSE_DATA:
+                            parser = buildAlphaMissense();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -436,5 +439,24 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder);
         return new PharmGKBBuilder(inFolder, serializer);
+    }
+
+    private CellBaseBuilder buildAlphaMissense() throws IOException {
+        Path pubmedInputFolder = downloadFolder.resolve(EtlCommons.PUBMED_DATA);
+        Path pubmedOutputFolder = buildFolder.resolve(EtlCommons.PUBMED_DATA);
+        if (!pubmedOutputFolder.toFile().exists()) {
+            pubmedOutputFolder.toFile().mkdirs();
+        }
+
+        logger.info("Copying AlphaMissense version file...");
+        if (downloadFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(downloadFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME),
+                    buildFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        String alphaMissenseFilename = new File(configuration.getDownload().getAlphaMissense().getFiles().get(0)).getName();
+        File alphaMissenseFile = downloadFolder.resolve(alphaMissenseFilename).toFile();
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.ALPHAMISSENSE_DATA);
+        return new AlphaMissenseBuilder(alphaMissenseFile, serializer);
     }
 }
