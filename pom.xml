@@ -21,6 +21,7 @@
         <module>cellbase-server</module>
     </modules>
 
+
     <properties>
         <pycellbase.version>${project.version}</pycellbase.version>
         <java-common-libs.version>4.13.0-SNAPSHOT</java-common-libs.version>
