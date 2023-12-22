@@ -24,6 +24,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.OntologyTermAnnotation;
+import org.opencb.biodata.models.core.PubmedReference;
 import org.opencb.biodata.models.core.pgs.*;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -59,19 +61,53 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     public static final String COMMON_POLYGENIC_SCORE_FILENAME =  "common_polygenic_score.json.gz";
     public static final String VARIANT_POLYGENIC_SCORE_FILENAME =  "variant_polygenic_score.json.gz";
 
-    private static final String RSID = "rsID";
-    private static final String CHR_NAME = "chr_name";
-    private static final String EFFECT_ALLELE = "effect_allele";
-    private static final String OTHER_ALLELE = "other_allele";
-    private static final String EFFECT_WEIGHT = "effect_weight";
-    private static final String ALLELEFREQUENCY_EFFECT = "allelefrequency_effect";
-    private static final String LOCUS_NAME = "locus_name";
-    private static final String OR = "OR";
-    private static final String HM_SOURCE = "hm_source";
-    private static final String HM_RSID = "hm_rsID";
-    private static final String HM_CHR = "hm_chr";
-    private static final String HM_POS = "hm_pos";
-    private static final String HM_INFEROTHERALLELE = "hm_inferOtherAllele";
+    private static final String RSID_COL = "rsID";
+    private static final String CHR_NAME_COL = "chr_name";
+    private static final String EFFECT_ALLELE_COL = "effect_allele";
+    private static final String OTHER_ALLELE_COL = "other_allele";
+    private static final String EFFECT_WEIGHT_COL = "effect_weight";
+    private static final String ALLELEFREQUENCY_EFFECT_COL = "allelefrequency_effect";
+    private static final String ODDS_RATIO_COL = "OR";
+    private static final String HAZARD_RATIO_COL = "HR";
+    private static final String LOCUS_NAME_COL = "locus_name";
+    private static final String IS_HAPLOTYPE_COL = "is_haplotype";
+    private static final String IS_DIPLOTYPE_COL = "is_diplotype";
+    private static final String IMPUTATION_METHOD_COL = "imputation_method";
+    private static final String VARIANT_DESCRIPTION_COL = "variant_description";
+    private static final String INCLUSION_CRITERIA_COL = "inclusion_criteria";
+    private static final String IS_INTERACTION_COL = "is_interaction";
+    private static final String IS_DOMINANT_COL = "is_dominant";
+    private static final String IS_RECESSIVE_COL = "is_recessive";
+    private static final String DOSAGE_0_WEIGHT_COL = "dosage_0_weight";
+    private static final String DOSAGE_1_WEIGHT_COL = "dosage_1_weight";
+    private static final String DOSAGE_2_WEIGHT_COL = "dosage_2_weight";
+    private static final String HM_RSID_COL = "hm_rsID";
+    private static final String HM_CHR_COL = "hm_chr";
+    private static final String HM_POS_COL = "hm_pos";
+    private static final String HM_INFEROTHERALLELE_COL = "hm_inferOtherAllele";
+
+    public static final String SAMPLE_SET_KEY = "Sample Set";
+    public static final String ODDS_RATIO_KEY = "Odds ratio";
+    public static final String HAZARD_RATIO_KEY = "Hazard ratio";
+    public static final String BETA_KEY = "Beta";
+    public static final String AUROC_KEY = "AUROC"; // Area Under the Receiver-Operating Characteristic Curve (AUROC)
+    public static final String CINDEX_KEY = "C-index"; // Concordance Statistic (C-index)
+    public static final String OTHER_KEY = "Other metric";
+    private static final String EFFECT_WEIGHT_KEY = "Effect weight";
+    private static final String ALLELE_FREQUENCY_EFFECT_KEY = "Allele frequency effect";
+    private static final String LOCUS_NAME_KEY = "Locus name";
+    private static final String IS_HAPLOTYPE_KEY = "Haplotype";
+    private static final String IS_DIPLOTYPE_KEY = "Diplotype";
+    private static final String IMPUTATION_METHOD_KEY = "Imputation method";
+    private static final String VARIANT_DESCRIPTION_KEY = "Variant description";
+    private static final String INCLUSION_CRITERIA_KEY = "Score inclusion criteria";
+    private static final String IS_INTERACTION_KEY = "Interaction";
+    private static final String IS_DOMINANT_KEY = "Dominant inheritance model";
+    private static final String IS_RECESSIVE_KEY = "Recessive inheritance model";
+    private static final String DOSAGE_0_WEIGHT_KEY = "Effect weight with 0 copy of the effect allele";
+    private static final String DOSAGE_1_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
+    private static final String DOSAGE_2_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
+
 
     static {
         mapper = new ObjectMapper();
@@ -112,7 +148,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                     logger.info("Processing PGS file: {}", file.getName());
 
                     String pgsId = null;
-                    Map<String, Integer> labelPos = new HashMap<>();
+                    Map<String, Integer> columnPos = new HashMap<>();
 
                     BufferedReader br = FileUtils.newBufferedReader(file.toPath());
                     String line;
@@ -125,17 +161,17 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                                     throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id mismatch");
                                 }
                             }
-                        } else if (line.startsWith(RSID) || line.startsWith(CHR_NAME)) {
+                        } else if (line.startsWith(RSID_COL) || line.startsWith(CHR_NAME_COL)) {
                             String[] fields = line.split("\t");
                             for (int i = 0; i < fields.length; i++) {
-                                labelPos.put(fields[i], i);
+                                columnPos.put(fields[i], i);
                             }
                         } else {
                             // Sanity check
                             if (pgsId == null) {
                                 throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id is null");
                             }
-                            saveVariantPolygenicScore(line, labelPos, pgsId);
+                            saveVariantPolygenicScore(line, columnPos, pgsId);
                         }
                     }
                     br.close();
@@ -200,7 +236,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             // digital object identifier (doi)   PubMed ID (PMID)
             StringReader stringReader = new StringReader(line);
             CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            pgs.getPubmedIds().add(csvParser.getRecords().get(0).get(8));
+            CSVRecord strings = csvParser.getRecords().get(0);
+            pgs.getPubmedRefs().add(new PubmedReference(strings.get(8), strings.get(2), strings.get(3), strings.get(4), null));
         }
 
         // PGSxxxxx_metadata_efo_traits.csv
@@ -213,7 +250,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             StringReader stringReader = new StringReader(line);
             CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
             CSVRecord strings = csvParser.getRecords().get(0);
-            pgs.getEfoTraits().add(new EfoTrait(strings.get(0), strings.get(1), strings.get(2), strings.get(3)));
+            pgs.getTraits().add(new OntologyTermAnnotation(strings.get(0), strings.get(1), strings.get(2), "EFO", strings.get(3),
+                    new HashMap<>()));
         }
 
         // PGSxxxxx_metadata_scores.csv
@@ -246,7 +284,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             pgs.setName(strings.get(1));
         }
 
-        // PGSxxxxx_metadata_score_development_samples.csv
+        // TODO: PGSxxxxx_metadata_score_development_samples.csv
         // 0                          1                          2                       3                 4
         // Polygenic Score (PGS) ID   Stage of PGS Development   Number of Individuals   Number of Cases   Number of Controls
         // 5                                      6            7                         8
@@ -279,30 +317,32 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                 continue;
             }
 
-            PerformanceMetrics metrics = new PerformanceMetrics();
-            metrics.setId(strings.get(0));
+            Map<String, Object> values = new HashMap<>();
+            if (StringUtils.isNotEmpty(strings.get(2))) {
+                values.put(SAMPLE_SET_KEY, strings.get(2));
+            }
             if (StringUtils.isNotEmpty(strings.get(9))) {
-                metrics.setHazardRatio(strings.get(9));
+                values.put(HAZARD_RATIO_KEY, strings.get(9));
             }
             if (StringUtils.isNotEmpty(strings.get(10))) {
-                metrics.setOddsRatio(strings.get(10));
+                values.put(ODDS_RATIO_KEY, strings.get(10));
             }
             if (StringUtils.isNotEmpty(strings.get(11))) {
-                metrics.setBeta(strings.get(11));
+                values.put(BETA_KEY, strings.get(11));
             }
             if (StringUtils.isNotEmpty(strings.get(12))) {
-                metrics.setAuroc(strings.get(12));
+                values.put(AUROC_KEY, strings.get(12));
             }
             if (StringUtils.isNotEmpty(strings.get(13))) {
-                metrics.setcIndex(strings.get(13));
+                values.put(CINDEX_KEY, strings.get(13));
             }
             if (StringUtils.isNotEmpty(strings.get(14))) {
-                metrics.setOtherMetrics(strings.get(14));
+                values.put(OTHER_KEY, strings.get(14));
             }
-            pgs.getPerformanceMetrics().add(metrics);
+            pgs.getValues().add(values);
         }
 
-        // PGSxxxxx_metadata_evaluation_sample_sets.csv
+        // TODO: PGSxxxxx_metadata_evaluation_sample_sets.csv
         // 0                      1                          2                       3                 4
         // PGS Sample Set (PSS)   Polygenic Score (PGS) ID   Number of Individuals   Number of Cases   Number of Controls
         // 5                                      6                                    7
@@ -322,9 +362,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             StringReader stringReader = new StringReader(line);
             CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
             CSVRecord strings = csvParser.getRecords().get(0);
-            pgs.getCohorts().add(new Cohort(strings.get(0), strings.get(1)));
+            pgs.getCohorts().add(new PgsCohort(strings.get(0), strings.get(1), strings.get(2)));
         }
-
 
         // Create PGS object, with the common fields
         bw.write(jsonObjectWriter.writeValueAsString(pgs));
@@ -336,7 +375,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
     }
 
-    private void saveVariantPolygenicScore(String line, Map<String, Integer> labelPos, String pgsId)
+    private void saveVariantPolygenicScore(String line, Map<String, Integer> columnPos, String pgsId)
             throws RocksDBException, IOException {
         String chrom;
         int position;
@@ -345,48 +384,83 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
         String[] field = line.split("\t", -1);
 
-        if (labelPos.containsKey(HM_CHR)) {
-            chrom = field[labelPos.get(HM_CHR)];
+        if (columnPos.containsKey(HM_CHR_COL)) {
+            chrom = field[columnPos.get(HM_CHR_COL)];
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", HM_CHR, line);
+            logger.warn("Missing field '{}', skipping line: {}", HM_CHR_COL, line);
             return;
         }
-        if (labelPos.containsKey(HM_POS)) {
-            position = Integer.parseInt(field[labelPos.get(HM_POS)]);
+        if (columnPos.containsKey(HM_POS_COL)) {
+            position = Integer.parseInt(field[columnPos.get(HM_POS_COL)]);
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", HM_POS, line);
+            logger.warn("Missing field '{}', skipping line: {}", HM_POS_COL, line);
             return;
         }
-        if (labelPos.containsKey(EFFECT_ALLELE)) {
-            effectAllele = field[labelPos.get(EFFECT_ALLELE)];
+        if (columnPos.containsKey(EFFECT_ALLELE_COL)) {
+            effectAllele = field[columnPos.get(EFFECT_ALLELE_COL)];
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", EFFECT_ALLELE, line);
+            logger.warn("Missing field '{}', skipping line: {}", EFFECT_ALLELE_COL, line);
             return;
         }
-        if (labelPos.containsKey(HM_INFEROTHERALLELE) && StringUtils.isNotEmpty(field[labelPos.get(HM_INFEROTHERALLELE)])) {
-            otherAllele = field[labelPos.get(HM_INFEROTHERALLELE)];
-        } else if (labelPos.containsKey(OTHER_ALLELE)) {
-            otherAllele = field[labelPos.get(OTHER_ALLELE)];
+        if (columnPos.containsKey(HM_INFEROTHERALLELE_COL) && StringUtils.isNotEmpty(field[columnPos.get(HM_INFEROTHERALLELE_COL)])) {
+            otherAllele = field[columnPos.get(HM_INFEROTHERALLELE_COL)];
+        } else if (columnPos.containsKey(OTHER_ALLELE_COL)) {
+            otherAllele = field[columnPos.get(OTHER_ALLELE_COL)];
         } else {
-            logger.warn("Missing fields '{}' and '{}' (at least one is mandatory), skipping line: {}", HM_INFEROTHERALLELE, OTHER_ALLELE,
-                    line);
+            logger.warn("Missing fields '{}' and '{}' (at least one is mandatory), skipping line: {}", HM_INFEROTHERALLELE_COL,
+                    OTHER_ALLELE_COL, line);
             return;
         }
 
         // Create polygenic score
-        PolygenicScore pgs = new PolygenicScore();
-        pgs.setId(pgsId);
-        if (labelPos.containsKey(EFFECT_WEIGHT)) {
-            pgs.setEffectWeight(Double.parseDouble(field[labelPos.get(EFFECT_WEIGHT)]));
+        Map<String, Object> values = new HashMap<>();
+        if (columnPos.containsKey(EFFECT_WEIGHT_COL)) {
+            values.put(EFFECT_WEIGHT_KEY, Double.parseDouble(field[columnPos.get(EFFECT_WEIGHT_COL)]));
         }
-        if (labelPos.containsKey(ALLELEFREQUENCY_EFFECT)) {
-            pgs.setAlleleFrequencyEffect(Double.parseDouble(field[labelPos.get(ALLELEFREQUENCY_EFFECT)]));
+        if (columnPos.containsKey(ALLELEFREQUENCY_EFFECT_COL)) {
+            values.put(ALLELE_FREQUENCY_EFFECT_KEY, Double.parseDouble(field[columnPos.get(ALLELEFREQUENCY_EFFECT_COL)]));
         }
-        if (labelPos.containsKey(OR)) {
-            pgs.setOr(Double.parseDouble(field[labelPos.get(OR)]));
+        if (columnPos.containsKey(ODDS_RATIO_COL)) {
+            values.put(ODDS_RATIO_KEY, Double.parseDouble(field[columnPos.get(ODDS_RATIO_COL)]));
         }
-        if (labelPos.containsKey(LOCUS_NAME)) {
-            pgs.setLocusName(field[labelPos.get(LOCUS_NAME)]);
+        if (columnPos.containsKey(HAZARD_RATIO_COL)) {
+            values.put(HAZARD_RATIO_KEY, Double.parseDouble(field[columnPos.get(HAZARD_RATIO_COL)]));
+        }
+        if (columnPos.containsKey(LOCUS_NAME_COL)) {
+            values.put(LOCUS_NAME_KEY, field[columnPos.get(LOCUS_NAME_COL)]);
+        }
+        if (columnPos.containsKey(IS_HAPLOTYPE_COL)) {
+            values.put(IS_HAPLOTYPE_KEY, field[columnPos.get(IS_HAPLOTYPE_COL)]);
+        }
+        if (columnPos.containsKey(IS_DIPLOTYPE_COL)) {
+            values.put(IS_DIPLOTYPE_KEY, field[columnPos.get(IS_DIPLOTYPE_COL)]);
+        }
+        if (columnPos.containsKey(IMPUTATION_METHOD_COL)) {
+            values.put(IMPUTATION_METHOD_KEY, field[columnPos.get(IMPUTATION_METHOD_COL)]);
+        }
+        if (columnPos.containsKey(VARIANT_DESCRIPTION_COL)) {
+            values.put(VARIANT_DESCRIPTION_KEY, field[columnPos.get(VARIANT_DESCRIPTION_COL)]);
+        }
+        if (columnPos.containsKey(INCLUSION_CRITERIA_COL)) {
+            values.put(INCLUSION_CRITERIA_KEY, field[columnPos.get(INCLUSION_CRITERIA_COL)]);
+        }
+        if (columnPos.containsKey(IS_INTERACTION_COL)) {
+            values.put(IS_INTERACTION_KEY, field[columnPos.get(IS_INTERACTION_COL)]);
+        }
+        if (columnPos.containsKey(IS_DOMINANT_COL)) {
+            values.put(IS_DOMINANT_KEY, field[columnPos.get(IS_DOMINANT_COL)]);
+        }
+        if (columnPos.containsKey(IS_RECESSIVE_COL)) {
+            values.put(IS_RECESSIVE_KEY, field[columnPos.get(IS_RECESSIVE_COL)]);
+        }
+        if (columnPos.containsKey(DOSAGE_0_WEIGHT_COL)) {
+            values.put(DOSAGE_0_WEIGHT_KEY, field[columnPos.get(DOSAGE_0_WEIGHT_COL)]);
+        }
+        if (columnPos.containsKey(DOSAGE_1_WEIGHT_COL)) {
+            values.put(DOSAGE_1_WEIGHT_KEY, field[columnPos.get(DOSAGE_1_WEIGHT_COL)]);
+        }
+        if (columnPos.containsKey(DOSAGE_2_WEIGHT_COL)) {
+            values.put(DOSAGE_2_WEIGHT_KEY, field[columnPos.get(DOSAGE_2_WEIGHT_COL)]);
         }
 
         // Creating and/or updating variant polygenic score
@@ -395,10 +469,10 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             varPgs = new VariantPolygenicScore(chrom, position, otherAllele, effectAllele,
-                    Collections.singletonList(pgs));
+                    Collections.singletonList(new PolygenicScore(pgsId, values)));
         } else {
             varPgs = varPgsReader.readValue(dbContent);
-            varPgs.getPolygenicScores().add(pgs);
+            varPgs.getPolygenicScores().add(new PolygenicScore(pgsId, values));
         }
         rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
     }
@@ -411,9 +485,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         logger.info("Reading from RocksDB index and serializing to {}.json.gz", serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            logger.info("variant = {}", new String(rocksIterator.key()));
             VariantPolygenicScore varPgs = varPgsReader.readValue(rocksIterator.value());
-            logger.info("variant PGS: {}", varPgs.toString());
             serializer.serialize(varPgs);
             counter++;
             if (counter % 10000 == 0) {
