@@ -115,16 +115,16 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
                 List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
                 for (String chromosome : chromosomes) {
-                    String phastConsUrl = url + "/phastCons100way/hg38.100way.phastCons/chr" + chromosome
-                            + ".phastCons100way.wigFix.gz";
+                    String phastConsUrl = url + "/phastCons470way/hg38.470way.phastCons/chr" + chromosome
+                            + ".phastCons470way.wigFix.gz";
                     downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve("phastCons")
-                            .resolve("chr" + chromosome + ".phastCons100way.wigFix.gz").toString()));
+                            .resolve("chr" + chromosome + ".phastCons470way.wigFix.gz").toString()));
                     phastconsUrls.add(phastConsUrl);
 
-                    String phyloPUrl = url + "/phyloP100way/hg38.100way.phyloP100way/chr" + chromosome
-                            + ".phyloP100way.wigFix.gz";
+                    String phyloPUrl = url + "/phyloP470way/hg38.470way.phyloP470way/chr" + chromosome
+                            + ".phyloP470way.wigFix.gz";
                     downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve("phylop")
-                            .resolve("chr" + chromosome + ".phyloP100way.wigFix.gz").toString()));
+                            .resolve("chr" + chromosome + ".phyloP470way.wigFix.gz").toString()));
                     phyloPUrls.add(phyloPUrl);
                 }
                 String gerpUrl = configuration.getDownload().getGerp().getHost();

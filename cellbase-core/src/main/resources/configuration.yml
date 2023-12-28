@@ -109,9 +109,10 @@ download:
     host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/release_notes.txt
   conservation:
     host: https://hgdownload.cse.ucsc.edu/goldenPath/
+    version: "2022-08-30"
   gerp:
     host: http://ftp.ensembl.org/pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
-    version: "2023-04-22"
+    version: "2023-05-17"
   clinvar:
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-07.xml.gz
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-02.xml.gz
