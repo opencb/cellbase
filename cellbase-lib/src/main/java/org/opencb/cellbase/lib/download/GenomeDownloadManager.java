@@ -121,7 +121,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                             .resolve("chr" + chromosome + ".phastCons470way.wigFix.gz").toString()));
                     phastconsUrls.add(phastConsUrl);
 
-                    String phyloPUrl = url + "/phyloP470way/hg38.470way.phyloP470way/chr" + chromosome
+                    String phyloPUrl = url + "/phyloP470way/hg38.470way.phyloP/chr" + chromosome
                             + ".phyloP470way.wigFix.gz";
                     downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve("phylop")
                             .resolve("chr" + chromosome + ".phyloP470way.wigFix.gz").toString()));
