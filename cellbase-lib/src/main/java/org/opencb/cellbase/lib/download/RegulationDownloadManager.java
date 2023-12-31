@@ -125,7 +125,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_pfm", true);
         logger.info("Looking up " + motifIds.size() + " pfms");
         for (String pfmId : motifIds) {
-            System.out.println(motifIds)
+            System.out.println(motifIds);
             String urlString = "https://rest.ensembl.org/species/homo_sapiens/binding_matrix/ENSPFM" + pfmId
                     + "?unit=frequencies;content-type=application/json";
             URL url = new URL(urlString);
