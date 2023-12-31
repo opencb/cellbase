@@ -63,6 +63,7 @@ download:
       host: ftp://ftp.ensemblgenomes.org/pub
   hgnc:
     host: https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
+    version: 2023-11-01
   refSeq:
     host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
   refSeqFasta:
@@ -158,8 +159,7 @@ download:
   dgidb:
     host: https://dgidb.org/data/monthly_tsvs/2021-Jan/interactions.tsv
   cadd:
-#    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
-    host: https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz
+    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
