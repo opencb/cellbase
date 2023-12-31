@@ -157,14 +157,15 @@ download:
       - all_gene_disease_associations.tsv.gz
       - readme.txt
   dgidb:
-    host: https://dgidb.org/data/monthly_tsvs/2021-Jan/interactions.tsv
+    host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
+    version: "2022-02-01"
   cadd:
     host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
     host: https://storage.googleapis.com/gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
-    version: 2.1.1
+    version: "2.1.1"
   hpoObo:
     host: http://purl.obolibrary.org/obo/hp.obo
   goObo:

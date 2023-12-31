@@ -90,7 +90,7 @@ public class GeneBuilder extends CellBaseBuilder {
                        boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellBaseException {
         this(null, geneDirectoryPath.resolve("description.txt"),
                 geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("hgnc_complete_set_2022-01-01.txt"),
+                geneDirectoryPath.resolve("hgnc_complete_set_2023-11-01.txt"),
                 geneDirectoryPath.resolve("MANE.GRCh38.v1.1.summary.txt.gz"),
                 geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
