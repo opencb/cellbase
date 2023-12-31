@@ -116,6 +116,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
             String pfmId = getMatrixId(filePattern, tfbsMotifFeature);
             if (StringUtils.isNotEmpty(pfmId)) {
+                System.out.println(pfmId);
                 motifIds.add(pfmId);
             }
         }
@@ -125,9 +126,9 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_pfm", true);
         logger.info("Looking up " + motifIds.size() + " pfms");
         for (String pfmId : motifIds) {
-            System.out.println(motifIds);
             String urlString = "https://rest.ensembl.org/species/homo_sapiens/binding_matrix/ENSPFM" + pfmId
                     + "?unit=frequencies;content-type=application/json";
+            System.out.println(urlString);
             URL url = new URL(urlString);
             RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
             serializer.serialize(regulatoryPfm);
