@@ -177,6 +177,8 @@ download:
     host: http://purl.obolibrary.org/obo/go/go-basic.obo
   doidObo:
     host: http://purl.obolibrary.org/obo/doid.obo
+  mondoObo:
+    host: http://purl.obolibrary.org/obo/mondo.obo
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   revel:
