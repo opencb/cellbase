@@ -35,6 +35,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
@@ -516,6 +517,14 @@ public class VariantAnnotationCalculator {
             futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease,
                     pharmacogenomicsManager, logger);
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
+        }
+
+        FuturePolygenicScoreAnnotator futurePolygenicScoreAnnotator = null;
+        Future<List<CellBaseDataResult<PolygenicScoreAnnotation>>> polygenicScoreFuture = null;
+        if (annotatorSet.contains(EtlCommons.PGS_DATA)) {
+            futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease,
+                    polygenicScoreManager, logger);
+            polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
         }
 
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects

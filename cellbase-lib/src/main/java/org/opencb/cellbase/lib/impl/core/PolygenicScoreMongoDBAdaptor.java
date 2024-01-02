@@ -17,30 +17,43 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.SpliceScore;
-import org.opencb.biodata.models.core.SpliceScoreAlternate;
+import org.opencb.biodata.models.core.pgs.CommonPolygenicScore;
+import org.opencb.biodata.models.core.pgs.PolygenicScore;
 import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
-import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.cellbase.core.api.PharmaChemicalQuery;
+import org.opencb.biodata.models.variant.avro.PolygenicScoreAnnotation;
 import org.opencb.cellbase.core.api.PolygenicScoreQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
+import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
-        implements CellBaseCoreDBAdaptor<PolygenicScoreQuery, VariantPolygenicScore> {
+        implements CellBaseCoreDBAdaptor<PolygenicScoreQuery, CommonPolygenicScore> {
+
+    protected Map<Integer, MongoDBCollection> pgsVariantMongoDBCollectionByRelease;
+
+    private static final GenericDocumentComplexConverter<CommonPolygenicScore> CONVERTER;
+
+    static {
+        CONVERTER = new GenericDocumentComplexConverter<>(CommonPolygenicScore.class);
+    }
 
     public PolygenicScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -49,82 +62,116 @@ public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
     }
 
     private void init() {
-        logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
+        logger.debug("PolygenicScoreMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.SPLICE_SCORE_DATA);
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.PGS_COMMON_COLLECTION);
+        pgsVariantMongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.PGS_VARIANT_COLLECTION);
     }
 
-    public CellBaseDataResult<VariantPolygenicScore> getScores(String chromosome, int position, String reference, String alternate)
-            throws CellBaseException {
-        return getScores(chromosome, position, reference, alternate, 0);
-    }
-
-    public CellBaseDataResult<VariantPolygenicScore> getScores(String chromosome, int position, String reference, String alternate, int dataRelease)
+    public CellBaseDataResult<PolygenicScoreAnnotation> getPolygenicScoreAnnotation(String chromosome, int position, String reference,
+                                                                                    String alternate, int dataRelease)
             throws CellBaseException {
         long dbTimeStart = System.currentTimeMillis();
 
-//        String ref = StringUtils.isEmpty(reference) ? "-" : reference;
-//        String alt = StringUtils.isEmpty(alternate) ? "-" : alternate;
-//        List<Bson> andBsonList = new ArrayList<>();
-//        andBsonList.add(Filters.eq("chromosome", chromosome));
-//        andBsonList.add(Filters.eq("position", position));
-//        andBsonList.add(Filters.eq("refAllele", ref));
-//        Bson query = Filters.and(andBsonList);
-////        System.out.println("\t\tgetScores >>>>>>> " + query);
-//
-//        final String id = chromosome + ":" + position + ":" + ref + ":" + alt;
-//
-//        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
-//        DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
-//
-//        List<SpliceScore> results = new ArrayList<>();
-//
-//        // Search for the right splice score
-//        if (spliceScoreDataResult.getNumResults() > 0) {
-////            System.out.println("\t\tgetScores >>>>>>> num. results = " + spliceScoreDataResult.getNumResults());
-//            for (SpliceScore score : spliceScoreDataResult.getResults()) {
-//                for (SpliceScoreAlternate scoreAlternate : score.getAlternates()) {
-//                    if (alt.equals(scoreAlternate.getAltAllele())) {
-//                        score.setAlternates(Collections.singletonList(scoreAlternate));
-////                        System.out.println("\t\t\t\tgetScores, MATCH (" + score.getSource() + "): " + alt + " vs "
-////                                + scoreAlternate.getAltAllele());
-//                        results.add(score);
-//                    }
-//                }
-//            }
-//        }
-//        int dbTime = Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue();
-//        return new CellBaseDataResult<>(id, dbTime, new ArrayList<>(), results.size(), results, results.size());
-        return null;
+        List<Bson> andBsonList = new ArrayList<>();
+        andBsonList.add(Filters.eq("chromosome", chromosome));
+        andBsonList.add(Filters.eq("position", position));
+        Bson query = Filters.and(andBsonList);
+
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(pgsVariantMongoDBCollectionByRelease, dataRelease);
+        DataResult<VariantPolygenicScore> pgsVariantDataResult = mongoDBCollection.find(query, null, VariantPolygenicScore.class, new QueryOptions());
+
+        List<PolygenicScoreAnnotation> results = new ArrayList<>();
+
+        // Search for the right polygenic score, i.e., checking reference and alternate with PGS effectAllele and otherAllele
+        if (pgsVariantDataResult.getNumResults() > 0) {
+            for (VariantPolygenicScore score : pgsVariantDataResult.getResults()) {
+                if ((score.getEffectAllele().equals(reference) && score.getOtherAllele().equals(alternate))
+                        || (score.getEffectAllele().equals(alternate) && score.getOtherAllele().equals(reference))) {
+                    PolygenicScoreAnnotation pgsAnnotation = new PolygenicScoreAnnotation();
+                    List<String> pgsIds = score.getPolygenicScores().stream().map(PolygenicScore::getId).collect(Collectors.toList());
+//                    pgsAnnotation.setId(score.get);
+                    pgsAnnotation.getVariants().add(new org.opencb.biodata.models.variant.avro.VariantPolygenicScore(
+                            score.getEffectAllele(), score.getOtherAllele(), score.getPolygenicScores());
+                    results.add(score);
+                }
+            }
+        }
+        int dbTime = Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue();
+        final String id = chromosome + ":" + position + ":" + reference + ":" + alternate;
+        return new CellBaseDataResult<>(id, dbTime, new ArrayList<>(), results.size(), results, results.size());
     }
 
     @Override
-    public CellBaseIterator<VariantPolygenicScore> iterator(PolygenicScoreQuery query) throws CellBaseException {
+    public CellBaseIterator<CommonPolygenicScore> iterator(PolygenicScoreQuery query) throws CellBaseException {
+        Bson bson = parseQuery(query);
+        QueryOptions queryOptions = query.toQueryOptions();
+        Bson projection = getProjection(query);
+        MongoDBIterator<CommonPolygenicScore> iterator;
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
+        return new CellBaseMongoDBIterator<>(iterator);
+    }
+
+    @Override
+    public CellBaseDataResult<CommonPolygenicScore> aggregationStats(PolygenicScoreQuery query) {
         logger.error("Not implemented yet");
         return null;
     }
 
     @Override
-    public CellBaseDataResult<VariantPolygenicScore> aggregationStats(PolygenicScoreQuery query) {
-        logger.error("Not implemented yet");
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<VariantPolygenicScore> groupBy(PolygenicScoreQuery query) throws CellBaseException {
+    public CellBaseDataResult<CommonPolygenicScore> groupBy(PolygenicScoreQuery query) throws CellBaseException {
         logger.error("Not implemented yet");
         return null;
     }
 
     @Override
     public CellBaseDataResult<String> distinct(PolygenicScoreQuery query) throws CellBaseException {
-        logger.error("Not implemented yet");
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
     @Override
-    public List<CellBaseDataResult<VariantPolygenicScore>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey) throws CellBaseException {
-        logger.error("Not implemented yet");
-        return null;
+    public List<CellBaseDataResult<CommonPolygenicScore>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey) throws CellBaseException {
+        List<CellBaseDataResult<CommonPolygenicScore>> results = new ArrayList<>();
+        Bson projection = getProjection(queryOptions);
+        for (String id : ids) {
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson query = Filters.or(orBsonList);
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+            results.add(new CellBaseDataResult<>(mongoDBCollection.find(query, projection, CONVERTER, new QueryOptions())));
+        }
+        return results;
+    }
+
+    public Bson parseQuery(PolygenicScoreQuery pharmaQuery) {
+        List<Bson> andBsonList = new ArrayList<>();
+        try {
+            for (Map.Entry<String, Object> entry : pharmaQuery.toObjectMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                switch (dotNotationName) {
+                    case "token":
+                    case "apiKey":
+                    case "dataRelease":
+                        // do nothing
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        logger.debug("PolygenicScoreQuery parsed query: {}", andBsonList);
+        if (CollectionUtils.isNotEmpty(andBsonList)) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
     }
 }

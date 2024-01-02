@@ -17,15 +17,13 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
-import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.cellbase.core.api.PharmaChemicalQuery;
+import org.opencb.biodata.models.variant.avro.PolygenicScoreAnnotation;
 import org.opencb.cellbase.core.api.PolygenicScoreQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.lib.impl.core.PharmacogenomicsMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.PolygenicScoreMongoDBAdaptor;
 
 import java.util.List;
@@ -56,5 +54,11 @@ public class PolygenicScoreManager extends AbstractManager implements Aggregatio
     public List<CellBaseDataResult<VariantPolygenicScore>> info(List<String> ids, ProjectionQueryOptions query, int dataRelease,
                                                String apiKey) throws CellBaseException {
         return pgsDBAdaptor.info(ids, query, dataRelease, apiKey);
+    }
+
+    public CellBaseDataResult<PolygenicScoreAnnotation> getPolygenicScoreAnnotation(String chromosome, Integer start, String reference,
+                                                                                    String alternate, int dataRelease)
+            throws CellBaseException {
+        return pgsDBAdaptor.getPolygenicScoreAnnotation(chromosome, start, reference, alternate, dataRelease);
     }
 }

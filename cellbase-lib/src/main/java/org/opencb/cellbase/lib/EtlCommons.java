@@ -47,7 +47,10 @@ public class EtlCommons {
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
+
     public static final String PGS_DATA = "polygenic_score";
+    public static final String PGS_COMMON_COLLECTION = "common_polygenic_scores";
+    public static final String PGS_VARIANT_COLLECTION = "variant_polygenic_scores";
     public static final String PGS_VERSION_FILENAME = "pgsVersion.json";
 
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";

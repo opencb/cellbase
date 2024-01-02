@@ -608,7 +608,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         Path pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.COMMON_POLYGENIC_SCORE_FILENAME);
         logger.info("Loading file '{}'", pathToLoad.toFile().getName());
         try {
-            loadRunner.load(pathToLoad, "common_polygenic_score", dataRelease);
+            loadRunner.load(pathToLoad, EtlCommons.PGS_COMMON_COLLECTION, dataRelease);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                 | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
                 | LoaderException e) {
@@ -619,7 +619,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME);
         logger.info("Loading file '{}'", pathToLoad.toFile().getName());
         try {
-            loadRunner.load(pathToLoad, "variant_polygenic_score", dataRelease);
+            loadRunner.load(pathToLoad, EtlCommons.PGS_VARIANT_COLLECTION, dataRelease);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                 | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
                 | LoaderException e) {
@@ -627,15 +627,15 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Create index
-        createIndex("variant_polygenic_score");
-        createIndex("common_polygenic_score");
+        createIndex(EtlCommons.PGS_COMMON_COLLECTION);
+        createIndex(EtlCommons.PGS_VARIANT_COLLECTION);
 
         // Update release (collection and sources)
         List<Path> sources = new ArrayList<>(Arrays.asList(
                 input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_VERSION_FILENAME)
         ));
-        dataReleaseManager.update(dataRelease, "variant_polygenic_score", EtlCommons.PGS_DATA, sources);
-        dataReleaseManager.update(dataRelease, "common_polygenic_score", null, null);
+        dataReleaseManager.update(dataRelease, EtlCommons.PGS_VARIANT_COLLECTION, EtlCommons.PGS_DATA, sources);
+        dataReleaseManager.update(dataRelease, EtlCommons.PGS_COMMON_COLLECTION, null, null);
     }
 
     private void createIndex(String collection) {
