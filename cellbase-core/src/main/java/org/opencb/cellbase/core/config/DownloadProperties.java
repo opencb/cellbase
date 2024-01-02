@@ -26,6 +26,7 @@ public class DownloadProperties {
     private EnsemblProperties ensembl;
     private EnsemblProperties ensemblGenomes;
     private URLProperties hgnc;
+    private URLProperties cancerHotspot;
     private URLProperties refSeq;
     private URLProperties refSeqFasta;
     private URLProperties refSeqProteinFasta;
@@ -514,6 +515,15 @@ public class DownloadProperties {
 
     public DownloadProperties setHgnc(URLProperties hgnc) {
         this.hgnc = hgnc;
+        return this;
+    }
+
+    public URLProperties getCancerHotspot() {
+        return cancerHotspot;
+    }
+
+    public DownloadProperties setCancerHotspot(URLProperties cancerHotspot) {
+        this.cancerHotspot = cancerHotspot;
         return this;
     }
 
