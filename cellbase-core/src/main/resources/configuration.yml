@@ -101,7 +101,7 @@ download:
     host: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
     version: "2023-11-08"
   uniprotRelNotes:
-    host: ftp://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
+    host: https://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
     version: "2023-11-08"
   intact:
     host: ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
