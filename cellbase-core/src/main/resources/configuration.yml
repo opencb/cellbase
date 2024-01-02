@@ -98,7 +98,7 @@ download:
     host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
     version: "9.0"
   uniprot:
-    host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+    host: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
     version: "2023-11-08"
   uniprotRelNotes:
     host: ftp://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
@@ -122,6 +122,7 @@ download:
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-02.xml.gz
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-11.xml.gz
     host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2023-12.xml.gz
+    version: "2023-12-01"
   clinvarVariation:
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-07.xml.gz
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-02.xml.gz
@@ -129,10 +130,10 @@ download:
     host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2023-12.xml.gz
   clinvarSummary:
     host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
-    version: "2023-12-17"
+    version: "2023-12-01"
   clinvarVariationAllele:
     host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz
-    version: "2023-12-17"
+    version: "2023-12-01"
   clinvarEfoTerms:
     host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
   iarctp53:
@@ -150,8 +151,10 @@ download:
   genomicSuperDups:
     host: http://hgdownload.cse.ucsc.edu/goldenPath
   gwasCatalog:
-    host: http://resources.opencb.org/opencb/cellbase/data/gwas/gwas_catalog_v1.0.2-associations_e106_r2022-05-17.tsv
-    version: "1.0.2 associations_e106_r2022-05-17"
+#    host: http://resources.opencb.org/opencb/cellbase/data/gwas/gwas_catalog_v1.0.2-associations_e106_r2022-05-17.tsv
+#    version: "1.0.2 associations_e106_r2022-05-17"
+    host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2023/12/21/gwas-catalog-associations.tsv
+    version: "23-12-21"
   hpo:
     ## Downlaod manually from here now:  https://hpo.jax.org/app/data/annotations
     host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
