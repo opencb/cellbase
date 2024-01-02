@@ -173,12 +173,16 @@ download:
     version: "2.1.1"
   hpoObo:
     host: http://purl.obolibrary.org/obo/hp.obo
+    version: "2023-12-01"
   goObo:
     host: http://purl.obolibrary.org/obo/go/go-basic.obo
+    version: "2023-12-01"
   doidObo:
     host: http://purl.obolibrary.org/obo/doid.obo
+    version: "2023-12-01"
   mondoObo:
     host: http://purl.obolibrary.org/obo/mondo.obo
+    version: "2023-12-01"
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   revel:
