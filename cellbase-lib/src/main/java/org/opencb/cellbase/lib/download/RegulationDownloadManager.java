@@ -116,7 +116,6 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
             String pfmId = getMatrixId(filePattern, tfbsMotifFeature);
             if (StringUtils.isNotEmpty(pfmId)) {
-                System.out.println(pfmId);
                 motifIds.add(pfmId);
             }
         }
