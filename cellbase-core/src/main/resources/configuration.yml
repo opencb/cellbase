@@ -154,7 +154,7 @@ download:
     version: "1.0.2 associations_e106_r2022-05-17"
   hpo:
     ## Downlaod manually from here now:  https://hpo.jax.org/app/data/annotations
-#    host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
+    host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
   disgenet:
     host: https://www.disgenet.org/static/disgenet_ap1/files/downloads
     files:
