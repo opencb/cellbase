@@ -97,20 +97,24 @@ download:
   miRTarBase:
     host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
     version: "9.0"
+
+  ## Protein Data
   uniprot:
     host: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
     version: "2023-11-08"
   uniprotRelNotes:
     host: https://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
     version: "2023-11-08"
-  intact:
-    host: ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
   interpro:
-#    host: ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/protein2ipr.dat.gz
     host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/protein2ipr.dat.gz
+    version: "2023-11-08"
   interproRelNotes:
-#    host: ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/release_notes.txt
     host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/release_notes.txt
+  intact:
+    host: https://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
+    version: "2023-10-07"
+
+  ## Conservation Scores
   conservation:
     host: https://hgdownload.cse.ucsc.edu/goldenPath/
     version: "2022-08-30"
