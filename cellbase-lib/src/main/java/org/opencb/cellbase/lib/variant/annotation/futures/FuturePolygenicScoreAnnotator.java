@@ -17,21 +17,17 @@
 package org.opencb.cellbase.lib.variant.annotation.futures;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.pharma.*;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.core.api.PharmaChemicalQuery;
-import org.opencb.cellbase.core.api.PolygenicScoreQuery;
+import org.opencb.biodata.models.variant.avro.PolygenicScoreAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.managers.PharmacogenomicsManager;
 import org.opencb.cellbase.lib.managers.PolygenicScoreManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 public class FuturePolygenicScoreAnnotator implements Callable<List<CellBaseDataResult<PolygenicScoreAnnotation>>> {
     private PolygenicScoreManager polygenicScoreManager;
@@ -65,7 +61,7 @@ public class FuturePolygenicScoreAnnotator implements Callable<List<CellBaseData
             cellBaseDataResultList.add(polygenicScoreManager.getPolygenicScoreAnnotation(variant.getChromosome(), variant.getStart(),
                     variant.getReference(), variant.getAlternate(), dataRelease));
         }
-        logger.info("Pharmacogenomics queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
+        logger.info("PolygenicScore queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
                 variantList.size());
         return cellBaseDataResultList;
     }

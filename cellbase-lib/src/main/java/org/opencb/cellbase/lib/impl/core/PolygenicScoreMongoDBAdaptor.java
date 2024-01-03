@@ -24,6 +24,7 @@ import org.opencb.biodata.models.core.pgs.CommonPolygenicScore;
 import org.opencb.biodata.models.core.pgs.PolygenicScore;
 import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
 import org.opencb.biodata.models.variant.avro.PolygenicScoreAnnotation;
+import org.opencb.biodata.models.variant.avro.PolygenicScoreVariant;
 import org.opencb.cellbase.core.api.PolygenicScoreQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -39,9 +40,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
@@ -79,7 +78,8 @@ public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
         Bson query = Filters.and(andBsonList);
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(pgsVariantMongoDBCollectionByRelease, dataRelease);
-        DataResult<VariantPolygenicScore> pgsVariantDataResult = mongoDBCollection.find(query, null, VariantPolygenicScore.class, new QueryOptions());
+        DataResult<VariantPolygenicScore> pgsVariantDataResult = mongoDBCollection.find(query, null, VariantPolygenicScore.class,
+                new QueryOptions());
 
         List<PolygenicScoreAnnotation> results = new ArrayList<>();
 
@@ -88,12 +88,33 @@ public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
             for (VariantPolygenicScore score : pgsVariantDataResult.getResults()) {
                 if ((score.getEffectAllele().equals(reference) && score.getOtherAllele().equals(alternate))
                         || (score.getEffectAllele().equals(alternate) && score.getOtherAllele().equals(reference))) {
-                    PolygenicScoreAnnotation pgsAnnotation = new PolygenicScoreAnnotation();
                     List<String> pgsIds = score.getPolygenicScores().stream().map(PolygenicScore::getId).collect(Collectors.toList());
-//                    pgsAnnotation.setId(score.get);
-                    pgsAnnotation.getVariants().add(new org.opencb.biodata.models.variant.avro.VariantPolygenicScore(
-                            score.getEffectAllele(), score.getOtherAllele(), score.getPolygenicScores());
-                    results.add(score);
+                    List<CellBaseDataResult<CommonPolygenicScore>> infoResults = info(pgsIds, null, dataRelease, null);
+                    for (CellBaseDataResult<CommonPolygenicScore> infoResult : infoResults) {
+                        CommonPolygenicScore pgs = infoResult.first();
+
+                        // Init PGS
+                        PolygenicScoreAnnotation pgsAnnotation = new PolygenicScoreAnnotation(pgs.getId(), pgs.getName(), pgs.getSource(),
+                                pgs.getVersion(), pgs.getTraits(), pgs.getPubmedRefs(), pgs.getValues(), new ArrayList());
+
+                        // Add PGS variant scores to that PGS
+                        PolygenicScoreVariant pgsVariant = new PolygenicScoreVariant(score.getEffectAllele(), score.getOtherAllele(),
+                                new HashMap<>());
+                        for (PolygenicScore polygenicScore : score.getPolygenicScores()) {
+                            // Search the matched PGS
+                            System.out.println(">>> polygenic score ID = " + polygenicScore.getId() + ", " + pgs.getId());
+                            System.out.println(">>> polygenic score variant scores size = " + polygenicScore.getValues().size());
+                            if (pgs.getId().equals(polygenicScore.getId())) {
+                                System.out.println("FOUND !!!!!!");
+                                pgsVariant.setValues(polygenicScore.getValues());
+                                break;
+                            }
+                        }
+                        pgsAnnotation.setVariants(Collections.singletonList(pgsVariant));
+
+                        // Add annotation to the output list
+                        results.add(pgsAnnotation);
+                    }
                 }
             }
         }
@@ -133,7 +154,8 @@ public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
     }
 
     @Override
-    public List<CellBaseDataResult<CommonPolygenicScore>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey) throws CellBaseException {
+    public List<CellBaseDataResult<CommonPolygenicScore>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
+                                                               String apiKey) throws CellBaseException {
         List<CellBaseDataResult<CommonPolygenicScore>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         for (String id : ids) {

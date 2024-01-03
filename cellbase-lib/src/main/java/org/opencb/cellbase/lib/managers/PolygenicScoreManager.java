@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
+import org.opencb.biodata.models.core.pgs.CommonPolygenicScore;
 import org.opencb.biodata.models.variant.avro.PolygenicScoreAnnotation;
 import org.opencb.cellbase.core.api.PolygenicScoreQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
@@ -28,7 +28,7 @@ import org.opencb.cellbase.lib.impl.core.PolygenicScoreMongoDBAdaptor;
 
 import java.util.List;
 
-public class PolygenicScoreManager extends AbstractManager implements AggregationApi<PolygenicScoreQuery, VariantPolygenicScore> {
+public class PolygenicScoreManager extends AbstractManager implements AggregationApi<PolygenicScoreQuery, CommonPolygenicScore> {
 
     private PolygenicScoreMongoDBAdaptor pgsDBAdaptor;
 
@@ -47,11 +47,11 @@ public class PolygenicScoreManager extends AbstractManager implements Aggregatio
     }
 
     @Override
-    public CellBaseCoreDBAdaptor<PolygenicScoreQuery, VariantPolygenicScore> getDBAdaptor() {
+    public CellBaseCoreDBAdaptor<PolygenicScoreQuery, CommonPolygenicScore> getDBAdaptor() {
         return pgsDBAdaptor;
     }
 
-    public List<CellBaseDataResult<VariantPolygenicScore>> info(List<String> ids, ProjectionQueryOptions query, int dataRelease,
+    public List<CellBaseDataResult<CommonPolygenicScore>> info(List<String> ids, ProjectionQueryOptions query, int dataRelease,
                                                String apiKey) throws CellBaseException {
         return pgsDBAdaptor.info(ids, query, dataRelease, apiKey);
     }

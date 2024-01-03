@@ -24,11 +24,11 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.OntologyTermAnnotation;
 import org.opencb.biodata.models.core.pgs.CommonPolygenicScore;
 import org.opencb.biodata.models.core.pgs.PgsCohort;
 import org.opencb.biodata.models.core.pgs.PolygenicScore;
 import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
+import org.opencb.biodata.models.variant.avro.OntologyTermAnnotation;
 import org.opencb.biodata.models.variant.avro.PubmedReference;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -320,7 +320,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                 continue;
             }
 
-            Map<String, Object> values = new HashMap<>();
+            Map<String, String> values = new HashMap<>();
             if (StringUtils.isNotEmpty(strings.get(2))) {
                 values.put(SAMPLE_SET_KEY, strings.get(2));
             }
@@ -416,18 +416,18 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
 
         // Create polygenic score
-        Map<String, Object> values = new HashMap<>();
+        Map<String, String> values = new HashMap<>();
         if (columnPos.containsKey(EFFECT_WEIGHT_COL)) {
-            values.put(EFFECT_WEIGHT_KEY, Double.parseDouble(field[columnPos.get(EFFECT_WEIGHT_COL)]));
+            values.put(EFFECT_WEIGHT_KEY, field[columnPos.get(EFFECT_WEIGHT_COL)]);
         }
         if (columnPos.containsKey(ALLELEFREQUENCY_EFFECT_COL)) {
-            values.put(ALLELE_FREQUENCY_EFFECT_KEY, Double.parseDouble(field[columnPos.get(ALLELEFREQUENCY_EFFECT_COL)]));
+            values.put(ALLELE_FREQUENCY_EFFECT_KEY, field[columnPos.get(ALLELEFREQUENCY_EFFECT_COL)]);
         }
         if (columnPos.containsKey(ODDS_RATIO_COL)) {
-            values.put(ODDS_RATIO_KEY, Double.parseDouble(field[columnPos.get(ODDS_RATIO_COL)]));
+            values.put(ODDS_RATIO_KEY, field[columnPos.get(ODDS_RATIO_COL)]);
         }
         if (columnPos.containsKey(HAZARD_RATIO_COL)) {
-            values.put(HAZARD_RATIO_KEY, Double.parseDouble(field[columnPos.get(HAZARD_RATIO_COL)]));
+            values.put(HAZARD_RATIO_KEY, field[columnPos.get(HAZARD_RATIO_COL)]);
         }
         if (columnPos.containsKey(LOCUS_NAME_COL)) {
             values.put(LOCUS_NAME_KEY, field[columnPos.get(LOCUS_NAME_COL)]);
