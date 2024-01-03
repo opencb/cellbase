@@ -146,7 +146,9 @@
 {"collection": "pharmacogenomics", "fields": {"variants.confidence": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.evidences.pubmed": 1}, "options": {"background": true}}
 
-{"collection": "common_polygenic_score", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "variant_polygenic_score", "fields": {"_chunkIds": 1}, "options": {"background": true}}
-{"collection": "variant_polygenic_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
-{"collection": "variant_polygenic_score", "fields": {"polygenicScores.id": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_scores", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_scores", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_scores", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"polygenicScores.id": 1}, "options": {"background": true}}
