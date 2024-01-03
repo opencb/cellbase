@@ -172,7 +172,9 @@ download:
     version: "2022-02-01"
   cadd:
     ## Nacho: Move to https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz ASAP!
-    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
+#    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
+    host: https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz
+    version: "1.7-pre"
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
