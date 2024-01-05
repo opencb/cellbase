@@ -52,6 +52,8 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
     private static ObjectReader predictionReader;
     private static ObjectWriter jsonObjectWriter;
 
+    private static final String SOURCE = "AlphaMissense";
+
     static {
         mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -107,13 +109,13 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                     position = Integer.parseInt(split[1]);
                 } else {
                     logger.warn("Missing field 'position', skipping line: {}", line);
-                    return;
+                    continue;
                 }
                 if (StringUtils.isNotEmpty(split[2])) {
                     reference = split[2];
                 } else {
                     logger.warn("Missing field 'reference', skipping line: {}", line);
-                    return;
+                    continue;
                 }
                 if (StringUtils.isNotEmpty(split[3])) {
                     alternate = split[3];
@@ -122,13 +124,13 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                     transcriptId = split[6];
                 } else {
                     logger.warn("Missing field 'transcript_id', skipping line: {}", line);
-                    return;
+                    continue;
                 }
                 if (StringUtils.isNotEmpty(split[5])) {
                     uniprotId = split[5];
                 } else {
                     logger.warn("Missing field 'uniprot_id', skipping line: {}", line);
-                    return;
+                    continue;
                 }
                 if (StringUtils.isNotEmpty(split[7])) {
                     Matcher matcher = aaChangePattern.matcher(split[7]);
@@ -138,11 +140,11 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                         aaAlternate = matcher.group(3);
                     } else {
                         logger.warn("Error parsing field 'protein_variant' = {}, skipping line: {}", split[7], line);
-                        return;
+                        continue;
                     }
                 } else {
                     logger.warn("Missing field 'protein_variant', skipping line: {}", line);
-                    return;
+                    continue;
                 }
 
                 // Create protein substitution score
@@ -162,7 +164,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                 byte[] dbContent = rdb.get(key.getBytes());
                 if (dbContent == null) {
                     prediction = new ProteinSubstitutionPrediction(chrom, position, reference, transcriptId, uniprotId, aaPosition,
-                            aaReference, "AlphaMissense", null, Collections.singletonList(score));
+                            aaReference, SOURCE, null, Collections.singletonList(score));
                 } else {
                     prediction = predictionReader.readValue(dbContent);
                     prediction.getScores().add(score);
