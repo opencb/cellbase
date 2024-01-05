@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.ProteinSubstitutionPrediction;
-import org.opencb.biodata.models.core.ProteinSubstitutionScore;
+import org.opencb.biodata.models.core.ProteinSubstitutionPredictionScore;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.builders.utils.RocksDBUtils;
 import org.opencb.commons.utils.FileUtils;
@@ -75,7 +75,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
         // Sanity check
         FileUtils.checkFile(alphaMissenseFile.toPath());
 
-        Object[] dbConnection = RocksDBUtils.getDBConnection(serializer.getOutdir().resolve("rdb.idx").toString(), true);
+        Object[] dbConnection = RocksDBUtils.getDBConnection(serializer.getOutdir().resolve("alphamissense-rdb.idx").toString(), true);
         rdb = (RocksDB) dbConnection[0];
         Options dbOption = (Options) dbConnection[1];
         String dbLocation = (String) dbConnection[2];
@@ -90,12 +90,34 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                 // CHROM    POS REF ALT genome  uniprot_id  transcript_id   protein_variant am_pathogenicity    am_class
                 String[] split = line.split("\t", -1);
 
+                String chrom = null;
+                int position;
+                String reference;
+                String alternate = null;
                 String transcriptId;
                 String uniprotId;
-                int position;
+                int aaPosition;
                 String aaReference;
                 String aaAlternate;
 
+                if (StringUtils.isNotEmpty(split[0])) {
+                    chrom = split[0];
+                }
+                if (StringUtils.isNotEmpty(split[1])) {
+                    position = Integer.parseInt(split[1]);
+                } else {
+                    logger.warn("Missing field 'position', skipping line: {}", line);
+                    return;
+                }
+                if (StringUtils.isNotEmpty(split[2])) {
+                    reference = split[2];
+                } else {
+                    logger.warn("Missing field 'reference', skipping line: {}", line);
+                    return;
+                }
+                if (StringUtils.isNotEmpty(split[3])) {
+                    alternate = split[3];
+                }
                 if (StringUtils.isNotEmpty(split[6])) {
                     transcriptId = split[6];
                 } else {
@@ -112,7 +134,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                     Matcher matcher = aaChangePattern.matcher(split[7]);
                     if (matcher.matches()) {
                         aaReference = matcher.group(1);
-                        position = Integer.parseInt(matcher.group(2));
+                        aaPosition = Integer.parseInt(matcher.group(2));
                         aaAlternate = matcher.group(3);
                     } else {
                         logger.warn("Error parsing field 'protein_variant' = {}, skipping line: {}", split[7], line);
@@ -124,7 +146,8 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                 }
 
                 // Create protein substitution score
-                ProteinSubstitutionScore score = new ProteinSubstitutionScore();
+                ProteinSubstitutionPredictionScore score = new ProteinSubstitutionPredictionScore();
+                score.setAlternate(alternate);
                 score.setAaAlternate(aaAlternate);
                 if (StringUtils.isNotEmpty(split[8])) {
                     score.setScore(Double.parseDouble(split[8]));
@@ -135,11 +158,11 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
 
                 // Creating and/or updating protein substitution prediction
                 ProteinSubstitutionPrediction prediction;
-                String key = transcriptId + "_" + uniprotId + "_" + position + "_" + aaReference;
+                String key = transcriptId + "_" + uniprotId + "_" + position + "_" + reference + "_" + aaPosition + "_" + aaReference;
                 byte[] dbContent = rdb.get(key.getBytes());
                 if (dbContent == null) {
-                    prediction = new ProteinSubstitutionPrediction(transcriptId, uniprotId, position, aaReference, "AlphaMissense",
-                            Collections.singletonList(score));
+                    prediction = new ProteinSubstitutionPrediction(chrom, position, reference, transcriptId, uniprotId, aaPosition,
+                            aaReference, "AlphaMissense", null, Collections.singletonList(score));
                 } else {
                     prediction = predictionReader.readValue(dbContent);
                     prediction.getScores().add(score);
@@ -170,7 +193,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
         logger.info("Reading from RocksDB index and serializing to {}.json.gz", serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            logger.info("variant = {}", new String(rocksIterator.key()));
+//            logger.info("variant = {}", new String(rocksIterator.key()));
             ProteinSubstitutionPrediction prediction = predictionReader.readValue(rocksIterator.value());
             serializer.serialize(prediction);
             counter++;
