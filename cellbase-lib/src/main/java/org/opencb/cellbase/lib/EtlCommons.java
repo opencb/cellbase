@@ -41,7 +41,6 @@ public class EtlCommons {
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
-    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     public static final String REGULATION_DATA = "regulation";
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
@@ -92,11 +91,17 @@ public class EtlCommons {
 
     public static final String PUBMED_DATA = "pubmed";
 
-    public static final String ALPHAMISSENSE_DATA = "alphamissense";
-    public static final String ALPHAMISSENSE_VERSION_FILENAME = "alphamissenseVersion.json";
-
-    // Load specific data options
+    // Protein substitution predictions consist of sift, polyphen, revel and alphamissense
+    public static final String PROTEIN_SUBSTITUTION_PREDICTION_DATA = "protein_substitution_predictions";
+    // Sift and polyphen
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
+    // Revel
+    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
+    // AlphaMissense
+    public static final String ALPHAMISSENSE_DATA = "alphamissense";
+    public static final String ALPHAMISSENSE_RAW_FILENAME = "AlphaMissense_hg38.tsv.gz";
+    public static final String ALPHAMISSENSE_JSON_FILENAME = "alphamissense_hg38.json.gz";
+    public static final String ALPHAMISSENSE_VERSION_FILENAME = "alphamissenseVersion.json";
 
     // Path and file names
     public static final String GERP_SUBDIRECTORY = "gerp";

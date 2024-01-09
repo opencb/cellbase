@@ -442,21 +442,21 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildAlphaMissense() throws IOException {
-        Path pubmedInputFolder = downloadFolder.resolve(EtlCommons.PUBMED_DATA);
-        Path pubmedOutputFolder = buildFolder.resolve(EtlCommons.PUBMED_DATA);
-        if (!pubmedOutputFolder.toFile().exists()) {
-            pubmedOutputFolder.toFile().mkdirs();
+        Path inputFolder = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Path outputFolder = buildFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        if (!outputFolder.toFile().exists()) {
+            outputFolder.toFile().mkdirs();
         }
 
         logger.info("Copying AlphaMissense version file...");
-        if (downloadFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(downloadFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME),
-                    buildFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        if (inputFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inputFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME),
+                    outputFolder.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
         }
 
-        String alphaMissenseFilename = new File(configuration.getDownload().getAlphaMissense().getFiles().get(0)).getName();
-        File alphaMissenseFile = downloadFolder.resolve(alphaMissenseFilename).toFile();
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.ALPHAMISSENSE_DATA);
+        File alphaMissenseFile = inputFolder.resolve(EtlCommons.ALPHAMISSENSE_RAW_FILENAME).toFile();
+        String basename = EtlCommons.ALPHAMISSENSE_JSON_FILENAME.replace("\\.json\\.gz", "");
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outputFolder, basename);
         return new AlphaMissenseBuilder(alphaMissenseFile, serializer);
     }
 }
