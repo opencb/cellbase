@@ -52,7 +52,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
     private static ObjectReader predictionReader;
     private static ObjectWriter jsonObjectWriter;
 
-    private static final String SOURCE = "AlphaMissense";
+    private static final String SOURCE = "alphamissense";
 
     static {
         mapper = new ObjectMapper();
@@ -103,7 +103,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                 String aaAlternate;
 
                 if (StringUtils.isNotEmpty(split[0])) {
-                    chrom = split[0];
+                    chrom = split[0].replace("chr", "");
                 }
                 if (StringUtils.isNotEmpty(split[1])) {
                     position = Integer.parseInt(split[1]);
@@ -121,7 +121,7 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
                     alternate = split[3];
                 }
                 if (StringUtils.isNotEmpty(split[6])) {
-                    transcriptId = split[6];
+                    transcriptId = split[6].split("\\.")[0];
                 } else {
                     logger.warn("Missing field 'transcript_id', skipping line: {}", line);
                     continue;
