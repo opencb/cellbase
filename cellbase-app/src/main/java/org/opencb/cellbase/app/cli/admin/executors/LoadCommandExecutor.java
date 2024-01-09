@@ -210,6 +210,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
                             break;
                         }
+                        case EtlCommons.ALPHAMISSENSE_DATA: {
+                            // Load data, create index and update release
+                            loadAlphaMissense();
+                            break;
+                        }
                         case EtlCommons.CONSERVATION_DATA: {
                             // Load data, create index and update release
                             loadConservation();
@@ -440,6 +445,25 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Update release (collection and sources)
         dataReleaseManager.update(dataRelease, "protein_functional_prediction", null, null);
+    }
+
+    private void loadAlphaMissense() throws NoSuchMethodException, InterruptedException, ExecutionException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
+            IOException, CellBaseException, LoaderException {
+        Path proteinSubstitutionPath = input.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+
+        // Load data
+        Path alphamissensePath = proteinSubstitutionPath.resolve(EtlCommons.ALPHAMISSENSE_JSON_FILENAME);
+        logger.info("Loading file '{}'", alphamissensePath);
+            loadRunner.load(alphamissensePath, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, dataRelease);
+
+        // Create index
+        createIndex(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+
+        // Update release (collection and sources)
+        List<Path> sources = Collections.singletonList(input.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME));
+        dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA,
+                EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, sources);
     }
 
     private void loadClinical() throws FileNotFoundException {
