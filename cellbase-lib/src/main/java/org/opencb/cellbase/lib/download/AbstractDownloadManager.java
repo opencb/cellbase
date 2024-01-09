@@ -119,7 +119,8 @@ public class AbstractDownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
-    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException,
+            CellBaseException {
         return null;
     }
 
