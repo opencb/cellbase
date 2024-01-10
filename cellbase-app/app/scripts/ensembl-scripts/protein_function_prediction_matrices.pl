@@ -6,6 +6,10 @@ use Data::Dumper;
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 use JSON;
 
+#use lib "~/appl/cellbase/build/scripts/ensembl-scripts/";
+#use lib "~/soft/ensembl-variation/modules/";
+#use lib "~/soft/ensembl/modules/";
+
 use DB_CONFIG;
 
 my $species = 'Homo sapiens';
@@ -126,42 +130,61 @@ foreach my $chr(@chromosomes) {
 
 	        ## HASH ##
 			my $effect = {};
+			$effect->{"chromosome"} = $trans->seq_region_name;
 	        $effect->{"transcriptId"} = $trans->stable_id;
-	        $effect->{"checksum"} = $md5seq;
-	        $effect->{"size"} = length($seq);
+#	        $effect->{"checksum"} = $md5seq;
+#	        $effect->{"size"} = length($seq);
 
 	        foreach my $u (@{ $trans->get_all_xrefs('Uniprot/SWISSPROT') }){
 		        $effect->{"uniprotId"} = $u->display_id();
 	        }
 
+			$effect->{"source"} = "polyphen";
 	        my $polyphen2 = $prot_function_adaptor->fetch_polyphen_predictions_by_translation_md5($md5seq);
-			for(my $i=1; $i<=length($seq); $i++) {
-				foreach (my $j=0; $j < @aa_code; $j++) {
-					if(defined $polyphen2) {
+			if(defined $polyphen2) {
+				for(my $i=1; $i<=length($seq); $i++) {
+					$effect->{"aaPosition"} = $i;
+					my @scores = ();
+					foreach (my $j=0; $j < @aa_code; $j++) {
 						@preds = $polyphen2->get_prediction($i, $aa_code[$j]);
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"pe"} = $effect_code{$preds[0]};
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"ps"} = $preds[1];
+						if(defined $preds[0] || defined $preds[1]) {
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[0], "effect" => $preds[1]};
+							$effect->{"scores"} = \@scores;
+#							print "-- polyphen = aa pos = " . $i . ", aa_code[" . $j . "] = " .$aa_code[$j] . " -> " . $preds[0] . ", " .$preds[1] . "\n";
+						}
+					}
+					if(@scores) {
+						print FILE to_json($effect)."\n";
 					}
 				}
 			}
 
-			my $sift = $prot_function_adaptor->fetch_sift_predictions_by_translation_md5($md5seq);
-			for(my $i=1; $i<=length($seq); $i++) {
-	            foreach (my $j=0; $j < @aa_code; $j++) {
-	            	if(defined $sift) {
-	            		@preds = $sift->get_prediction($i, $aa_code[$j]);
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"se"} = $effect_code{$preds[0]};
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"ss"} = $preds[1];
-	            	}
-	            }
-	        }
-			print FILE to_json($effect)."\n";
+			$effect->{"source"} = "sift";
+	        my $sift = $prot_function_adaptor->fetch_sift_predictions_by_translation_md5($md5seq);
+			if(defined $sift) {
+				for(my $i=1; $i<=length($seq); $i++) {
+					$effect->{"aaPosition"} = $i;
+					my @scores = ();
+					foreach (my $j=0; $j < @aa_code; $j++) {
+						@preds = $sift->get_prediction($i, $aa_code[$j]);
+						if(defined $preds[0] || defined $preds[1]) {
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[0], "effect" => $preds[1]};
+							$effect->{"scores"} = \@scores;
+#							print "-- sift = aa pos = " . $i . ", aa_code[" . $j . "] = " .$aa_code[$j] . " -> " . $preds[0] . ", " .$preds[1] . "\n";
+						}
+					}
+					if(@scores) {
+						print FILE to_json($effect)."\n";
+					}
+				}
+			}
+#			last;
 		}
 	}
 	close(FILE);
 
 	## GZip output to save space in Amazon AWS
-#	exec("gzip prot_func_pred_chr_".$chrom->seq_region_name);
+	exec("gzip " . $outdir . "/prot_func_pred_chr_" . $chr->seq_region_name . ".json");
 }
 
 sub print_parameters {
