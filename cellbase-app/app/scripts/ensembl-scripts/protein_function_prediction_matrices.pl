@@ -91,6 +91,37 @@ my %effect_code = ("probably damaging" => 0,
 #}
 #print join("=", $polyphen2->get_prediction(1, 'G'))."\n";
 
+##################################################################
+
+# Get the current time
+my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+# Adjust the year and month values (year is years since 1900, and month is 0-based)
+
+$year += 1900;
+$mon += 1;
+
+# Format the date and time
+my $formatted_date = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+
+my $jsonVersion = {};
+$jsonVersion->{"date"} = $formatted_date;
+$jsonVersion->{"data"} = "protein_substitution_predictions";
+$jsonVersion->{"version"} = "Ensembl 104";
+my @urls = ();
+push @urls, "ensembldb.ensembl.org:3306";
+$jsonVersion->{"url"} = \@urls;
+
+print "Generating the JSON file for the Sift version.\n";
+$jsonVersion->{"name"} = "sift";
+open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
+
+print "Generating the JSON file for the PolyPhen version\n";
+$jsonVersion->{"name"} = "polyphen";
+open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
 
 my ($translation, $seq, $md5seq, @preds, @all_predictions);
 #my @transcripts = @{$transcript_adaptor->fetch_all_by_biotype('protein_coding')};
