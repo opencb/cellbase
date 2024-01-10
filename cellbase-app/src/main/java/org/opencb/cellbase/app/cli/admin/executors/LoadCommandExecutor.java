@@ -461,7 +461,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(input.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME));
+        List<Path> sources = Collections.singletonList(proteinSubstitutionPath.resolve(EtlCommons.ALPHAMISSENSE_VERSION_FILENAME));
         dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA,
                 EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, sources);
     }
