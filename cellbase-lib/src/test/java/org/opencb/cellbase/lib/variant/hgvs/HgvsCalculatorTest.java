@@ -1,7 +1,6 @@
 package org.opencb.cellbase.lib.variant.hgvs;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,13 +13,8 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
-import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
-import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.GeneManager;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +34,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     public HgvsCalculatorTest() throws CellBaseException {
         super();
         geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
-        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
+        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease.getRelease());
     }
 
 //    @BeforeAll

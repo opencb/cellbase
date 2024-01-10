@@ -74,7 +74,7 @@ public class PharmacogenomicsMongoDBAdaptorTest extends GenericMongoDBAdaptorTes
 
         PharmaChemicalQuery chemicalQuery = new PharmaChemicalQuery();
         chemicalQuery.setGeneNames(Collections.singletonList("PRKCE"));
-        chemicalQuery.setDataRelease(dataRelease);
+        chemicalQuery.setDataRelease(dataRelease.getRelease());
         chemicalQuery.setCount(Boolean.TRUE);
 
         CellBaseDataResult<PharmaChemical> cellBaseDataResult = pharmacogenomicsManager.search(chemicalQuery);

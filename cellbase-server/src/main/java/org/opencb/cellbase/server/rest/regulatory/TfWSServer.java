@@ -61,9 +61,9 @@ public class TfWSServer extends RegulatoryWSServer {
             throws CellBaseServerException {
         super(apiVersion, species, assembly, dataRelease, apiKey, uriInfo, hsr);
         try {
-            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-            tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
-            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(this.species, this.assembly);
+            tfbsManager = cellBaseManagerFactory.getTFManager(this.species, this.assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

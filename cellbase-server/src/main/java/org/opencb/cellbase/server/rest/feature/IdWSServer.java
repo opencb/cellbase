@@ -22,7 +22,6 @@ import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.XrefQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.XrefManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
@@ -59,14 +58,10 @@ public class IdWSServer extends GenericRestWSServer {
                               int dataRelease,
                       @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            if (assembly == null) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly);
-            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+            xrefManager = cellBaseManagerFactory.getXrefManager(this.species, this.assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

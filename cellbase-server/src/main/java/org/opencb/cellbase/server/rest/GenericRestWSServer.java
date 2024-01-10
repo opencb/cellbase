@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -68,8 +69,9 @@ import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
-    protected int defaultDataRelease = 0;
+    protected DataRelease defaultDataRelease = null;
     protected String species;
+    protected String assembly;
 
     protected Query query;
     //    protected QueryOptions queryOptions;
@@ -95,18 +97,20 @@ public class GenericRestWSServer implements IWSServer {
     protected static org.opencb.cellbase.lib.monitor.Monitor monitor;
     private static final String ERROR = "error";
     private static final String OK = "ok";
-    // this webservice has no species, do not validate
+    // this webservice has no species or assembly, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
+    private static final String DONT_CHECK_ASSEMBLY = "do not validate assembly";
 
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
+        this(version, DONT_CHECK_SPECIES, DONT_CHECK_ASSEMBLY, uriInfo, hsr);
     }
 
-    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
+                               @PathParam("assembly") String assembly, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
             throws CellBaseServerException {
 
@@ -114,8 +118,13 @@ public class GenericRestWSServer implements IWSServer {
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
         this.species = species;
+        this.assembly = assembly;
 
         try {
+            if (this.assembly == null && !DONT_CHECK_SPECIES.equals(species)) {
+                this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            }
+
             init();
             initQuery();
         } catch (Exception e) {
@@ -197,14 +206,14 @@ public class GenericRestWSServer implements IWSServer {
         checkVersion();
 
         // Set default data release if necessary
-        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease < 1) {
+        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease == null) {
             // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
             assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
 
             if (StringUtils.isNotEmpty(assembly)) {
                 DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
                 // getDefault launches an exception if no data release is found for that CellBase version
-                defaultDataRelease = releaseManager.getDefault(version).getRelease();
+                defaultDataRelease = releaseManager.getDefault(version);
             }
         }
 
@@ -218,9 +227,9 @@ public class GenericRestWSServer implements IWSServer {
                 int dataRelease = Integer.parseInt(uriParams.get(DATA_RELEASE_PARAM));
                 // If data release is 0, then use the default data release
                 if (dataRelease == 0) {
-                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease + "' for CellBase"
-                            + " version '" + version + "'");
-                    return defaultDataRelease;
+                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease.getRelease()
+                            + "' for CellBase version '" + version + "'");
+                    return defaultDataRelease.getRelease();
                 } else {
                     return dataRelease;
                 }
@@ -233,7 +242,22 @@ public class GenericRestWSServer implements IWSServer {
             logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
                     + " '" + version + "'");
         }
-        return defaultDataRelease;
+        return defaultDataRelease.getRelease();
+    }
+
+    protected DataRelease getDataRelease(int dataRelease, String species, String assembly) throws CellBaseException {
+        DataRelease output;
+        if (dataRelease == defaultDataRelease.getRelease()) {
+            output = defaultDataRelease;
+        } else {
+            DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            // Get data release
+            output = releaseManager.get(dataRelease);
+            if (output == null) {
+                throw new CellBaseException("Unknown data release number '" + dataRelease + "'; it does not exist.");
+            }
+        }
+        return output;
     }
 
     protected String getApiKey() {

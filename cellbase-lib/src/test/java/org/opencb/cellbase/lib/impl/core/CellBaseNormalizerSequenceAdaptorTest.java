@@ -31,7 +31,7 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     public CellBaseNormalizerSequenceAdaptorTest() throws CellBaseException {
         super();
         cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
-                cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease);
+                cellBaseManagerFactory.getGenomeManager(SPECIES, ASSEMBLY), dataRelease.getRelease());
     }
 
     @Test

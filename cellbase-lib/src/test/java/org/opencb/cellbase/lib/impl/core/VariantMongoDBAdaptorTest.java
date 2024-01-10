@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -30,20 +29,14 @@ import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -67,7 +60,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void testGetFunctionalScoreVariant() throws Exception {
 //        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
-                new QueryOptions(), dataRelease);
+                new QueryOptions(), dataRelease.getRelease());
 
         System.out.println("Num. of results: " + functionalScoreVariant.getNumResults());
     }
@@ -95,7 +88,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList
                 = variantManager.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
-                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease);
+                new QueryOptions(ParamConstants.QueryParams.PHASE.key(), true), dataRelease.getRelease());
 
         assertEquals(2, variantCellBaseDataResultList.size());
         CellBaseDataResult<Variant> variantCellBaseDataResult = getByVariant(variantCellBaseDataResultList,
@@ -269,7 +262,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        geneManager.search()
         VariantQuery variantQuery = new VariantQuery();
         variantQuery.setGenes(new LogicalList<>(Collections.singletonList("BRCA1")));
-        variantQuery.setDataRelease(dataRelease);
+        variantQuery.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult<Variant> result = variantManager.search(variantQuery);
         for (Variant variant : result.getResults()) {
             System.out.println(variant.getId());

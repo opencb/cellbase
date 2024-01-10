@@ -54,7 +54,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
         GeneManager geneManager = cellBaseManagerFactory.getGeneManager(SPECIES, ASSEMBLY);
         GeneQuery query = new GeneQuery();
         query.setNames(Collections.singletonList("BRCA1"));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult<Gene> result = geneManager.search(query);
         assertEquals(1, result.getNumResults());
         assertEquals("BRCA1", result.getResults().get(0).getName());

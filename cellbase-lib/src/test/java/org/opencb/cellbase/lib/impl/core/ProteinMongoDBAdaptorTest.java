@@ -48,14 +48,14 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setLimit(3);
         query.setIncludes(new ArrayList<>(Arrays.asList("accession", "name")));
         query.setCount(Boolean.TRUE);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult<Entry> CellBaseDataResult = proteinManager.search(query);
         assertEquals(3, CellBaseDataResult.getResults().size());
         assertEquals(17, CellBaseDataResult.getNumMatches());
 
         query = new ProteinQuery();
         query.setAccessions(new ArrayList<>(Arrays.asList("P02649","Q86VF7","Q16535")));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult = proteinManager.search(query);
         assertTrue(CellBaseDataResult.getResults().get(0).getAccession().contains("P02649"));
         assertTrue(CellBaseDataResult.getResults().get(1).getAccession().contains("Q86VF7"));
@@ -63,7 +63,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         query = new ProteinQuery();
         query.setNames(new ArrayList<>(Collections.singletonList("FMR1_HUMAN")));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult = proteinManager.search(query);
         assertTrue(CellBaseDataResult.getResults().get(0).getName().contains("FMR1_HUMAN"));
     }

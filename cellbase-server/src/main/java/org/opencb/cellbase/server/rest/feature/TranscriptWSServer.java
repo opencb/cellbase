@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.ProteinQuery;
 import org.opencb.cellbase.core.api.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
@@ -63,15 +62,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
                               @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            if (assembly == null) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-            proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+            transcriptManager = cellBaseManagerFactory.getTranscriptManager(this.species, this.assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(this.species, this.assembly);
+            proteinManager = cellBaseManagerFactory.getProteinManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

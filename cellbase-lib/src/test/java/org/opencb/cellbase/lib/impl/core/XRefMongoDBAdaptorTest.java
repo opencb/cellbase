@@ -43,7 +43,7 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         XrefManager xrefManager = cellBaseManagerFactory.getXrefManager(SPECIES, ASSEMBLY);
         XrefQuery query = new XrefQuery();
         query.setIds(Collections.singletonList("BRCA1"));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         List<CellBaseDataResult<Xref>> resultList = xrefManager.search(Collections.singletonList(query));
         CellBaseDataResult<Xref> result = resultList.get(0);
         boolean found = false;
