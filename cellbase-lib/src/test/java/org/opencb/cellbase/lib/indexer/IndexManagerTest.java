@@ -1,8 +1,6 @@
 package org.opencb.cellbase.lib.indexer;
 
 import org.bson.Document;
-import org.junit.Assert;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.GeneQuery;
@@ -12,9 +10,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GeneManager;
-import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -41,7 +37,7 @@ public class IndexManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testIndexes() throws IOException, CellBaseException, QueryException, IllegalAccessException {
-        String collectionName = "gene" + CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR + dataRelease;
+        String collectionName = "gene" + CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR + dataRelease.getRelease();
 
         indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
 

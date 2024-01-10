@@ -16,29 +16,19 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
-import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.pharma.PharmaChemical;
-import org.opencb.biodata.models.variant.avro.Constraint;
-import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.ExpressionCall;
-import org.opencb.cellbase.core.api.GeneQuery;
 import org.opencb.cellbase.core.api.PharmaChemicalQuery;
-import org.opencb.cellbase.core.api.query.AbstractQuery;
-import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.PharmacogenomicsManager;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 
 /**
@@ -57,7 +47,7 @@ public class PharmacogenomicsMongoDBAdaptorTest extends GenericMongoDBAdaptorTes
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("name", "galantamine");
         paramMap.put("include", "id,name");
-        paramMap.put(DATA_RELEASE_PARAM, String.valueOf(dataRelease));
+        paramMap.put(DATA_RELEASE_PARAM, String.valueOf(dataRelease.getRelease()));
 
         PharmaChemicalQuery chemicalQuery = new PharmaChemicalQuery(paramMap);
         chemicalQuery.setCount(Boolean.TRUE);

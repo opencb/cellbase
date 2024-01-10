@@ -185,8 +185,7 @@ public class GenericRestWSServer implements IWSServer {
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
 
-        // assembly isn't needed in the query, only in the database connection which we already have.
-        String assembly = uriParams.get("assembly");
+        // Assembly isn't needed in the query, only in the database connection which we already have.
         if (uriParams.get("assembly") != null) {
             uriParams.remove("assembly");
         }
@@ -202,7 +201,7 @@ public class GenericRestWSServer implements IWSServer {
 
         checkLimit();
 
-        // check version. species is validated later
+        // Check version, species is validated later
         checkVersion();
 
         // Set default data release if necessary
@@ -210,7 +209,7 @@ public class GenericRestWSServer implements IWSServer {
             // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
             assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
 
-            if (StringUtils.isNotEmpty(assembly)) {
+            if (!DONT_CHECK_ASSEMBLY.equals(assembly) && StringUtils.isNotEmpty(assembly)) {
                 DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
                 // getDefault launches an exception if no data release is found for that CellBase version
                 defaultDataRelease = releaseManager.getDefault(version);
