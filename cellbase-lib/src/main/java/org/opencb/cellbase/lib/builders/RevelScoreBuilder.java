@@ -34,7 +34,7 @@ import java.util.zip.ZipInputStream;
 public class RevelScoreBuilder extends CellBaseBuilder {
 
     private Path revelFilePath = null;
-    private static final String SOURCE = "revel";
+    public static final String SOURCE = "revel";
 
     public RevelScoreBuilder(Path revelDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);

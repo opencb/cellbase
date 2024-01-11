@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.builders.RevelScoreBuilder;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
@@ -198,16 +199,16 @@ public class LoadCommandExecutor extends CommandExecutor {
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
                             // Load data
-                            loadIfExists(input.resolve("missense_variation_functional_score.json.gz"),
-                                    "missense_variation_functional_score");
+                            Path path = input.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+                            loadIfExists(path.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_JSON_FILENAME),
+                                    EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
 
                             // Create index
-                            createIndex("missense_variation_functional_score");
+                            createIndex(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
 
                             // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("revelVersion.json")));
-                            dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
-                                    EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
+                            dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA,
+                                    RevelScoreBuilder.SOURCE, Collections.singletonList(path.resolve(EtlCommons.REVEL_VERSION_FILENAME)));
                             break;
                         }
                         case EtlCommons.ALPHAMISSENSE_DATA: {

@@ -97,6 +97,8 @@ public class EtlCommons {
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
     // Revel
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
+    public static final String MISSENSE_VARIATION_SCORE_JSON_FILENAME = "missense_variation_functional_score.json.gz";
+    public static final String REVEL_VERSION_FILENAME = "revelVersion.json";
     // AlphaMissense
     public static final String ALPHAMISSENSE_DATA = "alphamissense";
     public static final String ALPHAMISSENSE_RAW_FILENAME = "AlphaMissense_hg38.tsv.gz";
