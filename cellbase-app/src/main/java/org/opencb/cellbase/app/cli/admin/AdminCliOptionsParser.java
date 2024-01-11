@@ -191,7 +191,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation,"
                 + " conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed, pharmacogenomics,"
-                + " missense_variation_functional_score, alphamissense; and 'all' loads everything", required = true, arity = 1)
+                + " protein_functional_prediction, missense_variation_functional_score, alphamissense; and 'all' loads everything",
+                required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, required = true, arity = 1,

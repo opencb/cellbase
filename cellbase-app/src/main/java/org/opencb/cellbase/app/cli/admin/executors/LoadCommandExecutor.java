@@ -197,6 +197,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, sources);
                             break;
                         }
+                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
+                            // Load data, create index and update release
+                            loadProteinFunctionalPrediction();
+                            break;
+                        }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
                             // Load data
                             Path path = input.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
@@ -256,11 +261,6 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            loadIfExists(input.resolve("intactVersion.json"), METADATA);
 //                            createIndex("protein_protein_interaction");
 //                            break;
-                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
-                            // Load data, create index and update release
-                            loadProteinFunctionalPrediction();
-                            break;
-                        }
                         case EtlCommons.CLINICAL_VARIANTS_DATA: {
                             // Load data, create index and update release
                             loadClinical();
@@ -433,19 +433,33 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, CellBaseException, LoaderException {
         // Load data
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+        Path path = input.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        DirectoryStream<Path> stream = Files.newDirectoryStream(path,
                 entry -> entry.getFileName().toString().startsWith("prot_func_pred_"));
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry);
-            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction", dataRelease);
+            loadRunner.load(path.resolve(entry.getFileName()), EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, dataRelease);
         }
 
         // Create index
-        createIndex("protein_functional_prediction");
+        createIndex(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
 
         // Update release (collection and sources)
-        dataReleaseManager.update(dataRelease, "protein_functional_prediction", null, null);
+        String sourceName = null;
+        List<Path> sourceUrls = new ArrayList<>();
+        if (path.resolve(EtlCommons.SIFT_VERSION_FILENAME).toFile().exists()) {
+            sourceUrls.add(path.resolve(EtlCommons.SIFT_VERSION_FILENAME));
+            sourceName = EtlCommons.SIFT_SOURCE_NAME;
+        }
+        dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, sourceName, sourceUrls);
+
+        sourceUrls = new ArrayList<>();
+        if (path.resolve(EtlCommons.POLYPHEN_VERSION_FILENAME).toFile().exists()) {
+            sourceUrls.add(path.resolve(EtlCommons.POLYPHEN_VERSION_FILENAME));
+            sourceName = EtlCommons.POLYPHEN_SOURCE_NAME;
+        }
+        dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, sourceName, sourceUrls);
     }
 
     private void loadAlphaMissense() throws NoSuchMethodException, InterruptedException, ExecutionException,

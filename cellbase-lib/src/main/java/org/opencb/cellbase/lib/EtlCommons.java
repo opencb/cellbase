@@ -95,6 +95,10 @@ public class EtlCommons {
     public static final String PROTEIN_SUBSTITUTION_PREDICTION_DATA = "protein_substitution_predictions";
     // Sift and polyphen
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
+    public static final String SIFT_SOURCE_NAME = "Sift";
+    public static final String POLYPHEN_SOURCE_NAME = "PolyPhen";
+    public static final String SIFT_VERSION_FILENAME = "siftVersion.json";
+    public static final String POLYPHEN_VERSION_FILENAME = "polyphenVersion.json";
     // Revel
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     public static final String MISSENSE_VARIATION_SCORE_JSON_FILENAME = "missense_variation_functional_score.json.gz";
