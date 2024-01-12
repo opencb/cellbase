@@ -163,8 +163,6 @@ foreach my $chr(@chromosomes) {
 			my $effect = {};
 			$effect->{"chromosome"} = $trans->seq_region_name;
 	        $effect->{"transcriptId"} = $trans->stable_id;
-#	        $effect->{"checksum"} = $md5seq;
-#	        $effect->{"size"} = length($seq);
 
 	        foreach my $u (@{ $trans->get_all_xrefs('Uniprot/SWISSPROT') }){
 		        $effect->{"uniprotId"} = $u->display_id();
@@ -179,9 +177,8 @@ foreach my $chr(@chromosomes) {
 					foreach (my $j=0; $j < @aa_code; $j++) {
 						@preds = $polyphen2->get_prediction($i, $aa_code[$j]);
 						if(defined $preds[0] || defined $preds[1]) {
-							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[0], "effect" => $preds[1]};
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[1], "effect" => $preds[0]};
 							$effect->{"scores"} = \@scores;
-#							print "-- polyphen = aa pos = " . $i . ", aa_code[" . $j . "] = " .$aa_code[$j] . " -> " . $preds[0] . ", " .$preds[1] . "\n";
 						}
 					}
 					if(@scores) {
@@ -199,9 +196,8 @@ foreach my $chr(@chromosomes) {
 					foreach (my $j=0; $j < @aa_code; $j++) {
 						@preds = $sift->get_prediction($i, $aa_code[$j]);
 						if(defined $preds[0] || defined $preds[1]) {
-							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[0], "effect" => $preds[1]};
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[1], "effect" => $preds[0]};
 							$effect->{"scores"} = \@scores;
-#							print "-- sift = aa pos = " . $i . ", aa_code[" . $j . "] = " .$aa_code[$j] . " -> " . $preds[0] . ", " .$preds[1] . "\n";
 						}
 					}
 					if(@scores) {
@@ -209,7 +205,6 @@ foreach my $chr(@chromosomes) {
 					}
 				}
 			}
-#			last;
 		}
 	}
 	close(FILE);
