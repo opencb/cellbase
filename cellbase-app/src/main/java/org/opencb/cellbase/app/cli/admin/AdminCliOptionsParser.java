@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli.admin;
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
 import org.opencb.cellbase.core.api.key.ApiKeyQuota;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.util.HashMap;
 import java.util.List;
@@ -238,8 +239,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed. 'all' "
-                + " loads everything", required = true, arity = 1)
+                + EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA + ", conservation, regulation, protein, clinical_variants, repeats,"
+                + " regulatory_pfm, splice_score, pubmed. 'all' export everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"--db", "--database"}, description = "Database name, e.g., cellbase_hsapiens_grch38_v5", required = true,

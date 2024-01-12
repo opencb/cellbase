@@ -84,9 +84,9 @@ public class ExportCommandExecutor extends CommandExecutor {
         if (exportCommandOptions.data.equals("all")) {
             this.dataToExport = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-                    EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
+                    OBO_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -200,38 +200,6 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " CADD items";
                             break;
                         }
-                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
-                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
-                            ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
-                            Map<String, List<Integer>> positionMap = new HashMap<>();
-                            for (Variant variant : variants) {
-                                if (!positionMap.containsKey(variant.getChromosome())) {
-                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
-                                }
-                                positionMap.get(variant.getChromosome()).add(variant.getStart());
-                                if (positionMap.get(variant.getChromosome()).size() >= 200) {
-                                    CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
-                                            .getMissenseVariantFunctionalScores(variant.getChromosome(),
-                                                    positionMap.get(variant.getChromosome()), null, dataRelease);
-                                    counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
-                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
-                                }
-                            }
-
-                            // Process map
-                            for (Map.Entry<String, List<Integer>> entry : positionMap.entrySet()) {
-                                if (CollectionUtils.isEmpty(entry.getValue())) {
-                                    continue;
-                                }
-                                CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
-                                        .getMissenseVariantFunctionalScores(entry.getKey(), entry.getValue(), null, dataRelease);
-                                counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
-                            }
-                            serializer.close();
-
-                            counterMsg = counter + " missense variation functional scores";
-                            break;
-                        }
                         case EtlCommons.CONSERVATION_DATA: {
                             // Export data
                             CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
@@ -271,7 +239,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " proteins";
                             break;
                         }
-                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
+                        case EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA: {
                             ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
                             Map<String, List<String>> transcriptsMap = new HashMap<>();
                             for (Gene gene : genes) {
@@ -290,7 +258,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             }
                             serializer.close();
 
-                            counterMsg = counter + " protein functional predictions";
+                            counterMsg = counter + " protein substitution predictions";
                             break;
                         }
                         case EtlCommons.CLINICAL_VARIANTS_DATA: {
