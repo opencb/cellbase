@@ -16,7 +16,10 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.BsonDocument;
@@ -55,7 +58,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     private void init() {
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
         mongoDBCollection = mongoDataStore.getCollection("metadata");
-        apiKeyStatsMongoDBCollection = mongoDataStore.getCollection("apikey_stats");
+        apiKeyStatsMongoDBCollection = mongoDataStore.getCollection("apikey_stats", WriteConcern.ACKNOWLEDGED, ReadPreference.primary());
     }
 
     public CellBaseDataResult getAll() {
