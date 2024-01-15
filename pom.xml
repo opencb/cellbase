@@ -48,7 +48,7 @@
         <guava.version>19.0</guava.version>
         <avro.version>1.9.1</avro.version>
         <hamcrest.version>1.3</hamcrest.version>
-        <htsjdk.version>3.0.5</htsjdk.version>
+        <htsjdk.version>2.23.0</htsjdk.version>
         <grpc.version>1.48.0</grpc.version>
         <commons-lang.version>2.4</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
