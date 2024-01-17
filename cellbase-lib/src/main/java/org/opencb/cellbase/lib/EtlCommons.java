@@ -100,8 +100,13 @@ public class EtlCommons {
     public static final String SIFT_VERSION_FILENAME = "siftVersion.json";
     public static final String POLYPHEN_VERSION_FILENAME = "polyphenVersion.json";
     // Revel
+    @Deprecated
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
+    @Deprecated
     public static final String MISSENSE_VARIATION_SCORE_JSON_FILENAME = "missense_variation_functional_score.json.gz";
+    public static final String REVEL_DATA = "revel";
+    public static final String REVEL_RAW_FILENAME = "revel-v1.3_all_chromosomes.zip";
+    public static final String REVEL_JSON_FILENAME = "revel-v1.3_all_chromosomes.json.gz";
     public static final String REVEL_VERSION_FILENAME = "revelVersion.json";
     // AlphaMissense
     public static final String ALPHAMISSENSE_DATA = "alphamissense";

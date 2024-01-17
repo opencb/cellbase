@@ -84,8 +84,8 @@ public class Downloader {
         return manager.download();
     }
 
-    public List<DownloadFile> downloadPredictionScores() throws IOException, CellBaseException, InterruptedException {
-        MissenseScoresDownloadManager manager = new MissenseScoresDownloadManager(species, assembly, outputDirectory, configuration);
+    public List<DownloadFile> downloadRevelScores() throws IOException, CellBaseException, InterruptedException {
+        RevelScoresDownloadManager manager = new RevelScoresDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 

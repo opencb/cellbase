@@ -75,8 +75,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                         downloadFiles.addAll(downloader.downloadCaddScores());
                         break;
-                    case EtlCommons.MISSENSE_VARIATION_SCORE_DATA:
-                        downloadFiles.addAll(downloader.downloadPredictionScores());
+                    case EtlCommons.REVEL_DATA:
+                        downloadFiles.addAll(downloader.downloadRevelScores());
                         break;
                     case EtlCommons.REGULATION_DATA:
                         downloadFiles.addAll(downloader.downloadRegulation());

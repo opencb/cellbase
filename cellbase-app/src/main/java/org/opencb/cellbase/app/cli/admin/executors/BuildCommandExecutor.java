@@ -135,7 +135,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
                             break;
-                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA:
+                        case EtlCommons.REVEL_DATA:
                             parser = buildRevel();
                             break;
                         case EtlCommons.REGULATION_DATA:
@@ -287,10 +287,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildRevel() {
-        Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-        copyVersionFiles(Arrays.asList(missensePredictionScorePath.resolve("revelVersion.json")));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-        return new RevelScoreBuilder(missensePredictionScorePath, serializer);
+        Path path = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        copyVersionFiles(Arrays.asList(path.resolve(EtlCommons.REVEL_VERSION_FILENAME)));
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REVEL_DATA);
+        return new RevelScoreBuilder(path, serializer);
     }
 
     private CellBaseBuilder buildRegulation() {

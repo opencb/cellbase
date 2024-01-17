@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.ProteinSubstitutionPrediction;
 import org.opencb.biodata.models.core.ProteinSubstitutionPredictionScore;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
@@ -33,12 +34,12 @@ import java.util.zip.ZipInputStream;
 
 public class RevelScoreBuilder extends CellBaseBuilder {
 
-    private Path revelFilePath = null;
+    private Path revelFilePath;
     public static final String SOURCE = "revel";
 
     public RevelScoreBuilder(Path revelDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
-        this.revelFilePath = revelDirectoryPath.resolve("revel_grch38_all_chromosomes.csv.zip");
+        this.revelFilePath = revelDirectoryPath.resolve(EtlCommons.REVEL_RAW_FILENAME);
         logger = LoggerFactory.getLogger(ConservationBuilder.class);
 
     }

@@ -19,38 +19,43 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.builders.RevelScoreBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MissenseScoresDownloadManager extends AbstractDownloadManager {
+public class RevelScoresDownloadManager extends AbstractDownloadManager {
 
-    public MissenseScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
+    public RevelScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadRevel());
-    }
+        List<DownloadFile> list = new ArrayList<>();
 
-    public DownloadFile downloadRevel() throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading Revel data ...");
 
-            Path missensePredictionScore = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-            Files.createDirectories(missensePredictionScore);
+            Path scorePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+            Files.createDirectories(scorePath);
 
             String url = configuration.getDownload().getRevel().getHost();
 
-            saveVersionData(EtlCommons.MISSENSE_VARIATION_SCORE_DATA, "Revel", null, getTimeStamp(),
-                    Collections.singletonList(url), missensePredictionScore.resolve("revelVersion.json"));
-            return downloadFile(url, missensePredictionScore.resolve("revel_grch38_all_chromosomes.csv.zip").toString());
+            list.add(downloadFile(url, scorePath.resolve(EtlCommons.REVEL_RAW_FILENAME).toString()));
+
+            saveVersionData(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, RevelScoreBuilder.SOURCE,
+                    configuration.getDownload().getRevel().getVersion(), getTimeStamp(), Collections.singletonList(url),
+                    scorePath.resolve(EtlCommons.REVEL_VERSION_FILENAME));
+
+            logger.info("Downloaded Revel file. Done!");
         }
-        return null;
+
+        return list;
     }
 }
