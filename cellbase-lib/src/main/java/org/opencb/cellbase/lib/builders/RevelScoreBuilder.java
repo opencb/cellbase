@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.ProteinSubstitutionPrediction;
 import org.opencb.biodata.models.core.ProteinSubstitutionPredictionScore;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
@@ -37,16 +36,16 @@ public class RevelScoreBuilder extends CellBaseBuilder {
     private Path revelFilePath;
     public static final String SOURCE = "revel";
 
-    public RevelScoreBuilder(Path revelDirectoryPath, CellBaseSerializer serializer) {
+    public RevelScoreBuilder(Path revelFilePath, CellBaseSerializer serializer) {
         super(serializer);
-        this.revelFilePath = revelDirectoryPath.resolve(EtlCommons.REVEL_RAW_FILENAME);
-        logger = LoggerFactory.getLogger(ConservationBuilder.class);
+        this.revelFilePath = revelFilePath;
+        logger = LoggerFactory.getLogger(RevelScoreBuilder.class);
 
     }
 
     @Override
     public void parse() throws IOException {
-        logger.error("Processing Revel file at " + revelFilePath.toAbsolutePath());
+        logger.info("Processing Revel file at " + revelFilePath.toAbsolutePath());
         ZipInputStream zis = new ZipInputStream(new FileInputStream(revelFilePath.toFile()));
         ZipEntry zipEntry = zis.getNextEntry();
 

@@ -82,7 +82,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             if (speciesConfiguration == null) {
                 throw new CellBaseException("Invalid species: '" + buildCommandOptions.species + "'");
             }
-            SpeciesConfiguration.Assembly assembly = null;
+            SpeciesConfiguration.Assembly assembly;
             if (!StringUtils.isEmpty(buildCommandOptions.assembly)) {
                 assembly = SpeciesUtils.getAssembly(speciesConfiguration, buildCommandOptions.assembly);
                 if (assembly == null) {
@@ -286,11 +286,23 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CaddScoreBuilder(caddFilePath, serializer);
     }
 
-    private CellBaseBuilder buildRevel() {
-        Path path = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
-        copyVersionFiles(Arrays.asList(path.resolve(EtlCommons.REVEL_VERSION_FILENAME)));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REVEL_DATA);
-        return new RevelScoreBuilder(path, serializer);
+    private CellBaseBuilder buildRevel() throws IOException {
+        Path inputFolder = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Path outputFolder = buildFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        if (!outputFolder.toFile().exists()) {
+            outputFolder.toFile().mkdirs();
+        }
+
+        logger.info("Copying Revel version file...");
+        if (inputFolder.resolve(EtlCommons.REVEL_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inputFolder.resolve(EtlCommons.REVEL_VERSION_FILENAME),
+                    outputFolder.resolve(EtlCommons.REVEL_VERSION_FILENAME), StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        Path revelFilePath = inputFolder.resolve(EtlCommons.REVEL_RAW_FILENAME);
+        String basename = EtlCommons.REVEL_JSON_FILENAME.replace(".json.gz", "");
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outputFolder, basename);
+        return new RevelScoreBuilder(revelFilePath, serializer);
     }
 
     private CellBaseBuilder buildRegulation() {
@@ -455,7 +467,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
         File alphaMissenseFile = inputFolder.resolve(EtlCommons.ALPHAMISSENSE_RAW_FILENAME).toFile();
-        String basename = EtlCommons.ALPHAMISSENSE_JSON_FILENAME.replace("\\.json\\.gz", "");
+        String basename = EtlCommons.ALPHAMISSENSE_JSON_FILENAME.replace(".json.gz", "");
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outputFolder, basename);
         return new AlphaMissenseBuilder(alphaMissenseFile, serializer);
     }
