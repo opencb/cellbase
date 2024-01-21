@@ -61,7 +61,7 @@ public class EtlCommons {
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
     public static final String IARCTP53_FILE = "IARC-TP53.zip";
-    public static final String GWAS_FILE = "gwas_catalog.tsv";
+    public static final String GWAS_FILE = "gwas-catalog-associations_ontology-annotated.tsv";
     public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
     public static final String DBSNP_FILE = "All.vcf.gz";
 
