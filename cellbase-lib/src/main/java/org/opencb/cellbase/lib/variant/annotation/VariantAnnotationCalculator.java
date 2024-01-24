@@ -615,9 +615,9 @@ public class VariantAnnotationCalculator {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    variantAnnotation.setDisplayConsequenceType(VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
                     logger.error("Something wrong happened when calculation consequence type for variant " + variant, e);
-                    throw e;
                 }
             }
 
