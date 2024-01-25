@@ -215,28 +215,28 @@ public class DataReleaseManager extends AbstractManager {
         return configuration.getMaintainerContact();
     }
 
-    public int checkDataRelease(int inRelease) throws CellBaseException {
-        int outRelease = inRelease;
-        if (outRelease < 0) {
-            throw new CellBaseException("Invalid data release " + outRelease + ". Data release must be greater or equal to 0");
+    public DataRelease checkDataRelease(int inRelease) throws CellBaseException {
+        DataRelease outRelease;
+        if (inRelease < 0) {
+            throw new CellBaseException("Invalid data release " + inRelease + ". Data release must be greater or equal to 0");
         }
-        if (outRelease == 0) {
+        if (inRelease == 0) {
             String[] split = GitRepositoryState.get().getBuildVersion().split("[.-]");
             String version = "v" + split[0] + "." + split[1];
-            outRelease = getDefault(version).getRelease();
-            logger.info("Using data release 0: it means to take default data release '" + outRelease + "' for CellBase version '"
-                    + version + "'");
+            outRelease = getDefault(version);
+            logger.info("Using data release 0: it means to take default data release '" + outRelease.getRelease()
+                    + "' for CellBase version '" + version + "'");
             return outRelease;
         }
 
         List<DataRelease> dataReleases = getReleases().getResults();
         for (DataRelease dataRelease : dataReleases) {
-            if (outRelease == dataRelease.getRelease()) {
-                return outRelease;
+            if (inRelease == dataRelease.getRelease()) {
+                return dataRelease;
             }
         }
 
-        throw new CellBaseException("Invalid data release " + outRelease + " for species = " + species + ", assembly = " + assembly
+        throw new CellBaseException("Invalid data release " + inRelease + " for species = " + species + ", assembly = " + assembly
                 + ". Valid data releases are: " + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
                 .collect(Collectors.toList()), ","));
     }

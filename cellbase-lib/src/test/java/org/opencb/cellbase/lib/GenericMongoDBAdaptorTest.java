@@ -46,7 +46,6 @@ import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.PHARMACOGENOMICS_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
-import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 
 /**
  * Created by fjlopez on 18/09/15.
@@ -54,7 +53,7 @@ import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
 public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
-    protected int dataRelease;
+    protected DataRelease dataRelease;
     protected String apiKey;
 
     protected String cellBaseName;
@@ -118,7 +117,7 @@ public class GenericMongoDBAdaptorTest {
         } else if (dataReleaseList.size() != 1) {
             throw new CellBaseException("Something wrong with the CellBase dataset, it must contain only ONE data release");
         } else {
-            dataRelease = dataReleaseList.get(0).getRelease();
+            dataRelease = dataReleaseList.get(0);
         }
     }
 
@@ -145,7 +144,7 @@ public class GenericMongoDBAdaptorTest {
         }
 
         // Populate mongoDB from the downloaded dataset
-        dataRelease = dataReleaseManager.createRelease().getRelease();
+        dataRelease = dataReleaseManager.createRelease();
 
         // Genome:  genome_sequence.json.gz, genome_info.json.gz
         loadData("genome_info", "genome_info", baseDir.resolve("genome_info.json.gz"));
@@ -161,7 +160,7 @@ public class GenericMongoDBAdaptorTest {
                 loadData("conservation", "conservation", file.toPath(), true);
             }
         }
-        dataReleaseManager.update(dataRelease, "conservation", "conservation", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "conservation", "conservation", Collections.emptyList());
 
         // Regulatory regions: regulatory_region.json.gz
         loadData("regulatory_region", "regulatory_region", baseDir.resolve("regulatory_region.json.gz"));
@@ -175,7 +174,7 @@ public class GenericMongoDBAdaptorTest {
                 loadData("protein_functional_prediction", "protein_functional_prediction", file.toPath(), true);
             }
         }
-        dataReleaseManager.update(dataRelease, "protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
 
         // Variation: variation_chr_all.json.gz
         loadData("variation", "variation", baseDir.resolve("variation_chr_all.json.gz"));
@@ -196,7 +195,7 @@ public class GenericMongoDBAdaptorTest {
         // splice_score
         loadData("splice_score", "splice_score", baseDir.resolve("splice_score/spliceai/splice_score_all.json.gz"), true);
         loadData("splice_score", "splice_score", baseDir.resolve("splice_score/mmsplice/splice_score_all.json.gz"), true);
-        dataReleaseManager.update(dataRelease, "splice_score", "splice_score", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "splice_score", "splice_score", Collections.emptyList());
 
         // clinical_variants.full.json.gz
         loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
@@ -220,9 +219,9 @@ public class GenericMongoDBAdaptorTest {
             IllegalAccessException, LoaderException, CellBaseException {
         if (filePath.toFile().exists()) {
             logger.info("Loading (" + collection + ", " + data + ") from file " + filePath);
-            loadRunner.load(filePath, collection, dataRelease);
+            loadRunner.load(filePath, collection, dataRelease.getRelease());
             if (!skipUpdate) {
-                dataReleaseManager.update(dataRelease, collection, data, Collections.emptyList());
+                dataReleaseManager.update(dataRelease.getRelease(), collection, data, Collections.emptyList());
             }
         } else {
             logger.error("(" + collection + ", " + data + ") not loading: file " + filePath + "does not exist");
