@@ -431,6 +431,7 @@ public class VariantAnnotationCalculator {
             }
         }
         GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setDataRelease(dataRelease);
         geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
         List<GeneMirnaTarget> geneMirnaTargets = new ArrayList<>();
         List<Gene> genes = (geneManager.search(geneQuery)).getResults();
@@ -679,9 +680,9 @@ public class VariantAnnotationCalculator {
 
         List<Gene> geneList = new ArrayList<>();
         GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setDataRelease(dataRelease);
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
-        geneQuery.setDataRelease(dataRelease);
 
         if (StringUtils.isNotEmpty(consequenceTypeSource)) {
             // sources can be "ensembl" and/or "refseq". query is validated before execution, will fail if invalid value
@@ -1354,6 +1355,7 @@ public class VariantAnnotationCalculator {
         boolean[] overlapsRegulatoryRegion = {false, false};
 
         RegulationQuery query = new RegulationQuery();
+        query.setDataRelease(dataRelease);
         query.setExcludes(Collections.singletonList("_id"));
         query.setIncludes(Collections.singletonList("chromosome"));
         query.setLimit(1);
