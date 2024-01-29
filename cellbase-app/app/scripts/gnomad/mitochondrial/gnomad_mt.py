@@ -105,7 +105,7 @@ def main():
         hom_ref = [x - y for x, y in zip(pop_AN, pop_AC)]
         for i, pop in enumerate(POPULATIONS):
             new_info['GTC_' + pop] = ','.join(map(str, [hom_ref[i], pop_AC_het[i], pop_AC_hom[i]]))
-        new_info['GTC'] = ','.join(map(str, [AN - AC_hom + AC_het, AC_het, AC_hom]))
+        new_info['GTC'] = ','.join(map(str, [AN - (AC_hom + AC_het), AC_het, AC_hom]))
 
         # Joining existing INFO field and new custom INFO data
         custom_info_data = ';'.join(['='.join([k, str(new_info[k])]) for k in new_info])
