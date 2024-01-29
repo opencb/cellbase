@@ -394,7 +394,12 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             return;
         }
         if (columnPos.containsKey(HM_POS_COL)) {
-            position = Integer.parseInt(field[columnPos.get(HM_POS_COL)]);
+            try {
+                position = Integer.parseInt(field[columnPos.get(HM_POS_COL)]);
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid field '{}' (value = {}), skipping line: {}", HM_POS_COL, field[columnPos.get(HM_POS_COL)], line);
+                return;
+            }
         } else {
             logger.warn("Missing field '{}', skipping line: {}", HM_POS_COL, line);
             return;
