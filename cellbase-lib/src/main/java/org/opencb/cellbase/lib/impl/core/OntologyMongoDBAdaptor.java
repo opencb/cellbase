@@ -64,6 +64,8 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         QueryOptions queryOptions = query.toQueryOptions();
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        System.out.println("ontology mongodb adaptor: mongoDBCollection = " + mongoDBCollection.toString() + ", data release = "
+                + query.getDataRelease());
         MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -114,9 +116,15 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
-                if (!"dataRelease".equals(dotNotationName)) {
-                    Object value = entry.getValue();
-                    createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                switch (dotNotationName) {
+                    case "dataRelease":
+                    case "apiKey":
+                        // Nothing to do
+                        break;
+                    default: {
+                        Object value = entry.getValue();
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                    }
                 }
             }
         } catch (IllegalAccessException e) {
