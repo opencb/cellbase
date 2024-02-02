@@ -55,7 +55,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private Path pgsDir;
     private CellBaseFileSerializer fileSerializer;
 
-    protected RocksDB rdb;
+    protected Map<String, Object[]> rdbConnectionPerChrom = new HashMap<>();
 
     protected static ObjectMapper mapper;
     protected static ObjectReader varPgsReader;
@@ -138,11 +138,6 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
         logger.info("Parsing polygenic score (PGS) files...");
 
-        Object[] dbConnection = getDBConnection(pgsDir.resolve("rdb.idx").toString(), true);
-        rdb = (RocksDB) dbConnection[0];
-        Options dbOption = (Options) dbConnection[1];
-        String dbLocation = (String) dbConnection[2];
-
         BufferedWriter bw = FileUtils.newBufferedWriter(serializer.getOutdir().resolve(COMMON_POLYGENIC_SCORE_FILENAME));
 
         for (File file : pgsDir.toFile().listFiles()) {
@@ -185,8 +180,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
 
         // Serialize/write the saved variant polygenic scores in the RocksDB
-        serializeRDB(rdb);
-        closeIndex(rdb, dbOption, dbLocation);
+        serializeRDB();
         serializer.close();
 
         // Close PGS file (with common attributes)
@@ -473,6 +467,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
         // Creating and/or updating variant polygenic score
         VariantPolygenicScore varPgs;
+        RocksDB rdb = getRocksDB(chrom);
         String key = chrom + ":" + position + ":" + otherAllele + ":" + effectAllele;
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
@@ -485,21 +480,30 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
     }
 
-    private void serializeRDB(RocksDB rdb) throws IOException {
-        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
-        // named "iterator"
-        RocksIterator rocksIterator = rdb.newIterator();
+    private void serializeRDB() throws IOException {
+        for (Map.Entry<String, Object[]> entry : rdbConnectionPerChrom.entrySet()) {
+            RocksDB rdb = (RocksDB) entry.getValue()[0];
+            Options dbOption = (Options) entry.getValue()[1];
+            String dbLocation = (String) entry.getValue()[2];
 
-        logger.info("Reading from RocksDB index and serializing to {}.json.gz", serializer.getOutdir().resolve(serializer.getFileName()));
-        int counter = 0;
-        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            VariantPolygenicScore varPgs = varPgsReader.readValue(rocksIterator.value());
-            serializer.serialize(varPgs);
-            counter++;
-            if (counter % 10000 == 0) {
-                logger.info("{} written", counter);
+            // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+            // named "iterator"
+            RocksIterator rocksIterator = rdb.newIterator();
+
+            logger.info("Reading from RocksDB index (chrom. {}) and serializing to {}.json.gz", entry.getKey(),
+                    serializer.getOutdir().resolve(serializer.getFileName()));
+            int counter = 0;
+            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+                VariantPolygenicScore varPgs = varPgsReader.readValue(rocksIterator.value());
+                serializer.serialize(varPgs);
+                counter++;
+                if (counter % 10000 == 0) {
+                    logger.info("{} written", counter);
+                }
             }
+            closeIndex(rdb, dbOption, dbLocation);
         }
+
         serializer.close();
         logger.info("Done.");
     }
@@ -517,6 +521,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     }
 
     private Object[] getDBConnection(String dbLocation, boolean forceCreate) {
+        System.out.println("db location = " + Paths.get(dbLocation).toAbsolutePath());
         boolean indexingNeeded = forceCreate || !Files.exists(Paths.get(dbLocation));
         // a static method that loads the RocksDB C++ library.
         RocksDB.loadLibrary();
@@ -548,5 +553,17 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
 
         return new Object[]{db, options, dbLocation, indexingNeeded};
+    }
+
+    private Object[] getRocksDBConnection(String chrom) {
+        if (!rdbConnectionPerChrom.containsKey(chrom)) {
+            Object[] dbConnection = getDBConnection(pgsDir.resolve("rdb-" + chrom + ".idx").toString(), true);
+            rdbConnectionPerChrom.put(chrom, dbConnection);
+        }
+        return rdbConnectionPerChrom.get(chrom);
+    }
+
+    private RocksDB getRocksDB(String chrom) {
+        return (RocksDB) getRocksDBConnection(chrom)[0];
     }
 }
