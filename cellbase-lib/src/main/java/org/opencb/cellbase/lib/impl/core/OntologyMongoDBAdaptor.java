@@ -20,6 +20,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -64,8 +65,6 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         QueryOptions queryOptions = query.toQueryOptions();
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        System.out.println("ontology mongodb adaptor: mongoDBCollection = " + mongoDBCollection.toString() + ", data release = "
-                + query.getDataRelease());
         MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -117,8 +116,8 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 switch (dotNotationName) {
-                    case "dataRelease":
-                    case "apiKey":
+                    case ParamConstants.DATA_RELEASE_PARAM:
+                    case ParamConstants.API_KEY_PARAM:
                         // Nothing to do
                         break;
                     default: {
