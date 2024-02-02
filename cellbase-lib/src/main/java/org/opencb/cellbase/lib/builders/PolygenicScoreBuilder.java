@@ -521,7 +521,6 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     }
 
     private Object[] getDBConnection(String dbLocation, boolean forceCreate) {
-        System.out.println("db location = " + Paths.get(dbLocation).toAbsolutePath());
         boolean indexingNeeded = forceCreate || !Files.exists(Paths.get(dbLocation));
         // a static method that loads the RocksDB C++ library.
         RocksDB.loadLibrary();
