@@ -494,7 +494,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             // named "iterator"
             RocksIterator rocksIterator = rdb.newIterator();
 
-            logger.info("Reading from RocksDB index (chrom. {}) and serializing to {}.json.gz", entry.getKey(),
+            logger.info("Reading from RocksDB index ({}) and serializing to {}.json.gz", dbLocation,
                     serializer.getOutdir().resolve(serializer.getFileName()));
             int counter = 0;
             for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
@@ -507,9 +507,6 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             }
             closeIndex(rdb, dbOption, dbLocation);
         }
-
-        serializer.close();
-        logger.info("Done.");
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {
@@ -559,7 +556,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     }
 
     private Object[] getRocksDBConnection(String chrom) {
-        if (!rdbConnectionPerChrom.containsKey(chrom)) {
+        if (!rdbConnectionPerChrom.containsKey(chrom) || rdbConnectionPerChrom.get(chrom) == null) {
             Object[] dbConnection = getDBConnection(pgsDir.resolve("rdb-" + chrom + ".idx").toString(), true);
             rdbConnectionPerChrom.put(chrom, dbConnection);
         }
