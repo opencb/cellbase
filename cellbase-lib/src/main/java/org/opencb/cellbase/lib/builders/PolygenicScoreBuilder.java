@@ -43,9 +43,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PolygenicScoreBuilder extends CellBaseBuilder {
 
@@ -111,6 +109,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private static final String DOSAGE_1_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
     private static final String DOSAGE_2_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
 
+    private static final Set<String> VALID_CHROMOSOMES = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", "M"));
 
     static {
         mapper = new ObjectMapper();
@@ -383,6 +383,10 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
         if (columnPos.containsKey(HM_CHR_COL)) {
             chrom = field[columnPos.get(HM_CHR_COL)];
+            if (!VALID_CHROMOSOMES.contains(chrom)) {
+                // Only chromosomes are processed; no contigs, e.g.: 8_KI270821v1_alt, 11_KI270927v1_alt, 12_GL877875v1_alt,...
+                return;
+            }
         } else {
             logger.warn("Missing field '{}', skipping line: {}", HM_CHR_COL, line);
             return;
