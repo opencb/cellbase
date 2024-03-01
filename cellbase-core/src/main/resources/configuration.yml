@@ -45,6 +45,7 @@ server:
     port: "${CELLBASE.SERVER.REST.PORT}"
 defaultOutdir: "/tmp"
 download:
+  ## Genomic and Gene information
   ensembl:
     database:
       host: ensembldb.ensembl.org:3306
@@ -64,9 +65,6 @@ download:
   hgnc:
     host: https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
     version: 2023-11-01
-  cancerHotspot:
-    host: https://www.cancerhotspots.org/files/hotspots_v2.xls
-    version: "v2"
   refSeq:
     host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
   refSeqFasta:
@@ -76,8 +74,6 @@ download:
   refSeqCdna:
     host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   maneSelect:
-#    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.93/MANE.GRCh38.v0.93.summary.txt.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.summary.txt.gz
     host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
     version: "1.1"
   lrg:
@@ -88,6 +84,8 @@ download:
     version: "2023-11-08"
   geneExpressionAtlas:
     host: ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+  goAnnotation:
+    host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   mirbase:
     host: ftp://mirbase.org/pub/mirbase/CURRENT/miRNA.xls.gz
   mirbaseReadme:
@@ -121,15 +119,13 @@ download:
   gerp:
     host: http://ftp.ensembl.org/pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
     version: "2023-05-17"
+
+  ## Clinical Variant
   clinvar:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-07.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-02.xml.gz
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-11.xml.gz
     host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2023-12.xml.gz
     version: "2023-12-01"
   clinvarVariation:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-07.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-02.xml.gz
 #    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-11.xml.gz
     host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2023-12.xml.gz
   clinvarSummary:
@@ -140,6 +136,9 @@ download:
     version: "2023-12-01"
   clinvarEfoTerms:
     host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
+  cancerHotspot:
+    host: https://www.cancerhotspots.org/files/hotspots_v2.xls
+    version: "v2"
   iarctp53:
     host: http://p53.iarc.fr/ajax/Zipper.ashx
   docm:
@@ -154,10 +153,19 @@ download:
     host: http://hgdownload.cse.ucsc.edu/goldenPath
   genomicSuperDups:
     host: http://hgdownload.cse.ucsc.edu/goldenPath
+
+  ## Variant Pathogenic Prediction
+  revel:
+    host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
+    version: "1.3"
+  cadd:
+#    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
+    ## Nacho: Move to https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz ASAP!
+    host: https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz
+    version: "1.7-pre"
   gwasCatalog:
-#    host: http://resources.opencb.org/opencb/cellbase/data/gwas/gwas_catalog_v1.0.2-associations_e106_r2022-05-17.tsv
-#    version: "1.0.2 associations_e106_r2022-05-17"
-    host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2023/12/21/gwas-catalog-associations.tsv
+    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e110_r2023-12-20'
+    host: https://ftp.ebi.ac.uk/pub/databases/gwas/releases/2023/12/21/gwas-catalog-associations_ontology-annotated.tsv
     version: "23-12-21"
   hpo:
     ## Downlaod manually from here now:  https://hpo.jax.org/app/data/annotations
@@ -170,16 +178,13 @@ download:
   dgidb:
     host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
     version: "2022-02-01"
-  cadd:
-    ## Nacho: Move to https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz ASAP!
-#    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
-    host: https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz
-    version: "1.7-pre"
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
   gnomadConstraints:
     host: https://storage.googleapis.com/gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
     version: "2.1.1"
+
+  ## OBO Ontologies
   hpoObo:
     host: http://purl.obolibrary.org/obo/hp.obo
     version: "2023-12-01"
@@ -192,10 +197,8 @@ download:
   mondoObo:
     host: http://purl.obolibrary.org/obo/mondo.obo
     version: "2023-12-01"
-  goAnnotation:
-    host: http://geneontology.org/gene-associations/goa_human.gaf.gz
-  revel:
-    host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
+
+  ## Others
   pubmed:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
     files:
