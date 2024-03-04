@@ -6,7 +6,11 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
+<<<<<<< HEAD
     <version>6.0.0</version>
+=======
+    <version>6.1.0-SNAPSHOT</version>
+>>>>>>> release-6.0.x
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -23,8 +27,13 @@
 
     <properties>
         <pycellbase.version>${project.version}</pycellbase.version>
+<<<<<<< HEAD
         <java-common-libs.version>5.0.0</java-common-libs.version>
         <biodata.version>3.0.0</biodata.version>
+=======
+        <java-common-libs.version>5.1.0-SNAPSHOT</java-common-libs.version>
+        <biodata.version>3.1.0-SNAPSHOT</biodata.version>
+>>>>>>> release-6.0.x
         <bionetdb.version>0.1.0</bionetdb.version>
         <jetty.version>9.4.51.v20230217</jetty.version>
 
