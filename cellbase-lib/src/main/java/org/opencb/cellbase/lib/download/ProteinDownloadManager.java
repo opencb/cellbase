@@ -22,7 +22,6 @@ import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -34,6 +33,8 @@ import java.util.List;
 public class ProteinDownloadManager extends AbstractDownloadManager {
 
     private static final String UNIPROT_NAME = "UniProt";
+    private static final String INTERPRO_NAME = "InterPro";
+    private static final String INTACT_NAME = "IntAct";
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -56,6 +57,7 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
         Files.createDirectories(proteinFolder);
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
+        // Uniprot
         String url = configuration.getDownload().getUniprot().getHost();
         downloadFiles.add(downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString()));
         Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
@@ -63,23 +65,25 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
 
         String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
         downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString()));
-
         saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
                 getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
-        return downloadFiles;
+        // Interpro
+        String interproUrl = configuration.getDownload().getInterpro().getHost();
+        downloadFiles.add(downloadFile(interproUrl, proteinFolder.resolve("protein2ipr.dat.gz").toString()));
 
-//        url = configuration.getDownload().getIntact().getHost();
-//        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
-//        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
-//                proteinFolder.resolve("intactVersion.json"));
-//
-//        url = configuration.getDownload().getInterpro().getHost();
-//        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
-//        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
-//        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
-//        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
-//                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
+        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
+        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString()));
+        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+                getTimeStamp(), Collections.singletonList(interproUrl), proteinFolder.resolve("interproVersion.json"));
+
+        // Intact
+        String intactUrl = configuration.getDownload().getIntact().getHost();
+        downloadFiles.add(downloadFile(intactUrl, proteinFolder.resolve("intact.txt").toString()));
+        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, configuration.getDownload().getIntact().getVersion(),
+                getTimeStamp(), Collections.singletonList(intactUrl), proteinFolder.resolve("intactVersion.json"));
+
+        return downloadFiles;
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
@@ -96,7 +100,7 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
                 inEntry = true;
                 beforeEntry = false;
                 if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                    pw = new PrintWriter(Files.newOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile().toPath()));
                     pw.println(header.toString().trim());
                 }
                 count++;
