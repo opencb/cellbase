@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -50,13 +49,9 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                               @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            if (assembly == null) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

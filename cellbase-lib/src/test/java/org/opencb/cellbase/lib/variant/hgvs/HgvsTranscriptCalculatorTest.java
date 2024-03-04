@@ -4,27 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,7 +99,7 @@ public class HgvsTranscriptCalculatorTest extends GenericMongoDBAdaptorTest {
                 "-",
                 "CCCTGTCCAGCCAGCCCATTGACCACGAAGACAGCACCATGCAGGCCGGACAGGGAGGCGATCCAGATCTCGG");
 
-        HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeManager, dataRelease, variant, transcript,"ENSG00000179364");
+        HgvsTranscriptCalculator predictor = new HgvsTranscriptCalculator(genomeManager, dataRelease.getRelease(), variant, transcript,"ENSG00000179364");
         assertEquals("ENST00000447393(ENSG00000179364):c.566_567ins73", predictor.calculate());
     }
 

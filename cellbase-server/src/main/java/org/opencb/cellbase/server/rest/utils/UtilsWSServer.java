@@ -32,6 +32,6 @@ public class UtilsWSServer extends GenericRestWSServer {
 
     public UtilsWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                          @Context HttpServletRequest hsr) throws CellBaseServerException {
-        super(version, species, uriInfo, hsr);
+        super(version, species, null, uriInfo, hsr);
     }
 }

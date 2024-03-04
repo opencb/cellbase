@@ -52,9 +52,9 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+            genomeManager = cellBaseManagerFactory.getGenomeManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }
