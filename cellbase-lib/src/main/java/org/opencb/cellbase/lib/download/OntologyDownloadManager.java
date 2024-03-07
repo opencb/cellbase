@@ -43,24 +43,28 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
         Files.createDirectories(oboFolder);
 
         String url = configuration.getDownload().getHpoObo().getHost();
+        logger.info("Downloading {} ...", url);
         downloadFiles.add(downloadFile(url, oboFolder.resolve("hp.obo").toString()));
         saveVersionData(EtlCommons.OBO_DATA, "HPO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), buildFolder.resolve(EtlCommons.HPO_VERSION_FILE));
+                Collections.singletonList(url), oboFolder.resolve(EtlCommons.HPO_VERSION_FILE));
 
         url = configuration.getDownload().getGoObo().getHost();
+        logger.info("Downloading {} ...", url);
         downloadFiles.add(downloadFile(url, oboFolder.resolve("go-basic.obo").toString()));
         saveVersionData(EtlCommons.OBO_DATA, "GO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), buildFolder.resolve(EtlCommons.GO_VERSION_FILE));
+                Collections.singletonList(url), oboFolder.resolve(EtlCommons.GO_VERSION_FILE));
 
         url = configuration.getDownload().getDoidObo().getHost();
+        logger.info("Downloading {} ...", url);
         downloadFiles.add(downloadFile(url, oboFolder.resolve("doid.obo").toString()));
         saveVersionData(EtlCommons.OBO_DATA, "DO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), buildFolder.resolve(EtlCommons.DO_VERSION_FILE));
+                Collections.singletonList(url), oboFolder.resolve(EtlCommons.DO_VERSION_FILE));
 
         url = configuration.getDownload().getMondoObo().getHost();
+        logger.info("Downloading {} ...", url);
         downloadFiles.add(downloadFile(url, oboFolder.resolve("mondo.obo").toString()));
         saveVersionData(EtlCommons.OBO_DATA, "MONDO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), buildFolder.resolve(EtlCommons.DO_VERSION_FILE));
+                Collections.singletonList(url), oboFolder.resolve(EtlCommons.MONDO_VERSION_FILE));
 
         return downloadFiles;
     }

@@ -127,6 +127,7 @@ public class EtlCommons {
     public static final String HPO_VERSION_FILE = "hpoVersion.json";
     public static final String GO_VERSION_FILE = "goVersion.json";
     public static final String DO_VERSION_FILE = "doVersion.json";
+    public static final String MONDO_VERSION_FILE = "mondoVersion.json";
     public static final String HGMD_FILE = "hgmd.vcf";
     public static final String PUBMED_VERSION_FILENAME = "pubmedVersion.json";
 
