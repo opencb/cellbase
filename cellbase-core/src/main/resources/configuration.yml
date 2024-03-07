@@ -206,6 +206,7 @@ download:
   ## Others
   pubmed:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
+    version: 2024
     files:
       - pubmed24n[1..1219..4].xml.gz
   pharmGKB:
