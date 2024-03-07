@@ -29,15 +29,23 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.CLINVAR_VERSION_FILENAME;
+import static org.opencb.cellbase.lib.EtlCommons.GWAS_VERSION_FILENAME;
+
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String GWAS_NAME = "GWAS catalog";
+    /**
+     * @deprecated
+     */
+    @Deprecated
     private static final String IARCTP53_NAME = "IARC TP53 Database";
 
 
@@ -63,39 +71,50 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             logger.info("Downloading clinical information ...");
 
             String url;
+            String filename;
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
-            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER).toAbsolutePath();
             Files.createDirectories(clinicalFolder);
             logger.info("\t\tDownloading ClinVar files ...");
 
             List<String> clinvarUrls = new ArrayList<>(3);
             url = configuration.getDownload().getClinvar().getHost();
-
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString()));
+            filename = Paths.get(url).getFileName().toString();
+            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString()));
+            filename = Paths.get(url).getFileName().toString();
+            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString()));
+            filename = Paths.get(url).getFileName().toString();
+            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarVariationAllele().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString()));
+            filename = Paths.get(url).getFileName().toString();
+            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             clinvarUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
-                    clinicalFolder.resolve("clinvarVersion.json"));
+
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, configuration.getDownload().getClinvar().getVersion(),
+                    getTimeStamp(), clinvarUrls, clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
 
             // Gwas catalog
             logger.info("\t\tDownloading GWAS catalog file ...");
             DownloadProperties.URLProperties gwasCatalog = configuration.getDownload().getGwasCatalog();
             url = gwasCatalog.getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString()));
+            filename = Paths.get(url).getFileName().toString();
+            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
+                    Collections.singletonList(url), clinicalFolder.resolve(GWAS_VERSION_FILENAME));
 
 //            List<String> hgvsList = getDocmHgvsList();
 //            if (!hgvsList.isEmpty()) {
@@ -139,87 +158,110 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 //                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
 //            }
 
-            if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
-                Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));
-                splitClinvar(clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE), clinicalFolder.resolve("clinvar_chunks"));
+            final String chunkDir = "clinvar_chunks";
+            if (Files.notExists(clinicalFolder.resolve(chunkDir))) {
+                Files.createDirectories(clinicalFolder.resolve(chunkDir));
+                filename = Paths.get(configuration.getDownload().getClinvar().getHost()).getFileName().toString();
+                logger.info("\t\tSplitting {} int {} ...", clinicalFolder.resolve(filename), clinicalFolder.resolve(chunkDir));
+                splitClinvar(clinicalFolder.resolve(filename), clinicalFolder.resolve(chunkDir));
             }
 
             return downloadFiles;
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath);
-        PrintWriter pw = null;
-        StringBuilder header = new StringBuilder();
-        boolean beforeEntry = true;
-        boolean inEntry = false;
-        int count = 0;
-        int chunk = 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.trim().startsWith("<ClinVarSet ")) {
-                inEntry = true;
-                beforeEntry = false;
-                if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
-                    pw.println(header.toString().trim());
+        try (BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath)) {
+            PrintWriter pw = null;
+            StringBuilder header = new StringBuilder();
+            boolean beforeEntry = true;
+            boolean inEntry = false;
+            int count = 0;
+            int chunk = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().startsWith("<ClinVarSet ")) {
+                    inEntry = true;
+                    beforeEntry = false;
+                    if (count % 10000 == 0) {
+                        pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                        pw.println(header.toString().trim());
+                    }
+                    count++;
                 }
-                count++;
-            }
 
-            if (beforeEntry) {
-                header.append(line).append("\n");
-            }
+                if (beforeEntry) {
+                    header.append(line).append("\n");
+                }
 
-            if (inEntry) {
-                pw.println(line);
-            }
+                if (inEntry) {
+                    pw.println(line);
+                }
 
-            if (line.trim().startsWith("</ClinVarSet>")) {
-                inEntry = false;
-                if (count % 10000 == 0) {
-                    pw.print("</ReleaseSet>");
-                    pw.close();
-                    chunk++;
+                if (line.trim().startsWith("</ClinVarSet>")) {
+                    inEntry = false;
+                    if (count % 10000 == 0) {
+                        pw.print("</ReleaseSet>");
+                        pw.close();
+                        chunk++;
+                    }
                 }
             }
+            pw.print("</ReleaseSet>");
+            pw.close();
         }
-        pw.print("</ReleaseSet>");
-        pw.close();
-        br.close();
     }
 
+    /**
+     * @deprecated
+     * @param docmIndexHtml
+     * @return
+     */
+    @Deprecated
     private String getDocmVersion(Path docmIndexHtml) {
         return getVersionFromVersionLine(docmIndexHtml, "<select name=\"version\" id=\"version\"");
     }
 
+    /**
+     * @deprecated
+     * @param hgvsList
+     * @param path
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    @Deprecated
     private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
-        BufferedWriter bufferedWriter = Files.newBufferedWriter(path);
-        Client client = ClientBuilder.newClient();
-        WebTarget restUrlBase = client
-                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
+        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(path)) {
+            Client client = ClientBuilder.newClient();
+            WebTarget restUrlBase = client
+                    .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
 
-        logger.info("Querying DOCM REST API to get detailed data for all their variants");
-        int counter = 0;
-        for (String hgvs : hgvsList) {
-            WebTarget callUrl = restUrlBase.path(hgvs + ".json");
-            String jsonString = callUrl.request().get(String.class);
-            bufferedWriter.write(jsonString + "\n");
+            logger.info("Querying DOCM REST API to get detailed data for all their variants");
+            int counter = 0;
+            for (String hgvs : hgvsList) {
+                WebTarget callUrl = restUrlBase.path(hgvs + ".json");
+                String jsonString = callUrl.request().get(String.class);
+                bufferedWriter.write(jsonString + "\n");
 
-            if (counter % 10 == 0) {
-                logger.info("{} DOCM variants saved", counter);
+                if (counter % 10 == 0) {
+                    logger.info("{} DOCM variants saved", counter);
+                }
+                // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
+                Thread.sleep(300);
+
+                counter++;
             }
-            // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
-            Thread.sleep(300);
-
-            counter++;
+            logger.info("Finished. {} DOCM variants saved at {}", counter, path);
         }
-        logger.info("Finished. {} DOCM variants saved at {}", counter, path.toString());
-        bufferedWriter.close();
     }
 
+    /**
+     * @deprecated
+     * @return
+     * @throws IOException
+     */
+    @Deprecated
     private List<String> getDocmHgvsList() throws IOException {
         Client client = ClientBuilder.newClient();
         WebTarget restUrl = client
@@ -241,10 +283,4 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
         return hgvsList;
     }
-
-    private String getClinVarVersion() {
-        // ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz
-        return configuration.getDownload().getClinvar().getHost().split("_")[1].split("\\.")[0];
-    }
-
 }
