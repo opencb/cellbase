@@ -27,9 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_VERSION_FILE;
+
 public class PubMedDownloadManager extends AbstractDownloadManager {
 
-    private static final String PUBMED_NAME = "PUBMED";
+    private static final String PUBMED_NAME = "PubMed";
     public PubMedDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
@@ -39,7 +41,7 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading PubMed XML files...");
 
-        Path pubmedFolder = downloadFolder.resolve("pubmed");
+        Path pubmedFolder = downloadFolder.resolve(EtlCommons.PUBMED_DATA);
         Files.createDirectories(pubmedFolder);
 
         // Downloads PubMed XML files
@@ -47,17 +49,17 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
         String regexp = configuration.getDownload().getPubmed().getFiles().get(0);
         String[] name = regexp.split("[\\[\\]]");
         String[] split = name[1].split("\\.\\.");
-        int start = Integer.valueOf(split[0]);
-        int end = Integer.valueOf(split[1]);
-        int padding = Integer.valueOf(split[2]);
+        int start = Integer.parseInt(split[0]);
+        int end = Integer.parseInt(split[1]);
+        int padding = Integer.parseInt(split[2]);
 
-        saveVersionData(EtlCommons.PUBMED_DATA, PUBMED_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                pubmedFolder.resolve("pubmedVersion.json"));
+        saveVersionData(EtlCommons.PUBMED_DATA, PUBMED_NAME, configuration.getDownload().getPubmed().getVersion(), getTimeStamp(),
+                Collections.singletonList(url), pubmedFolder.resolve(PUBMED_VERSION_FILE));
 
         List<DownloadFile> list = new ArrayList<>();
         for (int i = start; i <= end; i++) {
             String filename = name[0] + String.format("%0" + padding + "d", i) + name[2];
-            logger.info("\tDownloading file " + filename);
+            logger.info("\tDownloading file {}", filename);
             list.add(downloadFile(url + "/" + filename, pubmedFolder.resolve(filename).toString()));
         }
         return list;
