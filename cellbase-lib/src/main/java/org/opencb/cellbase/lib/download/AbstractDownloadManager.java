@@ -164,7 +164,12 @@ public class AbstractDownloadManager {
         Map<String, Object> versionDataMap = new HashMap<>();
         versionDataMap.put("data", data);
         versionDataMap.put("name", name);
-        versionDataMap.put("version", version);
+        if (StringUtils.isEmpty(version)) {
+            logger.warn("Version missing for data source {}/{}, using the date as version: {}", data, name, date);
+            versionDataMap.put("version", date);
+        } else {
+            versionDataMap.put("version", version);
+        }
         versionDataMap.put("date", date);
         versionDataMap.put("url", url);
 
@@ -291,6 +296,7 @@ public class AbstractDownloadManager {
         return -1;
     }
 
+    @Deprecated
     protected String getVersionFromVersionLine(Path path, String tag) {
         Files.exists(path);
         try {
@@ -325,6 +331,10 @@ public class AbstractDownloadManager {
             ensemblHostUrl = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
         }
         return ensemblHostUrl;
+    }
+
+    protected String getUrlFilename(String url) {
+        return Paths.get(url).getFileName().toString();
     }
 }
 

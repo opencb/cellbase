@@ -35,9 +35,29 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+
     public static final String GENOME_DATA = "genome";
+
     public static final String GENE_DATA = "gene";
+    public static final String ENSEMBL_CORE_VERSION_FILENAME = "ensemblCore" + SUFFIX_VERSION_FILENAME;
+    public static final String MANE_SELECT_VERSION_FILENAME = "maneSelect" + SUFFIX_VERSION_FILENAME;
+    public static final String LRG_VERSION_FILENAME = "lrg" + SUFFIX_VERSION_FILENAME;
+    public static final String HGNC_VERSION_FILENAME = "hgnc" + SUFFIX_VERSION_FILENAME;
+    public static final String CANCER_HOTSPOT_VERSION_FILENAME = "cancerHotspot" + SUFFIX_VERSION_FILENAME;
+    public static final String GO_ANNOTATION_VERSION_FILENAME = "goAnnotation" + SUFFIX_VERSION_FILENAME;
+    public static final String GNOMAD_VERSION_FILENAME = "gnomad" + SUFFIX_VERSION_FILENAME;
+    public static final String DGIDB_VERSION_FILENAME = "dgidb" + SUFFIX_VERSION_FILENAME;
+    public static final String UNIPROT_XREF_VERSION_FILENAME = "uniprotXref" + SUFFIX_VERSION_FILENAME;
+    public static final String GENE_EXPRESSION_ATLAS_VERSION_FILENAME = "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME;
+    public static final String HPO_VERSION_FILENAME = "hpo" + SUFFIX_VERSION_FILENAME;
+    public static final String DISGINET_VERSION_FILENAME = "disgenet" + SUFFIX_VERSION_FILENAME;
+
     public static final String REFSEQ_DATA = "refseq";
+    public static final String REFSEQ_VERSION_FILENAME = REFSEQ_DATA + SUFFIX_VERSION_FILENAME;
+    public static final String REFSEQ_ASTA_VERSION_FILENAME = REFSEQ_DATA + "Fasta" + SUFFIX_VERSION_FILENAME;
+    public static final String REFSEQ_PROTEIN_FASTA_VERSION_FILENAME = REFSEQ_DATA + "ProteinFasta" + SUFFIX_VERSION_FILENAME;
+    public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
@@ -51,7 +71,7 @@ public class EtlCommons {
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
     public static final String PHARMGKB_NAME = "PharmGKB";
     public static final String PHARMGKB_DATA = "pharmgkb";
-    public static final String PHARMGKB_VERSION_FILENAME = "pharmgkbVersion.json";
+    public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
     @Deprecated

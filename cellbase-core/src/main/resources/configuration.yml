@@ -85,9 +85,9 @@ download:
     version: "2021-03-30"
   geneUniprotXref:
     host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
-    version: "2023-11-08"
+    version: "2024_01 (24-Jan-2024)"
   geneExpressionAtlas:
-    host: ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+    host: https://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
     version: "2.0.14"
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
@@ -171,14 +171,11 @@ download:
     host: https://ftp.ebi.ac.uk/pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
     version: "2024-02-12"
   hpo:
-    ## NOTE: Download manually from here now:  https://hpo.jax.org/app/data/annotations
-    host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
-    version: "2024-03-01"
+    ## NOTE: Download manually from here now
+    host: https://hpo.jax.org/app/data/annotations
   disgenet:
-    host: https://www.disgenet.org/static/disgenet_ap1/files/downloads
-    files:
-      - all_gene_disease_associations.tsv.gz
-      - readme.txt
+    host: https://www.disgenet.org/static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
+    version: "7.0 (January 2020)"
   dgidb:
     host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
     version: "2022-02-01"
