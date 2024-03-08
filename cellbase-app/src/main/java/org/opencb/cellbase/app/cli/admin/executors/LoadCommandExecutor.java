@@ -484,9 +484,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.TRF_VERSION_FILE),
-                        input.resolve(EtlCommons.GSD_VERSION_FILE),
-                        input.resolve(EtlCommons.WM_VERSION_FILE)
+                        input.resolve(EtlCommons.TRF_VERSION_FILENAME),
+                        input.resolve(EtlCommons.GSD_VERSION_FILENAME),
+                        input.resolve(EtlCommons.WM_VERSION_FILENAME)
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException

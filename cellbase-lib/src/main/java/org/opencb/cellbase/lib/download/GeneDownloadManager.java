@@ -32,7 +32,6 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GeneDownloadManager extends AbstractDownloadManager {
 
-    private static final String HOMO_SAPIENS_NAME= "Homo sapiens";
     private static final String ENSEMBL_NAME = "ENSEMBL";
     private static final String REFSEQ_NAME = "RefSeq";
     private static final String UNIPROT_NAME = "UniProt";
@@ -48,8 +47,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     private static final String GNOMAD_NAME = "gnomAD";
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
-
-    private static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} to {} ...";
 
     static {
         GENE_UNIPROT_XREF_FILES = new HashMap<>();

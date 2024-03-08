@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
+
     public static final String SUFFIX_VERSION_FILENAME = "Version.json";
 
     public static final String GENOME_DATA = "genome";
@@ -145,19 +147,26 @@ public class EtlCommons {
     public static final String DGV_FILE = "dgv.txt";
     public static final String DGV_VERSION_FILE = "dgvVersion.json";
     public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
+
+    @Deprecated
     public static final String TRF_FILE = "simpleRepeat.txt.gz";
-    public static final String TRF_VERSION_FILE = "simpleRepeat.json";
+    @Deprecated
     public static final String GSD_FILE = "genomicSuperDups.txt.gz";
-    public static final String GSD_VERSION_FILE = "genomicSuperDups.json";
-    public static final String WM_FILE = "windowMasker.txt.gz";
-    public static final String WM_VERSION_FILE = "windowMasker.json";
+    @Deprecated
+    public static final String WM_FILE = "windowmaskerSdust.txt.gz";
+
+    public static final String TRF_VERSION_FILENAME = "simpleRepeat" + SUFFIX_VERSION_FILENAME;
+    public static final String GSD_VERSION_FILENAME = "genomicSuperDups" + SUFFIX_VERSION_FILENAME;
+    public static final String WM_VERSION_FILENAME = "windowMasker" + SUFFIX_VERSION_FILENAME;
     public static final String REPEATS_FOLDER = "genome";
     public static final String REPEATS_JSON = "repeats";
+
     public static final String OBO_JSON = "ontology";
-    public static final String HPO_VERSION_FILE = "hpoVersion.json";
-    public static final String GO_VERSION_FILE = "goVersion.json";
-    public static final String DO_VERSION_FILE = "doVersion.json";
-    public static final String MONDO_VERSION_FILE = "mondoVersion.json";
+    public static final String HPO_VERSION_FILE = "hpo" + SUFFIX_VERSION_FILENAME;
+    public static final String GO_VERSION_FILE = "go" + SUFFIX_VERSION_FILENAME;
+    public static final String DO_VERSION_FILE = "do" + SUFFIX_VERSION_FILENAME;
+    public static final String MONDO_VERSION_FILE = "mondo" + SUFFIX_VERSION_FILENAME;
+
     public static final String HGMD_FILE = "hgmd.vcf";
     public static final String PUBMED_VERSION_FILENAME = "pubmedVersion.json";
 

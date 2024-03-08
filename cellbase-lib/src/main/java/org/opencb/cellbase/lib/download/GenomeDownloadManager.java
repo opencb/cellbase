@@ -21,12 +21,16 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.commons.utils.DockerUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.opencb.cellbase.lib.EtlCommons.GERP_SUBDIRECTORY;
+import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS_NAME;
 
 public class GenomeDownloadManager extends AbstractDownloadManager {
 
@@ -37,6 +41,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
+
+    private static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
 
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -50,8 +56,6 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadConservation());
         downloadFiles.addAll(downloadRepeats());
 
-        // cytobands
-//        runGenomeInfo();
         return downloadFiles;
     }
 
@@ -83,7 +87,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
                 Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
         List<DownloadFile> downloadFiles = Collections.singletonList(downloadFile(url, outputPath.toString()));
-        logger.info("Unzipping file: " + outputFileName);
+        logger.info("Unzipping file: {}", outputFileName);
         EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
         return downloadFiles;
     }
@@ -96,14 +100,14 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
      */
     public List<DownloadFile> downloadConservation() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "conservation")) {
-            return null;
+            return Collections.emptyList();
         }
         logger.info("Downloading conservation information ...");
         Path conservationFolder = downloadFolder.resolve("conservation");
         List<DownloadFile> downloadFiles = new ArrayList<>();
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             Files.createDirectories(conservationFolder);
-            Files.createDirectories(conservationFolder.resolve("gerp"));
+            Files.createDirectories(conservationFolder.resolve(GERP_SUBDIRECTORY));
             Files.createDirectories(conservationFolder.resolve("phastCons"));
             Files.createDirectories(conservationFolder.resolve("phylop"));
 
@@ -128,7 +132,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     phyloPUrls.add(phyloPUrl);
                 }
                 String gerpUrl = configuration.getDownload().getGerp().getHost();
-                downloadFiles.add(downloadFile(gerpUrl, conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY)
+                downloadFiles.add(downloadFile(gerpUrl, conservationFolder.resolve(GERP_SUBDIRECTORY)
                         .resolve(EtlCommons.GERP_FILE).toString()));
 
                 saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(), Collections.singletonList(gerpUrl),
@@ -170,9 +174,9 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
     public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
-            return null;
+            return Collections.emptyList();
         }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading repeats data ...");
             Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
             Files.createDirectories(repeatsFolder);
@@ -187,51 +191,35 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             }
 
             // Download tandem repeat finder
-            String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
-                    + "/database/simpleRepeat.txt.gz";
-            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString()));
-            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
+            String url = configuration.getDownload().getSimpleRepeats().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
+                    Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILENAME));
+
+            Path outputPath = repeatsFolder.resolve(getUrlFilename(url));
+            logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download genomic super duplications
-            url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
-                    + "/database/genomicSuperDups.txt.gz";
-            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString()));
-            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
+            url = configuration.getDownload().getGenomicSuperDups().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, configuration.getDownload().getGenomicSuperDups().getVersion(),
+                    getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILENAME));
+
+            outputPath = repeatsFolder.resolve(getUrlFilename(url));
+            logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+            downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download WindowMasker
             if (!pathParam.equalsIgnoreCase("hg19")) {
-                url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
-                        + "/database/windowmaskerSdust.txt.gz";
-                downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString()));
-                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                        repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
+                url = configuration.getDownload().getWindowMasker().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, configuration.getDownload().getWindowMasker().getVersion(),
+                        getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.WM_VERSION_FILENAME));
+
+                outputPath = repeatsFolder.resolve(getUrlFilename(url));
+                logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+                downloadFiles.add(downloadFile(url, outputPath.toString()));
             }
             return downloadFiles;
         }
-        return null;
-    }
-
-    public void runGenomeInfo() throws IOException, InterruptedException {
-        logger.info("Downloading genome info ...");
-
-        // TODO don't run this if file already exists
-
-        String outputFolder = downloadFolder.getParent().toAbsolutePath().toString() + "/generated_json/";
-
-        if ("true".equals(System.getenv("CELLBASE_BUILD_DOCKER"))) {
-            String outputLog = downloadLogFolder + "/genome_info.log";
-            EtlCommons.runCommandLineProcess(null, "/opt/cellbase/genome_info.pl",
-                    Arrays.asList("--outdir", outputFolder),
-                    outputLog);
-        } else {
-            String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
-
-            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(outputFolder, "/ensembl-data");
-            String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
-
-            DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
-        }
+        return Collections.emptyList();
     }
 }

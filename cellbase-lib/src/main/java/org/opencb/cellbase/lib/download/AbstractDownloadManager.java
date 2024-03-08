@@ -52,6 +52,8 @@ public class AbstractDownloadManager {
 
     private static final String GNOMAD_NAME = "gnomAD";
 
+    protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} to {} ...";
+
     protected String species;
     protected String assembly;
     protected Path outdir;

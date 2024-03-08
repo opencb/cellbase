@@ -153,11 +153,14 @@ download:
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
   windowMasker:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
   genomicSuperDups:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
 
   ## Variant Pathogenic Prediction
   revel:
