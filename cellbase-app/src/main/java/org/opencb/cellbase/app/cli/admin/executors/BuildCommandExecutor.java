@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -279,11 +279,17 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildVariation() {
-        Path variationFunctionalScorePath = downloadFolder.resolve("variation");
-        copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("dbSnpVersion.json")));
-        Path variationFilePath = variationFunctionalScorePath.resolve(EtlCommons.DBSNP_FILE);
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "dbSNP");
-        return new VariationBuilder(variationFilePath, serializer);
+        Path downloadVariationPath = downloadFolder.resolve(VARIATION_DATA);
+        Path buildVariationPath = buildFolder.resolve(VARIATION_DATA);
+        if (!buildVariationPath.toFile().exists()) {
+            buildVariationPath.toFile().mkdirs();
+        }
+
+        CellBaseFileSerializer variationSerializer = new CellBaseJsonFileSerializer(buildVariationPath);
+
+        // Currently, only dbSNP data
+        copyVersionFiles(Collections.singletonList(downloadVariationPath.resolve(DBSNP_VERSION_FILENAME)));
+        return new VariationBuilder(downloadVariationPath, variationSerializer, configuration);
     }
 
     private CellBaseBuilder buildCadd() {
