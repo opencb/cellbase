@@ -19,17 +19,18 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class VariationDownloadManager extends AbstractDownloadManager {
 
-    private static final String DBSNP_NAME = "dbSNP";
     public VariationDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
@@ -37,24 +38,27 @@ public class VariationDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadCaddScores());
+        return Collections.singletonList(downloadDbSnp());
     }
 
-    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "variation")) {
+    public DownloadFile downloadDbSnp() throws IOException, InterruptedException {
+        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_DATA)) {
             return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading dbSNP scores information ...");
 
-            Path variation = downloadFolder.resolve("variation");
+            Path variation = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variation);
 
             DownloadProperties.URLProperties dbSNP = configuration.getDownload().getDbSNP();
             String url = dbSNP.getHost();
-            saveVersionData(EtlCommons.VARIATION_DATA, DBSNP_NAME, dbSNP.getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), variation.resolve("dbSnpVersion.json"));
-            return downloadFile(url, variation.resolve(EtlCommons.DBSNP_FILE).toString());
+            saveVersionData(VARIATION_DATA, DBSNP_NAME, dbSNP.getVersion(), getTimeStamp(),
+                    Collections.singletonList(url), variation.resolve(DBSNP_VERSION_FILENAME));
+
+            Path outPath = variation.resolve(Paths.get(url).getFileName());
+            logger.info("Downloading {} to {} ...", url, outPath);
+            return downloadFile(url, outPath.toString());
         }
         return null;
     }
