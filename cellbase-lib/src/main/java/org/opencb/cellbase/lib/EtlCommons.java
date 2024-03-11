@@ -63,7 +63,7 @@ public class EtlCommons {
     public static final String IARCTP53_FILE = "IARC-TP53.zip";
     public static final String GWAS_FILE = "gwas_catalog.tsv";
     public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
-    public static final String DBSNP_FILE = "All.vcf.gz";
+    public static final String DBSNP_FILE = "GCF_000001405.40.gz";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
