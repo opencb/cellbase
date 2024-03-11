@@ -132,6 +132,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.REFSEQ_DATA:
                             parser = buildRefSeq();
                             break;
+                        case EtlCommons.VARIATION_DATA:
+                            parser = buildVariation();
+                            break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
                             break;
@@ -273,6 +276,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(refseqFolderPath.resolve("refSeqVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "refseq");
         return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
+    }
+
+    private CellBaseBuilder buildVariation() {
+        Path variationFunctionalScorePath = downloadFolder.resolve("variation");
+        copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("dbSnpVersion.json")));
+        Path variationFilePath = variationFunctionalScorePath.resolve(EtlCommons.DBSNP_FILE);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "dbSNP");
+        return new VariationBuilder(variationFilePath, serializer);
     }
 
     private CellBaseBuilder buildCadd() {
