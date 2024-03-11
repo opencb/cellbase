@@ -18,11 +18,13 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.Snp;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
@@ -40,6 +42,7 @@ import org.opencb.cellbase.lib.impl.core.converters.VariantConverter;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.iterator.VariantMongoDBIterator;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -50,6 +53,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
 
@@ -68,6 +72,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
 
     private Map<Integer, MongoDBCollection> caddDBCollectionByRelease;
+    private Map<Integer, MongoDBCollection> snpDBCollectionByRelease;
 
     public VariantMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -80,6 +85,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
         mongoDBCollectionByRelease = buildCollectionByReleaseMap("variation");
         caddDBCollectionByRelease = buildCollectionByReleaseMap("variation_functional_score");
+        snpDBCollectionByRelease = buildCollectionByReleaseMap("snp");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -207,7 +213,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Deprecated
-    private Bson parseQuery(Query query) {
+    private Bson parseQuery(Query query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
 
         createOrQuery(query, ParamConstants.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
@@ -221,7 +227,12 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         }
         createRegionQuery(query, ParamConstants.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, ParamConstants.QueryParams.ID.key(), "id", andBsonList);
+
+        if (StringUtils.isNotEmpty(query.getString(ParamConstants.QueryParams.ID.key()))) {
+            List<String> variantIds = getVariantIds(query.getAsStringList(ParamConstants.QueryParams.ID.key()),
+                    query.getInt(DATA_RELEASE_PARAM));
+            createOrQuery(variantIds, "id", andBsonList);
+        }
 
         createImprecisePositionQuery(query, ParamConstants.QueryParams.CI_START_LEFT.key(),
                 ParamConstants.QueryParams.CI_START_RIGHT.key(),
@@ -243,16 +254,21 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         }
     }
 
-    public Bson parseQuery(VariantQuery query) {
+    public Bson parseQuery(VariantQuery query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "id":
+                        List<String> variantIds = getVariantIds(Arrays.asList(query.getId().split(",")), query.getDataRelease());
+                        createAndOrQuery(variantIds, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
                     case "region":
                         createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
+                    case API_KEY_PARAM:
                     case DATA_RELEASE_PARAM:
                     case "svType":
                         // don't do anything, this is parsed later
@@ -283,7 +299,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new CellBaseException(e.getMessage());
         }
 
         logger.debug("variant parsed query: " + andBsonList.toString());
@@ -745,13 +761,14 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
-        for (String id : ids) {
-            Bson projection = getProjection(queryOptions);
-            List<Bson> orBsonList = new ArrayList<>(ids.size());
-            orBsonList.add(Filters.eq("id", id));
-            Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
+        Bson projection = getProjection(queryOptions);
+        List<String> variantIds = getVariantIds(ids, dataRelease);
+        List<Bson> orBsonList = new ArrayList<>(variantIds.size());
+        for (String variantId : variantIds) {
+            orBsonList.add(Filters.eq("id", variantId));
         }
+        Bson bson = Filters.or(orBsonList);
+        results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
         return results;
     }
 
@@ -775,6 +792,46 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         Bson bson = Filters.or(orBsonList);
 
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, GenomicScoreRegion.class, new QueryOptions()));
+    }
+
+    private List<String> getVariantIds(List<String> ids, int dataRelease) throws CellBaseException {
+        List<String> variantIds = new ArrayList<>();
+        List<String> snpIds = new ArrayList<>();
+        for (String id : ids) {
+            if (id.startsWith("rs")) {
+                snpIds.add(id);
+            } else {
+                variantIds.add(id);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(snpIds)) {
+            List<Bson> orBsonList = new ArrayList<>();
+            for (String snpId : snpIds) {
+                orBsonList.add(Filters.eq("id", snpId));
+            }
+            Bson query = Filters.or(orBsonList);
+
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(snpDBCollectionByRelease, dataRelease);
+            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, null, Snp.class, new QueryOptions());
+
+            Set<String> results = new HashSet<>();
+
+            // Build the variant IDs
+            if (snpDataResult.getNumResults() > 0) {
+                for (Snp snp : snpDataResult.getResults()) {
+                    for (String allele : snp.getAlleles()) {
+                        results.add(snp.getChromosome() + ":" + snp.getPosition() + ":" + snp.getReference() + ":" + allele);
+                    }
+                }
+            }
+
+            // Add new variant IDs, if necessary
+            if (CollectionUtils.isNotEmpty(results)) {
+                variantIds.addAll(results);
+            }
+        }
+
+        return variantIds;
     }
 }
 

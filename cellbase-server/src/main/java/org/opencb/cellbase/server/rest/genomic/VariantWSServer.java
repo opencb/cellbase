@@ -18,8 +18,10 @@ package org.opencb.cellbase.server.rest.genomic;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang.StringUtils;
+import org.opencb.biodata.models.core.Snp;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -487,6 +489,39 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
 //            parseQueryParams();
             CellBaseDataResult<String> queryResult = variantManager.getConsequenceTypes();
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/snp")
+    @ApiOperation(httpMethod = "GET", value = "Get SNPs",
+            response = Snp.class, responseContainer = "QueryResponse")
+   @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
+    })
+    public Response getSnps(@QueryParam("id") @ApiParam(name = "id", value = "ID") String id,
+                            @QueryParam("chromosome") @ApiParam(name = "chromosome", value = "Chromsome") String chromosome,
+                            @QueryParam("position") @ApiParam(name = "position", value = "Position") Integer position) {
+        try {
+            SnpQuery query = new SnpQuery(uriParams);
+            CellBaseDataResult<Snp> queryResult = variantManager.getSnps(query);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
