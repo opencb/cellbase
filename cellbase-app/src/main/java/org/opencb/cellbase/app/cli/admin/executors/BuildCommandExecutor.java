@@ -278,7 +278,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
     }
 
-    private CellBaseBuilder buildVariation() {
+    private CellBaseBuilder buildVariation() throws IOException {
         Path downloadVariationPath = downloadFolder.resolve(VARIATION_DATA);
         Path buildVariationPath = buildFolder.resolve(VARIATION_DATA);
         if (!buildVariationPath.toFile().exists()) {
@@ -288,7 +288,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         CellBaseFileSerializer variationSerializer = new CellBaseJsonFileSerializer(buildVariationPath);
 
         // Currently, only dbSNP data
-        copyVersionFiles(Collections.singletonList(downloadVariationPath.resolve(DBSNP_VERSION_FILENAME)));
+        Files.copy(downloadVariationPath.resolve(DBSNP_VERSION_FILENAME), buildVariationPath.resolve(DBSNP_VERSION_FILENAME),
+                StandardCopyOption.REPLACE_EXISTING);
         return new VariationBuilder(downloadVariationPath, variationSerializer, configuration);
     }
 

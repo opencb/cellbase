@@ -67,6 +67,7 @@ public class EtlCommons {
     public static final String DBSNP_FILE = "GCF_000001405.40.gz";
     public static final String DBSNP_NAME = "dbSNP";
     public static final String DBSNP_VERSION_FILENAME = DBSNP_NAME + "Version.json";
+    public static final String SNP_COLLECTION_NAME = "snp";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
