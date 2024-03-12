@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Snp;
@@ -36,6 +37,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
@@ -72,8 +74,8 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
     }
 
     @Override
-    public List<CellBaseDataResult<Snp>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                              String apiKey) throws CellBaseException {
+    public List<CellBaseDataResult<Snp>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
+            throws CellBaseException {
         List<CellBaseDataResult<Snp>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
@@ -87,13 +89,11 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
     }
 
     @Override
-    public CellBaseDataResult<Long> count(SnpQuery query) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<String> distinct(SnpQuery query) throws CellBaseException {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        logger.info("snpQuery distinct: {}", bsonQuery.toBsonDocument().toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonQuery, String.class));
     }
 
     @Override
@@ -103,7 +103,27 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
 
     @Override
     public CellBaseDataResult groupBy(SnpQuery query) throws CellBaseException {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        logger.info("snpQuery groupBy: {}", bsonQuery.toBsonDocument().toJson());
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        return groupBy(bsonQuery, query, "name", mongoDBCollection);
+    }
+
+    public CellBaseDataResult<Snp> startsWith(String id, QueryOptions options, int dataRelease) throws CellBaseException {
+        Bson regex = Filters.regex("id", Pattern.compile("^" + id));
+        Bson projection;
+        if (options.containsKey(QueryOptions.INCLUDE)) {
+            projection = Projections.include(options.getAsStringList(QueryOptions.INCLUDE));
+        } else {
+            if (options.containsKey(QueryOptions.EXCLUDE)) {
+                projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
+            } else {
+                projection = Projections.exclude("annotation");
+            }
+        }
+
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
     }
 
     public Bson parseQuery(SnpQuery query) {
@@ -132,9 +152,8 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
             e.printStackTrace();
         }
 
-        logger.info("SNP parsed query: " + andBsonList);
-        if (andBsonList.size() > 0) {
-            System.out.println("SnpMongoDBAdaptor, parse query = " + andBsonList);
+        logger.info("SnpMongoDBAdaptor parsed query: {}", andBsonList);
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();

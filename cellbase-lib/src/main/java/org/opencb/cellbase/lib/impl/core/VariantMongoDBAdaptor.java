@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -247,7 +248,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         createGeneOrQuery(query, ParamConstants.QueryParams.GENE.key(), andBsonList);
 
-        if (andBsonList.size() > 0) {
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
@@ -262,6 +263,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "id":
+                        // Both variant IDs and dbSNP IDs are allowed
                         List<String> variantIds = getVariantIds(Arrays.asList(query.getId().split(",")), query.getDataRelease());
                         createAndOrQuery(variantIds, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
@@ -302,8 +304,8 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             throw new CellBaseException(e.getMessage());
         }
 
-        logger.debug("variant parsed query: " + andBsonList.toString());
-        if (andBsonList.size() > 0) {
+        logger.debug("variant parsed query: {}", andBsonList);
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
@@ -585,21 +587,11 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             if (position >= chunkStart && position <= chunkEnd) {
                 int offset = (position - chunkStart);
                 ArrayList basicDBList = dbObject.get("values", ArrayList.class);
-
-//                long l1 = 0L; // TODO: delete
-//                try { // TODO: delete
                 long l1 = Long.parseLong(basicDBList.get(offset).toString());
-//                                 l1 = (Long) basicDBList.get(offset);
-//                } catch (Exception e) {  // TODO: delete
-//                    logger.error("problematic variant: {}", variant.toString());
-//                    throw e;
-//                }
-
                 if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
                     float value = 0f;
                     switch (alternate.toLowerCase()) {
                         case "a":
-//                            value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
                             value = (((short) (l1 >> 48)) / DECIMAL_RESOLUTION) - 10;
                             break;
                         case "c":
@@ -618,7 +610,6 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                             .setScore(value)
                             .setSource(dbObject.getString("source"))
                             .setDescription(null)
-                            //                        .setDescription("")
                             .build());
                 }
 
@@ -795,8 +786,9 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     private List<String> getVariantIds(List<String> ids, int dataRelease) throws CellBaseException {
-        List<String> variantIds = new ArrayList<>();
+        List<String> variantIds = new ArrayList<>(ids.size());
         List<String> snpIds = new ArrayList<>();
+        // Split dbSNP IDs and variant IDs
         for (String id : ids) {
             if (id.startsWith("rs")) {
                 snpIds.add(id);
@@ -804,19 +796,22 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 variantIds.add(id);
             }
         }
+
+        // Get the variant ID for the dbSNP ID
         if (CollectionUtils.isNotEmpty(snpIds)) {
+            // 1. Prepare the query
             List<Bson> orBsonList = new ArrayList<>();
             for (String snpId : snpIds) {
                 orBsonList.add(Filters.eq("id", snpId));
             }
             Bson query = Filters.or(orBsonList);
 
+            // 2. We must exclude as much information as possible to improve performance
             MongoDBCollection mongoDBCollection = getCollectionByRelease(snpDBCollectionByRelease, dataRelease);
-            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, null, Snp.class, new QueryOptions());
+            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, Projections.exclude("annotation"), Snp.class, new QueryOptions());
 
+            // 3. Build the variant IDs
             Set<String> results = new HashSet<>();
-
-            // Build the variant IDs
             if (snpDataResult.getNumResults() > 0) {
                 for (Snp snp : snpDataResult.getResults()) {
                     for (String allele : snp.getAlleles()) {
@@ -825,7 +820,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 }
             }
 
-            // Add new variant IDs, if necessary
+            // 4. Add new variant IDs, if necessary
             if (CollectionUtils.isNotEmpty(results)) {
                 variantIds.addAll(results);
             }

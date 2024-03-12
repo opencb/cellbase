@@ -46,7 +46,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
             return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading dbSNP scores information ...");
+            logger.info("Downloading dbSNP information ...");
 
             Path variation = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variation);
