@@ -28,9 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.DBSNP_NAME;
 
@@ -39,8 +37,37 @@ import static org.opencb.cellbase.lib.EtlCommons.DBSNP_NAME;
  */
 public class DbSnpBuilder extends CellBaseBuilder {
 
-    private Path sourceVariationPath;
-    private DownloadProperties.URLProperties dbSnpUrlProperties;
+    private final Path sourceVariationPath;
+    private final DownloadProperties.URLProperties dbSnpUrlProperties;
+    private static final Map<String, String> CHROMOSOME_MAPPING;
+
+    static {
+        CHROMOSOME_MAPPING = new HashMap<>();
+        CHROMOSOME_MAPPING.put("NC_000001", "1");
+        CHROMOSOME_MAPPING.put("NC_000002", "2");
+        CHROMOSOME_MAPPING.put("NC_000003", "3");
+        CHROMOSOME_MAPPING.put("NC_000004", "4");
+        CHROMOSOME_MAPPING.put("NC_000005", "5");
+        CHROMOSOME_MAPPING.put("NC_000006", "6");
+        CHROMOSOME_MAPPING.put("NC_000007", "7");
+        CHROMOSOME_MAPPING.put("NC_000008", "8");
+        CHROMOSOME_MAPPING.put("NC_000009", "9");
+        CHROMOSOME_MAPPING.put("NC_000010", "10");
+        CHROMOSOME_MAPPING.put("NC_000011", "11");
+        CHROMOSOME_MAPPING.put("NC_000012", "12");
+        CHROMOSOME_MAPPING.put("NC_000013", "13");
+        CHROMOSOME_MAPPING.put("NC_000014", "14");
+        CHROMOSOME_MAPPING.put("NC_000015", "15");
+        CHROMOSOME_MAPPING.put("NC_000016", "16");
+        CHROMOSOME_MAPPING.put("NC_000017", "17");
+        CHROMOSOME_MAPPING.put("NC_000018", "18");
+        CHROMOSOME_MAPPING.put("NC_000019", "19");
+        CHROMOSOME_MAPPING.put("NC_000020", "20");
+        CHROMOSOME_MAPPING.put("NC_000021", "21");
+        CHROMOSOME_MAPPING.put("NC_000022", "22");
+        CHROMOSOME_MAPPING.put("NC_000023", "X");
+        CHROMOSOME_MAPPING.put("NC_000024", "Y");
+    }
 
     public DbSnpBuilder(Path sourceVariationPath, DownloadProperties.URLProperties dbSnpUrlProperties, CellBaseSerializer serializer) {
         super(serializer);
@@ -80,39 +107,57 @@ public class DbSnpBuilder extends CellBaseBuilder {
         String line;
         String[] fields;
 
-        String currentChromosome = null;
-        String chromosome = null;
+        String chromosome;
         int position;
         String id;
         String ref;
         String[] alt;
+        String type;
+        String version;
         String info;
         List<String> flags;
+        Map<String, Object> additionalAttributes;
+
+        SnpAnnotation snpAnnotation;
 
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(dbSnpFilePath)) {
             while ((line = bufferedReader.readLine()) != null) {
                 if (!line.startsWith("#")) {
                     fields = line.split("\t");
 
-                    // This only happens the first time, when we start reading the file
-                    if (chromosome == null) {
-                        logger.info("Parsing chr {} ", fields[0]);
-                        currentChromosome = fields[0];
-                        chromosome = fields[0].split("\\.")[0];
-                    }
-
+                    chromosome = fields[0].split("\\.")[0];
+                    chromosome = CHROMOSOME_MAPPING.get(chromosome);
                     position = Integer.parseInt(fields[1]);
                     id = fields[2];
                     ref = fields[3];
                     alt = fields[4].split(",");
+                    version = dbSnpUrlProperties.getVersion();
                     info = fields[7];
 
-                    String[] infoFields = info.split(";");
+                    // Calculate SNP type
+                    type = "SNV";
+                    if (ref.length() > 1) {
+                        type = "INDEL";
+                    } else {
+                        for (String altAllele : alt) {
+                            if (altAllele.length() > 1) {
+                                type = "INDEL";
+                                break;
+                            }
+                        }
+                    }
+
+                    snpAnnotation = new SnpAnnotation();
                     flags = new ArrayList<>();
-                    SnpAnnotation snpAnnotation = new SnpAnnotation();
+                    additionalAttributes = new HashMap<>();
+
+                    String[] infoFields = info.split(";");
                     for (String infoField : infoFields) {
                         String[] infoKeyValue = infoField.split("=");
                         switch (infoKeyValue[0]) {
+                            case "dbSNPBuildID":
+                                version = infoKeyValue[1];
+                                break;
                             case "GENEINFO": {
                                 snpAnnotation.setGene(infoKeyValue[1].split(":")[0]);
                                 break;
@@ -121,6 +166,8 @@ public class DbSnpBuilder extends CellBaseBuilder {
                                 String[] studies = infoKeyValue[1].split("\\|");
                                 List<PopulationFrequency> populationFrequencies = new ArrayList<>();
                                 for (String study : studies) {
+                                    // After splitting 'GnomAD:1,1.426e-05,.' we get:
+                                    // freqFields: [GnomAD, 1, 1.426e-05, .]
                                     String[] freqFields = study.split("[:,]");
                                     if (freqFields.length == alt.length + 2) {
                                         for (int i = 0; i < alt.length; i++) {
@@ -129,12 +176,9 @@ public class DbSnpBuilder extends CellBaseBuilder {
                                                         alt[i], freqFields[0]);
                                             } else {
                                                 PopulationFrequency populationFrequency = new PopulationFrequency();
-                                                // Set study
                                                 populationFrequency.setStudy(freqFields[0]);
-                                                // Set reference
                                                 populationFrequency.setRefAllele(ref);
                                                 populationFrequency.setRefAlleleFreq(Float.parseFloat(freqFields[1]));
-                                                // Set alternate
                                                 populationFrequency.setAltAllele(alt[i]);
                                                 populationFrequency.setAltAlleleFreq(Float.parseFloat(freqFields[i + 2]));
 
@@ -153,18 +197,16 @@ public class DbSnpBuilder extends CellBaseBuilder {
                             default: {
                                 if (infoKeyValue.length == 1) {
                                     flags.add(infoKeyValue[0]);
+                                } else {
+                                    additionalAttributes.put(infoKeyValue[0], infoKeyValue[1]);
                                 }
                             }
                         }
                     }
                     snpAnnotation.setFlags(flags);
+                    snpAnnotation.setAdditionalAttributes(additionalAttributes);
 
-                    if (!currentChromosome.equals(fields[0])) {
-                        logger.info("Parsing chr {} ", fields[0]);
-                    }
-
-                    Snp snp = new Snp(id, chromosome, position, ref, Arrays.asList(alt), "SNV", DBSNP_NAME, dbSnpUrlProperties.getVersion(),
-                            snpAnnotation);
+                    Snp snp = new Snp(id, chromosome, position, ref, Arrays.asList(alt), type, DBSNP_NAME, version, snpAnnotation);
                     fileSerializer.serialize(snp, DBSNP_NAME);
                 }
             }
