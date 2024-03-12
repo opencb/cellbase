@@ -814,8 +814,8 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             Set<String> results = new HashSet<>();
             if (snpDataResult.getNumResults() > 0) {
                 for (Snp snp : snpDataResult.getResults()) {
-                    for (String allele : snp.getAlleles()) {
-                        results.add(snp.getChromosome() + ":" + snp.getPosition() + ":" + snp.getReference() + ":" + allele);
+                    for (String alternate : snp.getAlternates()) {
+                        results.add(snp.getChromosome() + ":" + snp.getPosition() + ":" + snp.getReference() + ":" + alternate);
                     }
                 }
             }
