@@ -171,9 +171,12 @@ public class DbSnpBuilder extends CellBaseBuilder {
                                     String[] freqFields = study.split("[:,]");
                                     if (freqFields.length == alt.length + 2) {
                                         for (int i = 0; i < alt.length; i++) {
-                                            if (".".equals(freqFields[i + 2])) {
-                                                logger.warn("Skipping pop. frequency for alt. allele ({}) of study {}: it is '.')",
-                                                        alt[i], freqFields[0]);
+                                            if (".".equals(freqFields[1])) {
+                                                logger.warn("Skipping pop. frequency for ref. allele ({}) of study {}: it is '.')",
+                                                        ref, freqFields[0]);
+                                            } else if (".".equals(freqFields[i + 2])) {
+                                                    logger.warn("Skipping pop. frequency for alt. allele ({}) of study {}: it is '.')",
+                                                            alt[i], freqFields[0]);
                                             } else {
                                                 PopulationFrequency populationFrequency = new PopulationFrequency();
                                                 populationFrequency.setStudy(freqFields[0]);
