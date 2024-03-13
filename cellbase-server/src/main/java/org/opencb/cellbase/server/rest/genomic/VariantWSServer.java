@@ -459,7 +459,7 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/snp")
+    @Path("/snp/search")
     @ApiOperation(httpMethod = "GET", value = "Get SNPs", response = Snp.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
@@ -476,17 +476,43 @@ public class VariantWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
                     required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List", paramType = "query")
     })
-    public Response getSnps(@QueryParam("id") @ApiParam(name = "id", value = "ID") String id,
+    public Response searchSnp(@QueryParam("id") @ApiParam(name = "id", value = "SNP ID") String id,
                             @QueryParam("chromosome") @ApiParam(name = "chromosome", value = "Chromosome") String chromosome,
                             @QueryParam("position") @ApiParam(name = "position", value = "Position") Integer position,
                             @QueryParam("reference") @ApiParam(name = "reference", value = "Reference") String reference) {
         try {
             SnpQuery query = new SnpQuery(uriParams);
-            CellBaseDataResult<Snp> queryResult = variantManager.getSnps(query);
+            CellBaseDataResult<Snp> queryResult = variantManager.searchSnp(query);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
+    @GET
+    @Path("/snp/startsWith")
+    @ApiOperation(httpMethod = "GET", value = "Get SNPs starting with the input SNP ID", response = Snp.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query")
+    })
+    public Response startsWithSnp(@QueryParam("id") @ApiParam(name = "id", value = "SNP ID, e.g.: rs15703916") String id) {
+        try {
+            try {
+                SnpQuery query = new SnpQuery(uriParams);
+                CellBaseDataResult<Snp> queryResult = variantManager.startsWithSnp(id, query.toQueryOptions(), getDataRelease());
+                return createOkResponse(queryResult);
+            } catch (Exception e) {
+                return createErrorResponse(e);
+            }
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 }

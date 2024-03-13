@@ -355,7 +355,11 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
     }
 
-    public CellBaseDataResult<Snp> getSnps(SnpQuery query) throws CellBaseException {
+    public CellBaseDataResult<Snp> searchSnp(SnpQuery query) throws CellBaseException {
         return snpDBAdaptor.query(query);
+    }
+
+    public CellBaseDataResult<Snp> startsWithSnp(String id, QueryOptions options, int dataRelease) throws CellBaseException {
+        return snpDBAdaptor.startsWith(id, options, dataRelease);
     }
 }

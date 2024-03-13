@@ -111,15 +111,11 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
 
     public CellBaseDataResult<Snp> startsWith(String id, QueryOptions options, int dataRelease) throws CellBaseException {
         Bson regex = Filters.regex("id", Pattern.compile("^" + id));
-        Bson projection;
+        Bson projection = null;
         if (options.containsKey(QueryOptions.INCLUDE)) {
             projection = Projections.include(options.getAsStringList(QueryOptions.INCLUDE));
-        } else {
-            if (options.containsKey(QueryOptions.EXCLUDE)) {
-                projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
-            } else {
-                projection = Projections.exclude("annotation");
-            }
+        } else if (options.containsKey(QueryOptions.EXCLUDE)) {
+            projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
         }
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
