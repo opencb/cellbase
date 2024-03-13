@@ -469,7 +469,7 @@ public class VariantAnnotationCalculator {
 
         FutureSnpAnnotator futureSnpAnnotator = null;
         Future<List<CellBaseDataResult<Snp>>> snpFuture = null;
-        if (annotatorSet.contains("xrefs")) {
+        if (annotatorSet.contains("xrefs") && dataRelease.getCollections().containsKey(EtlCommons.SNP_COLLECTION_NAME)) {
             futureSnpAnnotator = new FutureSnpAnnotator(normalizedVariantList, dataRelease.getRelease(), variantManager, logger);
             snpFuture = CACHED_THREAD_POOL.submit(futureSnpAnnotator);
         }

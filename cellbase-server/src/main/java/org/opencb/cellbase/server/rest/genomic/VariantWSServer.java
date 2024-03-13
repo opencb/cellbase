@@ -458,6 +458,9 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
+    //-------------------------------------------------------------------------
+    // S N P
+    //-------------------------------------------------------------------------
     @GET
     @Path("/snp/search")
     @ApiOperation(httpMethod = "GET", value = "Get SNPs", response = Snp.class, responseContainer = "QueryResponse")
