@@ -30,7 +30,7 @@ public class SnpQuery extends AbstractQuery {
     @QueryParameter(id = "chromosome")
     private String chromosome;
     @QueryParameter(id = "position")
-    private String position;
+    private Integer position;
     @QueryParameter(id = "reference")
     private String reference;
 
@@ -76,11 +76,11 @@ public class SnpQuery extends AbstractQuery {
         return this;
     }
 
-    public String getPosition() {
+    public Integer getPosition() {
         return position;
     }
 
-    public SnpQuery setPosition(String position) {
+    public SnpQuery setPosition(Integer position) {
         this.position = position;
         return this;
     }
