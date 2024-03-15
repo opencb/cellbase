@@ -115,10 +115,10 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         CellBaseDataResult<Long> nLoadedObjects = null;
         switch (field) {
             case POP_FREQUENCIES_FIELD:
-                nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList, dataRelease);
+                nLoadedObjects = updatePopulationFrequencies(objectList, dataRelease);
                 break;
             case ANNOTATION_FIELD:
-                nLoadedObjects = updateAnnotation((List<Document>) objectList, innerFields, dataRelease);
+                nLoadedObjects = updateAnnotation(objectList, innerFields, dataRelease);
                 break;
             default:
                 logger.error("Invalid field {}: no action implemented for updating this field.", field);
@@ -285,11 +285,13 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                         break;
                     case "ciStartLeft":
                         createImprecisePositionQueryStart(query, andBsonList);
+                        break;
                     case "ciEndRight":
                         // don't do anything, this is parsed later
                         break;
                     case "ciEndLeft":
                         createImprecisePositionQueryEnd(query, andBsonList);
+                        break;
                     case "gene":
                         createGeneOrQuery(query, andBsonList);
                         break;
@@ -359,7 +361,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 andBsonList.add(Filters.or(orBsonList));
                 // Inversion or just CNV (without subtype)
             } else {
-                andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
+                andBsonList.add(Filters.eq(typeMongoField, variantTypeString));
             }
         }
     }
@@ -450,7 +452,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         for (Document variantDBObject : variantDocumentList) {
             Document annotationDBObject = (Document) variantDBObject.get(ANNOTATION_FIELD);
             Document toOverwrite = new Document();
-            if (innerFields != null & innerFields.length > 0) {
+            if (innerFields != null && innerFields.length > 0) {
                 for (String field : innerFields) {
                     if (annotationDBObject.get(field) != null) {
                         toOverwrite.put(ANNOTATION_FIELD + "." + field, annotationDBObject.get(field));
@@ -810,7 +812,8 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
             // 2. We must exclude as much information as possible to improve performance
             MongoDBCollection mongoDBCollection = getCollectionByRelease(snpDBCollectionByRelease, dataRelease);
-            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, Projections.exclude("annotation"), Snp.class, new QueryOptions());
+            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, Projections.exclude(ANNOTATION_FIELD), Snp.class,
+                    new QueryOptions());
 
             // 3. Build the variant IDs
             Set<String> results = new HashSet<>();
