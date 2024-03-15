@@ -30,6 +30,8 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
@@ -813,9 +815,18 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             // 3. Build the variant IDs
             Set<String> results = new HashSet<>();
             if (snpDataResult.getNumResults() > 0) {
+                // Create variant normalizer
+                VariantNormalizer variantNormalizer = new VariantNormalizer();
+
                 for (Snp snp : snpDataResult.getResults()) {
                     for (String alternate : snp.getAlternates()) {
-                        results.add(snp.getChromosome() + ":" + snp.getPosition() + ":" + snp.getReference() + ":" + alternate);
+                        Variant inputVariant = new Variant(snp.getChromosome(), snp.getPosition(), snp.getReference(), alternate);
+                        try {
+                            Variant normalizedVariant = variantNormalizer.normalize(Collections.singletonList(inputVariant), true).get(0);
+                            results.add(normalizedVariant.toString());
+                        } catch (NonStandardCompliantSampleField e) {
+                            throw new CellBaseException("Error normalizing variant " + inputVariant, e);
+                        }
                     }
                 }
             }
