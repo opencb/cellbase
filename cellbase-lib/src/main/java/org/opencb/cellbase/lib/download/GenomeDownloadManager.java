@@ -25,24 +25,22 @@ import org.opencb.cellbase.lib.EtlCommons;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.GERP_SUBDIRECTORY;
-import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS_NAME;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GenomeDownloadManager extends AbstractDownloadManager {
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
-    private static final String GERP_NAME = "GERP++";
-    private static final String PHASTCONS_NAME = "PhastCons";
-    private static final String PHYLOP_NAME = "PhyloP";
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
 
     private static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
+    private static final String PUT_CHROMOSOME_HERE_MARK = "put_chromosome_here";
 
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -108,39 +106,55 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             Files.createDirectories(conservationFolder);
             Files.createDirectories(conservationFolder.resolve(GERP_SUBDIRECTORY));
-            Files.createDirectories(conservationFolder.resolve("phastCons"));
-            Files.createDirectories(conservationFolder.resolve("phylop"));
+            Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
+            Files.createDirectories(conservationFolder.resolve(PHYLOP_SUBDIRECTORY));
 
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                     "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
 
             if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh38")) {
-                String url = configuration.getDownload().getConservation().getHost() + "/hg38";
+                String filename;
+                Path outputPath;
+                String assembly = "hg38";
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
                 List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
+                // Downloading PhastCons and PhyloP
+                logger.info("Downloading {} and {}", PHASTCONS_NAME, PHYLOP_NAME);
                 for (String chromosome : chromosomes) {
-                    String phastConsUrl = url + "/phastCons470way/hg38.470way.phastCons/chr" + chromosome
-                            + ".phastCons470way.wigFix.gz";
-                    downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve("phastCons")
-                            .resolve("chr" + chromosome + ".phastCons470way.wigFix.gz").toString()));
+                    // PhastCons
+                    String phastConsUrl = configuration.getDownload().getPhastCons().getHost().replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
+                            .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
+                    filename = Paths.get(phastConsUrl).getFileName().toString();
+                    outputPath = conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve(filename);
+                    logger.info("Downloading {} from {} to {}", PHASTCONS_NAME, phastConsUrl, outputPath);
+                    downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
                     phastconsUrls.add(phastConsUrl);
 
-                    String phyloPUrl = url + "/phyloP470way/hg38.470way.phyloP/chr" + chromosome
-                            + ".phyloP470way.wigFix.gz";
-                    downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve("phylop")
-                            .resolve("chr" + chromosome + ".phyloP470way.wigFix.gz").toString()));
+                    // PhyloP
+                    String phyloPUrl = configuration.getDownload().getPhylop().getHost().replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
+                            .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
+                    filename = Paths.get(phyloPUrl).getFileName().toString();
+                    outputPath = conservationFolder.resolve(PHYLOP_SUBDIRECTORY).resolve(filename);
+                    logger.info("Downloading {} from {} to {}", PHYLOP_NAME, phyloPUrl, outputPath);
+                    downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
                     phyloPUrls.add(phyloPUrl);
                 }
-                String gerpUrl = configuration.getDownload().getGerp().getHost();
-                downloadFiles.add(downloadFile(gerpUrl, conservationFolder.resolve(GERP_SUBDIRECTORY)
-                        .resolve(EtlCommons.GERP_FILE).toString()));
 
-                saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(), Collections.singletonList(gerpUrl),
-                        conservationFolder.resolve("gerpVersion.json"));
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                        conservationFolder.resolve("phastConsVersion.json"));
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve("phyloPVersion.json"));
+                // Downloading Gerp
+                logger.info("Downloading {}", GERP_NAME);
+                String gerpUrl = configuration.getDownload().getGerp().getHost();
+                filename = Paths.get(gerpUrl).getFileName().toString();
+                outputPath = conservationFolder.resolve(GERP_SUBDIRECTORY).resolve(filename);
+                logger.info("Downloading from {} to {}", gerpUrl, outputPath);
+                downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+
+                // Save data version
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, configuration.getDownload().getPhastCons().getVersion(),
+                        getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, configuration.getDownload().getPhylop().getVersion(),
+                        getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
+                saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
+                        Collections.singletonList(gerpUrl), conservationFolder.resolve(GERP_VERSION_FILENAME));
             }
         }
 

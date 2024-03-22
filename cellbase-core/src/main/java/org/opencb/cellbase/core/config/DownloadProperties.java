@@ -45,7 +45,10 @@ public class DownloadProperties {
     private URLProperties intact;
     private URLProperties interpro;
     private URLProperties interproRelNotes;
+    @Deprecated
     private URLProperties conservation;
+    private URLProperties phastCons;
+    private URLProperties phylop;
     private URLProperties gerp;
     private URLProperties clinvar;
     private URLProperties clinvarVariation;
@@ -203,12 +206,32 @@ public class DownloadProperties {
         return this;
     }
 
+    @Deprecated
     public URLProperties getConservation() {
         return conservation;
     }
 
+    @Deprecated
     public DownloadProperties setConservation(URLProperties conservation) {
         this.conservation = conservation;
+        return this;
+    }
+
+    public URLProperties getPhastCons() {
+        return phastCons;
+    }
+
+    public DownloadProperties setPhastCons(URLProperties phastCons) {
+        this.phastCons = phastCons;
+        return this;
+    }
+
+    public URLProperties getPhylop() {
+        return phylop;
+    }
+
+    public DownloadProperties setPhylop(URLProperties phylop) {
+        this.phylop = phylop;
         return this;
     }
 

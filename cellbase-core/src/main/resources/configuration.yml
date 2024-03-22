@@ -119,8 +119,13 @@ download:
     version: "2024-02-16"
 
   ## Conservation Scores
-  conservation:
-    host: https://hgdownload.cse.ucsc.edu/goldenPath/
+  phastCons:
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
+    host: https://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/phastCons470way/put_assembly_here.470way.phastCons/chrput_chromosome_here.phastCons470way.wigFix.gz
+    version: "2022-08-30"
+  phylop:
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
+    host: https://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/phyloP470way/put_assembly_here.470way.phyloP/chrput_chromosome_here.phyloP470way.wigFix.gz
     version: "2022-08-30"
   gerp:
     host: http://ftp.ensembl.org/pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw

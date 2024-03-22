@@ -66,7 +66,6 @@ public class EtlCommons {
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     public static final String REGULATION_DATA = "regulation";
     public static final String PROTEIN_DATA = "protein";
-    public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
@@ -128,14 +127,26 @@ public class EtlCommons {
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
 
-    // Path and file names
+    // Conservation scores
+    public static final String CONSERVATION_DATA = "conservation";
+    public static final String GERP_NAME = "GERP++";
     public static final String GERP_SUBDIRECTORY = "gerp";
+    public static final String GERP_VERSION_FILENAME = GERP_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String PHASTCONS_NAME = "PhastCons";
+    public static final String PHASTCONS_SUBDIRECTORY = "phastCons";
+    public static final String PHASTCONS_VERSION_FILENAME = PHASTCONS_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String PHYLOP_NAME = "PhyloP";
+    public static final String PHYLOP_SUBDIRECTORY = "phylop";
+    public static final String PHYLOP_VERSION_FILENAME = PHYLOP_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+
+    // Splice scores
     public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
-    public static final String MMSPLICE_VERSION_FILENAME = "mmspliceVersion.json";
+    public static final String MMSPLICE_VERSION_FILENAME = "mmsplice" + SUFFIX_VERSION_FILENAME;
     public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
-    public static final String SPLICEAI_VERSION_FILENAME = "spliceaiVersion.json";
+    public static final String SPLICEAI_VERSION_FILENAME = "spliceai" + SUFFIX_VERSION_FILENAME;
 
     // binary bigwig file
+    @Deprecated
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
     // bigwig file manually transformed to bedGraph file
     public static final String GERP_PROCESSED_FILE = "gerp.bedGraph.gz"; //"gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
