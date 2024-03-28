@@ -113,7 +113,7 @@ public class ParamConstants {
     public static final String VERSION_DESCRIPTION = "API version, e.g.: " + DEFAULT_VERSION;
 
     public static final String DATA_RELEASE_PARAM = "dataRelease";
-    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To get the list of available data release, please call the"
+    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To get the list of available data releases, please call the"
         + " endpoint 'meta/dataReleases'";
 
     public static final String API_KEY_PARAM = "apiKey";
