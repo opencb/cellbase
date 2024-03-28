@@ -37,7 +37,6 @@ public class DownloadProperties {
     private URLProperties geneUniprotXref;
     private URLProperties geneExpressionAtlas;
     private URLProperties mirbase;
-    private URLProperties mirbaseReadme;
     private URLProperties targetScan;
     private URLProperties miRTarBase;
     private URLProperties uniprot;
@@ -131,15 +130,6 @@ public class DownloadProperties {
 
     public DownloadProperties setMirbase(URLProperties mirbase) {
         this.mirbase = mirbase;
-        return this;
-    }
-
-    public URLProperties getMirbaseReadme() {
-        return mirbaseReadme;
-    }
-
-    public DownloadProperties setMirbaseReadme(URLProperties mirbaseReadme) {
-        this.mirbaseReadme = mirbaseReadme;
         return this;
     }
 

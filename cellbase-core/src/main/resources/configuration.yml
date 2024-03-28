@@ -92,9 +92,8 @@ download:
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
   mirbase:
-    host: ftp://mirbase.org/pub/mirbase/CURRENT/miRNA.xls.gz
-  mirbaseReadme:
-    host: ftp://mirbase.org/pub/mirbase/CURRENT/README
+    host: https://www.mirbase.org/download/miRNA.dat
+    version: "22.1"
   targetScan:
     host: http://hgdownload.cse.ucsc.edu/goldenPath/
   miRTarBase:

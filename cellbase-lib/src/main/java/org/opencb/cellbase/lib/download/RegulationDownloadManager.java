@@ -32,19 +32,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 
 public class RegulationDownloadManager extends AbstractDownloadManager {
 
     private Path regulationFolder;
-
-    private static final String ENSEMBL_NAME = "ENSEMBL";
-    private static final String MIRBASE_NAME = "miRBase";
-    private static final String MIRTARBASE_NAME = "miRTarBase";
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -54,7 +53,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
-            return null;
+            return Collections.emptyList();
         }
         this.regulationFolder = downloadFolder.resolve("regulation");
         Files.createDirectories(regulationFolder);
@@ -108,22 +107,24 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
             logger.info("regulatory_pfm.json.gz is already built");
             return;
         }
-        Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
-        Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile);
-        Gff2 tfbsMotifFeature;
         Set<String> motifIds = new HashSet<>();
-        Pattern filePattern = Pattern.compile("ENSPFM(\\d+)");
-        while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
-            String pfmId = getMatrixId(filePattern, tfbsMotifFeature);
-            if (StringUtils.isNotEmpty(pfmId)) {
-                motifIds.add(pfmId);
+        Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
+        try (Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile)) {
+            Gff2 tfbsMotifFeature;
+            Pattern filePattern = Pattern.compile("ENSPFM(\\d+)");
+            while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
+                String pfmId = getMatrixId(filePattern, tfbsMotifFeature);
+                if (StringUtils.isNotEmpty(pfmId)) {
+                    motifIds.add(pfmId);
+                }
             }
         }
-        motifsFeatureReader.close();
 
         ObjectMapper mapper = new ObjectMapper();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_pfm", true);
-        logger.info("Looking up " + motifIds.size() + " pfms");
+        if (logger.isInfoEnabled()) {
+            logger.info("Looking up {} pfms", motifIds.size());
+        }
         for (String pfmId : motifIds) {
             String urlString = "https://rest.ensembl.org/species/homo_sapiens/binding_matrix/" + pfmId
                     + "?unit=frequencies;content-type=application/json";
@@ -145,22 +146,24 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     }
 
     private DownloadFile downloadMirna() throws IOException, InterruptedException {
+        logger.info("Downloading {} ...", MIRBASE_NAME);
         String url = configuration.getDownload().getMirbase().getHost();
-        String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
-        downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
-        saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
-                getLine(regulationFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
-                Collections.singletonList(url), regulationFolder.resolve("mirbaseVersion.json"));
-        Path outputPath = regulationFolder.resolve("miRNA.xls.gz");
-        DownloadFile downloadFile = downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString());
-        EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
-        return downloadFile;
+
+        saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME, configuration.getDownload().getMirbase().getVersion(), getTimeStamp(),
+                Collections.singletonList(url), regulationFolder.resolve(MIRBASE_VERSION_FILENAME));
+        Path outputPath = regulationFolder.resolve(Paths.get(url).getFileName());
+        logger.info("Downloading from {} to {} ...", url, outputPath);
+        return downloadFile(url, outputPath.toString());
     }
 
     private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException {
+        logger.info("Downloading {} ...", MIRTARBASE_NAME);
         String url = configuration.getDownload().getMiRTarBase().getHost();
-        saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                regulationFolder.resolve("miRTarBaseVersion.json"));
-        return downloadFile(url, regulationFolder.resolve("hsa_MTI.xlsx").toString());
+
+        saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, configuration.getDownload().getMiRTarBase().getVersion(),
+                getTimeStamp(), Collections.singletonList(url), regulationFolder.resolve(MIRTARBASE_VERSION_FILENAME));
+        Path outputPath = regulationFolder.resolve(Paths.get(url).getFileName());
+        logger.info("Downloading from {} to {} ...", url, outputPath);
+        return downloadFile(url, outputPath.toString());
     }
 }

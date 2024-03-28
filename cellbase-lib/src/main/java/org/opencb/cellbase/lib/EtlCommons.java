@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String ENSEMBL_NAME = "ENSEMBL";
+
     public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
 
     public static final String SUFFIX_VERSION_FILENAME = "Version.json";
@@ -183,6 +185,12 @@ public class EtlCommons {
 
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
+
+    public static final String MIRBASE_NAME = "miRBase";
+    public static final String MIRBASE_VERSION_FILENAME = MIRBASE_NAME + SUFFIX_VERSION_FILENAME;
+
+    public static final String MIRTARBASE_NAME = "miRTarBase";
+    public static final String MIRTARBASE_VERSION_FILENAME = MIRTARBASE_NAME + SUFFIX_VERSION_FILENAME;
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {
