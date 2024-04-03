@@ -145,15 +145,21 @@ download:
     host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz
   clinvarEfoTerms:
     host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
+  cosmic:
+    ## To be downloaded manually
+    host: https://cancer.sanger.ac.uk/cosmic/download/cosmic
+    version: "v99"
+    files:
+      - CosmicMutantExport.tsv.gz
+  hgmd:
+    ## To be downloaded manually
+    host: https://www.hgmd.cf.ac.uk/ac/index.php
+    version: "2020-03"
+    files:
+      - hgmd.vcf
   cancerHotspot:
     host: https://www.cancerhotspots.org/files/hotspots_v2.xls
     version: "v2"
-  iarctp53:
-    host: http://p53.iarc.fr/ajax/Zipper.ashx
-  docm:
-    host: http://docm.info/api/
-  docmVersion:
-    host: http://docm.info
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:

@@ -93,7 +93,7 @@ public class HGMDIndexer extends ClinicalIndexer {
             }
 
             // Source
-            entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, "2020.3", "2020"));
+            entry.setSource(new EvidenceSource(EtlCommons.HGMD_NAME, "2020.3", "2020"));
 
             // Assembly
             entry.setAssembly(assembly);

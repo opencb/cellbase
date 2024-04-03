@@ -35,19 +35,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.opencb.cellbase.lib.EtlCommons.CLINVAR_VERSION_FILENAME;
-import static org.opencb.cellbase.lib.EtlCommons.GWAS_VERSION_FILENAME;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
-
-    private static final String CLINVAR_NAME = "ClinVar";
-    private static final String GWAS_NAME = "GWAS catalog";
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    private static final String IARCTP53_NAME = "IARC TP53 Database";
-
 
     public ClinicalDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -62,11 +52,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            if (assemblyConfiguration.getName() == null) {
-//                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
-//                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
-//            }
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
 
             logger.info("Downloading clinical information ...");
 
@@ -74,10 +60,28 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             String filename;
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
+
             Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER).toAbsolutePath();
             Files.createDirectories(clinicalFolder);
-            logger.info("\t\tDownloading ClinVar files ...");
 
+            // COSMIC
+            logger.info("\t\tCOSMIC files must be downloaded manually !");
+            List<String> cosmicUrls = new ArrayList<>();
+            cosmicUrls.add(configuration.getDownload().getCosmic().getHost());
+            cosmicUrls.addAll(configuration.getDownload().getCosmic().getFiles());
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, COSMIC_NAME, configuration.getDownload().getCosmic().getVersion(),
+                    getTimeStamp(), cosmicUrls, clinicalFolder.resolve(COSMIC_VERSION_FILENAME));
+
+            // HGMD
+            logger.info("\t\tHGMD files must be downloaded manually !");
+            List<String> hgmdUrls = new ArrayList<>();
+            hgmdUrls.add(configuration.getDownload().getHgmd().getHost());
+            hgmdUrls.addAll(configuration.getDownload().getHgmd().getFiles());
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, HGMD_NAME, configuration.getDownload().getHgmd().getVersion(),
+                    getTimeStamp(), hgmdUrls, clinicalFolder.resolve(HGMD_VERSION_FILENAME));
+
+            // ClinVar
+            logger.info("\t\tDownloading ClinVar files ...");
             List<String> clinvarUrls = new ArrayList<>(3);
             url = configuration.getDownload().getClinvar().getHost();
             filename = Paths.get(url).getFileName().toString();
@@ -115,48 +119,6 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
                     Collections.singletonList(url), clinicalFolder.resolve(GWAS_VERSION_FILENAME));
-
-//            List<String> hgvsList = getDocmHgvsList();
-//            if (!hgvsList.isEmpty()) {
-//                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-//                downloadFiles.add(downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-//                        clinicalFolder.resolve("docmIndex.html").toString()));
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
-//                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
-//                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
-//                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
-//                        clinicalFolder.resolve("docmVersion.json"));
-//            } else {
-//                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
-//                        + "assembly", assemblyConfiguration.getName());
-//            }
-
-            // I am only able to download these files manually
-//            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
-//                url = configuration.getDownload().getIarctp53().getHost();
-//                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString()));
-//
-//                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-//                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//                while (entries.hasMoreElements()) {
-//                    ZipEntry entry = entries.nextElement();
-//                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-//                    if (entry.isDirectory()) {
-//                        entryDestination.mkdirs();
-//                    } else {
-//                        entryDestination.getParentFile().mkdirs();
-//                        InputStream in = zipFile.getInputStream(entry);
-//                        OutputStream out = new FileOutputStream(entryDestination);
-//                        IOUtils.copy(in, out);
-//                        IOUtils.closeQuietly(in);
-//                        out.close();
-//                    }
-//                }
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-//                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-//                                "The version of the database should be identified"), getTimeStamp(),
-//                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
-//            }
 
             final String chunkDir = "clinvar_chunks";
             if (Files.notExists(clinicalFolder.resolve(chunkDir))) {
@@ -202,14 +164,18 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                 if (line.trim().startsWith("</ClinVarSet>")) {
                     inEntry = false;
                     if (count % 10000 == 0) {
-                        pw.print("</ReleaseSet>");
-                        pw.close();
+                        if (pw != null) {
+                            pw.print("</ReleaseSet>");
+                            pw.close();
+                        }
                         chunk++;
                     }
                 }
             }
-            pw.print("</ReleaseSet>");
-            pw.close();
+            if (pw != null) {
+                pw.print("</ReleaseSet>");
+                pw.close();
+            }
         }
     }
 

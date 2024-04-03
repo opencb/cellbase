@@ -76,7 +76,17 @@ public class EtlCommons {
     public static final String PHARMGKB_DATA = "pharmgkb";
     public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
 
+    // Clinical variants data
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
+    public static final String CLINVAR_NAME = "ClinVar";
+    public static final String CLINVAR_VERSION_FILENAME = "clinvar" + SUFFIX_VERSION_FILENAME;
+    public static final String COSMIC_NAME = "COSMIC";
+    public static final String COSMIC_VERSION_FILENAME = "cosmic" + SUFFIX_VERSION_FILENAME;
+    public static final String HGMD_NAME = "HGMD";
+    public static final String HGMD_VERSION_FILENAME = "hgmd" + SUFFIX_VERSION_FILENAME;
+    public static final String GWAS_NAME = "GWAS catalog";
+    public static final String GWAS_VERSION_FILENAME = "gwas" + SUFFIX_VERSION_FILENAME;
+
     @Deprecated
     public static final String CLINVAR_VERSION = "2022.11";
     @Deprecated
@@ -89,12 +99,12 @@ public class EtlCommons {
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     @Deprecated
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
-    public static final String CLINVAR_VERSION_FILENAME = "clinvarVersion.json";
     public static final String IARCTP53_FILE = "IARC-TP53.zip";
     @Deprecated
     public static final String GWAS_FILE = "gwas-catalog-associations_ontology-annotated.tsv";
-    public static final String GWAS_VERSION_FILENAME = "gwasVersion.json";
+    @Deprecated
     public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
+    @Deprecated
     public static final String DBSNP_FILE = "All.vcf.gz";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
@@ -113,18 +123,18 @@ public class EtlCommons {
     public static final String CADD_DATA = "cadd";
     public static final String PPI_DATA = "ppi";
     public static final String DRUG_DATA = "drug";
-    public static final String CLINVAR_DATA = "clinvar";
-    public static final String DOCM_DATA = "docm";
-    public static final String COSMIC_DATA = "cosmic";
-    public static final String GWAS_DATA = "gwas";
-    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
-    public static final String HGMD_DATA = "hgmd";
+//    public static final String CLINVAR_DATA = "clinvar";
+//    public static final String DOCM_DATA = "docm";
+//    public static final String COSMIC_DATA = "cosmic";
+//    public static final String GWAS_DATA = "gwas";
+//    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R20.txt";
+//    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
+//    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
+//    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
+//    public static final String HGMD_DATA = "hgmd";
 
     public static final String PUBMED_DATA = "pubmed";
-    public static final String PUBMED_VERSION_FILE = PUBMED_DATA + "Version.json";
+    public static final String PUBMED_VERSION_FILE = PUBMED_DATA + SUFFIX_VERSION_FILENAME;
 
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";

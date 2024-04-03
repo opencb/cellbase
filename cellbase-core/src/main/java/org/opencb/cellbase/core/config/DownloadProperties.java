@@ -54,8 +54,13 @@ public class DownloadProperties {
     private URLProperties clinvarSummary;
     private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
+    private URLProperties cosmic;
+    private URLProperties hgmd;
+    @Deprecated
     private URLProperties iarctp53;
+    @Deprecated
     private URLProperties docm;
+    @Deprecated
     private URLProperties docmVersion;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
@@ -278,26 +283,50 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getCosmic() {
+        return cosmic;
+    }
+
+    public DownloadProperties setCosmic(URLProperties cosmic) {
+        this.cosmic = cosmic;
+        return this;
+    }
+
+    public URLProperties getHgmd() {
+        return hgmd;
+    }
+
+    public DownloadProperties setHgmd(URLProperties hgmd) {
+        this.hgmd = hgmd;
+        return this;
+    }
+
+    @Deprecated
     public URLProperties getIarctp53() {
         return iarctp53;
     }
 
+    @Deprecated
     public void setIarctp53(URLProperties iarctp53) {
         this.iarctp53 = iarctp53;
     }
 
+    @Deprecated
     public URLProperties getDocm() {
         return docm;
     }
 
+    @Deprecated
     public void setDocm(URLProperties docm) {
         this.docm = docm;
     }
 
+    @Deprecated
     public URLProperties getDocmVersion() {
         return docmVersion;
     }
 
+    @Deprecated
     public void setDocmVersion(URLProperties docmVersion) {
         this.docmVersion = docmVersion;
     }

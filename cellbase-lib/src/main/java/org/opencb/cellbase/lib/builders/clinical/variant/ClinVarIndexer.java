@@ -310,7 +310,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, String clinicalHaplotypeString,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, CLINVAR_VERSION, CLINVAR_DATE);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_NAME, CLINVAR_VERSION, CLINVAR_DATE);
         // Create a set to avoid situations like germline;germline;germline
         List<AlleleOrigin> alleleOrigin = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
@@ -391,7 +391,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, CLINVAR_VERSION, CLINVAR_DATE);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_NAME, CLINVAR_VERSION, CLINVAR_DATE);
 //        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(

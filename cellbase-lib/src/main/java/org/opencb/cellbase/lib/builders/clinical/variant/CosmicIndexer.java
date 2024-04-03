@@ -41,6 +41,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
 
+    @Deprecated
     private static final String COSMIC_VERSION = "v95";
 
     private static final int GENE_NAMES_COLUMN = 0;
@@ -469,7 +470,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         String id = fields[ID_COLUMN];
         String url = "https://cancer.sanger.ac.uk/cosmic/search?q=" + id;
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, COSMIC_VERSION, null);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_NAME, COSMIC_VERSION, null);
         SomaticInformation somaticInformation = getSomaticInformation(fields);
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
