@@ -34,11 +34,12 @@ import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -347,16 +348,26 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationBuilder(conservationFilesDir, conservationChunkSize, serializer);
     }
 
-    private CellBaseBuilder buildClinicalVariants() {
+    private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
         Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
-        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
-        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
+
+        List<Path> versionFiles = new ArrayList<>();
+        List<String> versionFilenames = Arrays.asList(CLINVAR_VERSION_FILENAME, COSMIC_VERSION_FILENAME, GWAS_VERSION_FILENAME,
+                HGMD_VERSION_FILENAME);
+        for (String versionFilename : versionFilenames) {
+            Path versionFile = clinicalVariantFolder.resolve(versionFilename);
+            if (!versionFile.toFile().exists()) {
+                throw new CellBaseException("Could not build clinical variants because of the file " + versionFilename + " does not exist");
+            }
+            versionFiles.add(versionFile);
+        }
+        copyVersionFiles(versionFiles);
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
                 EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
         return new ClinicalVariantBuilder(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
-                serializer);
+                configuration, serializer);
     }
 
     private String getDefaultHumanAssembly() {

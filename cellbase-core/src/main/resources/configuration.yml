@@ -183,6 +183,8 @@ download:
     ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e110_r2023-12-20'
     host: https://ftp.ebi.ac.uk/pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
     version: "2024-02-12"
+    files:
+      - All.vcf.gz
   hpo:
     ## NOTE: Download manually from here now
     host: https://hpo.jax.org/app/data/annotations

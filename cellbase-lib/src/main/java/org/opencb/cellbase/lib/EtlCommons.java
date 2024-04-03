@@ -87,26 +87,6 @@ public class EtlCommons {
     public static final String GWAS_NAME = "GWAS catalog";
     public static final String GWAS_VERSION_FILENAME = "gwas" + SUFFIX_VERSION_FILENAME;
 
-    @Deprecated
-    public static final String CLINVAR_VERSION = "2022.11";
-    @Deprecated
-    public static final String CLINVAR_DATE = "2022-11";
-    @Deprecated
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2022-11.xml.gz";
-    @Deprecated
-    public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
-    @Deprecated
-    public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
-    @Deprecated
-    public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
-    public static final String IARCTP53_FILE = "IARC-TP53.zip";
-    @Deprecated
-    public static final String GWAS_FILE = "gwas-catalog-associations_ontology-annotated.tsv";
-    @Deprecated
-    public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
-    @Deprecated
-    public static final String DBSNP_FILE = "All.vcf.gz";
-
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
     public static final String OBO_DATA = "ontology";

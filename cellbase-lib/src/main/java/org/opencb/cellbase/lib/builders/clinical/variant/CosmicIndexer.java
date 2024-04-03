@@ -37,12 +37,11 @@ import java.util.regex.Pattern;
 public class CosmicIndexer extends ClinicalIndexer {
 
     private final Path cosmicFile;
+    private final String version;
     private final String assembly;
+
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
-
-    @Deprecated
-    private static final String COSMIC_VERSION = "v95";
 
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
@@ -85,10 +84,12 @@ public class CosmicIndexer extends ClinicalIndexer {
     private int rocksDBNewVariants = 0;
     private int rocksDBUpdateVariants = 0;
 
-    public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
+    public CosmicIndexer(Path cosmicFile, String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
+            throws IOException {
         super(genomeSequenceFilePath);
 
         this.cosmicFile = cosmicFile;
+        this.version = version;
         this.normalize = normalize;
         this.assembly = assembly;
         this.rdb = rdb;
@@ -470,7 +471,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         String id = fields[ID_COLUMN];
         String url = "https://cancer.sanger.ac.uk/cosmic/search?q=" + id;
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_NAME, COSMIC_VERSION, null);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_NAME, version, null);
         SomaticInformation somaticInformation = getSomaticInformation(fields);
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
