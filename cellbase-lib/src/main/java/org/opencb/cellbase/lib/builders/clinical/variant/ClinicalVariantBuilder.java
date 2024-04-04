@@ -101,7 +101,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             // GWAS catalog
             Path gwasFile = clinicalVariantFolder.resolve(Paths.get(configuration.getDownload().getGwasCatalog().getHost()).getFileName());
             if (gwasFile != null && Files.exists(gwasFile)) {
-                Path dbsnpFile = clinicalVariantFolder.resolve(configuration.getDownload().getHgmd().getFiles().get(0));
+                Path dbsnpFile = clinicalVariantFolder.resolve(configuration.getDownload().getGwasCatalog().getFiles().get(0));
                 if (dbsnpFile != null && Files.exists(dbsnpFile)) {
                     Path tabixFile = Paths.get(dbsnpFile.toAbsolutePath() + ".tbi");
                     if (tabixFile != null && Files.exists(tabixFile)) {
@@ -125,7 +125,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             serializer.close();
             throw e;
         }
-
     }
 
     private Path getPathFromHost(String host) throws CellBaseException {
