@@ -127,7 +127,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
 
-        saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+        saveDataSource(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 geneFolder.resolve(ENSEMBL_CORE_VERSION_FILENAME));
 
         return downloadFiles;
@@ -179,7 +179,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         String version = urlProperties.getVersion();
         String filename = getUrlFilename(url);
         Path outputPath = refSeqFolder.resolve(filename);
-        saveVersionData(EtlCommons.REFSEQ_DATA, name, version, timeStamp, Collections.singletonList(url),
+        saveDataSource(EtlCommons.REFSEQ_DATA, name, version, timeStamp, Collections.singletonList(url),
                 refSeqFolder.resolve(versionFilename));
 
         logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
@@ -190,7 +190,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading MANE Select ...");
             String url = configuration.getDownload().getManeSelect().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, MANE_SELECT_NAME, configuration.getDownload().getManeSelect().getVersion(),
+            saveDataSource(EtlCommons.GENE_DATA, MANE_SELECT_NAME, configuration.getDownload().getManeSelect().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(MANE_SELECT_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -204,7 +204,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading LRG data ...");
             String url = configuration.getDownload().getLrg().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, LRG_NAME, configuration.getDownload().getLrg().getVersion(),
+            saveDataSource(EtlCommons.GENE_DATA, LRG_NAME, configuration.getDownload().getLrg().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(LRG_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -218,7 +218,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading HGNC data ...");
             String url = configuration.getDownload().getHgnc().getHost();
-            saveVersionData(GENE_DATA, HGNC_GENE_NAME, configuration.getDownload().getHgnc().getVersion(),
+            saveDataSource(GENE_DATA, HGNC_GENE_NAME, configuration.getDownload().getHgnc().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(HGNC_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -232,7 +232,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading Cancer Hotspot ...");
             String url = configuration.getDownload().getCancerHotspot().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, CANCER_HOTSPOT_NAME, configuration.getDownload().getHgnc().getVersion(),
+            saveDataSource(EtlCommons.GENE_DATA, CANCER_HOTSPOT_NAME, configuration.getDownload().getHgnc().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(CANCER_HOTSPOT_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -246,7 +246,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading GO annotation...");
             String url = configuration.getDownload().getGoAnnotation().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, configuration.getDownload().getGoAnnotation().getVersion(),
+            saveDataSource(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, configuration.getDownload().getGoAnnotation().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(GO_ANNOTATION_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -260,7 +260,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading gnomAD constraints data...");
             String url = configuration.getDownload().getGnomadConstraints().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(),
+            saveDataSource(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(GNOMAD_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -274,7 +274,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading drug-gene data...");
             String url = configuration.getDownload().getDgidb().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, configuration.getDownload().getDgidb().getVersion(), getTimeStamp(),
+            saveDataSource(EtlCommons.GENE_DATA, DGIDB_NAME, configuration.getDownload().getDgidb().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), geneFolder.resolve(DGIDB_VERSION_FILENAME));
 
             Path outputPath = geneFolder.resolve(getUrlFilename(url));
@@ -291,7 +291,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             String filename = GENE_UNIPROT_XREF_FILES.get(speciesConfiguration.getScientificName());
             String geneGtfUrl = configuration.getDownload().getGeneUniprotXref().getHost() + "/" + filename;
 
-            saveVersionData(EtlCommons.GENE_DATA, UNIPROT_NAME,
+            saveDataSource(EtlCommons.GENE_DATA, UNIPROT_NAME,
                     configuration.getDownload().getGeneUniprotXref().getVersion(), getTimeStamp(),
                     Collections.singletonList(geneGtfUrl), geneFolder.resolve(UNIPROT_XREF_VERSION_FILENAME));
 
@@ -306,7 +306,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     private DownloadFile downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
         String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
-        saveVersionData(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, configuration.getDownload().getGeneExpressionAtlas().getVersion(),
+        saveDataSource(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, configuration.getDownload().getGeneExpressionAtlas().getVersion(),
                 getTimeStamp(), Collections.singletonList(geneGtfUrl), geneFolder.resolve(GENE_EXPRESSION_ATLAS_VERSION_FILENAME));
 
         Path outputPath = geneFolder.resolve(getUrlFilename(geneGtfUrl));
@@ -322,7 +322,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                 configuration.getDownload().getHpo().getHost(), HPO_VERSION_FILENAME, GENE_DATA, HPO_NAME);
 
         String url = configuration.getDownload().getDisgenet().getHost();
-        saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME, configuration.getDownload().getDisgenet().getVersion(),
+        saveDataSource(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME, configuration.getDownload().getDisgenet().getVersion(),
                 getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(DISGINET_VERSION_FILENAME));
 
         Path outputPath = geneFolder.resolve(getUrlFilename(url));

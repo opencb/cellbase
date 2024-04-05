@@ -24,10 +24,11 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.Logger;
@@ -46,11 +47,9 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class AbstractDownloadManager {
+import static org.opencb.cellbase.lib.EtlCommons.HPO_OBO_FILE_ID;
 
-    private static final String DGV_NAME = "DGV";
-
-    private static final String GNOMAD_NAME = "gnomAD";
+public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} to {} ...";
 
@@ -68,14 +67,22 @@ public class AbstractDownloadManager {
     protected Path downloadFolder;
     protected Path downloadLogFolder; // /download/log
     protected Path buildFolder; // <output>/<species>_<assembly>/generated-json
+
+    protected ObjectReader dataSourceReader;
+    protected ObjectWriter dataSourceWriter;
+
     protected Logger logger;
 
-    public AbstractDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
+    protected AbstractDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         this.species = species;
         this.assembly = assembly;
         this.outdir = outdir;
         this.configuration = configuration;
+
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        this.dataSourceReader = jsonObjectMapper.readerFor(DataSource.class);
+        this.dataSourceWriter = jsonObjectMapper.writerFor(DataSource.class);
 
         this.init();
     }
@@ -106,47 +113,22 @@ public class AbstractDownloadManager {
         // Prepare outdir
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
-        logger.info("Creating download dir " + downloadFolder.toString());
+        logger.info("Creating download dir {}", downloadFolder);
         Files.createDirectories(downloadFolder);
 
         downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
-        logger.info("Creating download log dir " + downloadLogFolder.toString());
+        logger.info("Creating download log dir {}", downloadLogFolder);
         Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
         buildFolder = outdir.resolve(speciesFolder + "/generated_json");
-        logger.info("Creating build dir " + buildFolder.toString());
+        logger.info("Creating build dir {}", buildFolder);
         Files.createDirectories(buildFolder);
 
-        logger.info("Processing species " + speciesConfiguration.getScientificName());
+        logger.info("Processing species {}", speciesConfiguration.getScientificName());
     }
 
-    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
-        return null;
-    }
-
-//    public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
-//        if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
-//             return null;
-//        }
-//        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            logger.info("Downloading DGV data ...");
-//
-//            Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
-//            Files.createDirectories(structuralVariantsFolder);
-//            String sourceFilename = (assemblyConfiguration.getName().equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
-//                    + "_variants_2016-05-15.txt";
-//            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
-//            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
-//                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
-//            return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
-//        }
-//        return null;
-//    }
-
-//    private String getDGVVersion(String sourceFilename) {
-//        return sourceFilename.split("\\.")[0].split("_")[3];
-//    }
+    public abstract List<DownloadFile> download() throws IOException, InterruptedException;
 
     protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
         boolean hasInfo = true;
@@ -157,37 +139,45 @@ public class AbstractDownloadManager {
         return hasInfo;
     }
 
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String name, String category, String fileId,
+                                                     String versionFilename, Path outPath)
+            throws IOException, InterruptedException {
+        logger.info("Downloading {} ({}) file ...", name, category);
+        String url = props.getHost() + props.getFiles().get(fileId);
+        File outFile = outPath.resolve(getUrlFilename(url)).toFile();
+        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
+        DownloadFile downloadFile = downloadFile(url, outPath.toString());
+
+        // Save data source
+        saveDataSource(name, category, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
+                outPath.resolve(versionFilename));
+
+        return downloadFile;
+    }
+
     protected String getTimeStamp() {
         return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
     }
 
-    protected void saveVersionData(String data, String name, String version, String date, List<String> url, Path outputFilePath)
+    protected void saveDataSource(String name, String category, String version, String date, List<String> urls, Path outputFilePath)
             throws IOException {
-        Map<String, Object> versionDataMap = new HashMap<>();
-        versionDataMap.put("data", data);
-        versionDataMap.put("name", name);
-        if (StringUtils.isEmpty(version)) {
-            logger.warn("Version missing for data source {}/{}, using the date as version: {}", data, name, date);
-            versionDataMap.put("version", date);
-        } else {
-            versionDataMap.put("version", version);
-        }
-        versionDataMap.put("date", date);
-        versionDataMap.put("url", url);
+        DataSource dataSource = new DataSource(name, category, version, date, urls);
 
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);
+        if (StringUtils.isEmpty(version)) {
+            logger.warn("Version missing for data source {}/{}, using the date as version: {}", category, name, date);
+            dataSource.setVersion(date);
+        }
+
+        dataSourceWriter.writeValue(outputFilePath.toFile(), dataSource);
     }
 
     protected String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
-        try {
-            BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
+        try (BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset())) {
             String line = null;
             for (int i = 0; i < lineNumber; i++) {
                 line = reader.readLine();
             }
-            reader.close();
             return line;
         } catch (IOException e) {
             e.printStackTrace();
@@ -223,8 +213,6 @@ public class AbstractDownloadManager {
         }
     }
 
-
-
     protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         return downloadFile(url, outputFileName, null);
     }
@@ -258,7 +246,7 @@ public class AbstractDownloadManager {
             } else {
                 downloadFile.setStatus(DownloadFile.Status.ERROR);
                 downloadFile.setMessage("Expected downloaded file size " + downloadFile.getExpectedFileSize()
-                + ", Actual file size " + downloadFile.getActualFileSize());
+                        + ", Actual file size " + downloadFile.getActualFileSize());
             }
         } else {
             downloadFile.setMessage("See full error message in " + outputLog);
@@ -293,46 +281,19 @@ public class AbstractDownloadManager {
                 }
             }
         } catch (Exception e) {
-            logger.info("Error getting expected file size " + e.getMessage());
+            logger.info("Error getting expected file size {}", e.getMessage());
         }
         return -1;
-    }
-
-    @Deprecated
-    protected String getVersionFromVersionLine(Path path, String tag) {
-        Files.exists(path);
-        try {
-            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
-            String line = reader.readLine();
-            // There shall be a line at the README.txt containing the version.
-            // e.g. The files in the current directory contain the data corresponding to the latest release
-            // (version 4.0, April 2016). ...
-            while (line != null) {
-                // tag specifies a certain string that must be found within the line supposed to contain the version
-                // info
-                if (line.contains(tag)) {
-                    String version = line.split("\\(")[1].split("\\)")[0];
-                    reader.close();
-                    return version;
-                }
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private String getEnsemblURL(SpeciesConfiguration sp) {
         // We need to find which is the correct Ensembl host URL.
         // This can different depending on if is a vertebrate species.
-        String ensemblHostUrl;
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            ensemblHostUrl = configuration.getDownload().getEnsembl().getUrl().getHost();
+            return configuration.getDownload().getEnsembl().getUrl().getHost();
         } else {
-            ensemblHostUrl = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
+            return configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
         }
-        return ensemblHostUrl;
     }
 
     protected String getUrlFilename(String url) {

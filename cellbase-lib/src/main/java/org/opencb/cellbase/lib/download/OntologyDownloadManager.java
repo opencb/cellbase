@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class OntologyDownloadManager extends AbstractDownloadManager {
 
     public OntologyDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -34,37 +37,34 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
         super(species, assembly, targetDirectory, configuration);
     }
 
-
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading OBO files ...");
+        logger.info("Downloading {} files ...", ONTOLOGY_DATA);
 
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-        Path oboFolder = downloadFolder.resolve("ontology");
+        Path oboFolder = downloadFolder.resolve(ONTOLOGY_FOLDER_NAME);
         Files.createDirectories(oboFolder);
 
-        String url = configuration.getDownload().getHpoObo().getHost();
-        logger.info("Downloading {} ...", url);
-        downloadFiles.add(downloadFile(url, oboFolder.resolve("hp.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "HPO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), oboFolder.resolve(EtlCommons.HPO_VERSION_FILE));
+        DownloadFile downloadFile;
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        url = configuration.getDownload().getGoObo().getHost();
-        logger.info("Downloading {} ...", url);
-        downloadFiles.add(downloadFile(url, oboFolder.resolve("go-basic.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "GO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), oboFolder.resolve(EtlCommons.GO_VERSION_FILE));
+        // HPO
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getHpoObo(), HPO_OBO_NAME, ONTOLOGY_DATA,
+                HPO_OBO_FILE_ID, HPO_OBO_VERSION_FILENAME, oboFolder);
+        downloadFiles.add(downloadFile);
 
-        url = configuration.getDownload().getDoidObo().getHost();
-        logger.info("Downloading {} ...", url);
-        downloadFiles.add(downloadFile(url, oboFolder.resolve("doid.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "DO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), oboFolder.resolve(EtlCommons.DO_VERSION_FILE));
+        // GO
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGoObo(), GO_OBO_NAME, ONTOLOGY_DATA,
+                GO_OBO_FILE_ID, GO_OBO_VERSION_FILENAME, oboFolder);
+        downloadFiles.add(downloadFile);
 
-        url = configuration.getDownload().getMondoObo().getHost();
-        logger.info("Downloading {} ...", url);
-        downloadFiles.add(downloadFile(url, oboFolder.resolve("mondo.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "MONDO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), oboFolder.resolve(EtlCommons.MONDO_VERSION_FILE));
+        // DOID
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDoidObo(), DOID_OBO_NAME, ONTOLOGY_DATA,
+                DOID_OBO_FILE_ID, DOID_OBO_VERSION_FILENAME, oboFolder);
+        downloadFiles.add(downloadFile);
+
+        // Mondo
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMondoObo(), MONDO_OBO_NAME, ONTOLOGY_DATA,
+                MONDO_OBO_FILE_ID, MONDO_OBO_VERSION_FILENAME, oboFolder);
+        downloadFiles.add(downloadFile);
 
         return downloadFiles;
     }

@@ -132,31 +132,33 @@ download:
 
   ## Clinical Variant
   clinvar:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-11.xml.gz
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2024-02.xml.gz
+    host: https://ftp.ncbi.nlm.nih.gov/
     version: "2024-02"
-  clinvarVariation:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-11.xml.gz
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/VCV_xml_old_format/ClinVarVariationRelease_2024-02.xml.gz
-    version: "2024-02"
-  clinvarSummary:
-    host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
-  clinvarVariationAllele:
-    host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz
-  clinvarEfoTerms:
-    host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
+    files:
+      FULL_RELEASE: pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2024-02.xml.gz
+      SUMMARY: pub/clinvar/tab_delimited/variant_summary.txt.gz
+      ALLELE: pub/clinvar/tab_delimited/variation_allele.txt.gz
+      EFO_TERMS: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
   cosmic:
     ## To be downloaded manually
-    host: https://cancer.sanger.ac.uk/cosmic/download/cosmic
+    host: https://cancer.sanger.ac.uk/cosmic/
     version: "v99"
     files:
-      - CosmicMutantExport.tsv.gz
+      COSMIC: CosmicMutantExport.tsv.gz
   hgmd:
     ## To be downloaded manually
-    host: https://www.hgmd.cf.ac.uk/ac/index.php
+    host: https://www.hgmd.cf.ac.uk/
     version: "2020-03"
     files:
-      - hgmd.vcf
+      HGMD: hgmd.vcf
+  gwasCatalog:
+    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e110_r2023-12-20'
+    host: https://ftp.ebi.ac.uk/
+    version: "2024-02-12"
+    files:
+      GWAS: pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
+      DBSNP: All.vcf.gz
+
   cancerHotspot:
     host: https://www.cancerhotspots.org/files/hotspots_v2.xls
     version: "v2"
@@ -177,20 +179,19 @@ download:
     host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
     version: "1.3"
   cadd:
-    host: https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
+    host: https://krishna.gs.washington.edu/
     version: "1.7"
-  gwasCatalog:
-    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e110_r2023-12-20'
-    host: https://ftp.ebi.ac.uk/pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
-    version: "2024-02-12"
     files:
-      - All.vcf.gz
+      CADD: download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
+
   hpo:
     ## NOTE: Download manually from here now
     host: https://hpo.jax.org/app/data/annotations
   disgenet:
-    host: https://www.disgenet.org/static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
+    host: https://www.disgenet.org/
     version: "7.0 (January 2020)"
+    files:
+      ALL_GENE_DISEASE_ASSOCIATIONS: static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
   dgidb:
     host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
     version: "2022-02-01"
@@ -202,17 +203,25 @@ download:
 
   ## OBO Ontologies
   hpoObo:
-    host: http://purl.obolibrary.org/obo/hp.obo
+    host: http://purl.obolibrary.org/obo/
     version: "2024-03-01"
+    files:
+      HPO: hp.obo
   goObo:
-    host: http://purl.obolibrary.org/obo/go/go-basic.obo
+    host: http://purl.obolibrary.org/obo/go/
     version: "2024-03-01"
+    files:
+      GO: go/go-basic.obo
   doidObo:
-    host: http://purl.obolibrary.org/obo/doid.obo
+    host: http://purl.obolibrary.org/obo/
     version: "2024-03-01"
+    files:
+      DOID: doid.obo
   mondoObo:
-    host: http://purl.obolibrary.org/obo/mondo.obo
+    host: http://purl.obolibrary.org/obo/
     version: "2024-03-01"
+    files:
+      MONDO: mondo.obo
 
   ## Others
   pubmed:
@@ -221,18 +230,18 @@ download:
     files:
       - pubmed24n[1..1219..4].xml.gz
   pharmGKB:
-    host: https://www.pharmgkb.org/downloads
+    host: https://api.pharmgkb.org/v1/download/file/data/
     version: v1
     files:
-      - https://api.pharmgkb.org/v1/download/file/data/genes.zip
-      - https://api.pharmgkb.org/v1/download/file/data/chemicals.zip
-      - https://api.pharmgkb.org/v1/download/file/data/variants.zip
-      - https://api.pharmgkb.org/v1/download/file/data/guidelineAnnotations.json.zip
-      - https://api.pharmgkb.org/v1/download/file/data/variantAnnotations.zip
-      - https://api.pharmgkb.org/v1/download/file/data/clinicalAnnotations.zip
-      - https://api.pharmgkb.org/v1/download/file/data/clinicalVariants.zip
-      - https://api.pharmgkb.org/v1/download/file/data/drugLabels.zip
-      - https://api.pharmgkb.org/v1/download/file/data/relationships.zip
+      GENES: genes.zip
+      CHEMICALS: chemicals.zip
+      VARIANTS: variants.zip
+      GUIDELINE_ANNOTATIONS: guidelineAnnotations.json.zip
+      VARIANT_ANNOTATIONS: variantAnnotations.zip
+      CLINICAL_ANNOTATIONS: clinicalAnnotations.zip
+      CLINICAL_VARIANTS: clinicalVariants.zip
+      DRUG_LABELS: drugLabels.zip
+      RELATIONSHIPS: relationships.zip
 species:
   vertebrates:
     - id: hsapiens

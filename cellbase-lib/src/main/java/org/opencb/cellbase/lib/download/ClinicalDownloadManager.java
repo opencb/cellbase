@@ -22,18 +22,16 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import java.io.*;
-import java.net.URI;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -56,76 +54,62 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
             logger.info("Downloading clinical information ...");
 
-            String url;
-            String filename;
-            List<DownloadFile> downloadFiles = new ArrayList<>();
-
-
-            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER).toAbsolutePath();
+            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER_NAME).toAbsolutePath();
             Files.createDirectories(clinicalFolder);
 
+            String url;
+            List<String> urls;
+            Path outPath;
+            DownloadProperties.URLProperties props;
+
+            DownloadFile downloadFile;
+            List<DownloadFile> downloadFiles = new ArrayList<>();
+
             // COSMIC
-            logger.info("\t\tCOSMIC files must be downloaded manually !");
-            List<String> cosmicUrls = new ArrayList<>();
-            cosmicUrls.add(configuration.getDownload().getCosmic().getHost());
-            cosmicUrls.addAll(configuration.getDownload().getCosmic().getFiles());
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, COSMIC_NAME, configuration.getDownload().getCosmic().getVersion(),
-                    getTimeStamp(), cosmicUrls, clinicalFolder.resolve(COSMIC_VERSION_FILENAME));
+            logger.warn("{} files must be downloaded manually !", COSMIC_NAME);
+            props = configuration.getDownload().getCosmic();
+            urls = Collections.singletonList(props.getHost() + props.getFiles().get(COSMIC_FILE_ID));
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, COSMIC_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(COSMIC_VERSION_FILENAME));
 
             // HGMD
-            logger.info("\t\tHGMD files must be downloaded manually !");
-            List<String> hgmdUrls = new ArrayList<>();
-            hgmdUrls.add(configuration.getDownload().getHgmd().getHost());
-            hgmdUrls.addAll(configuration.getDownload().getHgmd().getFiles());
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, HGMD_NAME, configuration.getDownload().getHgmd().getVersion(),
-                    getTimeStamp(), hgmdUrls, clinicalFolder.resolve(HGMD_VERSION_FILENAME));
+            logger.warn("{} files must be downloaded manually !", HGMD_NAME);
+            props = configuration.getDownload().getHgmd();
+            urls = Collections.singletonList(props.getHost() + props.getFiles().get(HGMD_FILE_ID));
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, HGMD_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(HGMD_VERSION_FILENAME));
+
+            // GWAS catalog
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_NAME, CLINICAL_VARIANTS_DATA,
+                    GWAS_FILE_ID, GWAS_VERSION_FILENAME, clinicalFolder);
+            downloadFiles.add(downloadFile);
 
             // ClinVar
-            logger.info("\t\tDownloading ClinVar files ...");
-            List<String> clinvarUrls = new ArrayList<>(3);
-            url = configuration.getDownload().getClinvar().getHost();
-            filename = Paths.get(url).getFileName().toString();
-            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
-            clinvarUrls.add(url);
+            logger.info("Downloading {}} files ...", CLINVAR_NAME);
+            props = configuration.getDownload().getClinvar();
+            urls = new ArrayList<>();
+            for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
+                    CLINVAR_EFO_TERMS_FILE_ID)) {
+                url = props.getHost() + props.getFiles().get(fileId);
+                outPath = clinicalFolder.resolve(getUrlFilename(url));
+                logger.info(DOWNLOADING_LOG_MESSAGE, url, outPath);
+                downloadFiles.add(downloadFile(url, outPath.toString()));
+                urls.add(url);
+            }
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
 
-            url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            filename = Paths.get(url).getFileName().toString();
-            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
-            clinvarUrls.add(url);
-
-            url = configuration.getDownload().getClinvarSummary().getHost();
-            filename = Paths.get(url).getFileName().toString();
-            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
-            clinvarUrls.add(url);
-
-            url = configuration.getDownload().getClinvarVariationAllele().getHost();
-            filename = Paths.get(url).getFileName().toString();
-            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
-            clinvarUrls.add(url);
-
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, configuration.getDownload().getClinvar().getVersion(),
-                    getTimeStamp(), clinvarUrls, clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
-
-            // Gwas catalog
-            logger.info("\t\tDownloading GWAS catalog file ...");
-            DownloadProperties.URLProperties gwasCatalog = configuration.getDownload().getGwasCatalog();
-            url = gwasCatalog.getHost();
-            filename = Paths.get(url).getFileName().toString();
-            logger.info("\t\tDownloading {} to {} ...", url, clinicalFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(filename).toString()));
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), clinicalFolder.resolve(GWAS_VERSION_FILENAME));
-
-            final String chunkDir = "clinvar_chunks";
-            if (Files.notExists(clinicalFolder.resolve(chunkDir))) {
-                Files.createDirectories(clinicalFolder.resolve(chunkDir));
-                filename = Paths.get(configuration.getDownload().getClinvar().getHost()).getFileName().toString();
-                logger.info("\t\tSplitting {} int {} ...", clinicalFolder.resolve(filename), clinicalFolder.resolve(chunkDir));
-                splitClinvar(clinicalFolder.resolve(filename), clinicalFolder.resolve(chunkDir));
+            // Prepare CliVar chunk files
+            Path chunksPath = clinicalFolder.resolve(ClINVAR_CHUNKS_FOLDER_NAME);
+            if (Files.notExists(chunksPath)) {
+                Files.createDirectories(chunksPath);
+                Path clinvarPath = clinicalFolder.resolve(getUrlFilename(
+                        props.getHost() + props.getFiles().get(CLINVAR_FULL_RELEASE_FILE_ID)));
+                logger.info("Splitting {} in {} ...", clinvarPath, chunksPath);
+                splitClinvar(clinvarPath, chunksPath);
             }
 
             return downloadFiles;
@@ -134,8 +118,8 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
+        PrintWriter pw = null;
         try (BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath)) {
-            PrintWriter pw = null;
             StringBuilder header = new StringBuilder();
             boolean beforeEntry = true;
             boolean inEntry = false;
@@ -177,76 +161,5 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                 pw.close();
             }
         }
-    }
-
-    /**
-     * @deprecated
-     * @param docmIndexHtml
-     * @return
-     */
-    @Deprecated
-    private String getDocmVersion(Path docmIndexHtml) {
-        return getVersionFromVersionLine(docmIndexHtml, "<select name=\"version\" id=\"version\"");
-    }
-
-    /**
-     * @deprecated
-     * @param hgvsList
-     * @param path
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    @Deprecated
-    private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
-        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(path)) {
-            Client client = ClientBuilder.newClient();
-            WebTarget restUrlBase = client
-                    .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
-
-            logger.info("Querying DOCM REST API to get detailed data for all their variants");
-            int counter = 0;
-            for (String hgvs : hgvsList) {
-                WebTarget callUrl = restUrlBase.path(hgvs + ".json");
-                String jsonString = callUrl.request().get(String.class);
-                bufferedWriter.write(jsonString + "\n");
-
-                if (counter % 10 == 0) {
-                    logger.info("{} DOCM variants saved", counter);
-                }
-                // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
-                Thread.sleep(300);
-
-                counter++;
-            }
-            logger.info("Finished. {} DOCM variants saved at {}", counter, path);
-        }
-    }
-
-    /**
-     * @deprecated
-     * @return
-     * @throws IOException
-     */
-    @Deprecated
-    private List<String> getDocmHgvsList() throws IOException {
-        Client client = ClientBuilder.newClient();
-        WebTarget restUrl = client
-                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants.json"));
-
-        String jsonString;
-        logger.info("Getting full list of DOCM hgvs from: {}", restUrl.getUri().toURL());
-        jsonString = restUrl.request().get(String.class);
-
-        List<Map<String, String>> responseMap = parseResult(jsonString);
-        List<String> hgvsList = new ArrayList<>(responseMap.size());
-        for (Map<String, String> document : responseMap) {
-            if (document.containsKey("reference_version")
-                    && document.get("reference_version").equalsIgnoreCase(assemblyConfiguration.getName())) {
-                hgvsList.add(document.get("hgvs"));
-            }
-        }
-        logger.info("{} hgvs found", hgvsList.size());
-
-        return hgvsList;
     }
 }

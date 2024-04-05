@@ -349,7 +349,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
-        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER_NAME);
 
         List<Path> versionFiles = new ArrayList<>();
         List<String> versionFilenames = Arrays.asList(CLINVAR_VERSION_FILENAME, COSMIC_VERSION_FILENAME, GWAS_VERSION_FILENAME,

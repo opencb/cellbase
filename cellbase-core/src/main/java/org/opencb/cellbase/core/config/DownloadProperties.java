@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.config;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 19/08/16.
@@ -614,7 +614,7 @@ public class DownloadProperties {
 
         private String host;
         private String version;
-        private List<String> files;
+        private Map<String, String> files;
 
         public String getHost() {
             return host;
@@ -633,11 +633,11 @@ public class DownloadProperties {
             return this;
         }
 
-        public List<String> getFiles() {
+        public Map<String, String> getFiles() {
             return files;
         }
 
-        public URLProperties setFiles(List<String> files) {
+        public URLProperties setFiles(Map<String, String> files) {
             this.files = files;
             return this;
         }

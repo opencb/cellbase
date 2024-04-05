@@ -64,7 +64,6 @@ public class EtlCommons {
     public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
-    public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     public static final String REGULATION_DATA = "regulation";
     public static final String PROTEIN_DATA = "protein";
@@ -77,24 +76,70 @@ public class EtlCommons {
     public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
 
     // Clinical variants data
-    public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
+    public static final String CLINICAL_VARIANTS_FOLDER_NAME = "clinicalVariant";
+    // ClinVar
     public static final String CLINVAR_NAME = "ClinVar";
     public static final String CLINVAR_VERSION_FILENAME = "clinvar" + SUFFIX_VERSION_FILENAME;
+    public static final String ClINVAR_CHUNKS_FOLDER_NAME = "clinvar_chunks";
+    // Must match the configuration file
+    public static final String CLINVAR_FULL_RELEASE_FILE_ID = "FULL_RELEASE";
+    public static final String CLINVAR_SUMMARY_FILE_ID = "SUMMARY";
+    public static final String CLINVAR_ALLELE_FILE_ID = "ALLELE";
+    public static final String CLINVAR_EFO_TERMS_FILE_ID = "EFO_TERMS";
+    // COSMIC
     public static final String COSMIC_NAME = "COSMIC";
     public static final String COSMIC_VERSION_FILENAME = "cosmic" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String COSMIC_FILE_ID = "COSMIC";
+    // HGMD
     public static final String HGMD_NAME = "HGMD";
     public static final String HGMD_VERSION_FILENAME = "hgmd" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String HGMD_FILE_ID = "HGMD";
+    // GWAS
     public static final String GWAS_NAME = "GWAS catalog";
     public static final String GWAS_VERSION_FILENAME = "gwas" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String GWAS_FILE_ID = "GWAS";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
-    public static final String OBO_DATA = "ontology";
-    public static final String HPO_FILE = "hp.obo";
-    public static final String GO_FILE = "go-basic.obo";
-    public static final String DOID_FILE = "doid.obo";
-    public static final String MONDO_FILE = "mondo.obo";
+
+    // Ontology
+    public static final String ONTOLOGY_DATA = "ontology";
+    public static final String ONTOLOGY_FOLDER_NAME = "ontology";
+    // HPO
+    public static final String HPO_OBO_NAME = "HPO";
+    public static final String HPO_OBO_VERSION_FILENAME = "hpoObo" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String HPO_OBO_FILE_ID = "HPO";
+    // GO
+    public static final String GO_OBO_NAME = "GO";
+    public static final String GO_OBO_VERSION_FILENAME = "goObo" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String GO_OBO_FILE_ID = "GO";
+    // DOID
+    public static final String DOID_OBO_NAME = "DOID";
+    public static final String DOID_OBO_VERSION_FILENAME = "doidObo" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String DOID_OBO_FILE_ID = "DOID";
+    // MONDO
+    public static final String MONDO_OBO_NAME = "Mondo";
+    public static final String MONDO_OBO_VERSION_FILENAME = "mondoObo" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String MONDO_OBO_FILE_ID = "MONDO";
+
+
     public static final String PFM_DATA = "regulatory_pfm";
+
+    // Variation functional score
+    public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
+    public static final String VARIATION_FUNCTIONAL_SCORE_FOLDER_NAME = "variation_functional_score";
+    // CADD scores
+    public static final String CADD_NAME = "CADD";
+    public static final String CADD_VERSION_FILENAME = "cadd" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String CADD_FILE_ID = "CADD";
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";

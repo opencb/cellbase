@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -49,7 +50,9 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
 
         List<String> urls = new ArrayList<>();
         List<DownloadFile> downloadFiles = new ArrayList<>();
-        for (String url : pharmGKB.getFiles()) {
+        String host = pharmGKB.getHost();
+        for (Map.Entry<String, String> entry : pharmGKB.getFiles().entrySet()) {
+            String url = host + entry.getValue();
             urls.add(url);
 
             Path downloadedFileName = Paths.get(new URL(url).getPath()).getFileName();
