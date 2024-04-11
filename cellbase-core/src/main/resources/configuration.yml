@@ -91,6 +91,8 @@ download:
     version: "2.0.14"
   goAnnotation:
     host: http://geneontology.org/gene-associations/goa_human.gaf.gz
+
+  ## Regulation
   mirbase:
     host: https://www.mirbase.org/download/miRNA.dat
     version: "22.1"
@@ -102,33 +104,39 @@ download:
 
   ## Protein Data
   uniprot:
-    host: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+    host: https://ftp.uniprot.org/
     version: "2024-01-24"
-  uniprotRelNotes:
-    host: https://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
-    version: "2024-01-24"
+    files:
+      UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
-    host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/protein2ipr.dat.gz
+    host: https://ftp.ebi.ac.uk/
     version: "2024-01-24"
-  interproRelNotes:
-    host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/release_notes.txt
-    version: "2024-01-24"
+    files:
+      INTERPRO: pub/databases/interpro/current_release/protein2ipr.dat.gz
   intact:
-    host: https://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
+    host: https://ftp.ebi.ac.uk/
     version: "2024-02-16"
+    files:
+      INTACT: pub/databases/intact/current/psimitab/intact.txt
 
   ## Conservation Scores
   phastCons:
     ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
-    host: https://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/phastCons470way/put_assembly_here.470way.phastCons/chrput_chromosome_here.phastCons470way.wigFix.gz
+    host: https://hgdownload.cse.ucsc.edu/
     version: "2022-08-30"
+    files:
+      PHASTCONS: goldenPath/put_assembly_here/phastCons470way/put_assembly_here.470way.phastCons/chrput_chromosome_here.phastCons470way.wigFix.gz
   phylop:
     ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
-    host: https://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/phyloP470way/put_assembly_here.470way.phyloP/chrput_chromosome_here.phyloP470way.wigFix.gz
+    host: https://hgdownload.cse.ucsc.edu/
     version: "2022-08-30"
+    files:
+      PHYLOP: goldenPath/put_assembly_here/phyloP470way/put_assembly_here.470way.phyloP/chrput_chromosome_here.phyloP470way.wigFix.gz
   gerp:
-    host: http://ftp.ensembl.org/pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+    host: http://ftp.ensembl.org/
     version: "2023-05-17"
+    files:
+      GERP: pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
 
   ## Clinical Variant
   clinvar:
@@ -165,19 +173,27 @@ download:
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:
-    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      SIMPLE_REPEATS: goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
   windowMasker:
-    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      WINDOW_MASKER: goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
   genomicSuperDups:
-    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-    host: http://hgdownload.cse.ucsc.edu/goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      GENOMIC_SUPER_DUPS: goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
 
   ## Variant Pathogenic Prediction
   revel:
-    host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
+    host: https://zenodo.org/
     version: "1.3"
+    files:
+      REVEL: record/7072866/files/revel-v1.3_all_chromosomes.zip
   cadd:
     host: https://krishna.gs.washington.edu/
     version: "1.7"
@@ -228,7 +244,7 @@ download:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
     version: 2024
     files:
-      - pubmed24n[1..1219..4].xml.gz
+      PUBMED_REGEX: pubmed24n[1..1219..4].xml.gz
   pharmGKB:
     host: https://api.pharmgkb.org/v1/download/file/data/
     version: v1

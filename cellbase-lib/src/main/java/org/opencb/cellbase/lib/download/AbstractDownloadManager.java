@@ -47,8 +47,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.opencb.cellbase.lib.EtlCommons.HPO_OBO_FILE_ID;
-
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} to {} ...";

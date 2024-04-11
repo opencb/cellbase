@@ -17,15 +17,12 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -38,10 +35,9 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading {} files ...", ONTOLOGY_DATA);
-
-        Path oboFolder = downloadFolder.resolve(ONTOLOGY_FOLDER_NAME);
+        Path oboFolder = downloadFolder.resolve(ONTOLOGY_SUBDIRECTORY);
         Files.createDirectories(oboFolder);
+        logger.info("Downloading {} files {} ...", ONTOLOGY_DATA, oboFolder);
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();

@@ -17,9 +17,7 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,10 +40,10 @@ public class CaddDownloadManager extends AbstractDownloadManager {
             return null;
         }
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} files ...", CADD_NAME);
-
-            Path variationFunctionalScoreFolder = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_FOLDER_NAME);
+            Path variationFunctionalScoreFolder = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_SUBDIRECTORY);
             Files.createDirectories(variationFunctionalScoreFolder);
+            logger.info("Downloading {} files at {} ...", CADD_NAME, variationFunctionalScoreFolder);
+
 
             // Download CADD and save data source
             DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_NAME,

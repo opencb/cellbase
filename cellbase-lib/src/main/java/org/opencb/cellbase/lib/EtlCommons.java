@@ -39,9 +39,15 @@ public class EtlCommons {
 
     public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
 
+    public static final String GRCH38_NAME = "GRCh38";
+    public static final String GRCH37_NAME = "GRCh37";
+    public static final String HG38_NAME = "hg38";
+    public static final String HG19_NAME = "hg19";
+
     public static final String SUFFIX_VERSION_FILENAME = "Version.json";
 
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_VERSION_FILENAME = "genome" + SUFFIX_VERSION_FILENAME;
 
     public static final String GENE_DATA = "gene";
     public static final String ENSEMBL_CORE_VERSION_FILENAME = "ensemblCore" + SUFFIX_VERSION_FILENAME;
@@ -64,23 +70,32 @@ public class EtlCommons {
     public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     public static final String VARIATION_DATA = "variation";
-    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
-    public static final String REGULATION_DATA = "regulation";
-    public static final String PROTEIN_DATA = "protein";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
+    // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
+    public static final String PHARMACOGENOMICS_SUBDIRECTORY = "pharmacogenomics";
+    // PharmGKB
     public static final String PHARMGKB_NAME = "PharmGKB";
     public static final String PHARMGKB_DATA = "pharmgkb";
-    public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
+    public static final String PHARMGKB_SUBDIRECTORY = "pharmgkb";
+    public static final String PHARMGKB_VERSION_FILENAME = "pharmgkb" + SUFFIX_VERSION_FILENAME;
+
+    // Missense variantion functional score
+    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
+    // Revel
+    public static final String REVEL_NAME = "Revel";
+    public static final String REVEL_VERSION_FILENAME = "revel" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String REVEL_FILE_ID = "REVEL";
 
     // Clinical variants data
-    public static final String CLINICAL_VARIANTS_FOLDER_NAME = "clinicalVariant";
+    public static final String CLINICAL_VARIANTS_SUBDIRECTORY = "clinicalVariant";
     // ClinVar
     public static final String CLINVAR_NAME = "ClinVar";
     public static final String CLINVAR_VERSION_FILENAME = "clinvar" + SUFFIX_VERSION_FILENAME;
-    public static final String ClINVAR_CHUNKS_FOLDER_NAME = "clinvar_chunks";
+    public static final String CLINVAR_CHUNKS_SUBDIRECTORY = "clinvar_chunks";
     // Must match the configuration file
     public static final String CLINVAR_FULL_RELEASE_FILE_ID = "FULL_RELEASE";
     public static final String CLINVAR_SUMMARY_FILE_ID = "SUMMARY";
@@ -104,10 +119,25 @@ public class EtlCommons {
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
+    public static final String REPEATS_SUBDIRECTORY = "genome";
+    public static final String REPEATS_JSON = "repeats";
+    // Simple repeats
+    @Deprecated
+    public static final String TRF_FILE = "simpleRepeat.txt.gz";
+    public static final String TRF_VERSION_FILENAME = "simpleRepeat" + SUFFIX_VERSION_FILENAME;
+    public static final String SIMPLE_REPEATS_FILE_ID = "SIMPLE_REPEATS";
+    @Deprecated
+    public static final String GSD_FILE = "genomicSuperDups.txt.gz";
+    public static final String GSD_VERSION_FILENAME = "genomicSuperDups" + SUFFIX_VERSION_FILENAME;
+    public static final String GENOMIC_SUPER_DUPS_FILE_ID = "GENOMIC_SUPER_DUPS";
+    @Deprecated
+    public static final String WM_FILE = "windowmaskerSdust.txt.gz";
+    public static final String WM_VERSION_FILENAME = "windowMasker" + SUFFIX_VERSION_FILENAME;
+    public static final String WINDOW_MASKER_FILE_ID = "WINDOW_MASKER";
 
     // Ontology
     public static final String ONTOLOGY_DATA = "ontology";
-    public static final String ONTOLOGY_FOLDER_NAME = "ontology";
+    public static final String ONTOLOGY_SUBDIRECTORY = "ontology";
     // HPO
     public static final String HPO_OBO_NAME = "HPO";
     public static final String HPO_OBO_VERSION_FILENAME = "hpoObo" + SUFFIX_VERSION_FILENAME;
@@ -134,12 +164,25 @@ public class EtlCommons {
 
     // Variation functional score
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
-    public static final String VARIATION_FUNCTIONAL_SCORE_FOLDER_NAME = "variation_functional_score";
+    public static final String VARIATION_FUNCTIONAL_SCORE_SUBDIRECTORY = "variation_functional_score";
     // CADD scores
     public static final String CADD_NAME = "CADD";
     public static final String CADD_VERSION_FILENAME = "cadd" + SUFFIX_VERSION_FILENAME;
     // Must match the configuration file
     public static final String CADD_FILE_ID = "CADD";
+
+    // Regulation
+    public static final String REGULATION_DATA = "regulation";
+    public static final String REGULATION_SUBDIRECTORY = "regulation";
+    // Regulatory/motif features
+    public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
+    public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
+    // miRBase
+    public static final String MIRBASE_NAME = "miRBase";
+    public static final String MIRBASE_VERSION_FILENAME = "mirbase" + SUFFIX_VERSION_FILENAME;
+    // miRTarBase
+    public static final String MIRTARBASE_NAME = "miRTarBase";
+    public static final String MIRTARBASE_VERSION_FILENAME = "mirtarbase" + SUFFIX_VERSION_FILENAME;
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";
@@ -158,23 +201,48 @@ public class EtlCommons {
 //    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
 //    public static final String HGMD_DATA = "hgmd";
 
-    public static final String PUBMED_DATA = "pubmed";
-    public static final String PUBMED_VERSION_FILE = PUBMED_DATA + SUFFIX_VERSION_FILENAME;
-
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
 
+    // Protein
+    public static final String PROTEIN_DATA = "protein";
+    public static final String PROTEIN_SUBDIRECTORY = "protein";
+    // UniProt
+    public static final String UNIPROT_NAME = "UniProt";
+    public static final String UNIPROT_CHUNKS_SUBDIRECTORY = "uniprot_chunks";
+    public static final String UNIPROT_VERSION_FILENAME = "uniprot" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String UNIPROT_FILE_ID = "UNIPROT";
+    // InterPro
+    public static final String INTERPRO_NAME = "InterPro";
+    public static final String INTERPRO_VERSION_FILENAME = "interpro" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String INTERPRO_FILE_ID = "INTERPRO";
+    // IntAct
+    public static final String INTACT_NAME = "IntAct";
+    public static final String INTACT_VERSION_FILENAME = "intact" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String INTACT_FILE_ID = "INTACT";
+
+
     // Conservation scores
     public static final String CONSERVATION_DATA = "conservation";
+    public static final String CONSERVATION_SUBDIRECTORY = "conservation";
+    // GERP
     public static final String GERP_NAME = "GERP++";
     public static final String GERP_SUBDIRECTORY = "gerp";
-    public static final String GERP_VERSION_FILENAME = GERP_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String GERP_VERSION_FILENAME = "gerp" + SUFFIX_VERSION_FILENAME;
+    public static final String GERP_FILE_ID = "GERP";
+    // PHASTCONS
     public static final String PHASTCONS_NAME = "PhastCons";
     public static final String PHASTCONS_SUBDIRECTORY = "phastCons";
-    public static final String PHASTCONS_VERSION_FILENAME = PHASTCONS_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String PHASTCONS_VERSION_FILENAME = "phastCons" + SUFFIX_VERSION_FILENAME;
+    public static final String PHASTCONS_FILE_ID = "PHASTCONS";
+    // PHYLOP
     public static final String PHYLOP_NAME = "PhyloP";
     public static final String PHYLOP_SUBDIRECTORY = "phylop";
-    public static final String PHYLOP_VERSION_FILENAME = PHYLOP_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String PHYLOP_VERSION_FILENAME = "phylop" + SUFFIX_VERSION_FILENAME;
+    public static final String PHYLOP_FILE_ID = "PHYLOP";
 
     // Splice scores
     public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
@@ -196,19 +264,6 @@ public class EtlCommons {
     public static final String DGV_VERSION_FILE = "dgvVersion.json";
     public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
 
-    @Deprecated
-    public static final String TRF_FILE = "simpleRepeat.txt.gz";
-    @Deprecated
-    public static final String GSD_FILE = "genomicSuperDups.txt.gz";
-    @Deprecated
-    public static final String WM_FILE = "windowmaskerSdust.txt.gz";
-
-    public static final String TRF_VERSION_FILENAME = "simpleRepeat" + SUFFIX_VERSION_FILENAME;
-    public static final String GSD_VERSION_FILENAME = "genomicSuperDups" + SUFFIX_VERSION_FILENAME;
-    public static final String WM_VERSION_FILENAME = "windowMasker" + SUFFIX_VERSION_FILENAME;
-    public static final String REPEATS_FOLDER = "genome";
-    public static final String REPEATS_JSON = "repeats";
-
     public static final String OBO_JSON = "ontology";
     public static final String HPO_VERSION_FILE = "hpo" + SUFFIX_VERSION_FILENAME;
     public static final String GO_VERSION_FILE = "go" + SUFFIX_VERSION_FILENAME;
@@ -216,16 +271,13 @@ public class EtlCommons {
     public static final String MONDO_VERSION_FILE = "mondo" + SUFFIX_VERSION_FILENAME;
 
     public static final String HGMD_FILE = "hgmd.vcf";
-    public static final String PUBMED_VERSION_FILENAME = "pubmedVersion.json";
 
-    public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
-    public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
-
-    public static final String MIRBASE_NAME = "miRBase";
-    public static final String MIRBASE_VERSION_FILENAME = MIRBASE_NAME + SUFFIX_VERSION_FILENAME;
-
-    public static final String MIRTARBASE_NAME = "miRTarBase";
-    public static final String MIRTARBASE_VERSION_FILENAME = MIRTARBASE_NAME + SUFFIX_VERSION_FILENAME;
+    // PubMed
+    public static final String PUBMED_NAME = "PubMed";
+    public static final String PUBMED_DATA = "pubmed";
+    public static final String PUBMED_SUBDIRECTORY = "pubmed";
+    public static final String PUBMED_VERSION_FILENAME = "pubmed" + SUFFIX_VERSION_FILENAME;
+    public static final String PUBMED_REGEX_FILE_ID = "PUBMED";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {

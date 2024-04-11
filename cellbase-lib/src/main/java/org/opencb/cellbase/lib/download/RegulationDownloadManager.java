@@ -52,13 +52,12 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, REGULATION_DATA)) {
             return Collections.emptyList();
         }
-        this.regulationFolder = downloadFolder.resolve("regulation");
+        regulationFolder = downloadFolder.resolve(REGULATION_SUBDIRECTORY);
         Files.createDirectories(regulationFolder);
-
-        logger.info("Downloading regulation information ...");
+        logger.info("Downloading {} files at {} ...", REGULATION_DATA, regulationFolder);
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
 

@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -27,14 +26,11 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class ProteinDownloadManager extends AbstractDownloadManager {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private static final String UNIPROT_NAME = "UniProt";
-    private static final String INTERPRO_NAME = "InterPro";
-    private static final String INTACT_NAME = "IntAct";
+public class ProteinDownloadManager extends AbstractDownloadManager {
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -49,39 +45,35 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      * @throws InterruptedException if there is an error downloading files     *
      */
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "protein")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, PROTEIN_DATA)) {
             return null;
         }
-        logger.info("Downloading protein information ...");
-        Path proteinFolder = downloadFolder.resolve("protein");
+        Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
         Files.createDirectories(proteinFolder);
+        logger.info("Downloading protein information at {} ...");
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Uniprot
-        String url = configuration.getDownload().getUniprot().getHost();
-        downloadFiles.add(downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString()));
-        Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
-        splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
-
-        String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
-        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString()));
-        saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
-                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_NAME, PROTEIN_DATA, UNIPROT_FILE_ID,
+                UNIPROT_VERSION_FILENAME, proteinFolder);
+        Path chunksPath = proteinFolder.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
+        String uniprotFilename = getUrlFilename(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
+        logger.info("Split UniProt file {} into chunks at {}", uniprotFilename, chunksPath);
+        Files.createDirectories(chunksPath);
+        splitUniprot(proteinFolder.resolve(uniprotFilename), chunksPath);
+        downloadFiles.add(downloadFile);
 
         // Interpro
-        String interproUrl = configuration.getDownload().getInterpro().getHost();
-        downloadFiles.add(downloadFile(interproUrl, proteinFolder.resolve("protein2ipr.dat.gz").toString()));
-
-        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
-        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString()));
-        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
-                getTimeStamp(), Collections.singletonList(interproUrl), proteinFolder.resolve("interproVersion.json"));
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_NAME, PROTEIN_DATA, INTERPRO_FILE_ID,
+                INTERPRO_VERSION_FILENAME, proteinFolder);
+        downloadFiles.add(downloadFile);
 
         // Intact
-        String intactUrl = configuration.getDownload().getIntact().getHost();
-        downloadFiles.add(downloadFile(intactUrl, proteinFolder.resolve("intact.txt").toString()));
-        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, configuration.getDownload().getIntact().getVersion(),
-                getTimeStamp(), Collections.singletonList(intactUrl), proteinFolder.resolve("intactVersion.json"));
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_NAME, PROTEIN_DATA, INTACT_FILE_ID,
+                INTACT_VERSION_FILENAME, proteinFolder);
+        downloadFiles.add(downloadFile);
 
         return downloadFiles;
     }

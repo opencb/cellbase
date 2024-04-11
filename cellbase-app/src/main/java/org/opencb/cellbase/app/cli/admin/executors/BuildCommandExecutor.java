@@ -192,7 +192,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildRepeats() {
-        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
+        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_SUBDIRECTORY);
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILENAME)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILENAME)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILENAME)));
@@ -349,7 +349,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
-        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER_NAME);
+        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY);
 
         List<Path> versionFiles = new ArrayList<>();
         List<String> versionFilenames = Arrays.asList(CLINVAR_VERSION_FILENAME, COSMIC_VERSION_FILENAME, GWAS_VERSION_FILENAME,

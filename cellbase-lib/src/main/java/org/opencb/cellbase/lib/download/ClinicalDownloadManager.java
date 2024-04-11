@@ -51,11 +51,9 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-
-            logger.info("Downloading clinical information ...");
-
-            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER_NAME).toAbsolutePath();
+            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY).toAbsolutePath();
             Files.createDirectories(clinicalFolder);
+            logger.info("Downloading clinical information at {} ...", clinicalFolder);
 
             String url;
             List<String> urls;
@@ -103,7 +101,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                     clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
 
             // Prepare CliVar chunk files
-            Path chunksPath = clinicalFolder.resolve(ClINVAR_CHUNKS_FOLDER_NAME);
+            Path chunksPath = clinicalFolder.resolve(CLINVAR_CHUNKS_SUBDIRECTORY);
             if (Files.notExists(chunksPath)) {
                 Files.createDirectories(chunksPath);
                 Path clinvarPath = clinicalFolder.resolve(getUrlFilename(

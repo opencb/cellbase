@@ -81,9 +81,9 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
         String outputFileName = StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
-        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
-        saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
-                Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
+        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve(GENOME_VERSION_FILENAME));
+        saveDataSource(ENSEMBL_NAME, EtlCommons.GENOME_DATA, ensemblVersion, getTimeStamp(),
+                Collections.singletonList(url), sequenceFolder.resolve(GENOME_VERSION_FILENAME));
         List<DownloadFile> downloadFiles = Collections.singletonList(downloadFile(url, outputPath.toString()));
         logger.info("Unzipping file: {}", outputFileName);
         EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
@@ -101,7 +101,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             return Collections.emptyList();
         }
         logger.info("Downloading conservation information ...");
-        Path conservationFolder = downloadFolder.resolve("conservation");
+        Path conservationFolder = downloadFolder.resolve(CONSERVATION_SUBDIRECTORY);
         List<DownloadFile> downloadFiles = new ArrayList<>();
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             Files.createDirectories(conservationFolder);
@@ -112,17 +112,18 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                     "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
 
-            if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh38")) {
+            if (assemblyConfiguration.getName().equalsIgnoreCase(GRCH38_NAME)) {
                 String filename;
                 Path outputPath;
-                String assembly = "hg38";
+                String assembly = HG38_NAME;
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
                 List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
                 // Downloading PhastCons and PhyloP
                 logger.info("Downloading {} and {}", PHASTCONS_NAME, PHYLOP_NAME);
                 for (String chromosome : chromosomes) {
                     // PhastCons
-                    String phastConsUrl = configuration.getDownload().getPhastCons().getHost().replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
+                    String phastConsUrl = configuration.getDownload().getPhastCons().getHost() + configuration.getDownload().getPhastCons()
+                            .getFiles().get(PHASTCONS_FILE_ID).replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
                             .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
                     filename = Paths.get(phastConsUrl).getFileName().toString();
                     outputPath = conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve(filename);
@@ -131,7 +132,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     phastconsUrls.add(phastConsUrl);
 
                     // PhyloP
-                    String phyloPUrl = configuration.getDownload().getPhylop().getHost().replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
+                    String phyloPUrl = configuration.getDownload().getPhylop().getHost() + configuration.getDownload().getPhylop()
+                            .getFiles().get(PHYLOP_FILE_ID).replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
                             .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
                     filename = Paths.get(phyloPUrl).getFileName().toString();
                     outputPath = conservationFolder.resolve(PHYLOP_SUBDIRECTORY).resolve(filename);
@@ -142,26 +144,27 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
                 // Downloading Gerp
                 logger.info("Downloading {}", GERP_NAME);
-                String gerpUrl = configuration.getDownload().getGerp().getHost();
+                String gerpUrl = configuration.getDownload().getGerp().getHost() + configuration.getDownload().getGerp().getFiles()
+                        .get(GERP_FILE_ID);
                 filename = Paths.get(gerpUrl).getFileName().toString();
                 outputPath = conservationFolder.resolve(GERP_SUBDIRECTORY).resolve(filename);
                 logger.info("Downloading from {} to {}", gerpUrl, outputPath);
                 downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
 
                 // Save data version
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, configuration.getDownload().getPhastCons().getVersion(),
+                saveDataSource(PHASTCONS_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhastCons().getVersion(),
                         getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
-                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, configuration.getDownload().getPhylop().getVersion(),
+                saveDataSource(PHYLOP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhylop().getVersion(),
                         getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
-                saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
+                saveDataSource(GERP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
                         Collections.singletonList(gerpUrl), conservationFolder.resolve(GERP_VERSION_FILENAME));
             }
         }
 
         if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
             Files.createDirectories(conservationFolder);
-            Files.createDirectories(conservationFolder.resolve("phastCons"));
-            Files.createDirectories(conservationFolder.resolve("phylop"));
+            Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
+            Files.createDirectories(conservationFolder.resolve(PHYLOP_SUBDIRECTORY));
 
             String url = configuration.getDownload().getConservation().getHost() + "/mm10";
             String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
@@ -170,18 +173,18 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
             for (String chromosome : chromosomes) {
                 String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosome + ".phastCons60way.wigFix.gz";
-                downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve("phastCons").resolve("chr" + chromosome
+                downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
                         + ".phastCons60way.wigFix.gz").toString()));
                 phastconsUrls.add(phastConsUrl);
                 String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosome + ".phyloP60way.wigFix.gz";
-                downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve("phylop").resolve("chr" + chromosome
+                downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
                         + ".phyloP60way.wigFix.gz").toString()));
                 phyloPUrls.add(phyloPUrl);
             }
-            saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                    conservationFolder.resolve("phastConsVersion.json"));
-            saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                    conservationFolder.resolve("phastConsVersion.json"));
+            saveDataSource(PHASTCONS_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhastCons().getVersion(),
+                    getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
+            saveDataSource(PHYLOP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhylop().getVersion(),
+                    getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
         }
         return downloadFiles;
     }
@@ -192,21 +195,22 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         }
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("Downloading repeats data ...");
-            Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
+            Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_SUBDIRECTORY);
             Files.createDirectories(repeatsFolder);
             List<DownloadFile> downloadFiles = new ArrayList<>();
             String pathParam;
-            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
-                pathParam = "hg38";
+            if (assemblyConfiguration.getName().equalsIgnoreCase(GRCH38_NAME)) {
+                pathParam = HG38_NAME;
             } else {
-                logger.error("Please provide a valid human assembly {GRCh37, GRCh38)");
+                logger.error("Please provide a valid human assembly: {}, {}", GRCH37_NAME, GRCH38_NAME);
                 throw new ParameterException("Assembly '" + assemblyConfiguration.getName() + "' is not valid. Please provide "
-                        + "a valid human assembly {GRCh37, GRCh38)");
+                        + "a valid human assembly: " + GRCH37_NAME + ", " + GRCH38_NAME);
             }
 
             // Download tandem repeat finder
-            String url = configuration.getDownload().getSimpleRepeats().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
+            String url = configuration.getDownload().getSimpleRepeats().getHost() + configuration.getDownload().getSimpleRepeats()
+                    .getFiles().get(SIMPLE_REPEATS_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+            saveDataSource(TRF_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILENAME));
 
             Path outputPath = repeatsFolder.resolve(getUrlFilename(url));
@@ -214,8 +218,9 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download genomic super duplications
-            url = configuration.getDownload().getGenomicSuperDups().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, configuration.getDownload().getGenomicSuperDups().getVersion(),
+            url = configuration.getDownload().getGenomicSuperDups().getHost() + configuration.getDownload().getGenomicSuperDups()
+                    .getFiles().get(GENOMIC_SUPER_DUPS_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+            saveDataSource(GSD_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getGenomicSuperDups().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILENAME));
 
             outputPath = repeatsFolder.resolve(getUrlFilename(url));
@@ -223,9 +228,10 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download WindowMasker
-            if (!pathParam.equalsIgnoreCase("hg19")) {
-                url = configuration.getDownload().getWindowMasker().getHost().replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, configuration.getDownload().getWindowMasker().getVersion(),
+            if (!pathParam.equalsIgnoreCase(HG19_NAME)) {
+                url = configuration.getDownload().getWindowMasker().getHost() + configuration.getDownload().getWindowMasker().getFiles()
+                        .get(WINDOW_MASKER_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
+                saveDataSource(WM_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getWindowMasker().getVersion(),
                         getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.WM_VERSION_FILENAME));
 
                 outputPath = repeatsFolder.resolve(getUrlFilename(url));
