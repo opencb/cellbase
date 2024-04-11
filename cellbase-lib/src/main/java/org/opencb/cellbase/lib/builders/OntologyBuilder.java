@@ -20,7 +20,6 @@ package org.opencb.cellbase.lib.builders;
 import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -36,10 +35,11 @@ public class OntologyBuilder extends CellBaseBuilder {
 
     public OntologyBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
-        hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
-        goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
-        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
-        mondoFile = oboDirectoryPath.resolve(EtlCommons.MONDO_FILE);
+        // TODO: fix it !!
+//        hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
+//        goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
+//        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
+//        mondoFile = oboDirectoryPath.resolve(EtlCommons.MONDO_FILE);
     }
 
     @Override

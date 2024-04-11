@@ -53,7 +53,11 @@ download:
       password: ''
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
-      host: ftp://ftp.ensembl.org/pub
+      host: ftp://ftp.ensembl.org/pub/
+      files:
+        REGULATORY_BUILD: "regulation/put_species_here/*Regulatory_Build.regulatory_features*.gff.gz"
+        MOTIF_FEATURES: "regulation/put_species_here/MotifFeatures/*put_assembly_here.motif_features.gff.gz"
+        MOTIF_FEATURES_INDEX: "regulation/put_species_here/MotifFeatures/*put_assembly_here.motif_features.gff.gz.tbi"
   ensemblGenomes:
     database:
       host: mysql-eg-publicsql.ebi.ac.uk:4157
@@ -94,13 +98,17 @@ download:
 
   ## Regulation
   mirbase:
-    host: https://www.mirbase.org/download/miRNA.dat
+    host: https://www.mirbase.org/
     version: "22.1"
+    files:
+      MIRBASE: download/miRNA.dat
   targetScan:
     host: http://hgdownload.cse.ucsc.edu/goldenPath/
   miRTarBase:
-    host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
+    host: https://mirtarbase.cuhk.edu.cn/
     version: "9.0"
+    files:
+      MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
 
   ## Protein Data
   uniprot:

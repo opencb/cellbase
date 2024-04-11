@@ -88,11 +88,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
-                + "variation, variation_functional_score, regulation, protein, conservation, "
-                + "clinical_variants, repeats, svs, pubmed and 'all' to download everything", required = true, arity = 1)
+                + "variation_functional_score, missense_variation_functional_score, regulation, protein, conservation, "
+                + "clinical_variants, repeats, ontology, pubmed and pharmacogenomics; or use 'all' to download everything",
+                required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)
+        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
+                arity = 1)
         public String outputDirectory;
     }
 

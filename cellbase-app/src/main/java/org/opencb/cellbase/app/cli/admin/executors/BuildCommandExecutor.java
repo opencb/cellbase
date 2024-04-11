@@ -157,7 +157,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
-                        case EtlCommons.OBO_DATA:
+                        case ONTOLOGY_DATA:
                             parser = buildObo();
                             break;
                         case EtlCommons.SPLICE_SCORE_DATA:
@@ -202,7 +202,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildObo() {
-        Path oboDir = downloadFolder.resolve(EtlCommons.OBO_DATA);
+        Path oboDir = downloadFolder.resolve(ONTOLOGY_DATA);
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
         return new OntologyBuilder(oboDir, serializer);
     }

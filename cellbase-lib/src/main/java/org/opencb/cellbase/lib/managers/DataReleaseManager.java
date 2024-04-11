@@ -199,9 +199,6 @@ public class DataReleaseManager extends AbstractManager {
                 if (CollectionUtils.isNotEmpty(source.getUrls())) {
                     map.put("urls", source.getUrls());
                 }
-                if (CollectionUtils.isNotEmpty(source.getNotes())) {
-                    map.put("notes", source.getUrls());
-                }
                 tmp.add(map);
             }
             releaseDBAdaptor.update(dataRelase.getRelease(), "sources", tmp);

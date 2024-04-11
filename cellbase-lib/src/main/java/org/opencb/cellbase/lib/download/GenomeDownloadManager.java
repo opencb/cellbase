@@ -34,14 +34,6 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GenomeDownloadManager extends AbstractDownloadManager {
 
-    private static final String ENSEMBL_NAME = "ENSEMBL";
-    private static final String TRF_NAME = "Tandem repeats finder";
-    private static final String GSD_NAME = "Genomic super duplications";
-    private static final String WM_NAME = "WindowMasker";
-
-    private static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
-    private static final String PUT_CHROMOSOME_HERE_MARK = "put_chromosome_here";
-
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);

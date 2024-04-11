@@ -86,7 +86,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
+                    ONTOLOGY_DATA, MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -309,7 +309,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " repeats";
                             break;
                         }
-                        case OBO_DATA: {
+                        case ONTOLOGY_DATA: {
                             counter = exportOntologyData();
                             counterMsg = counter + " ontology items";
                             break;
@@ -449,7 +449,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
     private int exportOntologyData() throws CellBaseException, IOException {
         int counter = 0;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, OBO_DATA);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, ONTOLOGY_DATA);
         OntologyManager ontologyManager = managerFactory.getOntologyManager(species, assembly);
         CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(new OntologyQuery());
         while (iterator.hasNext()) {
