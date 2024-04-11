@@ -213,7 +213,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             saveDataSource(TRF_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILENAME));
 
-            Path outputPath = repeatsFolder.resolve(getUrlFilename(url));
+            Path outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
@@ -223,7 +223,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             saveDataSource(GSD_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getGenomicSuperDups().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILENAME));
 
-            outputPath = repeatsFolder.resolve(getUrlFilename(url));
+            outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
@@ -234,7 +234,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 saveDataSource(WM_NAME, EtlCommons.REPEATS_DATA, configuration.getDownload().getWindowMasker().getVersion(),
                         getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.WM_VERSION_FILENAME));
 
-                outputPath = repeatsFolder.resolve(getUrlFilename(url));
+                outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
                 logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
                 downloadFiles.add(downloadFile(url, outputPath.toString()));
             }

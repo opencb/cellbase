@@ -177,7 +177,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                                             String versionFilename, Path refSeqFolder) throws IOException, InterruptedException {
         String url = urlProperties.getHost();
         String version = urlProperties.getVersion();
-        String filename = getUrlFilename(url);
+        String filename = getFilenameFromUrl(url);
         Path outputPath = refSeqFolder.resolve(filename);
         saveDataSource(EtlCommons.REFSEQ_DATA, name, version, timeStamp, Collections.singletonList(url),
                 refSeqFolder.resolve(versionFilename));
@@ -193,7 +193,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, MANE_SELECT_NAME, configuration.getDownload().getManeSelect().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(MANE_SELECT_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -207,7 +207,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, LRG_NAME, configuration.getDownload().getLrg().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(LRG_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -221,7 +221,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(GENE_DATA, HGNC_GENE_NAME, configuration.getDownload().getHgnc().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(HGNC_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -235,7 +235,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, CANCER_HOTSPOT_NAME, configuration.getDownload().getHgnc().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(CANCER_HOTSPOT_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -249,7 +249,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, configuration.getDownload().getGoAnnotation().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(GO_ANNOTATION_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -263,7 +263,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(GNOMAD_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -277,7 +277,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveDataSource(EtlCommons.GENE_DATA, DGIDB_NAME, configuration.getDownload().getDgidb().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), geneFolder.resolve(DGIDB_VERSION_FILENAME));
 
-            Path outputPath = geneFolder.resolve(getUrlFilename(url));
+            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
             return downloadFile(url, outputPath.toString());
         }
@@ -309,7 +309,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         saveDataSource(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, configuration.getDownload().getGeneExpressionAtlas().getVersion(),
                 getTimeStamp(), Collections.singletonList(geneGtfUrl), geneFolder.resolve(GENE_EXPRESSION_ATLAS_VERSION_FILENAME));
 
-        Path outputPath = geneFolder.resolve(getUrlFilename(geneGtfUrl));
+        Path outputPath = geneFolder.resolve(getFilenameFromUrl(geneGtfUrl));
         logger.info(DOWNLOADING_LOG_MESSAGE, geneGtfUrl, outputPath);
         return downloadFile(geneGtfUrl, outputPath.toString());
     }
@@ -325,7 +325,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         saveDataSource(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME, configuration.getDownload().getDisgenet().getVersion(),
                 getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(DISGINET_VERSION_FILENAME));
 
-        Path outputPath = geneFolder.resolve(getUrlFilename(url));
+        Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
         logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
         return downloadFile(url, outputPath.toString());
     }

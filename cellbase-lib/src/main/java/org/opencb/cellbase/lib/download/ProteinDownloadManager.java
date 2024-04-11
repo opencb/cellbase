@@ -59,7 +59,7 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
         downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_NAME, PROTEIN_DATA, UNIPROT_FILE_ID,
                 UNIPROT_VERSION_FILENAME, proteinFolder);
         Path chunksPath = proteinFolder.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
-        String uniprotFilename = getUrlFilename(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
+        String uniprotFilename = getFilenameFromUrl(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
         logger.info("Split UniProt file {} into chunks at {}", uniprotFilename, chunksPath);
         Files.createDirectories(chunksPath);
         splitUniprot(proteinFolder.resolve(uniprotFilename), chunksPath);

@@ -91,7 +91,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
                     CLINVAR_EFO_TERMS_FILE_ID)) {
                 url = props.getHost() + props.getFiles().get(fileId);
-                outPath = clinicalFolder.resolve(getUrlFilename(url));
+                outPath = clinicalFolder.resolve(getFilenameFromUrl(url));
                 logger.info(DOWNLOADING_LOG_MESSAGE, url, outPath);
                 downloadFiles.add(downloadFile(url, outPath.toString()));
                 urls.add(url);
@@ -104,7 +104,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             Path chunksPath = clinicalFolder.resolve(CLINVAR_CHUNKS_SUBDIRECTORY);
             if (Files.notExists(chunksPath)) {
                 Files.createDirectories(chunksPath);
-                Path clinvarPath = clinicalFolder.resolve(getUrlFilename(
+                Path clinvarPath = clinicalFolder.resolve(getFilenameFromUrl(
                         props.getHost() + props.getFiles().get(CLINVAR_FULL_RELEASE_FILE_ID)));
                 logger.info("Splitting {} in {} ...", clinvarPath, chunksPath);
                 splitClinvar(clinvarPath, chunksPath);

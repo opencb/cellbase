@@ -138,11 +138,10 @@ public abstract class AbstractDownloadManager {
     }
 
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String name, String category, String fileId,
-                                                     String versionFilename, Path outPath)
-            throws IOException, InterruptedException {
+                                                     String versionFilename, Path outPath) throws IOException, InterruptedException {
         logger.info("Downloading {} ({}) file ...", name, category);
         String url = props.getHost() + props.getFiles().get(fileId);
-        File outFile = outPath.resolve(getUrlFilename(url)).toFile();
+        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
         logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
         DownloadFile downloadFile = downloadFile(url, outPath.toString());
 
@@ -270,12 +269,12 @@ public abstract class AbstractDownloadManager {
 
     private long getExpectedFileSize(String outputFileLog) {
         try (BufferedReader reader = new BufferedReader(new FileReader(outputFileLog))) {
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null) {
                 // looking for: Length: 13846591 (13M)
                 if (line.startsWith("Length:")) {
                     String[] parts = line.split("\\s");
-                    return Long.valueOf(parts[1]);
+                    return Long.parseLong(parts[1]);
                 }
             }
         } catch (Exception e) {
@@ -294,7 +293,7 @@ public abstract class AbstractDownloadManager {
         }
     }
 
-    protected String getUrlFilename(String url) {
+    protected String getFilenameFromUrl(String url) {
         return Paths.get(url).getFileName().toString();
     }
 }
