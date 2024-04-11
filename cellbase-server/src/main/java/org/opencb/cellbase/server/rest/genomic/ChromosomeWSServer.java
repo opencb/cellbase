@@ -17,12 +17,9 @@
 package org.opencb.cellbase.server.rest.genomic;
 
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -57,17 +54,9 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                               @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
-            if (CollectionUtils.isNotEmpty(assemblies)) {
-                assembly = assemblies.get(0);
-            }
-            if (StringUtils.isEmpty(assembly)) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+            genomeManager = cellBaseManagerFactory.getGenomeManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

@@ -24,7 +24,6 @@ import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -65,19 +64,15 @@ public class RegionWSServer extends GenericRestWSServer {
                           @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            if (assembly == null) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
-            variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
-            genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
-            transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
-            clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
-            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-            repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
+            geneManager = cellBaseManagerFactory.getGeneManager(this.species, this.assembly);
+            variantManager = cellBaseManagerFactory.getVariantManager(this.species, this.assembly);
+            genomeManager = cellBaseManagerFactory.getGenomeManager(this.species, this.assembly);
+            transcriptManager = cellBaseManagerFactory.getTranscriptManager(this.species, this.assembly);
+            clinicalManager = cellBaseManagerFactory.getClinicalManager(this.species, this.assembly);
+            regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(this.species, this.assembly);
+            repeatsManager = cellBaseManagerFactory.getRepeatsManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

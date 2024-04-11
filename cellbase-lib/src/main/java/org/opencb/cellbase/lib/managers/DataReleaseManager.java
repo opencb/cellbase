@@ -213,29 +213,31 @@ public class DataReleaseManager extends AbstractManager {
         return configuration.getMaintainerContact();
     }
 
-    public int checkDataRelease(int inRelease) throws CellBaseException {
-        int outRelease = inRelease;
-        if (outRelease < 0) {
-            throw new CellBaseException("Invalid data release " + outRelease + ". Data release must be greater or equal to 0");
+    public DataRelease checkDataRelease(int inRelease) throws CellBaseException {
+        DataRelease outRelease;
+        if (inRelease < 0) {
+            throw new CellBaseException("Invalid data release " + inRelease + ". Data release must be greater or equal to 0");
         }
-        if (outRelease == 0) {
+        if (inRelease == 0) {
             String[] split = GitRepositoryState.get().getBuildVersion().split("[.-]");
             String version = "v" + split[0] + "." + split[1];
-            outRelease = getDefault(version).getRelease();
-            logger.warn("Using data release 0: it will take the default data release {} for CellBase version {}", outRelease, version);
+
+            outRelease = getDefault(version);
+            logger.info("Using data release 0: it means to take default data release {} for CellBase version {}", outRelease.getRelease(),
+                    version);
+
             return outRelease;
         }
 
         List<DataRelease> dataReleases = getReleases().getResults();
         for (DataRelease dataRelease : dataReleases) {
-            if (outRelease == dataRelease.getRelease()) {
-                return outRelease;
+            if (inRelease == dataRelease.getRelease()) {
+                return dataRelease;
             }
         }
 
-        throw new CellBaseException("Invalid data release " + outRelease + getSpeciesAssemblyMessage() + ". Valid data releases are: "
-                + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
-                .collect(Collectors.toList()), ","));
+        throw new CellBaseException("Invalid data release " + inRelease + getSpeciesAssemblyMessage() + ". Valid data releases are: "
+                + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease()).collect(Collectors.toList()), ","));
     }
 
     private String getSpeciesAssemblyMessage() {

@@ -20,7 +20,6 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.cellbase.core.api.PharmaChemicalQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
 import org.opencb.cellbase.lib.managers.PharmacogenomicsManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
@@ -57,14 +56,10 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                                             String apiKey,
                                     @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            if (assembly == null) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
-            pharmacogenomicsManager = cellBaseManagerFactory.getPharmacogenomicsManager(species, assembly);
+            clinicalManager = cellBaseManagerFactory.getClinicalManager(this.species, this.assembly);
+            pharmacogenomicsManager = cellBaseManagerFactory.getPharmacogenomicsManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

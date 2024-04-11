@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
@@ -89,10 +90,10 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.nativeGet(query, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, int dataRelease)
+    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, DataRelease dataRelease)
             throws CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
-        HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease);
+        HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease.getRelease());
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 dataRelease, "", cellbaseManagerFactory);
@@ -116,7 +117,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      * @throws CellBaseException if the species is incorrect
      */
     public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, boolean decompose, boolean leftAlign,
-                                                                 int dataRelease) throws CellBaseException {
+                                                                 DataRelease dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 dataRelease, "", cellbaseManagerFactory);
@@ -128,7 +129,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         // Set left alignment behaviour
         if (leftAlign) {
             variantAnnotationCalculator.getNormalizer().getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager,
-                    dataRelease));
+                    dataRelease.getRelease()));
         } else {
             variantAnnotationCalculator.getNormalizer().getConfig().disableLeftAlign();
         }
@@ -150,7 +151,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
-                                                                              int dataRelease,
+                                                                              DataRelease dataRelease,
                                                                               String apiKey)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);

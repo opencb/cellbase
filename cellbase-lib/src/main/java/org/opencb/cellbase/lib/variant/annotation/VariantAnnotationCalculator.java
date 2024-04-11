@@ -34,7 +34,9 @@ import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
@@ -72,7 +74,7 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private PharmacogenomicsManager pharmacogenomicsManager;
-    private int dataRelease;
+    private DataRelease dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
@@ -96,7 +98,7 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, int dataRelease, String apiKey,
+    public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease, String apiKey,
                                        CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
@@ -107,16 +109,16 @@ public class VariantAnnotationCalculator {
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
         this.pharmacogenomicsManager = cellbaseManagerFactory.getPharmacogenomicsManager(species, assembly);
 
-        // Check data release
-        this.dataRelease = cellbaseManagerFactory.getDataReleaseManager(species, assembly).checkDataRelease(dataRelease);
-        logger.info("Variant annotation calculator using data release {}", this.dataRelease);
+        // Init data release and API key
+        this.dataRelease = dataRelease;
+        logger.info("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
         this.apiKey = apiKey;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-        hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease);
+        hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease.getRelease());
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -127,7 +129,7 @@ public class VariantAnnotationCalculator {
                 .setNormalizeAlleles(false)
                 .setDecomposeMNVs(decompose);
         if (leftAlign) {
-            variantNormalizerConfig.enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+            variantNormalizerConfig.enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease.getRelease()));
         } else {
             variantNormalizerConfig.disableLeftAlign();
         }
@@ -144,7 +146,7 @@ public class VariantAnnotationCalculator {
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true, queryOptions, dataRelease);
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true, queryOptions, dataRelease.getRelease());
 
         CellBaseDataResult cellBaseDataResult = new CellBaseDataResult();
         cellBaseDataResult.setId(variant.toString());
@@ -431,7 +433,7 @@ public class VariantAnnotationCalculator {
             }
         }
         GeneQuery geneQuery = new GeneQuery();
-        geneQuery.setDataRelease(dataRelease);
+        geneQuery.setDataRelease(dataRelease.getRelease());
         geneQuery.setAnnotationTargets(new LogicalList<>(mirnas, false));
         List<GeneMirnaTarget> geneMirnaTargets = new ArrayList<>();
         List<Gene> genes = (geneManager.search(geneQuery)).getResults();
@@ -441,7 +443,7 @@ public class VariantAnnotationCalculator {
         return geneMirnaTargets;
     }
 
-    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, int dataRelease)
+    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, DataRelease dataRelease)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         long globalStartTime = System.currentTimeMillis();
 
@@ -459,14 +461,15 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
                     "id,annotation.populationFrequencies,annotation.additionalAttributes.dgvSpecificAttributes")
-                    .append("imprecise", imprecise), dataRelease);
+                    .append("imprecise", imprecise), dataRelease.getRelease());
             variationFuture = CACHED_THREAD_POOL.submit(futureVariationAnnotator);
         }
 
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
-            futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease);
+            futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty(),
+                    dataRelease.getRelease());
             conservationFuture = CACHED_THREAD_POOL.submit(futureConservationAnnotator);
         }
 
@@ -474,7 +477,7 @@ public class VariantAnnotationCalculator {
         Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
-                    dataRelease);
+                    dataRelease.getRelease());
             variantFunctionalScoreFuture = CACHED_THREAD_POOL.submit(futureVariantFunctionalScoreAnnotator);
         }
 
@@ -493,29 +496,30 @@ public class VariantAnnotationCalculator {
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
         Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
         if (annotatorSet.contains("repeats")) {
-            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, dataRelease);
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, dataRelease.getRelease());
             repeatsFuture = CACHED_THREAD_POOL.submit(futureRepeatsAnnotator);
         }
 
         FutureCytobandAnnotator futureCytobandAnnotator = null;
         Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains("cytoband")) {
-            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease);
+            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease.getRelease());
             cytobandFuture = CACHED_THREAD_POOL.submit(futureCytobandAnnotator);
         }
 
         FutureSpliceScoreAnnotator futureSpliceScoreAnnotator = null;
         Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture = null;
         if (annotatorSet.contains("consequenceType")) {
-            futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease);
+            futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
+                    dataRelease.getRelease());
             spliceScoreFuture = CACHED_THREAD_POOL.submit(futureSpliceScoreAnnotator);
         }
 
         FuturePharmacogenomicsAnnotator futurePharmacogenomicsAnnotator = null;
         Future<List<CellBaseDataResult<PharmaChemical>>> pharmacogenomicsFuture = null;
-        if (annotatorSet.contains("pharmacogenomics")) {
-            futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease,
-                    pharmacogenomicsManager, logger);
+        if (annotatorSet.contains("pharmacogenomics") && dataRelease.getCollections().containsKey(EtlCommons.PHARMACOGENOMICS_DATA)) {
+            futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(),
+                    dataRelease.getRelease(), pharmacogenomicsManager, logger);
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
@@ -580,10 +584,10 @@ public class VariantAnnotationCalculator {
             if (annotatorSet.contains("consequenceType")) {
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, affectedGenes, true, QueryOptions.empty(),
-                            dataRelease);
+                            dataRelease.getRelease());
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
-                        checkAndAdjustPhasedConsequenceTypes(variant, variantBuffer, dataRelease);
+                        checkAndAdjustPhasedConsequenceTypes(variant, variantBuffer, dataRelease.getRelease());
                     }
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(variant.getAnnotation().getConsequenceTypes()));
@@ -611,9 +615,9 @@ public class VariantAnnotationCalculator {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    variantAnnotation.setDisplayConsequenceType(VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
                     logger.error("Something wrong happened when calculation consequence type for variant " + variant, e);
-                    throw e;
                 }
             }
 
@@ -626,7 +630,7 @@ public class VariantAnnotationCalculator {
         // Adjust phase of two last variants - if still anything remaining to adjust. This can happen if the two last
         // variants in the batch are phased and the distance between them < 3nts
         if (phased && variantBuffer.size() > 1) {
-            adjustPhasedConsequenceTypes(variantBuffer.toArray(), dataRelease);
+            adjustPhasedConsequenceTypes(variantBuffer.toArray(), dataRelease.getRelease());
         }
 
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
@@ -680,7 +684,7 @@ public class VariantAnnotationCalculator {
 
         List<Gene> geneList = new ArrayList<>();
         GeneQuery geneQuery = new GeneQuery();
-        geneQuery.setDataRelease(dataRelease);
+        geneQuery.setDataRelease(dataRelease.getRelease());
         geneQuery.setIncludes(includeGeneFields);
         geneQuery.setRegions(regionList);
 
@@ -732,7 +736,7 @@ public class VariantAnnotationCalculator {
         logger.debug("leftAlign = {}", leftAlign);
         // Must update normaliser configuration since normaliser was created on constructor
         if (leftAlign) {
-            normalizer.getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease));
+            normalizer.getConfig().enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager, dataRelease.getRelease()));
         } else {
             normalizer.getConfig().disableLeftAlign();
         }
@@ -1327,7 +1331,7 @@ public class VariantAnnotationCalculator {
         boolean[] overlapsRegulatoryRegion = {false, false};
 
         RegulationQuery query = new RegulationQuery();
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         query.setIncludes(Collections.singletonList(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE));
         query.setRegions(Collections.singletonList(new Region(chromosome, position)));
         CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
@@ -1355,7 +1359,7 @@ public class VariantAnnotationCalculator {
         boolean[] overlapsRegulatoryRegion = {false, false};
 
         RegulationQuery query = new RegulationQuery();
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         query.setExcludes(Collections.singletonList("_id"));
         query.setIncludes(Collections.singletonList("chromosome"));
         query.setLimit(1);
@@ -1718,7 +1722,7 @@ public class VariantAnnotationCalculator {
         public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
             List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList, batchGeneList,
-                    queryOptions, dataRelease);
+                    queryOptions, dataRelease.getRelease());
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalCellBaseDataResultList;
         }

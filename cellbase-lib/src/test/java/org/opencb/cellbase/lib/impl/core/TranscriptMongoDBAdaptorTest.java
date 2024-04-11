@@ -46,7 +46,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         Region region = Region.parseRegion("19:44905791-44906393");
         query.setRegions(new ArrayList<>(Arrays.asList(region)));
         query.setCount(Boolean.TRUE);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         CellBaseDataResult<Transcript> cellBaseDataResult = transcriptManager.search(query);
 
         assertEquals(5, cellBaseDataResult.getNumResults());
@@ -57,7 +57,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query = new TranscriptQuery();
         query.setCount(Boolean.TRUE);
         query.setRegions(Collections.singletonList(region));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(5, cellBaseDataResult.getNumResults());
         assertTrue(transcriptIdEquals(cellBaseDataResult, Arrays.asList("ENST00000446996", "ENST00000485628", "ENST00000252486",
@@ -67,7 +67,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setTranscriptsXrefs(Collections.singletonList("A0A087WSZ2"));
         query.setCount(Boolean.TRUE);
         query.setIncludes(Collections.singletonList("id"));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(1, cellBaseDataResult.getNumResults());
 
@@ -78,7 +78,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setTranscriptsBiotype(Collections.singletonList("protein_coding"));
         query.setTranscriptsXrefs(Collections.singletonList("BRCA1"));
         query.setIncludes(Collections.singletonList("transcripts.id"));
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         cellBaseDataResult = transcriptManager.search(query);
         assertEquals(27, cellBaseDataResult.getNumResults());
     }
