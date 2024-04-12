@@ -18,10 +18,9 @@ package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.commons.collections4.CollectionUtils;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
@@ -36,7 +35,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import javax.ws.rs.QueryParam;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -149,7 +147,7 @@ public class VariantClientTest {
 
     @Test
     public void testSearchSnpBydbSnpId() throws Exception {
-        Assume.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
+        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
@@ -170,7 +168,7 @@ public class VariantClientTest {
 
     @Test
     public void testSearchSnpByPosition() throws Exception {
-        Assume.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
+        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
@@ -196,7 +194,7 @@ public class VariantClientTest {
 
     @Test
     public void testStarsWithSnp() throws Exception {
-        Assume.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
+        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
