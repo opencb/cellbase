@@ -43,13 +43,13 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         downloadFiles.addAll(downloadClinical());
         return downloadFiles;
     }
 
-    public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadClinical() throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY).toAbsolutePath();
             Files.createDirectories(clinicalFolder);

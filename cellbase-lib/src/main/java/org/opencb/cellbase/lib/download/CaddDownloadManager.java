@@ -35,7 +35,7 @@ public class CaddDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_FUNCTIONAL_SCORE_DATA)) {
             return null;
         }

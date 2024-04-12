@@ -34,7 +34,7 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
         super(species, assembly, targetDirectory, configuration);
     }
 
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         Path oboFolder = downloadFolder.resolve(ONTOLOGY_SUBDIRECTORY);
         Files.createDirectories(oboFolder);
         logger.info("Downloading {} files {} ...", ONTOLOGY_DATA, oboFolder);

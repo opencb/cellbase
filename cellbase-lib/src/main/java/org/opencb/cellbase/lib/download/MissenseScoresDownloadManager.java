@@ -36,11 +36,11 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         return Collections.singletonList(downloadRevel());
     }
 
-    public DownloadFile downloadRevel() throws IOException, InterruptedException {
+    public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
             Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
             Files.createDirectories(missensePredictionScorePath);

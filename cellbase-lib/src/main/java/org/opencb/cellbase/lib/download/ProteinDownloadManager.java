@@ -42,9 +42,10 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      *
      * @return list of files downloaded
      * @throws IOException if there is an error writing to a file
-     * @throws InterruptedException if there is an error downloading files     *
+     * @throws InterruptedException if there is an error downloading files
+     * @throws CellBaseException if there is an error in the CelllBase configuration file
      */
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         if (!speciesHasInfoToDownload(speciesConfiguration, PROTEIN_DATA)) {
             return null;
         }

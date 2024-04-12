@@ -53,11 +53,11 @@ download:
       password: ''
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
-      host: ftp://ftp.ensembl.org/pub/
+      host: https://ftp.ensembl.org/pub/
       files:
-        REGULATORY_BUILD: "regulation/put_species_here/*Regulatory_Build.regulatory_features*.gff.gz"
-        MOTIF_FEATURES: "regulation/put_species_here/MotifFeatures/*put_assembly_here.motif_features.gff.gz"
-        MOTIF_FEATURES_INDEX: "regulation/put_species_here/MotifFeatures/*put_assembly_here.motif_features.gff.gz.tbi"
+        REGULATORY_BUILD: "regulation/put_species_here/put_species_here.put_assembly_here.Regulatory_Build.regulatory_features.20221007.gff.gz"
+        MOTIF_FEATURES: "regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz"
+        MOTIF_FEATURES_INDEX: "regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz.tbi"
   ensemblGenomes:
     database:
       host: mysql-eg-publicsql.ebi.ac.uk:4157

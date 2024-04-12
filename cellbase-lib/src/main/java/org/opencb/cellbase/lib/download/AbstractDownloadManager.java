@@ -126,7 +126,7 @@ public abstract class AbstractDownloadManager {
         logger.info("Processing species {}", speciesConfiguration.getScientificName());
     }
 
-    public abstract List<DownloadFile> download() throws IOException, InterruptedException;
+    public abstract List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException;
 
     protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
         boolean hasInfo = true;
@@ -137,26 +137,67 @@ public abstract class AbstractDownloadManager {
         return hasInfo;
     }
 
-    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String name, String category, String fileId,
-                                                     String versionFilename, Path outPath) throws IOException, InterruptedException {
-        logger.info("Downloading {} ({}) file ...", name, category);
-        String url = props.getHost() + props.getFiles().get(fileId);
-        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
-        DownloadFile downloadFile = downloadFile(url, outPath.toString());
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
+                                                     String versionFilename, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveDataSource(props, fileId, name, category, null, versionFilename, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
+                                                     String chromosome, String versionFilename, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        // Download file
+        DownloadFile downloadFile = downloadDataSource(props, fileId, chromosome, outPath);
 
         // Save data source
-        saveDataSource(name, category, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
+        saveDataSource(name, category, props.getVersion(), getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
                 outPath.resolve(versionFilename));
 
         return downloadFile;
     }
 
-    protected String getTimeStamp() {
-        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String name,
+                                                            String category, String chromosome, String versionFilename, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        // Download file
+        DownloadFile downloadFile = downloadEnsemblDataSource(ensemblProps, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(name, category, "(Ensembl " + ensemblVersion + ")", getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(versionFilename));
+
+        return downloadFile;
     }
 
-    protected void saveDataSource(String name, String category, String version, String date, List<String> urls, Path outputFilePath)
+    protected DownloadFile downloadDataSource(DownloadProperties.URLProperties props, String fileId, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadDataSource(props, fileId, null, outPath);
+    }
+
+    protected DownloadFile downloadDataSource(DownloadProperties.URLProperties props, String fileId,
+                                              String chromosome, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        String url = EtlCommons.getUrl(props, fileId, species, assembly, chromosome);
+        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
+        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
+        return downloadFile(url, outFile.toString());
+    }
+
+    protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadEnsemblDataSource(ensemblProps, fileId, null, outPath);
+    }
+
+    protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String chromosome,
+                                                     Path outPath) throws IOException, InterruptedException, CellBaseException {
+        String url = EtlCommons.getEnsemblUrl(ensemblProps, ensemblRelease, fileId, speciesShortName, assemblyConfiguration.getName(),
+                chromosome);
+        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
+        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
+        return downloadFile(url, outFile.toString());
+    }
+
+    protected void saveDataSource(String name, String category, String version, String date, List<String> urls, Path versionFilePath)
             throws IOException {
         DataSource dataSource = new DataSource(name, category, version, date, urls);
 
@@ -165,7 +206,11 @@ public abstract class AbstractDownloadManager {
             dataSource.setVersion(date);
         }
 
-        dataSourceWriter.writeValue(outputFilePath.toFile(), dataSource);
+        dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
+    }
+
+    protected String getTimeStamp() {
+        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
     }
 
     protected String getLine(Path readmePath, int lineNumber) {
@@ -291,6 +336,28 @@ public abstract class AbstractDownloadManager {
         } else {
             return configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
         }
+    }
+
+    @Deprecated
+    protected String getUrl(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
+                    + " configuration file");
+        }
+        String filesValue = props.getFiles().get(fileId);
+        if (filesValue.startsWith("https://") || filesValue.startsWith("http://") || filesValue.startsWith("ftp://")) {
+            return filesValue;
+        } else {
+            return props.getHost() + filesValue;
+        }
+    }
+
+    protected String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
+                    + " configuration file");
+        }
+        return getFilenameFromUrl(props.getFiles().get(fileId));
     }
 
     protected String getFilenameFromUrl(String url) {

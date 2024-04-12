@@ -16,9 +16,11 @@
 
 package org.opencb.cellbase.lib;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,7 +370,55 @@ public class EtlCommons {
             }
             return nLines;
         }
-
     }
 
+    public static String getEnsemblUrl(DownloadProperties.EnsemblProperties props, String ensemblRelease, String fileId, String species,
+                                       String assembly, String chromosome) throws CellBaseException {
+        if (!props.getUrl().getFiles().containsKey(fileId)) {
+            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.EnsemblProperties within the CellBase"
+                    + " configuration file");
+        }
+        String filesValue = props.getUrl().getFiles().get(fileId);
+        String url = props.getUrl().getHost() + ensemblRelease + "/" + filesValue;
+        // Change species, assembly, chromosome if necessary
+        if (StringUtils.isNotEmpty(species)) {
+            url = url.replaceAll(PUT_SPECIES_HERE_MARK, species);
+        }
+        if (StringUtils.isNotEmpty(assembly)) {
+            url = url.replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly);
+        }
+        if (StringUtils.isNotEmpty(chromosome)) {
+            url = url.replaceAll(PUT_CHROMOSOME_HERE_MARK, chromosome);
+        }
+        return url;
+    }
+
+    public static String getUrl(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        return getUrl(props, fileId, null, null, null);
+    }
+
+    public static String getUrl(DownloadProperties.URLProperties props, String fileId, String species, String assembly, String chromosome)
+            throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
+                    + " configuration file");
+        }
+        String url;
+        String filesValue = props.getFiles().get(fileId);
+        if (filesValue.startsWith("https://") || filesValue.startsWith("http://") || filesValue.startsWith("ftp://")) {
+            url = filesValue;
+        } else {
+            url = props.getHost() + filesValue;
+        }
+        if (StringUtils.isNotEmpty(species)) {
+            url = url.replaceAll(PUT_SPECIES_HERE_MARK, species);
+        }
+        if (StringUtils.isNotEmpty(assembly)) {
+            url = url.replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly);
+        }
+        if (StringUtils.isNotEmpty(chromosome)) {
+            url = url.replaceAll(PUT_CHROMOSOME_HERE_MARK, chromosome);
+        }
+        return url;
+    }
 }
