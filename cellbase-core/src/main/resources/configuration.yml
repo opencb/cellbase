@@ -70,6 +70,16 @@ download:
     host: https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
     version: "2023-11-01"
   refSeq:
+    host: https://ftp.ncbi.nih.gov/refseq/
+    version: "October 16, 2023 (GRCh38.p14)"
+    files:
+      GENOMIC_GTF: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+      GENOMIC_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
+      PROTEIN_FAA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
+      RNA_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
+
+
+
     host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
     version: "2023-10-11"
   refSeqFasta:
