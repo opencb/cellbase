@@ -88,15 +88,33 @@ public class FutureSnpAnnotator implements Callable<List<CellBaseDataResult<Snp>
             for (int i = 0; i < variantAnnotationList.size(); i++) {
                 CellBaseDataResult<Snp> snpResult = snpCellBaseDataResults.get(i);
                 if (snpResult != null && CollectionUtils.isNotEmpty(snpResult.getResults())) {
-                    List<Xref> xrefs = new ArrayList<>();
-                    for (Snp snp : snpResult.getResults()) {
-                        xrefs.add(new Xref(snp.getId(), snp.getSource()));
-                    }
-                    if (CollectionUtils.isNotEmpty(xrefs)) {
-                        if (variantAnnotationList.get(i).getXrefs() == null) {
-                            variantAnnotationList.get(i).setXrefs(new ArrayList<>());
+                    if (CollectionUtils.isEmpty(variantAnnotationList.get(i).getXrefs())) {
+                        // Add all dbSNP to the xrefs
+                        variantAnnotationList.get(i).setXrefs(new ArrayList<>());
+                        for (Snp snp : snpResult.getResults()) {
+                            variantAnnotationList.get(i).getXrefs().add(new Xref(snp.getId(), snp.getSource()));
                         }
-                        variantAnnotationList.get(i).getXrefs().addAll(xrefs);
+                    } else {
+                        // Check if the xrefs are already in the annotation (e.g., GWAS builder might add dbSNP IDs)
+                        List<Xref> newXrefs = new ArrayList<>();
+                        for (Snp snp : snpResult.getResults()) {
+                            // Sanity check
+                            if (StringUtils.isNotEmpty(snp.getId()) && StringUtils.isNotEmpty(snp.getSource())) {
+                                boolean found = false;
+                                for (Xref xref : variantAnnotationList.get(i).getXrefs()) {
+                                    if (snp.getId().equalsIgnoreCase(xref.getId()) && snp.getSource().equalsIgnoreCase(xref.getSource())) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found) {
+                                    newXrefs.add(new Xref(snp.getId(), snp.getSource()));
+                                }
+                            }
+                        }
+                        if (CollectionUtils.isNotEmpty(newXrefs)) {
+                            variantAnnotationList.get(i).getXrefs().addAll(newXrefs);
+                        }
                     }
                 }
             }
