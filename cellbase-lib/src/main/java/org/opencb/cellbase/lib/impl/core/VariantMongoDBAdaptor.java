@@ -305,7 +305,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new CellBaseException(e.getMessage());
+            throw new CellBaseException("Error parsing variant query: " + query, e);
         }
 
         logger.debug("variant parsed query: {}", andBsonList);

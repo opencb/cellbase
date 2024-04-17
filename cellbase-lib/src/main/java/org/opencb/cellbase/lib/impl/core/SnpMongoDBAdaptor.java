@@ -122,7 +122,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
         return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
     }
 
-    public Bson parseQuery(SnpQuery query) {
+    public Bson parseQuery(SnpQuery query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
@@ -145,7 +145,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new CellBaseException("Error parsing SNP query: " + query, e);
         }
 
         logger.info("SnpMongoDBAdaptor parsed query: {}", andBsonList);

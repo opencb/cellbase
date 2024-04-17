@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String HOMO_SAPIENS_NAME ="Homo sapiens";
+
     public static final String GENOME_DATA = "genome";
     public static final String GENE_DATA = "gene";
     public static final String REFSEQ_DATA = "refseq";

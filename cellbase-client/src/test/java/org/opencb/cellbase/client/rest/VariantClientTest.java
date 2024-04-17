@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,9 +32,12 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.config.RestConfig;
 import org.opencb.cellbase.core.common.GitRepositoryState;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.utils.VersionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -147,8 +151,7 @@ public class VariantClientTest {
 
     @Test
     public void testSearchSnpBydbSnpId() throws Exception {
-        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
-
+        int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
                 .setVersion("v5.8.3-SNAPSHOT")
@@ -156,9 +159,15 @@ public class VariantClientTest {
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
+        // Assumptions before running the test
+        ObjectMap result = client.getMetaClient().about().firstResult();
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+
         Query query = new Query();
         query.put("id", "rs1570391602,rs41278952");
-        query.put("dataRelease", 7);
+        query.put("dataRelease", dataRelease);
 
         CellBaseDataResponse<Snp> response = client.getVariantClient().searchSnp(query, new QueryOptions());
         assertEquals(2, response.getResponses().get(0).getNumResults());
@@ -168,8 +177,7 @@ public class VariantClientTest {
 
     @Test
     public void testSearchSnpByPosition() throws Exception {
-        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
-
+        int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
                 .setVersion("v5.8.3-SNAPSHOT")
@@ -177,11 +185,17 @@ public class VariantClientTest {
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
+        // Assumptions before running the test
+        ObjectMap result = client.getMetaClient().about().firstResult();
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+
         Query query = new Query();
         query.put("chromosome", "1");
         query.put("position", "56948509");
         query.put("reference", "T");
-        query.put("dataRelease", 7);
+        query.put("dataRelease", dataRelease);
 
         CellBaseDataResponse<Snp> response = client.getVariantClient().searchSnp(query, new QueryOptions());
         assertEquals(1, response.getResponses().get(0).getNumResults());
@@ -194,8 +208,7 @@ public class VariantClientTest {
 
     @Test
     public void testStarsWithSnp() throws Exception {
-        Assumptions.assumeTrue(GitRepositoryState.get().getBranch().equals("TASK-5789"));
-
+        int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
                 .setVersion("v5.8.3-SNAPSHOT")
@@ -203,9 +216,15 @@ public class VariantClientTest {
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
+        // Assumptions before running the test
+        ObjectMap result = client.getMetaClient().about().firstResult();
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+
         Query query = new Query();
         query.put("id", "rs157039161");
-        query.put("dataRelease", 7);
+        query.put("dataRelease", dataRelease);
 
         CellBaseDataResponse<Snp> response = client.getVariantClient().startsWithSnp(query, new QueryOptions());
         assertEquals(9, response.getResponses().get(0).getNumResults());

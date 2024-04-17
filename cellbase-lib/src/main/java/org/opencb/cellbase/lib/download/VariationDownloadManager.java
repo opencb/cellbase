@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,7 +46,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
         if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_DATA)) {
             return null;
         }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
             logger.info("Downloading dbSNP information ...");
 
             Path variation = downloadFolder.resolve(VARIATION_DATA);
