@@ -64,6 +64,11 @@ public class Downloader {
         return manager.downloadConservation();
     }
 
+    public List<DownloadFile> downloadVariation() throws IOException, CellBaseException, InterruptedException {
+        VariationDownloadManager manager = new VariationDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
+
     public List<DownloadFile> downloadClinicalVariants() throws IOException, CellBaseException, InterruptedException {
         ClinicalDownloadManager manager = new ClinicalDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();

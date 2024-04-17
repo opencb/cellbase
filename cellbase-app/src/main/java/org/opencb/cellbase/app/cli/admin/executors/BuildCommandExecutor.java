@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -131,6 +131,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.REFSEQ_DATA:
                             parser = buildRefSeq();
+                            break;
+                        case EtlCommons.VARIATION_DATA:
+                            parser = buildVariation();
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
@@ -273,6 +276,21 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(refseqFolderPath.resolve("refSeqVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "refseq");
         return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
+    }
+
+    private CellBaseBuilder buildVariation() throws IOException {
+        Path downloadVariationPath = downloadFolder.resolve(VARIATION_DATA);
+        Path buildVariationPath = buildFolder.resolve(VARIATION_DATA);
+        if (!buildVariationPath.toFile().exists()) {
+            buildVariationPath.toFile().mkdirs();
+        }
+
+        CellBaseFileSerializer variationSerializer = new CellBaseJsonFileSerializer(buildVariationPath);
+
+        // Currently, only dbSNP data
+        Files.copy(downloadVariationPath.resolve(DBSNP_VERSION_FILENAME), buildVariationPath.resolve(DBSNP_VERSION_FILENAME),
+                StandardCopyOption.REPLACE_EXISTING);
+        return new VariationBuilder(downloadVariationPath, variationSerializer, configuration);
     }
 
     private CellBaseBuilder buildCadd() {
