@@ -286,6 +286,7 @@ public class EtlCommons {
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
 
     // Protein
+    public static final String PROTEIN_NAME = "Protein";
     public static final String PROTEIN_DATA = "protein";
     public static final String PROTEIN_SUBDIRECTORY = "protein";
     // UniProt

@@ -51,13 +51,13 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
         }
         Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
         Files.createDirectories(proteinFolder);
-        logger.info("Downloading protein information at {} ...");
+        logger.info("Downloading {} information at {} ...", PROTEIN_NAME, proteinFolder);
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Uniprot
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_NAME, PROTEIN_DATA, UNIPROT_FILE_ID,
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_NAME, PROTEIN_DATA,
                 UNIPROT_VERSION_FILENAME, proteinFolder);
         Path chunksPath = proteinFolder.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
         String uniprotFilename = getFilenameFromUrl(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
@@ -67,12 +67,12 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadFile);
 
         // Interpro
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_NAME, PROTEIN_DATA, INTERPRO_FILE_ID,
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_NAME, PROTEIN_DATA,
                 INTERPRO_VERSION_FILENAME, proteinFolder);
         downloadFiles.add(downloadFile);
 
         // Intact
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_NAME, PROTEIN_DATA, INTACT_FILE_ID,
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_NAME, PROTEIN_DATA,
                 INTACT_VERSION_FILENAME, proteinFolder);
         downloadFiles.add(downloadFile);
 
