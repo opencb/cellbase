@@ -151,6 +151,7 @@ public class EtlCommons {
     public static final String PHARMGKB_VERSION_FILENAME = "pharmgkb" + SUFFIX_VERSION_FILENAME;
 
     // Missense variantion functional score
+    public static final String MISSENSE_VARIATION_SCORE_NAME = "Missense Variation Functional Scores";
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     // Revel
     public static final String REVEL_NAME = "Revel";

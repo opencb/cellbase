@@ -44,10 +44,10 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
             Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
             Files.createDirectories(missensePredictionScorePath);
-            logger.info("Downloading Revel data at {} ...", missensePredictionScorePath);
 
-            return downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_NAME,
-                    MISSENSE_VARIATION_SCORE_DATA, REVEL_FILE_ID, REVEL_VERSION_FILENAME, missensePredictionScorePath);
+            logger.info("Downloading {}/{} ...", MISSENSE_VARIATION_SCORE_NAME, REVEL_NAME);
+            return downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_NAME,
+                    MISSENSE_VARIATION_SCORE_DATA, REVEL_VERSION_FILENAME, missensePredictionScorePath);
         }
         return null;
     }
