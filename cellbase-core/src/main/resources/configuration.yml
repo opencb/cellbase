@@ -66,9 +66,6 @@ download:
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
       host: ftp://ftp.ensemblgenomes.org/pub
-  hgnc:
-    host: https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
-    version: "2023-11-01"
   refSeq:
     host: https://ftp.ncbi.nih.gov/refseq/
     version: "October 16, 2023 (GRCh38.p14)"
@@ -83,16 +80,52 @@ download:
     files:
       MANE_SELECT: MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
   lrg:
-    host: http://ftp.ebi.ac.uk/pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
+    host: http://ftp.ebi.ac.uk/
     version: "2021-03-30"
+    files:
+      LRG: pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
+  hgnc:
+    host: https://ftp.ebi.ac.uk/
+    version: "2023-11-01"
+    files:
+      HGNC: pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
+  cancerHotspot:
+    host: https://www.cancerhotspots.org/
+    version: "v2"
+    files:
+      CANCER_HOTSPOT: files/hotspots_v2.xls
+  dgidb:
+    host: https://old.dgidb.org/
+    version: "2022-02-01"
+    files:
+      DGIDB: data/monthly_tsvs/2022-Feb/interactions.tsv
   geneUniprotXref:
-    host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
+    host: http://ftp.uniprot.org/
     version: "2024_01 (24-Jan-2024)"
+    files:
+      UNIPROT_XREF: pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping_selected.tab.gz
   geneExpressionAtlas:
-    host: https://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+    host: https://ftp.ebi.ac.uk/
     version: "2.0.14"
+    files:
+      GENE_EXPRESSION_ATLAS: pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+  hpo:
+    ## NOTE: Download manually from here now
+    host: https://hpo.jax.org/app/data/annotations
+  disgenet:
+    host: https://www.disgenet.org/
+    version: "7.0 (January 2020)"
+    files:
+      DISGENET: static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
+  gnomadConstraints:
+    host: https://storage.googleapis.com/
+    version: "2.1.1"
+    files:
+      GNOMAD_CONSTRAINTS: gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
   goAnnotation:
-    host: http://geneontology.org/gene-associations/goa_human.gaf.gz
+    host: http://geneontology.org/
+    files:
+      GO_ANNOTATION: gene-associations/goa_human.gaf.gz
 
   ## Regulation
   mirbase:
@@ -173,9 +206,6 @@ download:
       GWAS: pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
-  cancerHotspot:
-    host: https://www.cancerhotspots.org/files/hotspots_v2.xls
-    version: "v2"
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:
@@ -206,22 +236,8 @@ download:
     files:
       CADD: download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
 
-  hpo:
-    ## NOTE: Download manually from here now
-    host: https://hpo.jax.org/app/data/annotations
-  disgenet:
-    host: https://www.disgenet.org/
-    version: "7.0 (January 2020)"
-    files:
-      ALL_GENE_DISEASE_ASSOCIATIONS: static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
-  dgidb:
-    host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
-    version: "2022-02-01"
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
-  gnomadConstraints:
-    host: https://storage.googleapis.com/gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
-    version: "2.1.1"
 
   ## OBO Ontologies
   hpoObo:

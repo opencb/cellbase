@@ -62,30 +62,78 @@ public class EtlCommons {
     public static final String GENE_DATA = "gene";
     public static final String ENSEMBL_CORE_VERSION_FILENAME = "ensemblCore" + SUFFIX_VERSION_FILENAME;
 
+    // RefSeq
+    public static final String REFSEQ_NAME = "RefSeq";
+    public static final String REFSEQ_VERSION_FILENAME = "refSeq" + SUFFIX_VERSION_FILENAME;
+//    public static final String REFSEQ_ASTA_VERSION_FILENAME = REFSEQ_DATA + "Fasta" + SUFFIX_VERSION_FILENAME;
+//    public static final String REFSEQ_PROTEIN_FASTA_VERSION_FILENAME = REFSEQ_DATA + "ProteinFasta" + SUFFIX_VERSION_FILENAME;
+//    public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
+
     // MANE Select
     public static final String MANE_SELECT_NAME = "MANE Select";
     public static final String MANE_SELECT_VERSION_FILENAME = "maneSelect" + SUFFIX_VERSION_FILENAME;
     // Must match the configuration file
     public static final String MANE_SELECT_FILE_ID = "MANE_SELECT";
 
-
+    // LRG
+    public static final String LRG_NAME = "LRG";
     public static final String LRG_VERSION_FILENAME = "lrg" + SUFFIX_VERSION_FILENAME;
-    public static final String HGNC_VERSION_FILENAME = "hgnc" + SUFFIX_VERSION_FILENAME;
-    public static final String CANCER_HOTSPOT_VERSION_FILENAME = "cancerHotspot" + SUFFIX_VERSION_FILENAME;
-    public static final String GO_ANNOTATION_VERSION_FILENAME = "goAnnotation" + SUFFIX_VERSION_FILENAME;
-    public static final String GNOMAD_VERSION_FILENAME = "gnomad" + SUFFIX_VERSION_FILENAME;
-    public static final String DGIDB_VERSION_FILENAME = "dgidb" + SUFFIX_VERSION_FILENAME;
-    public static final String UNIPROT_XREF_VERSION_FILENAME = "uniprotXref" + SUFFIX_VERSION_FILENAME;
-    public static final String GENE_EXPRESSION_ATLAS_VERSION_FILENAME = "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME;
-    public static final String HPO_VERSION_FILENAME = "hpo" + SUFFIX_VERSION_FILENAME;
-    public static final String DISGINET_VERSION_FILENAME = "disgenet" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String LRG_FILE_ID = "LRG";
 
-    public static final String REFSEQ_DATA = "refseq";
-    public static final String REFSEQ_VERSION_FILENAME = REFSEQ_DATA + SUFFIX_VERSION_FILENAME;
-    public static final String REFSEQ_ASTA_VERSION_FILENAME = REFSEQ_DATA + "Fasta" + SUFFIX_VERSION_FILENAME;
-    public static final String REFSEQ_PROTEIN_FASTA_VERSION_FILENAME = REFSEQ_DATA + "ProteinFasta" + SUFFIX_VERSION_FILENAME;
-    public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
-    public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
+    // HGNC
+    public static final String HGNC_NAME = "HGNC Gene";
+    public static final String HGNC_VERSION_FILENAME = "hgnc" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String HGNC_FILE_ID = "HGNC";
+
+    // Cancer HotSpot
+    public static final String CANCER_HOTSPOT_NAME = "Cancer HotSpot";
+    public static final String CANCER_HOTSPOT_VERSION_FILENAME = "cancerHotSpot" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String CANCER_HOTSPOT_FILE_ID = "CANCER_HOTSPOT";
+
+    // DGID (drug)
+    public static final String DGIDB_NAME = "DGIdb";
+    public static final String DGIDB_VERSION_FILENAME = "dgidb" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String DGIDB_FILE_ID = "DGIDB";
+
+    // UniProt Xref
+    public static final String UNIPROT_XREF_NAME = "UniProt Xref";
+    public static final String UNIPROT_XREF_VERSION_FILENAME = "uniprotXref" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String UNIPROT_XREF_FILE_ID = "UNIPROT_XREF";
+
+    // Gene Expression Atlas
+    public static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
+    public static final String GENE_EXPRESSION_ATLAS_VERSION_FILENAME = "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String GENE_EXPRESSION_ATLAS_FILE_ID = "GENE_EXPRESSION_ATLAS";
+
+    // Gene Disease Annotation
+    public static final String GENE_DISEASE_ANNOTATION_NAME = "Gene Disease Annotation";
+    // HPO
+    public static final String HPO_NAME = "HPO";
+    public static final String HPO_VERSION_FILENAME = "hpo" + SUFFIX_VERSION_FILENAME;
+    // DISGENET
+    public static final String DISGENET_NAME = "DisGeNet";
+    public static final String DISGENET_VERSION_FILENAME = "disGeNet" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String DISGENET_FILE_ID = "DISGENET";
+
+    // gnomAD Constraints
+    public static final String GNOMAD_CONSTRAINTS_NAME = "gnomAD Constraints";
+    public static final String GNOMAD_CONSTRAINTS_VERSION_FILENAME = "gnomadConstraints" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String GNOMAD_CONSTRAINTS_FILE_ID = "GNOMAD_CONSTRAINTS";
+
+    // GO Annotation
+    public static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
+    public static final String GO_ANNOTATION_VERSION_FILENAME = "goAnnotation" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
+
     public static final String VARIATION_DATA = "variation";
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
