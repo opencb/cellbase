@@ -64,10 +64,13 @@ public class EtlCommons {
 
     // RefSeq
     public static final String REFSEQ_NAME = "RefSeq";
+    public static final String REFSEQ_DATA = "refseq";
     public static final String REFSEQ_VERSION_FILENAME = "refSeq" + SUFFIX_VERSION_FILENAME;
-//    public static final String REFSEQ_ASTA_VERSION_FILENAME = REFSEQ_DATA + "Fasta" + SUFFIX_VERSION_FILENAME;
-//    public static final String REFSEQ_PROTEIN_FASTA_VERSION_FILENAME = REFSEQ_DATA + "ProteinFasta" + SUFFIX_VERSION_FILENAME;
-//    public static final String REFSEQ_CDNA_FASTA_VERSION_FILENAME = REFSEQ_DATA + "CdnaFasta" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String REFSEQ_GENOMIC_GTF_FILE_ID = "GENOMIC_GTF";
+    public static final String REFSEQ_GENOMIC_FNA_FILE_ID = "GENOMIC_FNA";
+    public static final String REFSEQ_PROTEIN_FAA_FILE_ID = "PROTEIN_FAA";
+    public static final String REFSEQ_RNA_FNA_FILE_ID = "RNA_FNA";
 
     // MANE Select
     public static final String MANE_SELECT_NAME = "MANE Select";

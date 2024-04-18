@@ -153,31 +153,31 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             }
         }
 
-        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
-            Files.createDirectories(conservationFolder);
-            Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
-            Files.createDirectories(conservationFolder.resolve(PHYLOP_SUBDIRECTORY));
-
-            String url = configuration.getDownload().getConservation().getHost() + "/mm10";
-            String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-                    "15", "16", "17", "18", "19", "X", "Y", "M", };
-            List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
-            List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-            for (String chromosome : chromosomes) {
-                String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosome + ".phastCons60way.wigFix.gz";
-                downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
-                        + ".phastCons60way.wigFix.gz").toString()));
-                phastconsUrls.add(phastConsUrl);
-                String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosome + ".phyloP60way.wigFix.gz";
-                downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
-                        + ".phyloP60way.wigFix.gz").toString()));
-                phyloPUrls.add(phyloPUrl);
-            }
-            saveDataSource(PHASTCONS_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhastCons().getVersion(),
-                    getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
-            saveDataSource(PHYLOP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhylop().getVersion(),
-                    getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
-        }
+//        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
+//            Files.createDirectories(conservationFolder);
+//            Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
+//            Files.createDirectories(conservationFolder.resolve(PHYLOP_SUBDIRECTORY));
+//
+//            String url = configuration.getDownload().getConservation().getHost() + "/mm10";
+//            String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+//                    "15", "16", "17", "18", "19", "X", "Y", "M", };
+//            List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
+//            List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
+//            for (String chromosome : chromosomes) {
+//                String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosome + ".phastCons60way.wigFix.gz";
+//                downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
+//                        + ".phastCons60way.wigFix.gz").toString()));
+//                phastconsUrls.add(phastConsUrl);
+//                String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosome + ".phyloP60way.wigFix.gz";
+//                downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
+//                        + ".phyloP60way.wigFix.gz").toString()));
+//                phyloPUrls.add(phyloPUrl);
+//            }
+//            saveDataSource(PHASTCONS_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhastCons().getVersion(),
+//                    getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
+//            saveDataSource(PHYLOP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhylop().getVersion(),
+//                    getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
+//        }
         return downloadFiles;
     }
 

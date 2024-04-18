@@ -16,17 +16,15 @@
 
 package org.opencb.cellbase.lib.download;
 
-import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -119,58 +117,29 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return downloadFiles;
     }
 
-    private List<DownloadFile> downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException {
+    private List<DownloadFile> downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-
-            logger.info("Downloading RefSeq data ...");
+            logger.info("Downloading {} data ...", REFSEQ_NAME);
 
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
-            String timeStamp = getTimeStamp();
-
-            // gtf
-            dow
-            DownloadFile downloadFile = downloadRefSeqFile(REFSEQ_NAME, configuration.getDownload().getRefSeq(), timeStamp,
-                    REFSEQ_VERSION_FILENAME, refSeqFolder);
-            downloadFiles.add(downloadFile);
-
-            // genomic fasta
-            downloadFile = downloadRefSeqFile(REFSEQ_NAME + " Fasta", configuration.getDownload().getRefSeqFasta(), timeStamp,
-                    REFSEQ_ASTA_VERSION_FILENAME, refSeqFolder);
-            downloadFiles.add(downloadFile);
-            if (StringUtils.isNotEmpty(downloadFile.getOutputFile()) && Paths.get(downloadFile.getOutputFile()).toFile().exists()) {
-                logger.info("Unzipping file: {}", downloadFile.getOutputFile());
-                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(downloadFile.getOutputFile()), null);
-            } else {
-                logger.warn("Coud not find the file {} to unzip", downloadFile.getOutputFile());
-            }
-
-            // protein fasta
-            downloadFile = downloadRefSeqFile(REFSEQ_NAME + " Protein Fasta", configuration.getDownload().getRefSeqProteinFasta(),
-                    timeStamp, REFSEQ_PROTEIN_FASTA_VERSION_FILENAME, refSeqFolder);
-            downloadFiles.add(downloadFile);
-
+            // GTF
+            downloadFiles.add(downloadDataSource(configuration.getDownload().getRefSeq(), REFSEQ_GENOMIC_GTF_FILE_ID, refSeqFolder));
+            // Genomic FASTA
+            downloadFiles.add(downloadDataSource(configuration.getDownload().getRefSeq(), REFSEQ_GENOMIC_FNA_FILE_ID, refSeqFolder));
+            // Protein FASTA
+            downloadFiles.add(downloadDataSource(configuration.getDownload().getRefSeq(), REFSEQ_PROTEIN_FAA_FILE_ID, refSeqFolder));
             // cDNA
-            downloadFile = downloadRefSeqFile(REFSEQ_NAME + " cDNA", configuration.getDownload().getRefSeqCdna(), timeStamp,
-                    REFSEQ_CDNA_FASTA_VERSION_FILENAME, refSeqFolder);
-            downloadFiles.add(downloadFile);
+            downloadFiles.add(downloadDataSource(configuration.getDownload().getRefSeq(), REFSEQ_RNA_FNA_FILE_ID, refSeqFolder));
+
+            // Save data source (i.e., metadata)
+            saveDataSource(REFSEQ_NAME, GENE_DATA, configuration.getDownload().getRefSeq().getVersion(), getTimeStamp(),
+                    downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList()),
+                    refSeqFolder.resolve(REFSEQ_VERSION_FILENAME));
 
             return downloadFiles;
         }
         return Collections.emptyList();
-    }
-
-    private DownloadFile downloadRefSeqFile(String name, DownloadProperties.URLProperties urlProperties, String timeStamp,
-                                            String versionFilename, Path refSeqFolder) throws IOException, InterruptedException {
-        String url = urlProperties.getHost();
-        String version = urlProperties.getVersion();
-        String filename = getFilenameFromUrl(url);
-        Path outputPath = refSeqFolder.resolve(filename);
-        saveDataSource(name, EtlCommons.REFSEQ_NAME, version, timeStamp, Collections.singletonList(url),
-                refSeqFolder.resolve(versionFilename));
-
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
-        return downloadFile(url, outputPath.toString());
     }
 
     private DownloadFile downloadMane(Path geneFolder) throws IOException, InterruptedException, CellBaseException {

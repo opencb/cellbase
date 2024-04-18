@@ -28,12 +28,8 @@ public class DownloadProperties {
     private URLProperties hgnc;
     private URLProperties cancerHotspot;
     private URLProperties refSeq;
-    private URLProperties refSeqFasta;
-    private URLProperties refSeqProteinFasta;
-    private URLProperties refSeqCdna;
     private URLProperties maneSelect;
     private URLProperties lrg;
-
     private URLProperties geneUniprotXref;
     private URLProperties geneExpressionAtlas;
     private URLProperties mirbase;
@@ -44,8 +40,6 @@ public class DownloadProperties {
     private URLProperties intact;
     private URLProperties interpro;
     private URLProperties interproRelNotes;
-    @Deprecated
-    private URLProperties conservation;
     private URLProperties phastCons;
     private URLProperties phylop;
     private URLProperties gerp;
@@ -56,12 +50,6 @@ public class DownloadProperties {
     private URLProperties clinvarEfoTerms;
     private URLProperties cosmic;
     private URLProperties hgmd;
-    @Deprecated
-    private URLProperties iarctp53;
-    @Deprecated
-    private URLProperties docm;
-    @Deprecated
-    private URLProperties docmVersion;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
@@ -201,17 +189,6 @@ public class DownloadProperties {
         return this;
     }
 
-    @Deprecated
-    public URLProperties getConservation() {
-        return conservation;
-    }
-
-    @Deprecated
-    public DownloadProperties setConservation(URLProperties conservation) {
-        this.conservation = conservation;
-        return this;
-    }
-
     public URLProperties getPhastCons() {
         return phastCons;
     }
@@ -299,36 +276,6 @@ public class DownloadProperties {
     public DownloadProperties setHgmd(URLProperties hgmd) {
         this.hgmd = hgmd;
         return this;
-    }
-
-    @Deprecated
-    public URLProperties getIarctp53() {
-        return iarctp53;
-    }
-
-    @Deprecated
-    public void setIarctp53(URLProperties iarctp53) {
-        this.iarctp53 = iarctp53;
-    }
-
-    @Deprecated
-    public URLProperties getDocm() {
-        return docm;
-    }
-
-    @Deprecated
-    public void setDocm(URLProperties docm) {
-        this.docm = docm;
-    }
-
-    @Deprecated
-    public URLProperties getDocmVersion() {
-        return docmVersion;
-    }
-
-    @Deprecated
-    public void setDocmVersion(URLProperties docmVersion) {
-        this.docmVersion = docmVersion;
     }
 
     public URLProperties getDgv() {
@@ -489,19 +436,6 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getRefSeqFasta() {
-        return refSeqFasta;
-    }
-
-    public DownloadProperties setRefSeqFasta(URLProperties refSeqFasta) {
-        this.refSeqFasta = refSeqFasta;
-        return this;
-    }
-
-    public URLProperties getRefSeqProteinFasta() {
-        return refSeqProteinFasta;
-    }
-
     public URLProperties getRevel() {
         return revel;
     }
@@ -526,20 +460,6 @@ public class DownloadProperties {
 
     public DownloadProperties setPharmGKB(URLProperties pharmGKB) {
         this.pharmGKB = pharmGKB;
-        return this;
-    }
-
-    public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {
-        this.refSeqProteinFasta = refSeqProteinFasta;
-        return this;
-    }
-
-    public URLProperties getRefSeqCdna() {
-        return refSeqCdna;
-    }
-
-    public DownloadProperties setRefSeqCdna(URLProperties refSeqCdna) {
-        this.refSeqCdna = refSeqCdna;
         return this;
     }
 
