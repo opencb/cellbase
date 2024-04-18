@@ -61,7 +61,14 @@ public class EtlCommons {
 
     public static final String GENE_DATA = "gene";
     public static final String ENSEMBL_CORE_VERSION_FILENAME = "ensemblCore" + SUFFIX_VERSION_FILENAME;
+
+    // MANE Select
+    public static final String MANE_SELECT_NAME = "MANE Select";
     public static final String MANE_SELECT_VERSION_FILENAME = "maneSelect" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String MANE_SELECT_FILE_ID = "MANE_SELECT";
+
+
     public static final String LRG_VERSION_FILENAME = "lrg" + SUFFIX_VERSION_FILENAME;
     public static final String HGNC_VERSION_FILENAME = "hgnc" + SUFFIX_VERSION_FILENAME;
     public static final String CANCER_HOTSPOT_VERSION_FILENAME = "cancerHotspot" + SUFFIX_VERSION_FILENAME;

@@ -77,23 +77,11 @@ download:
       GENOMIC_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
       PROTEIN_FAA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
       RNA_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
-
-
-
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
-    version: "2023-10-11"
-  refSeqFasta:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
-    version: "2023-10-11"
-  refSeqProteinFasta:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
-    version: "2023-10-11"
-  refSeqCdna:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
-    version: "2023-10-11"
   maneSelect:
-    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
+    host: https://ftp.ncbi.nlm.nih.gov/refseq/
     version: "1.1"
+    files:
+      MANE_SELECT: MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
   lrg:
     host: http://ftp.ebi.ac.uk/pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
     version: "2021-03-30"

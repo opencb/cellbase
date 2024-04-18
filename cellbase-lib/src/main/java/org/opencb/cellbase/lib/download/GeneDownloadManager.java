@@ -32,19 +32,19 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GeneDownloadManager extends AbstractDownloadManager {
 
-    private static final String ENSEMBL_NAME = "ENSEMBL";
-    private static final String REFSEQ_NAME = "RefSeq";
-    private static final String UNIPROT_NAME = "UniProt";
-    private static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
-    private static final String HPO_NAME = "HPO";
-    private static final String DISGENET_NAME = "DisGeNET";
-    private static final String MANE_SELECT_NAME = "MANE Select";
-    private static final String LRG_NAME = "LRG";
-    private static final String HGNC_GENE_NAME = "HGNC Gene";
-    private static final String CANCER_HOTSPOT_NAME = "Cancer HotSpot";
-    private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
-    private static final String DGIDB_NAME = "DGIdb";
-    private static final String GNOMAD_NAME = "gnomAD";
+//    private static final String ENSEMBL_NAME = "ENSEMBL";
+//    private static final String REFSEQ_NAME = "RefSeq";
+//    private static final String UNIPROT_NAME = "UniProt";
+//    private static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
+//    private static final String HPO_NAME = "HPO";
+//    private static final String DISGENET_NAME = "DisGeNET";
+//    private static final String MANE_SELECT_NAME = "MANE Select";
+//    private static final String LRG_NAME = "LRG";
+//    private static final String HGNC_GENE_NAME = "HGNC Gene";
+//    private static final String CANCER_HOTSPOT_NAME = "Cancer HotSpot";
+//    private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
+//    private static final String DGIDB_NAME = "DGIdb";
+//    private static final String GNOMAD_NAME = "gnomAD";
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
 
@@ -186,16 +186,11 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return downloadFile(url, outputPath.toString());
     }
 
-    private DownloadFile downloadMane(Path geneFolder) throws IOException, InterruptedException {
+    private DownloadFile downloadMane(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading MANE Select ...");
-            String url = configuration.getDownload().getManeSelect().getHost();
-            saveDataSource(EtlCommons.GENE_DATA, MANE_SELECT_NAME, configuration.getDownload().getManeSelect().getVersion(),
-                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve(MANE_SELECT_VERSION_FILENAME));
-
-            Path outputPath = geneFolder.resolve(getFilenameFromUrl(url));
-            logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
-            return downloadFile(url, outputPath.toString());
+            logger.info("Downloading {} ...", MANE_SELECT_NAME);
+            return downloadAndSaveDataSource(configuration.getDownload().getManeSelect(), MANE_SELECT_FILE_ID, MANE_SELECT_NAME, GENE_DATA,
+                    MANE_SELECT_VERSION_FILENAME, geneFolder);
         }
         return null;
     }
