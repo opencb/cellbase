@@ -46,8 +46,8 @@ public class CaddDownloadManager extends AbstractDownloadManager {
 
 
             // Download CADD and save data source
-            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_NAME,
-                    VARIATION_FUNCTIONAL_SCORE_DATA, CADD_FILE_ID, CADD_VERSION_FILENAME, variationFunctionalScoreFolder);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_NAME,
+                    VARIATION_FUNCTIONAL_SCORE_DATA, CADD_VERSION_FILENAME, variationFunctionalScoreFolder);
 
             return Collections.singletonList(downloadFile);
         }

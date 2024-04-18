@@ -80,8 +80,8 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                     clinicalFolder.resolve(HGMD_VERSION_FILENAME));
 
             // GWAS catalog
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_NAME, CLINICAL_VARIANTS_DATA,
-                    GWAS_FILE_ID, GWAS_VERSION_FILENAME, clinicalFolder);
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_NAME,
+                    CLINICAL_VARIANTS_DATA, GWAS_VERSION_FILENAME, clinicalFolder);
             downloadFiles.add(downloadFile);
 
             // ClinVar
