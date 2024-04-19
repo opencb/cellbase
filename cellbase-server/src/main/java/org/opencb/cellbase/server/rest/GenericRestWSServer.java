@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -68,8 +69,9 @@ import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
-    protected int defaultDataRelease = 0;
+    protected DataRelease defaultDataRelease = null;
     protected String species;
+    protected String assembly;
 
     protected Query query;
     //    protected QueryOptions queryOptions;
@@ -95,18 +97,17 @@ public class GenericRestWSServer implements IWSServer {
     protected static org.opencb.cellbase.lib.monitor.Monitor monitor;
     private static final String ERROR = "error";
     private static final String OK = "ok";
-    // this webservice has no species, do not validate
-    private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
+        this(version, "hsapiens", null, uriInfo, hsr);
     }
 
-    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
+                               @PathParam("assembly") String assembly, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
             throws CellBaseServerException {
 
@@ -114,18 +115,27 @@ public class GenericRestWSServer implements IWSServer {
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
         this.species = species;
+        this.assembly = assembly;
 
         try {
-            init();
+            if (!INITIALIZED.get()) {
+                init();
+            }
+
+            if (this.assembly == null) {
+                // Default assembly depends on the CellBaseConfiguration (so it has to be already initialized)
+                this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, this.species).getName();
+            }
+
             initQuery();
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }
     }
 
-    private void init() throws IOException, CellBaseException {
+    private synchronized void init() throws IOException, CellBaseException {
         // we need to make sure we only init one single time
-        if (INITIALIZED.compareAndSet(false, true)) {
+        if (!INITIALIZED.get()) {
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();
             WATCH.start();
@@ -159,53 +169,47 @@ public class GenericRestWSServer implements IWSServer {
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
             logger.info("***************************************************");
 
+            // Get default API key (for anonymous queries)
+            if (apiKeyManager == null) {
+                apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+                defaultApiKey = apiKeyManager.getDefaultApiKey();
+                logger.info("default API key {}", defaultApiKey);
+            }
+
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
+
+            INITIALIZED.set(true);
         }
     }
 
     private void initQuery() throws CellBaseException {
-        // Get default API key (for anonymous queries)
-        if (apiKeyManager == null) {
-            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
-            defaultApiKey = apiKeyManager.getDefaultApiKey();
-            logger.info("default API key {}", defaultApiKey);
-        }
-
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
 
-        // assembly isn't needed in the query, only in the database connection which we already have.
-        String assembly = uriParams.get("assembly");
+        // Assembly isn't needed in the query, only in the database connection which we already have.
         if (uriParams.get("assembly") != null) {
             uriParams.remove("assembly");
         }
 
         // Set default API key, if necessary
         String apiKey = uriParams.getOrDefault(API_KEY_PARAM, null);
-        logger.info("Before checking, API key {}", apiKey);
         if (StringUtils.isEmpty(apiKey)) {
             apiKey = defaultApiKey;
             uriParams.put(API_KEY_PARAM, apiKey);
         }
-        logger.info("After checking, API key {}", uriParams.get(API_KEY_PARAM));
 
         checkLimit();
 
-        // check version. species is validated later
+        // Check version, species is validated later
         checkVersion();
 
         // Set default data release if necessary
-        if (!DONT_CHECK_SPECIES.equals(species) && defaultDataRelease < 1) {
-            // As the assembly may not be presented in the query, we have to be sure to get it from the CellBase configuration
-            assembly = SpeciesUtils.getSpecies(cellBaseConfiguration, this.species, assembly).getAssembly();
-
-            if (StringUtils.isNotEmpty(assembly)) {
-                DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-                // getDefault launches an exception if no data release is found for that CellBase version
-                defaultDataRelease = releaseManager.getDefault(version).getRelease();
-            }
+        if (defaultDataRelease == null) {
+            DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            // getDefault launches an exception if no data release is found for that CellBase version
+            defaultDataRelease = releaseManager.getDefault(version);
         }
 
         // Check API key (expiration date, quota,...)
@@ -218,9 +222,9 @@ public class GenericRestWSServer implements IWSServer {
                 int dataRelease = Integer.parseInt(uriParams.get(DATA_RELEASE_PARAM));
                 // If data release is 0, then use the default data release
                 if (dataRelease == 0) {
-                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease + "' for CellBase"
-                            + " version '" + version + "'");
-                    return defaultDataRelease;
+                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease.getRelease()
+                            + "' for CellBase version '" + version + "'");
+                    return defaultDataRelease.getRelease();
                 } else {
                     return dataRelease;
                 }
@@ -229,11 +233,22 @@ public class GenericRestWSServer implements IWSServer {
             }
         }
         // If no data release is present in the query, then use the default data release
-        if (!DONT_CHECK_SPECIES.equals(species)) {
-            logger.info("No data release present in query: using the default data release '" + defaultDataRelease + "' for CellBase version"
-                    + " '" + version + "'");
+        return defaultDataRelease.getRelease();
+    }
+
+    protected DataRelease getDataRelease(int dataRelease, String species, String assembly) throws CellBaseException {
+        DataRelease output;
+        if (dataRelease == defaultDataRelease.getRelease()) {
+            output = defaultDataRelease;
+        } else {
+            DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            // Get data release
+            output = releaseManager.get(dataRelease);
+            if (output == null) {
+                throw new CellBaseException("Unknown data release number '" + dataRelease + "'; it does not exist.");
+            }
         }
-        return defaultDataRelease;
+        return output;
     }
 
     protected String getApiKey() {
@@ -261,11 +276,6 @@ public class GenericRestWSServer implements IWSServer {
             throw new CellBaseException("Version not valid: '" + version + "'");
         }
 
-//        System.out.println("*************************************");
-//        System.out.println("cellBaseConfiguration = " + cellBaseConfiguration);
-//        System.out.println("cellBaseConfiguration.getVersion() = " + cellBaseConfiguration.getVersion());
-//        System.out.println("version = " + version);
-//        System.out.println("*************************************");
         if (!uriInfo.getPath().contains("health") && !version.startsWith(cellBaseConfiguration.getVersion())) {
             logger.error("URL version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
             throw new CellBaseException("URL version not valid: '" + version + "'");
@@ -273,7 +283,8 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private void checkApiKey() throws CellBaseException {
-        if (!uriInfo.getPath().contains("health")) {
+        // Update the API key content only for non-meta endpoints
+        if (!uriInfo.getPath().contains("/meta/")) {
             String apiKey = getApiKey();
             ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
 
@@ -414,7 +425,7 @@ public class GenericRestWSServer implements IWSServer {
 
         // Update API key stats, if necessary
         try {
-            if (!uriInfo.getPath().contains("health")) {
+            if (!uriInfo.getPath().contains("/meta/")) {
                 String apiKey = getApiKey();
                 MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
                 long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
@@ -427,23 +438,8 @@ public class GenericRestWSServer implements IWSServer {
         return  jsonResponse;
     }
 
-//    protected Response createOkResponse(Object obj, MediaType mediaType) {
-//        return buildResponse(Response.ok(obj, mediaType));
-//    }
-//
-//    protected Response createOkResponse(Object obj, MediaType mediaType, String fileName) {
-//        return buildResponse(Response.ok(obj, mediaType).header("content-disposition", "attachment; filename =" + fileName));
-//    }
-//
-//    protected Response createStringResponse(String str) {
-//        return buildResponse(Response.ok(str));
-//    }
-
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
-//            if (CollectionUtils.isNotEmpty(queryResponse.getResponses()) && queryResponse.getResponses().get(0) != null) {
-//                System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
-//            }
             String value = jsonObjectWriter.writeValueAsString(queryResponse);
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
             Response response = buildResponse(ok);

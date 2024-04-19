@@ -18,22 +18,19 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class ProteinDownloadManager extends AbstractDownloadManager {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private static final String UNIPROT_NAME = "UniProt";
+public class ProteinDownloadManager extends AbstractDownloadManager {
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -45,41 +42,41 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      *
      * @return list of files downloaded
      * @throws IOException if there is an error writing to a file
-     * @throws InterruptedException if there is an error downloading files     *
+     * @throws InterruptedException if there is an error downloading files
+     * @throws CellBaseException if there is an error in the CelllBase configuration file
      */
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "protein")) {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        if (!speciesHasInfoToDownload(speciesConfiguration, PROTEIN_DATA)) {
             return null;
         }
-        logger.info("Downloading protein information ...");
-        Path proteinFolder = downloadFolder.resolve("protein");
+        Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
         Files.createDirectories(proteinFolder);
+        logger.info("Downloading {} information at {} ...", PROTEIN_NAME, proteinFolder);
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        String url = configuration.getDownload().getUniprot().getHost();
-        downloadFiles.add(downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString()));
-        Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
-        splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
+        // Uniprot
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_NAME, PROTEIN_DATA,
+                UNIPROT_VERSION_FILENAME, proteinFolder);
+        Path chunksPath = proteinFolder.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
+        String uniprotFilename = getFilenameFromUrl(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
+        logger.info("Split UniProt file {} into chunks at {}", uniprotFilename, chunksPath);
+        Files.createDirectories(chunksPath);
+        splitUniprot(proteinFolder.resolve(uniprotFilename), chunksPath);
+        downloadFiles.add(downloadFile);
 
-        String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
-        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString()));
+        // Interpro
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_NAME, PROTEIN_DATA,
+                INTERPRO_VERSION_FILENAME, proteinFolder);
+        downloadFiles.add(downloadFile);
 
-        saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
-                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
+        // Intact
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_NAME, PROTEIN_DATA,
+                INTACT_VERSION_FILENAME, proteinFolder);
+        downloadFiles.add(downloadFile);
 
         return downloadFiles;
-
-//        url = configuration.getDownload().getIntact().getHost();
-//        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
-//        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
-//                proteinFolder.resolve("intactVersion.json"));
-//
-//        url = configuration.getDownload().getInterpro().getHost();
-//        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
-//        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
-//        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
-//        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
-//                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
@@ -96,7 +93,7 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
                 inEntry = true;
                 beforeEntry = false;
                 if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                    pw = new PrintWriter(Files.newOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile().toPath()));
                     pw.println(header.toString().trim());
                 }
                 count++;

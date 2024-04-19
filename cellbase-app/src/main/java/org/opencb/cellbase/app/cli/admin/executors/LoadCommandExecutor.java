@@ -81,8 +81,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA,
-                    EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
+                    EtlCommons.ONTOLOGY_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA,
+                    EtlCommons.PUBMED_DATA, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
@@ -269,7 +269,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
 //                            loadStructuralVariants();
 //                            break;
-                        case EtlCommons.OBO_DATA: {
+                        case EtlCommons.ONTOLOGY_DATA: {
                             // Load data
                             loadIfExists(input.resolve("ontology.json.gz"), "ontology");
 
@@ -282,7 +282,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve(EtlCommons.GO_VERSION_FILE),
                                     input.resolve(EtlCommons.DO_VERSION_FILE)
                             ));
-                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.OBO_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.ONTOLOGY_DATA, sources);
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -490,9 +490,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.TRF_VERSION_FILE),
-                        input.resolve(EtlCommons.GSD_VERSION_FILE),
-                        input.resolve(EtlCommons.WM_VERSION_FILE)
+                        input.resolve(EtlCommons.TRF_VERSION_FILENAME),
+                        input.resolve(EtlCommons.GSD_VERSION_FILENAME),
+                        input.resolve(EtlCommons.WM_VERSION_FILENAME)
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
@@ -632,7 +632,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Update release (collection and sources)
         List<Path> sources = new ArrayList<>(Arrays.asList(
-                input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_VERSION_FILENAME)
+                input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_CATALOG_VERSION_FILENAME)
         ));
         dataReleaseManager.update(dataRelease, EtlCommons.PGS_VARIANT_COLLECTION, EtlCommons.PGS_DATA, sources);
         dataReleaseManager.update(dataRelease, EtlCommons.PGS_COMMON_COLLECTION, null, null);

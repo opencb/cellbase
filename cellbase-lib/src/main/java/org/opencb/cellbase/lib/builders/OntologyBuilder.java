@@ -20,7 +20,6 @@ package org.opencb.cellbase.lib.builders;
 import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -32,12 +31,15 @@ public class OntologyBuilder extends CellBaseBuilder {
     private Path hpoFile;
     private Path goFile;
     private Path doidFile;
+    private Path mondoFile;
 
     public OntologyBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
-        hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
-        goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
-        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
+        // TODO: fix it !!
+//        hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
+//        goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
+//        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
+//        mondoFile = oboDirectoryPath.resolve(EtlCommons.MONDO_FILE);
     }
 
     @Override
@@ -61,6 +63,13 @@ public class OntologyBuilder extends CellBaseBuilder {
         terms = parser.parseOBO(bufferedReader, "Human Disease Ontology");
         for (OntologyTerm term : terms) {
             term.setSource("DOID");
+            serializer.serialize(term);
+        }
+
+        bufferedReader = FileUtils.newBufferedReader(mondoFile);
+        terms = parser.parseOBO(bufferedReader, "Mondo Ontology");
+        for (OntologyTerm term : terms) {
+            term.setSource("MONDO");
             serializer.serialize(term);
         }
 

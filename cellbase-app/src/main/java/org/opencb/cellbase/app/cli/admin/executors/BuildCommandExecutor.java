@@ -34,11 +34,12 @@ import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.PHARMGKB_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -156,7 +157,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
-                        case EtlCommons.OBO_DATA:
+                        case ONTOLOGY_DATA:
                             parser = buildObo();
                             break;
                         case EtlCommons.SPLICE_SCORE_DATA:
@@ -194,17 +195,17 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildRepeats() {
-        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILE)));
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILE)));
+        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_SUBDIRECTORY);
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILENAME)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILENAME)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILENAME)));
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
         return new RepeatsBuilder(repeatsFilesDir, serializer);
     }
 
     private CellBaseBuilder buildObo() {
-        Path oboDir = downloadFolder.resolve(EtlCommons.OBO_DATA);
+        Path oboDir = downloadFolder.resolve(ONTOLOGY_DATA);
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
         return new OntologyBuilder(oboDir, serializer);
     }
@@ -350,16 +351,26 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationBuilder(conservationFilesDir, conservationChunkSize, serializer);
     }
 
-    private CellBaseBuilder buildClinicalVariants() {
-        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
-        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
-        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
+    private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
+        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY);
+
+        List<Path> versionFiles = new ArrayList<>();
+        List<String> versionFilenames = Arrays.asList(CLINVAR_VERSION_FILENAME, COSMIC_VERSION_FILENAME, GWAS_VERSION_FILENAME,
+                HGMD_VERSION_FILENAME);
+        for (String versionFilename : versionFilenames) {
+            Path versionFile = clinicalVariantFolder.resolve(versionFilename);
+            if (!versionFile.toFile().exists()) {
+                throw new CellBaseException("Could not build clinical variants because of the file " + versionFilename + " does not exist");
+            }
+            versionFiles.add(versionFile);
+        }
+        copyVersionFiles(versionFiles);
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
                 EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
         return new ClinicalVariantBuilder(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
-                serializer);
+                configuration, serializer);
     }
 
     private String getDefaultHumanAssembly() {
@@ -449,14 +460,13 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
         logger.info("Copying PGS version file...");
-        if (inFolder.resolve(EtlCommons.PGS_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(inFolder.resolve(EtlCommons.PGS_VERSION_FILENAME), outFolder.resolve(EtlCommons.PGS_VERSION_FILENAME),
+        if (inFolder.resolve(PGS_CATALOG_VERSION_FILENAME).toFile().exists()) {
+            Files.copy(inFolder.resolve(PGS_CATALOG_VERSION_FILENAME), outFolder.resolve(PGS_CATALOG_VERSION_FILENAME),
                     StandardCopyOption.REPLACE_EXISTING);
         }
 
         String basename = PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME.split("\\.")[0];
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder, basename);
-        return new PolygenicScoreBuilder(configuration.getDownload().getPgs().getSourceName(),
-                configuration.getDownload().getPgs().getVersion(), inFolder, serializer);
+        return new PolygenicScoreBuilder(PGS_CATALOG_NAME, configuration.getDownload().getPgs().getVersion(), inFolder, serializer);
     }
 }

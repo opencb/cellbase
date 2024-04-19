@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -42,14 +43,16 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading PharmGKB files...");
         DownloadProperties.URLProperties pharmGKB = configuration.getDownload().getPharmGKB();
-        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
+        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_SUBDIRECTORY).resolve(PHARMGKB_SUBDIRECTORY);
         Files.createDirectories(pharmgkbDownloadFolder);
+        logger.info("Downloading {} files at {} ...", PHARMGKB_DATA, pharmgkbDownloadFolder);
 
         List<String> urls = new ArrayList<>();
         List<DownloadFile> downloadFiles = new ArrayList<>();
-        for (String url : pharmGKB.getFiles()) {
+        String host = pharmGKB.getHost();
+        for (Map.Entry<String, String> entry : pharmGKB.getFiles().entrySet()) {
+            String url = host + entry.getValue();
             urls.add(url);
 
             Path downloadedFileName = Paths.get(new URL(url).getPath()).getFileName();
@@ -64,7 +67,7 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
         }
 
         // Save versions
-        saveVersionData(PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
+        saveDataSource(PHARMGKB_NAME, PHARMACOGENOMICS_DATA, pharmGKB.getVersion(), getTimeStamp(), urls,
                 pharmgkbDownloadFolder.resolve(PHARMGKB_VERSION_FILENAME));
 
         return downloadFiles;

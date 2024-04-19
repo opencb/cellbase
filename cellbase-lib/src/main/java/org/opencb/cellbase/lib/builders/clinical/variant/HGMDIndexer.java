@@ -36,15 +36,17 @@ import java.util.*;
  */
 public class HGMDIndexer extends ClinicalIndexer {
     private final Path hgmdFile;
+    private final String version;
     private final String assembly;
 
-    public HGMDIndexer(Path hgmdFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
+    public HGMDIndexer(Path hgmdFile, String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
             throws IOException {
         super(genomeSequenceFilePath);
-        this.rdb = rdb;
-        this.assembly = assembly;
         this.hgmdFile = hgmdFile;
+        this.version = version;
         this.normalize = normalize;
+        this.assembly = assembly;
+        this.rdb = rdb;
     }
 
     public void index() throws RocksDBException, IOException {
@@ -93,7 +95,7 @@ public class HGMDIndexer extends ClinicalIndexer {
             }
 
             // Source
-            entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, "2020.3", "2020"));
+            entry.setSource(new EvidenceSource(EtlCommons.HGMD_NAME, version, null));
 
             // Assembly
             entry.setAssembly(assembly);
@@ -167,7 +169,7 @@ public class HGMDIndexer extends ClinicalIndexer {
 
         if (normalisedVariantStringList != null) {
             for (String normalisedVariantString : normalisedVariantStringList) {
-                VariantAnnotation variantAnnotation = getVariantAnnotation(variant.toString().getBytes());
+                VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
 
                 // Add haplotype property to all EvidenceEntry objects in variant if there are more than 1 variants in
                 // normalisedVariantStringList, i.e. if this variant is part of an MNV (haplotype)

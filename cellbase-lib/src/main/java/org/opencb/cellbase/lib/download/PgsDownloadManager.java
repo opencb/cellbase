@@ -30,6 +30,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class PgsDownloadManager extends AbstractDownloadManager {
 
     public PgsDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -39,22 +41,24 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading PGS files...");
+        logger.info(DOWNLOADING_LOG_MESSAGE, PGS_NAME);
 
         DownloadProperties.URLProperties pgsUrlProperties = configuration.getDownload().getPgs();
 
-        Path pgsFolder = downloadFolder.resolve(EtlCommons.PGS_DATA);
+        Path pgsFolder = downloadFolder.resolve(PGS_DATA);
         Files.createDirectories(pgsFolder);
 
         List<String> urls = new ArrayList<>();
         urls.add(pgsUrlProperties.getHost());
 
-        String urlAllMeta = pgsUrlProperties.getFiles().get(0);
+        String urlAllMeta = pgsUrlProperties.getFiles().get(PGS_CATALOG_METADATA_FILE_ID);
         urls.add(urlAllMeta);
 
         String filename = new File(urlAllMeta).getName();
 
         // Downloads PGS files
+        String url;
+        Path outPath;
         List<DownloadFile> list = new ArrayList<>();
         list.add(downloadFile(urlAllMeta, pgsFolder.resolve(filename).toString()));
 
@@ -66,21 +70,23 @@ public class PgsDownloadManager extends AbstractDownloadManager {
             String[] field = line.split(",");
             String pgsId = field[0];
 
-            String url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
-            logger.info("Downloading file {}", url);
-            list.add(downloadFile(url, pgsFolder.resolve(new File(url).getName()).toString()));
+            url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
+            outPath = pgsFolder.resolve(new File(url).getName());
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
+            list.add(downloadFile(url, outPath.toString()));
 
             url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
-            logger.info("Downloading file {}", url);
-            list.add(downloadFile(url, pgsFolder.resolve(new File(url).getName()).toString()));
+            outPath = pgsFolder.resolve(new File(url).getName());
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
+            list.add(downloadFile(url, outPath.toString()));
         }
         br.close();
 
         // Save version file
-        saveVersionData(EtlCommons.PGS_DATA, pgsUrlProperties.getSourceName(), pgsUrlProperties.getVersion(), getTimeStamp(), urls,
-                pgsFolder.resolve(EtlCommons.PGS_VERSION_FILENAME));
+        saveDataSource(PGS_CATALOG_NAME, PGS_NAME, pgsUrlProperties.getVersion(), getTimeStamp(), urls,
+                pgsFolder.resolve(EtlCommons.PGS_CATALOG_VERSION_FILENAME));
 
-        logger.info("Done. Downloaded PGS files!");
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PGS_NAME);
 
         return list;
     }

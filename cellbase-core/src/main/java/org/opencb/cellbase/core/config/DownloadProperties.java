@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.core.config;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 19/08/16.
@@ -26,17 +26,13 @@ public class DownloadProperties {
     private EnsemblProperties ensembl;
     private EnsemblProperties ensemblGenomes;
     private URLProperties hgnc;
+    private URLProperties cancerHotspot;
     private URLProperties refSeq;
-    private URLProperties refSeqFasta;
-    private URLProperties refSeqProteinFasta;
-    private URLProperties refSeqCdna;
     private URLProperties maneSelect;
     private URLProperties lrg;
-
     private URLProperties geneUniprotXref;
     private URLProperties geneExpressionAtlas;
     private URLProperties mirbase;
-    private URLProperties mirbaseReadme;
     private URLProperties targetScan;
     private URLProperties miRTarBase;
     private URLProperties uniprot;
@@ -44,16 +40,16 @@ public class DownloadProperties {
     private URLProperties intact;
     private URLProperties interpro;
     private URLProperties interproRelNotes;
-    private URLProperties conservation;
+    private URLProperties phastCons;
+    private URLProperties phylop;
     private URLProperties gerp;
     private URLProperties clinvar;
     private URLProperties clinvarVariation;
     private URLProperties clinvarSummary;
     private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
-    private URLProperties iarctp53;
-    private URLProperties docm;
-    private URLProperties docmVersion;
+    private URLProperties cosmic;
+    private URLProperties hgmd;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
@@ -70,6 +66,7 @@ public class DownloadProperties {
     private URLProperties hpoObo;
     private URLProperties goObo;
     private URLProperties doidObo;
+    private URLProperties mondoObo;
     private URLProperties goAnnotation;
     private URLProperties revel;
     private URLProperties pubmed;
@@ -127,15 +124,6 @@ public class DownloadProperties {
 
     public DownloadProperties setMirbase(URLProperties mirbase) {
         this.mirbase = mirbase;
-        return this;
-    }
-
-    public URLProperties getMirbaseReadme() {
-        return mirbaseReadme;
-    }
-
-    public DownloadProperties setMirbaseReadme(URLProperties mirbaseReadme) {
-        this.mirbaseReadme = mirbaseReadme;
         return this;
     }
 
@@ -202,12 +190,21 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getConservation() {
-        return conservation;
+    public URLProperties getPhastCons() {
+        return phastCons;
     }
 
-    public DownloadProperties setConservation(URLProperties conservation) {
-        this.conservation = conservation;
+    public DownloadProperties setPhastCons(URLProperties phastCons) {
+        this.phastCons = phastCons;
+        return this;
+    }
+
+    public URLProperties getPhylop() {
+        return phylop;
+    }
+
+    public DownloadProperties setPhylop(URLProperties phylop) {
+        this.phylop = phylop;
         return this;
     }
 
@@ -264,28 +261,22 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getIarctp53() {
-        return iarctp53;
+    public URLProperties getCosmic() {
+        return cosmic;
     }
 
-    public void setIarctp53(URLProperties iarctp53) {
-        this.iarctp53 = iarctp53;
+    public DownloadProperties setCosmic(URLProperties cosmic) {
+        this.cosmic = cosmic;
+        return this;
     }
 
-    public URLProperties getDocm() {
-        return docm;
+    public URLProperties getHgmd() {
+        return hgmd;
     }
 
-    public void setDocm(URLProperties docm) {
-        this.docm = docm;
-    }
-
-    public URLProperties getDocmVersion() {
-        return docmVersion;
-    }
-
-    public void setDocmVersion(URLProperties docmVersion) {
-        this.docmVersion = docmVersion;
+    public DownloadProperties setHgmd(URLProperties hgmd) {
+        this.hgmd = hgmd;
+        return this;
     }
 
     public URLProperties getDgv() {
@@ -446,19 +437,6 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getRefSeqFasta() {
-        return refSeqFasta;
-    }
-
-    public DownloadProperties setRefSeqFasta(URLProperties refSeqFasta) {
-        this.refSeqFasta = refSeqFasta;
-        return this;
-    }
-
-    public URLProperties getRefSeqProteinFasta() {
-        return refSeqProteinFasta;
-    }
-
     public URLProperties getRevel() {
         return revel;
     }
@@ -495,20 +473,6 @@ public class DownloadProperties {
         return this;
     }
 
-    public DownloadProperties setRefSeqProteinFasta(URLProperties refSeqProteinFasta) {
-        this.refSeqProteinFasta = refSeqProteinFasta;
-        return this;
-    }
-
-    public URLProperties getRefSeqCdna() {
-        return refSeqCdna;
-    }
-
-    public DownloadProperties setRefSeqCdna(URLProperties refSeqCdna) {
-        this.refSeqCdna = refSeqCdna;
-        return this;
-    }
-
     public URLProperties getLrg() {
         return lrg;
     }
@@ -524,6 +488,24 @@ public class DownloadProperties {
 
     public DownloadProperties setHgnc(URLProperties hgnc) {
         this.hgnc = hgnc;
+        return this;
+    }
+
+    public URLProperties getCancerHotspot() {
+        return cancerHotspot;
+    }
+
+    public DownloadProperties setCancerHotspot(URLProperties cancerHotspot) {
+        this.cancerHotspot = cancerHotspot;
+        return this;
+    }
+
+    public URLProperties getMondoObo() {
+        return mondoObo;
+    }
+
+    public DownloadProperties setMondoObo(URLProperties mondoObo) {
+        this.mondoObo = mondoObo;
         return this;
     }
 
@@ -561,9 +543,8 @@ public class DownloadProperties {
     public static class URLProperties {
 
         private String host;
-        private String sourceName;
         private String version;
-        private List<String> files;
+        private Map<String, String> files;
 
         public String getHost() {
             return host;
@@ -571,15 +552,6 @@ public class DownloadProperties {
 
         public void setHost(String host) {
             this.host = host;
-        }
-
-        public String getSourceName() {
-            return sourceName;
-        }
-
-        public URLProperties setSourceName(String sourceName) {
-            this.sourceName = sourceName;
-            return this;
         }
 
         public String getVersion() {
@@ -591,11 +563,11 @@ public class DownloadProperties {
             return this;
         }
 
-        public List<String> getFiles() {
+        public Map<String, String> getFiles() {
             return files;
         }
 
-        public URLProperties setFiles(List<String> files) {
+        public URLProperties setFiles(Map<String, String> files) {
             this.files = files;
             return this;
         }

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>5.9.0-SNAPSHOT</version>
+        <version>6.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -137,10 +137,10 @@
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>

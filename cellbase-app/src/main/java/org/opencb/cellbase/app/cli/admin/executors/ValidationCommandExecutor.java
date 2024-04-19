@@ -26,8 +26,10 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.validation.VEPVariant;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.utils.FileUtils;
@@ -44,7 +46,7 @@ import java.util.Map;
 
 public class ValidationCommandExecutor extends CommandExecutor {
 
-//    private MongoDBAdaptorFactory dbAdaptorFactory;
+    //    private MongoDBAdaptorFactory dbAdaptorFactory;
     private AdminCliOptionsParser.ValidationCommandOptions validationCommandOptions;
     private ObjectMapper objectMapper;
     private String resultsFile;
@@ -67,12 +69,15 @@ public class ValidationCommandExecutor extends CommandExecutor {
     public void execute() {
         checkFilesExist();
 
+        VariantAnnotationCalculator variantAnnotationCalculator;
         CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
-//        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-        VariantAnnotationCalculator variantAnnotationCalculator = null;
+
         try {
+            DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(validationCommandOptions.species,
+                    validationCommandOptions.assembly);
+            DataRelease dataRelease = dataReleaseManager.get(validationCommandOptions.dataRelease);
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
-                    validationCommandOptions.assembly, validationCommandOptions.dataRelease, validationCommandOptions.apiKey,
+                    validationCommandOptions.assembly, dataRelease, validationCommandOptions.apiKey,
                     cellBaseManagerFactory);
         } catch (CellBaseException e) {
             e.printStackTrace();
@@ -241,7 +246,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
             // skip proteins if we are only processing transcripts
             // skip transcripts if we are only processing proteins
             if (("transcript".equalsIgnoreCase(category) && entityId.startsWith("ENSP"))
-                || ("protein".equalsIgnoreCase(category) && entityId.startsWith("ENST"))) {
+                    || ("protein".equalsIgnoreCase(category) && entityId.startsWith("ENST"))) {
                 continue;
             }
 

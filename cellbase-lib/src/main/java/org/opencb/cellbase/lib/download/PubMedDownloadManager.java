@@ -29,7 +29,6 @@ import java.util.List;
 
 public class PubMedDownloadManager extends AbstractDownloadManager {
 
-    private static final String PUBMED_NAME = "PUBMED";
     public PubMedDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
@@ -37,29 +36,29 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading PubMed XML files...");
-
-        Path pubmedFolder = downloadFolder.resolve("pubmed");
+        Path pubmedFolder = downloadFolder.resolve(EtlCommons.PUBMED_SUBDIRECTORY);
         Files.createDirectories(pubmedFolder);
+        logger.info("Downloading {} files at {} ...", EtlCommons.PUBMED_DATA, pubmedFolder);
 
         // Downloads PubMed XML files
         String url = configuration.getDownload().getPubmed().getHost();
-        String regexp = configuration.getDownload().getPubmed().getFiles().get(0);
+        String regexp = configuration.getDownload().getPubmed().getFiles().get(EtlCommons.PUBMED_REGEX_FILE_ID);
         String[] name = regexp.split("[\\[\\]]");
         String[] split = name[1].split("\\.\\.");
-        int start = Integer.valueOf(split[0]);
-        int end = Integer.valueOf(split[1]);
-        int padding = Integer.valueOf(split[2]);
+        int start = Integer.parseInt(split[0]);
+        int end = Integer.parseInt(split[1]);
+        int padding = Integer.parseInt(split[2]);
 
-        saveVersionData(EtlCommons.PUBMED_DATA, PUBMED_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                pubmedFolder.resolve("pubmedVersion.json"));
-
-        List<DownloadFile> list = new ArrayList<>();
+        List<DownloadFile> downloadFiles = new ArrayList<>();
         for (int i = start; i <= end; i++) {
             String filename = name[0] + String.format("%0" + padding + "d", i) + name[2];
-            logger.info("\tDownloading file " + filename);
-            list.add(downloadFile(url + "/" + filename, pubmedFolder.resolve(filename).toString()));
+            logger.info("\tDownloading from {} to {} ", url + "/" + filename, pubmedFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url + "/" + filename, pubmedFolder.resolve(filename).toString()));
         }
-        return list;
+
+        saveDataSource(EtlCommons.PUBMED_NAME, EtlCommons.PUBMED_DATA, configuration.getDownload().getPubmed().getVersion(), getTimeStamp(),
+                Collections.singletonList(url), pubmedFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
+
+        return downloadFiles;
     }
 }

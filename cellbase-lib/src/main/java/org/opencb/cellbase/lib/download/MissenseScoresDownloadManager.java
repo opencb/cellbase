@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
     public MissenseScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -34,22 +36,18 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         return Collections.singletonList(downloadRevel());
     }
 
-    public DownloadFile downloadRevel() throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading Revel data ...");
+    public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
+        if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
+            Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
+            Files.createDirectories(missensePredictionScorePath);
 
-            Path missensePredictionScore = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-            Files.createDirectories(missensePredictionScore);
-
-            String url = configuration.getDownload().getRevel().getHost();
-
-            saveVersionData(EtlCommons.MISSENSE_VARIATION_SCORE_DATA, "Revel", null, getTimeStamp(),
-                    Collections.singletonList(url), missensePredictionScore.resolve("revelVersion.json"));
-            return downloadFile(url, missensePredictionScore.resolve("revel_grch38_all_chromosomes.csv.zip").toString());
+            logger.info("Downloading {}/{} ...", MISSENSE_VARIATION_SCORE_NAME, REVEL_NAME);
+            return downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_NAME,
+                    MISSENSE_VARIATION_SCORE_DATA, REVEL_VERSION_FILENAME, missensePredictionScorePath);
         }
         return null;
     }

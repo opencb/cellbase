@@ -44,7 +44,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
     public ProteinProteinInteractionWSServer(@PathParam("version") String version, @PathParam("species") String species,
                                              @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(version, species, uriInfo, hsr);
+        super(version, species, null, uriInfo, hsr);
     }
 
     @GET

@@ -63,7 +63,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         query.setApiKey(HGMD_ACCESS_API_KEY);
 
         CellBaseDataResult<Variant> results = clinicalManager.search(query);
@@ -79,7 +79,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
 
         CellBaseDataResult<Variant> results = clinicalManager.search(query);
         Assert.assertEquals(1, results.getResults().size());
@@ -99,7 +99,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
 
         CellBaseIterator<Variant> iterator = clinicalManager.iterator(query);
         int count = 0;
@@ -119,7 +119,7 @@ public class ClinicalManagerTest extends GenericMongoDBAdaptorTest {
         List<Region> regions = new ArrayList<>();
         regions.add(Region.parseRegion("10:113588287-113588287"));
         query.setRegions(regions);
-        query.setDataRelease(dataRelease);
+        query.setDataRelease(dataRelease.getRelease());
         query.setApiKey(HGMD_ACCESS_API_KEY);
 
         int count = 0;

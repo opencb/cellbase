@@ -21,12 +21,12 @@ import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
@@ -35,7 +35,9 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
     public RegulatoryFeatureBuilder(Path regulatoryDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
-        gffFile = regulatoryDirectoryPath.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
+        // TODO: fix it !
+        gffFile = null;
+//        gffFile = regulatoryDirectoryPath.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
     }
 
     @Override
@@ -44,7 +46,8 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
         if (Files.exists(gffFile)) {
             parseGffFile(gffFile);
         } else {
-            logger.warn("No regulatory features GFF file found {}", EtlCommons.REGULATORY_FEATURES_FILE);
+            // TODO: fix it
+//            logger.warn("No regulatory features GFF file found {}", EtlCommons.REGULATORY_FEATURES_FILE);
             logger.warn("Skipping regulatory features GFF file parsing. Regulatory feature data models will not be built.");
         }
     }
