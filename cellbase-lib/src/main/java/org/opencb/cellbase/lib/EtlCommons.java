@@ -38,14 +38,19 @@ import java.util.List;
 public class EtlCommons {
 
     // Ensembl
-    public static final String ENSEMBL_NAME = "ENSEMBL";
+    public static final String ENSEMBL_NAME = "Ensembl";
+    public static final String PUT_RELEASE_HERE_MARK = "put_release_here";
     public static final String PUT_SPECIES_HERE_MARK = "put_species_here";
+    public static final String PUT_CAPITAL_SPECIES_HERE_MARK = "put_capital_species_here";
     public static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
     public static final String PUT_CHROMOSOME_HERE_MARK = "put_chromosome_here";
     // Must match the configuration file
-    public static final String REGULATORY_BUILD_FILE_ID = "REGULATORY_BUILD";
-    public static final String MOTIF_FEATURES_FILE_ID = "MOTIF_FEATURES";
-    public static final String MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
+    public static final String ENSEMBL_GTF_FILE_ID = "GTF";
+    public static final String ENSEMBL_PEP_FA_FILE_ID = "PEP_FA";
+    public static final String ENSEMBL_CDNA_FA_FILE_ID = "CDNA_FA";
+    public static final String ENSEMBL_REGULATORY_BUILD_FILE_ID = "REGULATORY_BUILD";
+    public static final String ENSEMBL_MOTIF_FEATURES_FILE_ID = "MOTIF_FEATURES";
+    public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
 
     public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
 
@@ -149,6 +154,16 @@ public class EtlCommons {
     public static final String PHARMGKB_DATA = "pharmgkb";
     public static final String PHARMGKB_SUBDIRECTORY = "pharmgkb";
     public static final String PHARMGKB_VERSION_FILENAME = "pharmgkb" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String PHARMGKB_GENES_FILE_ID = "GENES";
+    public static final String PHARMGKB_CHEMICALS_FILE_ID = "CHEMICALS";
+    public static final String PHARMGKB_VARIANTS_FILE_ID = "VARIANTS";
+    public static final String PHARMGKB_GUIDELINE_ANNOTATIONS_FILE_ID = "GUIDELINE_ANNOTATIONS";
+    public static final String PHARMGKB_VARIANT_ANNOTATIONS_FILE_ID = "VARIANT_ANNOTATIONS";
+    public static final String PHARMGKB_CLINICAL_ANNOTATIONS_FILE_ID = "CLINICAL_ANNOTATIONS";
+    public static final String PHARMGKB_CLINICAL_VARIANTS_FILE_ID = "CLINICAL_VARIANTS";
+    public static final String PHARMGKB_DRUG_LABELS_FILE_ID = "DRUG_LABELS";
+    public static final String PHARMGKB_RELATIONSHIPS_FILE_ID = "RELATIONSHIPS";
 
     // Missense variantion functional score
     public static final String MISSENSE_VARIATION_SCORE_NAME = "Missense Variation Functional Scores";
@@ -438,11 +453,15 @@ public class EtlCommons {
             throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.EnsemblProperties within the CellBase"
                     + " configuration file");
         }
-        String filesValue = props.getUrl().getFiles().get(fileId);
-        String url = props.getUrl().getHost() + ensemblRelease + "/" + filesValue;
-        // Change species, assembly, chromosome if necessary
+        String url = props.getUrl().getHost() + props.getUrl().getFiles().get(fileId);
+
+        // Change release, species, assembly, chromosome if necessary
+        if (StringUtils.isNotEmpty(ensemblRelease)) {
+            url = url.replaceAll(PUT_RELEASE_HERE_MARK, ensemblRelease.split("-")[1]);
+        }
         if (StringUtils.isNotEmpty(species)) {
             url = url.replaceAll(PUT_SPECIES_HERE_MARK, species);
+            url = url.replaceAll(PUT_CAPITAL_SPECIES_HERE_MARK, Character.toUpperCase(species.charAt(0)) + species.substring(1));
         }
         if (StringUtils.isNotEmpty(assembly)) {
             url = url.replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly);

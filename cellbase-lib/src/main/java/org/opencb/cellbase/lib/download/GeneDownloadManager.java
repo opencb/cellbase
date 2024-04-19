@@ -74,52 +74,30 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return downloadFiles;
     }
 
-    private List<DownloadFile> downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
-        logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
-        List<String> downloadedUrls = new ArrayList<>(4);
+    private List<DownloadFile> downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, ENSEMBL_NAME);
+
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        String ensemblHost = ensemblHostUrl + "/" + ensemblRelease;
-        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
-            ensemblHost = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
-        }
+        // GTF
+        downloadFiles.add(downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_GTF_FILE_ID, geneFolder));
+        // PEP
+        downloadFiles.add(downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_PEP_FA_FILE_ID, geneFolder));
+        // CDNA
+        downloadFiles.add(downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_CDNA_FA_FILE_ID, geneFolder));
 
-        String ensemblCollection = "";
-        if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
-            // WARN: assuming there's just one assembly
-            ensemblCollection =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
-        }
-
-        // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
-        // to download the correct GTF file.
-        String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + ensemblCollection + speciesShortName + "/*" + version + ".gtf.gz";
-        String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, fileName);
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/pep/*.pep.all.fa.gz";
-        fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, fileName);
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/cdna/*.cdna.all.fa.gz";
-        fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, fileName);
-        downloadFiles.add(downloadFile(url, fileName));
-        downloadedUrls.add(url);
-
-        saveDataSource(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+        // Save data source (i.e., metadata)
+        saveDataSource(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
+                downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList()),
                 geneFolder.resolve(ENSEMBL_CORE_VERSION_FILENAME));
 
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, ENSEMBL_NAME);
         return downloadFiles;
     }
 
     private List<DownloadFile> downloadRefSeq(Path refSeqFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} data ...", REFSEQ_NAME);
+            logger.info(DOWNLOADING_LOG_MESSAGE, REFSEQ_NAME);
 
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
@@ -137,6 +115,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                     downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList()),
                     refSeqFolder.resolve(REFSEQ_VERSION_FILENAME));
 
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, REFSEQ_NAME);
             return downloadFiles;
         }
         return Collections.emptyList();
@@ -144,66 +123,80 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
     private DownloadFile downloadMane(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", MANE_SELECT_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getManeSelect(), MANE_SELECT_FILE_ID, MANE_SELECT_NAME, GENE_DATA,
-                    MANE_SELECT_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_LOG_MESSAGE, MANE_SELECT_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getManeSelect(), MANE_SELECT_FILE_ID,
+                    MANE_SELECT_NAME, GENE_DATA, MANE_SELECT_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, MANE_SELECT_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadLrg(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", LRG_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getLrg(), LRG_FILE_ID, LRG_NAME, GENE_DATA, LRG_VERSION_FILENAME,
-                    geneFolder);
+            logger.info(DOWNLOADING_LOG_MESSAGE, LRG_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getLrg(), LRG_FILE_ID, LRG_NAME, GENE_DATA,
+                    LRG_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, LRG_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadHgnc(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", HGNC_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getHgnc(), HGNC_FILE_ID, HGNC_NAME, GENE_DATA,
+            logger.info(DOWNLOADING_LOG_MESSAGE, HGNC_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getHgnc(), HGNC_FILE_ID, HGNC_NAME, GENE_DATA,
                     HGNC_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, HGNC_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadCancerHotspot(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", CANCER_HOTSPOT_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getCancerHotspot(), CANCER_HOTSPOT_FILE_ID, CANCER_HOTSPOT_NAME,
-                    GENE_DATA, CANCER_HOTSPOT_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_LOG_MESSAGE, CANCER_HOTSPOT_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCancerHotspot(), CANCER_HOTSPOT_FILE_ID,
+                    CANCER_HOTSPOT_NAME, GENE_DATA, CANCER_HOTSPOT_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, CANCER_HOTSPOT_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadDrugData(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", DGIDB_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getDgidb(), DGIDB_FILE_ID, DGIDB_NAME, GENE_DATA,
-                    DGIDB_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_LOG_MESSAGE, DGIDB_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDgidb(), DGIDB_FILE_ID, DGIDB_NAME,
+                    GENE_DATA, DGIDB_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, DGIDB_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadGeneUniprotXref(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (GENE_UNIPROT_XREF_FILES.containsKey(speciesConfiguration.getScientificName())) {
-            logger.info("Downloading {} ...", UNIPROT_XREF_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getGeneUniprotXref(), UNIPROT_XREF_FILE_ID, UNIPROT_XREF_NAME,
-                    GENE_DATA, UNIPROT_XREF_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_LOG_MESSAGE, UNIPROT_XREF_NAME);
+            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGeneUniprotXref(), UNIPROT_XREF_FILE_ID,
+                    UNIPROT_XREF_NAME, GENE_DATA, UNIPROT_XREF_VERSION_FILENAME, geneFolder);
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, UNIPROT_XREF_NAME);
+            return downloadFile;
         }
         return null;
     }
 
     private DownloadFile downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
-        logger.info("Downloading {} ...", GENE_EXPRESSION_ATLAS_NAME);
-        return downloadAndSaveDataSource(configuration.getDownload().getGeneExpressionAtlas(), GENE_EXPRESSION_ATLAS_FILE_ID,
-                GENE_EXPRESSION_ATLAS_NAME, GENE_DATA, GENE_EXPRESSION_ATLAS_VERSION_FILENAME, geneFolder);
+        logger.info(DOWNLOADING_LOG_MESSAGE, GENE_EXPRESSION_ATLAS_NAME);
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGeneExpressionAtlas(),
+                GENE_EXPRESSION_ATLAS_FILE_ID, GENE_EXPRESSION_ATLAS_NAME, GENE_DATA, GENE_EXPRESSION_ATLAS_VERSION_FILENAME, geneFolder);
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, GENE_EXPRESSION_ATLAS_NAME);
+        return downloadFile;
     }
 
     private DownloadFile downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
-        logger.info("Downloading {} ...", GENE_DISEASE_ANNOTATION_NAME);
+        logger.info(DOWNLOADING_LOG_MESSAGE, GENE_DISEASE_ANNOTATION_NAME);
 
         // IMPORTANT !!!
         logger.warn("{} must be downloaded manually from {} and then create the file {} with data ({}), name ({}) and the version",
@@ -211,13 +204,16 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         saveDataSource(HPO_NAME, GENE_DISEASE_ANNOTATION_NAME, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
                 Collections.singletonList(configuration.getDownload().getHpo().getHost()), geneFolder.resolve(HPO_VERSION_FILENAME));
 
-        return downloadAndSaveDataSource(configuration.getDownload().getDisgenet(), DISGENET_FILE_ID, DISGENET_NAME,
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDisgenet(), DISGENET_FILE_ID, DISGENET_NAME,
                 GENE_DISEASE_ANNOTATION_NAME, DISGENET_VERSION_FILENAME, geneFolder);
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, GENE_DISEASE_ANNOTATION_NAME);
+        return downloadFile;
     }
 
     private DownloadFile downloadGnomadConstraints(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", GNOMAD_CONSTRAINTS_NAME);
+            logger.info(DOWNLOADING_LOG_MESSAGE, GNOMAD_CONSTRAINTS_NAME);
             return downloadAndSaveDataSource(configuration.getDownload().getGnomadConstraints(), GNOMAD_CONSTRAINTS_FILE_ID,
                     GNOMAD_CONSTRAINTS_NAME, GENE_DATA, GNOMAD_CONSTRAINTS_VERSION_FILENAME, geneFolder);
         }
@@ -226,7 +222,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
     private DownloadFile downloadGO(Path geneFolder) throws IOException, InterruptedException, CellBaseException {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading {} ...", GO_ANNOTATION_NAME);
+            logger.info(DOWNLOADING_LOG_MESSAGE, GO_ANNOTATION_NAME);
             return downloadAndSaveDataSource(configuration.getDownload().getGoAnnotation(), GO_ANNOTATION_FILE_ID, GO_ANNOTATION_NAME,
                     GENE_DATA, GO_ANNOTATION_VERSION_FILENAME, geneFolder);
         }

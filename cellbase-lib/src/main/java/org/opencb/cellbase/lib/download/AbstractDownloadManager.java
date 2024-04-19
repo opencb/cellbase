@@ -49,7 +49,9 @@ import java.util.*;
 
 public abstract class AbstractDownloadManager {
 
-    protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} to {} ...";
+    protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
+    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
+    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {} done!";
 
     protected String species;
     protected String assembly;
@@ -179,7 +181,7 @@ public abstract class AbstractDownloadManager {
             throws IOException, InterruptedException, CellBaseException {
         String url = EtlCommons.getUrl(props, fileId, species, assembly, chromosome);
         File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
+        logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
         return downloadFile(url, outFile.toString());
     }
 
@@ -193,7 +195,7 @@ public abstract class AbstractDownloadManager {
         String url = EtlCommons.getEnsemblUrl(ensemblProps, ensemblRelease, fileId, speciesShortName, assemblyConfiguration.getName(),
                 chromosome);
         File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
-        logger.info(DOWNLOADING_LOG_MESSAGE, url, outFile);
+        logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
         return downloadFile(url, outFile.toString());
     }
 

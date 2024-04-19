@@ -73,17 +73,18 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Regulatory build
-        downloadFile = downloadAndSaveEnsemblDataSource(configuration.getDownload().getEnsembl(), REGULATORY_BUILD_FILE_ID,
+        downloadFile = downloadAndSaveEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_REGULATORY_BUILD_FILE_ID,
                 REGULATORY_BUILD_NAME, REGULATION_DATA, null, REGULATORY_BUILD_VERSION_FILENAME, regulationFolder);
         downloadFiles.add(downloadFile);
 
         // Motifs features
         List<String> urls = new ArrayList<>();
-        downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), MOTIF_FEATURES_FILE_ID, null, regulationFolder);
+        downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_MOTIF_FEATURES_FILE_ID, null,
+                regulationFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
         // And now the index file
-        downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), MOTIF_FEATURES_INDEX_FILE_ID, null,
+        downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID, null,
                 regulationFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());

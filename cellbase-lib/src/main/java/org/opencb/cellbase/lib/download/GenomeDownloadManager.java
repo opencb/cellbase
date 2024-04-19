@@ -206,7 +206,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILENAME));
 
             Path outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-            logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download genomic super duplications
@@ -216,7 +216,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILENAME));
 
             outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-            logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
 
             // Download WindowMasker
@@ -227,7 +227,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                         getTimeStamp(), Collections.singletonList(url), repeatsFolder.resolve(EtlCommons.WM_VERSION_FILENAME));
 
                 outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-                logger.info(DOWNLOADING_LOG_MESSAGE, url, outputPath);
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
                 downloadFiles.add(downloadFile(url, outputPath.toString()));
             }
             return downloadFiles;

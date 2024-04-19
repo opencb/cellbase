@@ -92,7 +92,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                     CLINVAR_EFO_TERMS_FILE_ID)) {
                 url = props.getHost() + props.getFiles().get(fileId);
                 outPath = clinicalFolder.resolve(getFilenameFromUrl(url));
-                logger.info(DOWNLOADING_LOG_MESSAGE, url, outPath);
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
                 downloadFiles.add(downloadFile(url, outPath.toString()));
                 urls.add(url);
             }
