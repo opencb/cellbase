@@ -17,11 +17,14 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -33,12 +36,16 @@ import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.core.utils.SpeciesUtils.getSpeciesShortname;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
@@ -51,6 +58,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     private Path buildFolder = null; // <output>/<species>_<assembly>/generated-json
     private Path downloadFolder = null; // <output>/<species>_<assembly>/download
     private boolean normalize = true;
+
+    private SpeciesConfiguration.Assembly assembly;
+    private String ensemblVersion;
+    private String ensemblRelease;
 
     private File ensemblScriptsFolder;
 
@@ -83,7 +94,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             if (speciesConfiguration == null) {
                 throw new CellBaseException("Invalid species: '" + buildCommandOptions.species + "'");
             }
-            SpeciesConfiguration.Assembly assembly = null;
+
             if (!StringUtils.isEmpty(buildCommandOptions.assembly)) {
                 assembly = SpeciesUtils.getAssembly(speciesConfiguration, buildCommandOptions.assembly);
                 if (assembly == null) {
@@ -93,7 +104,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                 assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
             }
 
-            String spShortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
+            ensemblVersion = assembly.getEnsemblVersion();
+            ensemblRelease = "release-" + ensemblVersion.split("_")[0];
+
+            String spShortName = getSpeciesShortname(speciesConfiguration);
             String spAssembly = assembly.getName().toLowerCase();
             Path spFolder = output.resolve(spShortName + "_" + spAssembly);
             // <output>/<species>_<assembly>/download
@@ -121,9 +135,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                     logger.info("Building '{}' data", buildOption);
                     CellBaseBuilder parser = null;
                     switch (buildOption) {
-//                        case EtlCommons.GENOME_INFO_DATA:
-//                            buildGenomeInfo();
-//                            break;
                         case EtlCommons.GENOME_DATA:
                             parser = buildGenomeSequence();
                             break;
@@ -250,11 +261,17 @@ public class BuildCommandExecutor extends CommandExecutor {
 //        }
 //    }
 
-    private CellBaseBuilder buildGenomeSequence() {
-        copyVersionFiles(Collections.singletonList(downloadFolder.resolve("genome/genomeVersion.json")));
-        Path fastaFile = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "genome_sequence");
-        return new GenomeSequenceFastaBuilder(fastaFile, serializer);
+    private CellBaseBuilder buildGenomeSequence() throws CellBaseException {
+        // Sanity check
+        Path genomeVersionPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(GENOME_VERSION_FILENAME);
+        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_SUBDIRECTORY));
+
+        // Get FASTA path
+        Path fastaPath = getFastaReferenceGenome();
+
+        // Create serializer and return the genome builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_SUBDIRECTORY), GENOME_DATA);
+        return new GenomeSequenceFastaBuilder(fastaPath, serializer);
     }
 
     private CellBaseBuilder buildGene() throws CellBaseException {
@@ -381,19 +398,26 @@ public class BuildCommandExecutor extends CommandExecutor {
                 + "configuration file. No hsapiens data found within the configuration.json file");
     }
 
-    private Path getFastaReferenceGenome() {
-        Path fastaFile = null;
-        try {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(downloadFolder.resolve("genome"), entry -> {
-                return entry.toString().endsWith(".fa");
-            });
-            for (Path entry : stream) {
-                fastaFile = entry;
+    private Path getFastaReferenceGenome() throws CellBaseException {
+        // Check FASTA and unzip if necessary
+        String ensemblUrl = getEnsemblUrl(configuration.getDownload().getEnsembl(), ensemblRelease, ENSEMBL_PRIMARY_FA_FILE_ID,
+                getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
+        String fastaFilename = Paths.get(ensemblUrl).getFileName().toString();
+        Path fastaPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(fastaFilename);
+        if (fastaPath.toFile().exists()) {
+            // Gunzip
+            logger.info("Gunzip file: " + fastaPath);
+            try {
+                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(fastaPath.toString()), null);
+            } catch (IOException | InterruptedException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return fastaFile;
+        fastaPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(fastaFilename.replace(".gz", ""));
+        if (!fastaPath.toFile().exists()) {
+            throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
+        }
+        return fastaPath;
     }
 
     private CellBaseBuilder buildSplice() throws IOException {
@@ -447,5 +471,47 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder);
         return new PharmGKBBuilder(inFolder, serializer);
+    }
+
+    private void checkVersionFiles(List<Path> versionPaths) throws CellBaseException {
+        ObjectReader dataSourceReader = new ObjectMapper().readerFor(DataSource.class);
+        for (Path versionPath : versionPaths) {
+            if (!versionPath.toFile().exists()) {
+                throw new CellBaseException("Version file " +  versionPath + " does not exist: this file is mandatory for version control");
+            }
+            try {
+                DataSource dataSource = dataSourceReader.readValue(versionPath.toFile());
+                if (org.apache.commons.lang3.StringUtils.isEmpty(dataSource.getVersion())) {
+                    throw new CellBaseException("Version missing version in file " +  versionPath + ": a version must be specified in the"
+                            + " file");
+                }
+            } catch (IOException e) {
+                throw new CellBaseException("Error parsing the version file " + versionPath, e);
+            }
+        }
+    }
+
+    private void copyVersionFiles(List<Path> versionPaths, Path targetPath) throws CellBaseException {
+        // Check version files before copying them
+        checkVersionFiles(versionPaths);
+        if (!targetPath.toFile().exists()) {
+            try {
+                Files.createDirectories(targetPath);
+            } catch (IOException e) {
+                throw new CellBaseException("Error creating folder " + targetPath, e);
+            }
+        }
+
+        for (Path versionPath : versionPaths) {
+            try {
+                Files.copy(versionPath, targetPath.resolve(versionPath.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new CellBaseException("Error copying version file " + versionPath + " to " + targetPath, e);
+            }
+            // Sanity check after copying
+            if (!targetPath.resolve(versionPath.getFileName()).toFile().exists()) {
+                throw new CellBaseException("Something wrong happened when copying version file " + versionPath + " to " + targetPath);
+            }
+        }
     }
 }
