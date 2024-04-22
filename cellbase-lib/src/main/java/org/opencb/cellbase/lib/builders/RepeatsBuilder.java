@@ -18,6 +18,8 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.ProgressLogger;
@@ -27,55 +29,74 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by fjlopez on 05/05/17.
  */
 public class RepeatsBuilder extends CellBaseBuilder {
-    private static final String TRF = "trf";
-    private static final String GSD = "genomicSuperDup";
-    private static final String WM = "windowMasker";
+
+    private CellBaseConfiguration configuration;
+
     private final Path filesDir;
 
-    public RepeatsBuilder(Path filesDir, CellBaseFileSerializer serializer) {
+    public RepeatsBuilder(Path filesDir, CellBaseFileSerializer serializer, CellBaseConfiguration configuration) {
         super(serializer);
         this.filesDir = filesDir;
+        this.configuration = configuration;
     }
 
 
     @Override
     public void parse() throws Exception {
+        logger.info(BUILDING_LOG_MESSAGE, EtlCommons.REPEATS_NAME);
 
-        logger.info("Parsing repeats...");
-        if (Files.exists(filesDir.resolve(EtlCommons.TRF_FILE))) {
-            parseTrfFile(filesDir.resolve(EtlCommons.TRF_FILE));
-        } else {
-            logger.warn("No TRF file found {}", EtlCommons.TRF_FILE);
-            logger.warn("Skipping TRF file parsing. TRF data models will not be built.");
+        // Check Simple Repeats (TRF) filename
+        String trfFilename = Paths.get(configuration.getDownload().getSimpleRepeats().getFiles().get(SIMPLE_REPEATS_FILE_ID)).getFileName()
+                .toString();
+        if (!Files.exists(filesDir.resolve(trfFilename))) {
+            throw new CellBaseException(TRF_NAME + " file " + trfFilename + " does not exist at " + filesDir);
         }
 
-        if (Files.exists(filesDir.resolve(EtlCommons.GSD_FILE))) {
-            parseGsdFile(filesDir.resolve(EtlCommons.GSD_FILE));
-        } else {
-            logger.warn("No Genomic Super Duplications file found {}", EtlCommons.GSD_FILE);
-            logger.warn("Skipping Genomic Super Duplications file parsing. "
-                    + "Genomic Super Duplications data models will not be built.");
+        // Check Genomic Super Duplications (GSD) file
+        String gsdFilename = Paths.get(configuration.getDownload().getGenomicSuperDups().getFiles().get(GENOMIC_SUPER_DUPS_FILE_ID))
+                .getFileName().toString();
+        if (!Files.exists(filesDir.resolve(gsdFilename))) {
+            throw new CellBaseException(GSD_NAME + " file " + gsdFilename + " does not exist at " + filesDir);
         }
 
-        if (Files.exists(filesDir.resolve(EtlCommons.WM_FILE))) {
-            parseWmFile(filesDir.resolve(EtlCommons.WM_FILE));
-        } else {
-            logger.warn("No WindowMasker file found {}", EtlCommons.WM_FILE);
-            logger.warn("Skipping WindowMasker file parsing. WindowMasker data models will not be built.");
+        // Check Window Masker (WM) file
+        String wmFilename = Paths.get(configuration.getDownload().getWindowMasker().getFiles().get(WINDOW_MASKER_FILE_ID)).getFileName()
+                .toString();
+        if (!Files.exists(filesDir.resolve(wmFilename))) {
+            throw new CellBaseException(WM_NAME + " file " + wmFilename + " does not exist at " + filesDir);
         }
-        logger.info("Done.");
+
+        // Parse TRF file
+        logger.info(BUILDING_LOG_MESSAGE, TRF_NAME);
+        parseTrfFile(filesDir.resolve(trfFilename));
+        logger.info(BUILDING_DONE_LOG_MESSAGE, TRF_NAME);
+
+        // Parse GSD file
+        logger.info(BUILDING_LOG_MESSAGE, GSD_NAME);
+        parseGsdFile(filesDir.resolve(gsdFilename));
+        logger.info(BUILDING_DONE_LOG_MESSAGE, GSD_NAME);
+
+        // Parse WM file
+        logger.info(BUILDING_LOG_MESSAGE, WM_NAME);
+        parseWmFile(filesDir.resolve(wmFilename));
+        logger.info(BUILDING_DONE_LOG_MESSAGE, WM_NAME);
+
+        logger.info(BUILDING_DONE_LOG_MESSAGE, EtlCommons.REPEATS_NAME);
     }
 
     private void parseTrfFile(Path filePath) throws IOException {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
-            ProgressLogger progressLogger = new ProgressLogger("Parsed TRF lines:",
+            ProgressLogger progressLogger = new ProgressLogger("Parsed " + TRF_NAME + " lines:",
                     () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseTrfLine(line));
@@ -90,14 +111,14 @@ public class RepeatsBuilder extends CellBaseBuilder {
 
         return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
                 Integer.valueOf(parts[3]), Integer.valueOf(parts[5]), Integer.valueOf(parts[7]),
-                Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]), parts[16], TRF);
+                Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]), parts[16], TRF_NAME);
     }
 
     private void parseGsdFile(Path filePath) throws IOException {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
-            ProgressLogger progressLogger = new ProgressLogger("Parsed GSD lines:",
+            ProgressLogger progressLogger = new ProgressLogger("Parsed " + GSD_NAME + " lines:",
                     () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseGSDLine(line));
@@ -112,7 +133,7 @@ public class RepeatsBuilder extends CellBaseBuilder {
 
         return new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
                 Integer.valueOf(parts[3]), null, null, 2f, Float.valueOf(parts[26]), null,
-                null, GSD);
+                null, GSD_NAME);
 
     }
 
@@ -120,7 +141,7 @@ public class RepeatsBuilder extends CellBaseBuilder {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
-            ProgressLogger progressLogger = new ProgressLogger("Parsed WM lines:",
+            ProgressLogger progressLogger = new ProgressLogger("Parsed " + WM_NAME + " lines:",
                     () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseWmLine(line));
@@ -134,6 +155,6 @@ public class RepeatsBuilder extends CellBaseBuilder {
         String[] parts = line.split("\t");
 
         return new Repeat(parts[4].replace("\t", ""), Region.normalizeChromosome(parts[1]),
-                Integer.valueOf(parts[2]) + 1, Integer.valueOf(parts[3]), null, null, null, null, null, null, WM);
+                Integer.valueOf(parts[2]) + 1, Integer.valueOf(parts[3]), null, null, null, null, null, null, WM_NAME);
     }
 }

@@ -84,7 +84,7 @@ public class BuildCommandExecutor extends CommandExecutor {
      * @throws CellBaseException Exception
      */
     public void execute() throws CellBaseException {
-        String buildOption = null;
+        String data = null;
         try {
             // Check data sources
             List<String> dataList = checkDataSources();
@@ -125,8 +125,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                 makeDir(buildFolder);
             }
 
-            for (String data : dataList) {
-                CellBaseBuilder parser;
+            CellBaseBuilder parser;
+            for (int i = 0; i < dataList.size(); i++) {
+                data = dataList.get(i);
                 switch (data) {
                     case GENOME_DATA:
                         parser = buildGenomeSequence();
@@ -171,22 +172,22 @@ public class BuildCommandExecutor extends CommandExecutor {
                         parser = buildPharmacogenomics();
                         break;
                     default:
-                        throw new IllegalArgumentException("Value '" + buildOption + "' is not allowed for the data parameter."
+                        throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter."
                                 + " Valid values are: " + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to build"
                                 + " everything");
                 }
 
                 if (parser != null) {
-                    logger.info("Building '{}' data ...", buildOption);
+                    logger.info(CellBaseBuilder.BUILDING_LOG_MESSAGE, data);
                     parser.parse();
-                    logger.info("Building '{}' data. Done.", buildOption);
+                    logger.info(CellBaseBuilder.BUILDING_DONE_LOG_MESSAGE, data);
                     parser.disconnect();
                 }
             }
         } catch (Exception e) {
             String msg = "Error executing the command 'build'";
-            if (StringUtils.isNotEmpty(buildOption)) {
-                msg += ". The last data being built was '" + buildOption + "'";
+            if (StringUtils.isNotEmpty(data)) {
+                msg += ". The last data being built was '" + data + "'";
             }
             throw new CellBaseException(msg + ": " + e.getMessage(), e);
         }
@@ -202,7 +203,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         // Create serializer and return the repeats builder
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_SUBDIRECTORY), REPEATS_DATA);
-        return new RepeatsBuilder(repeatsDownloadPath, serializer);
+        return new RepeatsBuilder(repeatsDownloadPath, serializer, configuration);
     }
 
     private CellBaseBuilder buildObo() {

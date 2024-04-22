@@ -65,8 +65,8 @@ public class EtlCommons {
     // Genome (Ensembl)
     public static final String GENOME_NAME = "Genome";
     public static final String GENOME_DATA = "genome";
-    public static final String GENOME_SUBDIRECTORY = "genome";
-    public static final String GENOME_VERSION_FILENAME = "genome" + SUFFIX_VERSION_FILENAME;
+    public static final String GENOME_SUBDIRECTORY = GENOME_DATA;
+    public static final String GENOME_VERSION_FILENAME = GENOME_DATA + SUFFIX_VERSION_FILENAME;
 
     // Gene (Ensembl)
     public static final String GENE_DATA = "gene";
@@ -209,24 +209,19 @@ public class EtlCommons {
     // Repeats
     public static final String REPEATS_NAME = "Repeats";
     public static final String REPEATS_DATA = "repeats";
-    public static final String REPEATS_SUBDIRECTORY = "genome";
+    public static final String REPEATS_SUBDIRECTORY = GENOME_SUBDIRECTORY;
+    @Deprecated
     public static final String REPEATS_JSON = "repeats";
     // Simple repeats
     public static final String TRF_NAME = "Tandem Repeats Finder";
-    @Deprecated
-    public static final String TRF_FILE = "simpleRepeat.txt.gz";
     public static final String TRF_VERSION_FILENAME = "simpleRepeat" + SUFFIX_VERSION_FILENAME;
     public static final String SIMPLE_REPEATS_FILE_ID = "SIMPLE_REPEATS";
     // Genomic super duplications
     public static final String GSD_NAME = "Genomic Super Duplications";
-    @Deprecated
-    public static final String GSD_FILE = "genomicSuperDups.txt.gz";
     public static final String GSD_VERSION_FILENAME = "genomicSuperDups" + SUFFIX_VERSION_FILENAME;
     public static final String GENOMIC_SUPER_DUPS_FILE_ID = "GENOMIC_SUPER_DUPS";
     // Window masker
     public static final String WM_NAME = "Window Masker";
-    @Deprecated
-    public static final String WM_FILE = "windowmaskerSdust.txt.gz";
     public static final String WM_VERSION_FILENAME = "windowMasker" + SUFFIX_VERSION_FILENAME;
     public static final String WINDOW_MASKER_FILE_ID = "WINDOW_MASKER";
 

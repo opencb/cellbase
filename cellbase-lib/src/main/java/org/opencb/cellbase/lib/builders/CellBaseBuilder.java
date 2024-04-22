@@ -29,6 +29,10 @@ public abstract class CellBaseBuilder {
 
     protected Logger logger;
 
+    public static final String BUILDING_LOG_MESSAGE = "Building {} ...";
+    public static final String BUILDING_DONE_LOG_MESSAGE = "Building {} done!";
+
+
     public CellBaseBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
