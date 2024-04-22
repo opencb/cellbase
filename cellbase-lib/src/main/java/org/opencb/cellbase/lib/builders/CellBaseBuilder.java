@@ -16,9 +16,18 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 30/08/14.
@@ -30,7 +39,10 @@ public abstract class CellBaseBuilder {
     protected Logger logger;
 
     public static final String BUILDING_LOG_MESSAGE = "Building {} ...";
-    public static final String BUILDING_DONE_LOG_MESSAGE = "Building {} done!";
+    public static final String BUILDING_DONE_LOG_MESSAGE = "Building {} done.";
+
+    public static final String PARSING_LOG_MESSAGE = "Parsing file {} ...";
+    public static final String PARSING_DONE_LOG_MESSAGE = "Parsing file {} done.";
 
 
     public CellBaseBuilder(CellBaseSerializer serializer) {
@@ -50,4 +62,24 @@ public abstract class CellBaseBuilder {
         }
     }
 
+    protected List<File> checkFiles(DataSource dataSource, Path targetPath, String name) throws CellBaseException {
+        logger.info("Checking {} folder and files", name);
+        if (!targetPath.toFile().exists()) {
+            throw new CellBaseException(name + " folder does not exist " + targetPath);
+        }
+
+        List<File> files = new ArrayList<>();
+
+        List<String> filenames = dataSource.getUrls().stream().map(u -> Paths.get(u).getFileName().toString()).collect(Collectors.toList());
+        for (String filename : filenames) {
+            File file = targetPath.resolve(filename).toFile();
+            if (!file.exists()) {
+                throw new CellBaseException("File " + file + " does not exits");
+            } else {
+                files.add(file);
+            }
+        }
+
+        return files;
+    }
 }

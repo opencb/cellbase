@@ -333,13 +333,15 @@ public class EtlCommons {
     public static final String GERP_FILE_ID = "GERP";
     // PHASTCONS
     public static final String PHASTCONS_NAME = "PhastCons";
-    public static final String PHASTCONS_SUBDIRECTORY = "phastCons";
-    public static final String PHASTCONS_VERSION_FILENAME = "phastCons" + SUFFIX_VERSION_FILENAME;
+    public static final String PHASTCONS_DATA = "phastCons";
+    public static final String PHASTCONS_SUBDIRECTORY = PHASTCONS_DATA;
+    public static final String PHASTCONS_VERSION_FILENAME = PHASTCONS_DATA + SUFFIX_VERSION_FILENAME;
     public static final String PHASTCONS_FILE_ID = "PHASTCONS";
     // PHYLOP
     public static final String PHYLOP_NAME = "PhyloP";
-    public static final String PHYLOP_SUBDIRECTORY = "phylop";
-    public static final String PHYLOP_VERSION_FILENAME = "phylop" + SUFFIX_VERSION_FILENAME;
+    public static final String PHYLOP_DATA = "phylop";
+    public static final String PHYLOP_SUBDIRECTORY = PHYLOP_DATA;
+    public static final String PHYLOP_VERSION_FILENAME = PHYLOP_DATA + SUFFIX_VERSION_FILENAME;
     public static final String PHYLOP_FILE_ID = "PHYLOP";
 
     // Splice scores
@@ -501,5 +503,9 @@ public class EtlCommons {
             url = url.replaceAll(PUT_CHROMOSOME_HERE_MARK, chromosome);
         }
         return url;
+    }
+
+    public static String getFilename(String prefix, String chromosome) {
+        return prefix + "_" + chromosome;
     }
 }

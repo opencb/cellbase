@@ -178,9 +178,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 }
 
                 if (parser != null) {
-                    logger.info(CellBaseBuilder.BUILDING_LOG_MESSAGE, data);
                     parser.parse();
-                    logger.info(CellBaseBuilder.BUILDING_DONE_LOG_MESSAGE, data);
                     parser.disconnect();
                 }
             }
@@ -285,14 +283,16 @@ public class BuildCommandExecutor extends CommandExecutor {
                 .resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
     }
 
-    private CellBaseBuilder buildConservation() {
-        Path conservationFilesDir = downloadFolder.resolve("conservation");
-        copyVersionFiles(Arrays.asList(conservationFilesDir.resolve("gerpVersion.json"),
-                conservationFilesDir.resolve("phastConsVersion.json"),
-                conservationFilesDir.resolve("phyloPVersion.json")));
+    private CellBaseBuilder buildConservation() throws CellBaseException {
+        // Sanity check
+        Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_SUBDIRECTORY);
+        copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(GERP_VERSION_FILENAME),
+                conservationDownloadPath.resolve(PHASTCONS_VERSION_FILENAME), conservationDownloadPath.resolve(PHYLOP_VERSION_FILENAME)),
+                buildFolder.resolve(CONSERVATION_SUBDIRECTORY));
+
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder);
-        return new ConservationBuilder(conservationFilesDir, conservationChunkSize, serializer);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(CONSERVATION_SUBDIRECTORY));
+        return new ConservationBuilder(conservationDownloadPath, conservationChunkSize, serializer);
     }
 
     private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
