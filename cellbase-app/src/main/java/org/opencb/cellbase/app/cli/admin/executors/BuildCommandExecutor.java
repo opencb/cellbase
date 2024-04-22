@@ -34,7 +34,6 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.builders.*;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,10 +59,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private boolean normalize = true;
 
     private SpeciesConfiguration.Assembly assembly;
-    private String ensemblVersion;
     private String ensemblRelease;
-
-    private File ensemblScriptsFolder;
 
     private boolean flexibleGTFParsing;
     private SpeciesConfiguration speciesConfiguration;
@@ -75,15 +71,16 @@ public class BuildCommandExecutor extends CommandExecutor {
         this.output = Paths.get(buildCommandOptions.outputDirectory);
         normalize = !buildCommandOptions.skipNormalize;
 
-        this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
-
     /**
      * Parse specific 'build' command options.
+     *
+     * @throws CellBaseException Exception
      */
-    public void execute() {
+    public void execute() throws CellBaseException {
+        String buildOption = null;
         try {
             // Output directory need to be created if it doesn't exist
             if (!Files.exists(output)) {
@@ -104,7 +101,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
             }
 
-            ensemblVersion = assembly.getEnsemblVersion();
+            String ensemblVersion = assembly.getEnsemblVersion();
             ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
             String spShortName = getSpeciesShortname(speciesConfiguration);
@@ -130,9 +127,8 @@ public class BuildCommandExecutor extends CommandExecutor {
                 }
 
                 for (int i = 0; i < buildOptions.length; i++) {
-                    String buildOption = buildOptions[i];
+                    buildOption = buildOptions[i];
 
-                    logger.info("Building '{}' data", buildOption);
                     CellBaseBuilder parser = null;
                     switch (buildOption) {
                         case EtlCommons.GENOME_DATA:
@@ -156,9 +152,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.PROTEIN_DATA:
                             parser = buildProtein();
                             break;
-//                        case EtlCommons.PPI_DATA:
-//                            parser = getInteractionParser();
-//                            break;
                         case EtlCommons.CONSERVATION_DATA:
                             parser = buildConservation();
                             break;
@@ -181,24 +174,26 @@ public class BuildCommandExecutor extends CommandExecutor {
                             parser = buildPharmacogenomics();
                             break;
                         default:
-                            logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
+                            logger.error("Build option '{}' is not valid", buildCommandOptions.data);
                             break;
                     }
 
                     if (parser != null) {
-                        try {
-                            parser.parse();
-                        } catch (Exception e) {
-                            logger.error("Error executing 'build' command " + buildCommandOptions.data + ": " + e.getMessage(), e);
-                        }
+                        logger.info("Building '{}' data ...", buildOption);
+                        parser.parse();
+                        logger.info("Building '{}' data. Done.", buildOption);
                         parser.disconnect();
                     }
                 }
             }
         } catch (ParameterException e) {
             logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
-        } catch (IOException | CellBaseException e) {
-            logger.error(e.getMessage());
+        } catch (Exception e) {
+            String msg = "Error executing the command 'build'.";
+            if (StringUtils.isNotEmpty(buildOption)) {
+                msg += " It was building the data '" + buildOption + "'";
+            }
+            throw new CellBaseException(msg, e);
         }
     }
 
@@ -207,7 +202,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILENAME)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILENAME)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILENAME)));
-        // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
         return new RepeatsBuilder(repeatsFilesDir, serializer);
     }
@@ -223,43 +217,10 @@ public class BuildCommandExecutor extends CommandExecutor {
             try {
                 Files.copy(path, downloadFolder.resolve(path.getFileName()), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
-                logger.warn("Version file {} not found - skipping", path.toString());
+                logger.warn("Version file {} not found - skipping", path);
             }
         }
     }
-
-//    private void buildGenomeInfo() {
-//        /**
-//         * To get some extra info about the genome such as chromosome length or cytobands
-//         * we execute the following script.
-//         */
-//        try {
-//            String outputFileName = downloadFolder.resolve("genome_info.json").toAbsolutePath().toString();
-//            List<String> args = new ArrayList<>();
-//            args.addAll(Arrays.asList("--species", speciesConfigurathtion.getScientificName(),
-//                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
-//                    "-o", outputFileName,
-//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
-//            if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)
-//                    && !speciesConfiguration.getScientificName().equals("Drosophila melanogaster")) {
-//                args.add("--phylo");
-//                args.add("no-vertebrate");
-//            }
-//
-//            String geneInfoLogFileName = downloadFolder.resolve("genome_info.log").toAbsolutePath().toString();
-//
-//            boolean downloadedGenomeInfo;
-//            downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
-//
-//            if (downloadedGenomeInfo) {
-//                logger.info(outputFileName + " created OK");
-//            } else {
-//                logger.error("Genome info for " + speciesConfiguration.getScientificName() + " cannot be downloaded");
-//            }
-//        } catch (IOException | InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private CellBaseBuilder buildGenomeSequence() throws CellBaseException {
         // Sanity check
@@ -316,42 +277,12 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildProtein() {
-        Path proteinFolder = downloadFolder.resolve("protein");
+        Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("uniprotVersion.json"),
                 proteinFolder.resolve("interproVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein");
-        return new ProteinBuilder(proteinFolder.resolve("uniprot_chunks"),
-                downloadFolder.resolve("protein").resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
-    }
-
-    private void getProteinFunctionPredictionMatrices(SpeciesConfiguration sp, Path geneFolder)
-            throws IOException, InterruptedException {
-        logger.info("Downloading protein function prediction matrices ...");
-
-        // run protein_function_prediction_matrices.pl
-        String proteinFunctionProcessLogFile = geneFolder.resolve("protein_function_prediction_matrices.log").toString();
-        List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
-
-        boolean proteinFunctionPredictionMatricesObtaines = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
-                "./protein_function_prediction_matrices.pl",
-                args,
-                proteinFunctionProcessLogFile);
-
-        // check output
-        if (proteinFunctionPredictionMatricesObtaines) {
-            logger.info("Protein function prediction matrices created OK");
-        } else {
-            logger.error("Protein function prediction matrices for " + sp.getScientificName() + " cannot be downloaded");
-        }
-    }
-
-    private CellBaseBuilder getInteractionParser() {
-        Path proteinFolder = downloadFolder.resolve("protein");
-        Path psimiTabFile = proteinFolder.resolve("intact.txt");
-        copyVersionFiles(Arrays.asList(proteinFolder.resolve("intactVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein_protein_interaction");
-        return new InteractionBuilder(psimiTabFile, speciesConfiguration.getScientificName(), serializer);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, PROTEIN_DATA);
+        return new ProteinBuilder(proteinFolder.resolve("uniprot_chunks"), downloadFolder.resolve(PROTEIN_SUBDIRECTORY)
+                .resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
     }
 
     private CellBaseBuilder buildConservation() {
@@ -359,7 +290,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(conservationFilesDir.resolve("gerpVersion.json"),
                 conservationFilesDir.resolve("phastConsVersion.json"),
                 conservationFilesDir.resolve("phyloPVersion.json")));
-        // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder);
         return new ConservationBuilder(conservationFilesDir, conservationChunkSize, serializer);
@@ -406,10 +336,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path fastaPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(fastaFilename);
         if (fastaPath.toFile().exists()) {
             // Gunzip
-            logger.info("Gunzip file: " + fastaPath);
+            logger.info("Gunzip file: {}", fastaPath);
             try {
                 EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(fastaPath.toString()), null);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
                 throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
             }
         }
