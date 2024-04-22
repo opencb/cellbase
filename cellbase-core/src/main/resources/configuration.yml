@@ -55,6 +55,8 @@ download:
     url:
       host: https://ftp.ensembl.org/pub/
       files:
+        # New Homo sapiens assemblies contain too many ALT regions, so we download 'primary_assembly' file instead
+        PRIMARY_FA: "release-put_release_here/fasta/put_species_here/dna/put_capital_species_here.put_assembly_here.dna.primary_assembly.fa.gz"
         GTF: "release-put_release_here/gtf/put_species_here/put_capital_species_here.put_assembly_here.put_release_here.gtf.gz"
         PEP_FA: "release-put_release_here/fasta/put_species_here/pep/put_capital_species_here.put_assembly_here.pep.all.fa.gz"
         CDNA_FA: "release-put_release_here/fasta/put_species_here/cdna/put_capital_species_here.put_assembly_here.cdna.all.fa.gz"
