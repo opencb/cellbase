@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.download;
 
 import com.beust.jcommander.ParameterException;
-import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -40,46 +39,27 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-        downloadFiles.addAll(downloadReferenceGenome());
-        downloadFiles.addAll(downloadConservation());
-        downloadFiles.addAll(downloadRepeats());
-
-        return downloadFiles;
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        return downloadReferenceGenome();
     }
 
-    public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException {
-        logger.info("Downloading genome information ...");
-        Path sequenceFolder = downloadFolder.resolve("genome");
+    public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, GENOME_NAME);
+        Path sequenceFolder = downloadFolder.resolve(GENOME_SUBDIRECTORY);
         Files.createDirectories(sequenceFolder);
 
         // Reference genome sequences are downloaded from Ensembl
         // New Homo sapiens assemblies contain too many ALT regions, so we download 'primary_assembly' file instead
-        String url = ensemblHostUrl + "/" + ensemblRelease;
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            url = url + "/fasta/" + speciesShortName + "/dna/*.dna.primary_assembly.fa.gz";
-        } else {
-            if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
-                url = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
-            }
-            url = url + "/fasta/";
-            if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
-                // WARN: assuming there's just one assembly
-                url = url + speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
-            }
-            url = url + speciesShortName + "/dna/*.dna.toplevel.fa.gz";
-        }
+        DownloadFile downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_PRIMARY_FA_FILE_ID,
+                sequenceFolder);
 
-        String outputFileName = StringUtils.capitalize(speciesShortName) + "." + assemblyConfiguration.getName() + ".fa.gz";
-        Path outputPath = sequenceFolder.resolve(outputFileName);
-        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve(GENOME_VERSION_FILENAME));
+        // Save data source
         saveDataSource(ENSEMBL_NAME, EtlCommons.GENOME_DATA, ensemblVersion, getTimeStamp(),
-                Collections.singletonList(url), sequenceFolder.resolve(GENOME_VERSION_FILENAME));
-        List<DownloadFile> downloadFiles = Collections.singletonList(downloadFile(url, outputPath.toString()));
-        logger.info("Unzipping file: {}", outputFileName);
-        EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
-        return downloadFiles;
+                Collections.singletonList(downloadFile.getUrl()), sequenceFolder.resolve(GENOME_VERSION_FILENAME));
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, GENOME_NAME);
+
+        return Collections.singletonList(downloadFile);
     }
 
     /**
@@ -89,13 +69,14 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
      * @throws InterruptedException if there is an error downloading files
      */
     public List<DownloadFile> downloadConservation() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "conservation")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, CONSERVATION_DATA)) {
             return Collections.emptyList();
         }
-        logger.info("Downloading conservation information ...");
-        Path conservationFolder = downloadFolder.resolve(CONSERVATION_SUBDIRECTORY);
         List<DownloadFile> downloadFiles = new ArrayList<>();
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, CONSERVATION_NAME);
+            Path conservationFolder = downloadFolder.resolve(CONSERVATION_SUBDIRECTORY);
+
             Files.createDirectories(conservationFolder);
             Files.createDirectories(conservationFolder.resolve(GERP_SUBDIRECTORY));
             Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
@@ -111,7 +92,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
                 List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
                 // Downloading PhastCons and PhyloP
-                logger.info("Downloading {} and {}", PHASTCONS_NAME, PHYLOP_NAME);
+                logger.info(DOWNLOADING_LOG_MESSAGE, (PHASTCONS_NAME + "/" + PHYLOP_NAME));
                 for (String chromosome : chromosomes) {
                     // PhastCons
                     String phastConsUrl = configuration.getDownload().getPhastCons().getHost() + configuration.getDownload().getPhastCons()
@@ -119,7 +100,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                             .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
                     filename = Paths.get(phastConsUrl).getFileName().toString();
                     outputPath = conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve(filename);
-                    logger.info("Downloading {} from {} to {}", PHASTCONS_NAME, phastConsUrl, outputPath);
+                    logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phastConsUrl, outputPath);
                     downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
                     phastconsUrls.add(phastConsUrl);
 
@@ -129,18 +110,18 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                             .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
                     filename = Paths.get(phyloPUrl).getFileName().toString();
                     outputPath = conservationFolder.resolve(PHYLOP_SUBDIRECTORY).resolve(filename);
-                    logger.info("Downloading {} from {} to {}", PHYLOP_NAME, phyloPUrl, outputPath);
+                    logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phyloPUrl, outputPath);
                     downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
                     phyloPUrls.add(phyloPUrl);
                 }
 
                 // Downloading Gerp
-                logger.info("Downloading {}", GERP_NAME);
+                logger.info(DOWNLOADING_LOG_MESSAGE, GERP_NAME);
                 String gerpUrl = configuration.getDownload().getGerp().getHost() + configuration.getDownload().getGerp().getFiles()
                         .get(GERP_FILE_ID);
                 filename = Paths.get(gerpUrl).getFileName().toString();
                 outputPath = conservationFolder.resolve(GERP_SUBDIRECTORY).resolve(filename);
-                logger.info("Downloading from {} to {}", gerpUrl, outputPath);
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, gerpUrl, outputPath);
                 downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
 
                 // Save data version
@@ -151,42 +132,18 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 saveDataSource(GERP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
                         Collections.singletonList(gerpUrl), conservationFolder.resolve(GERP_VERSION_FILENAME));
             }
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, CONSERVATION_NAME);
         }
 
-//        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
-//            Files.createDirectories(conservationFolder);
-//            Files.createDirectories(conservationFolder.resolve(PHASTCONS_SUBDIRECTORY));
-//            Files.createDirectories(conservationFolder.resolve(PHYLOP_SUBDIRECTORY));
-//
-//            String url = configuration.getDownload().getConservation().getHost() + "/mm10";
-//            String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-//                    "15", "16", "17", "18", "19", "X", "Y", "M", };
-//            List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
-//            List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-//            for (String chromosome : chromosomes) {
-//                String phastConsUrl = url + "/phastCons60way/mm10.60way.phastCons/chr" + chromosome + ".phastCons60way.wigFix.gz";
-//                downloadFiles.add(downloadFile(phastConsUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
-//                        + ".phastCons60way.wigFix.gz").toString()));
-//                phastconsUrls.add(phastConsUrl);
-//                String phyloPUrl = url + "/phyloP60way/mm10.60way.phyloP60way/chr" + chromosome + ".phyloP60way.wigFix.gz";
-//                downloadFiles.add(downloadFile(phyloPUrl, conservationFolder.resolve(PHASTCONS_SUBDIRECTORY).resolve("chr" + chromosome
-//                        + ".phyloP60way.wigFix.gz").toString()));
-//                phyloPUrls.add(phyloPUrl);
-//            }
-//            saveDataSource(PHASTCONS_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhastCons().getVersion(),
-//                    getTimeStamp(), phastconsUrls, conservationFolder.resolve(PHASTCONS_VERSION_FILENAME));
-//            saveDataSource(PHYLOP_NAME, EtlCommons.CONSERVATION_DATA, configuration.getDownload().getPhylop().getVersion(),
-//                    getTimeStamp(), phyloPUrls, conservationFolder.resolve(PHYLOP_VERSION_FILENAME));
-//        }
         return downloadFiles;
     }
 
     public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, REPEATS_DATA)) {
             return Collections.emptyList();
         }
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading repeats data ...");
+            logger.info(DOWNLOADING_LOG_MESSAGE, REPEATS_NAME);
             Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_SUBDIRECTORY);
             Files.createDirectories(repeatsFolder);
             List<DownloadFile> downloadFiles = new ArrayList<>();
@@ -230,6 +187,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
                 downloadFiles.add(downloadFile(url, outputPath.toString()));
             }
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, REPEATS_NAME);
+
             return downloadFiles;
         }
         return Collections.emptyList();

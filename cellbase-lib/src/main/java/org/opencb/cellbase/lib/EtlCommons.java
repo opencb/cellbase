@@ -45,6 +45,7 @@ public class EtlCommons {
     public static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
     public static final String PUT_CHROMOSOME_HERE_MARK = "put_chromosome_here";
     // Must match the configuration file
+    public static final String ENSEMBL_PRIMARY_FA_FILE_ID = "PRIMARY_FA";
     public static final String ENSEMBL_GTF_FILE_ID = "GTF";
     public static final String ENSEMBL_PEP_FA_FILE_ID = "PEP_FA";
     public static final String ENSEMBL_CDNA_FA_FILE_ID = "CDNA_FA";
@@ -61,9 +62,13 @@ public class EtlCommons {
 
     public static final String SUFFIX_VERSION_FILENAME = "Version.json";
 
+    // Genome (Ensembl)
+    public static final String GENOME_NAME = "Genome";
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_SUBDIRECTORY = "genome";
     public static final String GENOME_VERSION_FILENAME = "genome" + SUFFIX_VERSION_FILENAME;
 
+    // Gene (Ensembl)
     public static final String GENE_DATA = "gene";
     public static final String ENSEMBL_CORE_VERSION_FILENAME = "ensemblCore" + SUFFIX_VERSION_FILENAME;
 
@@ -201,7 +206,8 @@ public class EtlCommons {
     // Must match the configuration file
     public static final String GWAS_FILE_ID = "GWAS";
 
-    public static final String STRUCTURAL_VARIANTS_DATA = "svs";
+    // Repeats
+    public static final String REPEATS_NAME = "Repeats";
     public static final String REPEATS_DATA = "repeats";
     public static final String REPEATS_SUBDIRECTORY = "genome";
     public static final String REPEATS_JSON = "repeats";
@@ -322,6 +328,7 @@ public class EtlCommons {
     public static final String INTACT_FILE_ID = "INTACT";
 
     // Conservation scores
+    public static final String CONSERVATION_NAME = "Conservation";
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CONSERVATION_SUBDIRECTORY = "conservation";
     // GERP

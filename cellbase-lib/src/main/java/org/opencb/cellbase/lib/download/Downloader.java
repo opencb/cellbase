@@ -40,7 +40,7 @@ public class Downloader {
 
     public List<DownloadFile> downloadGenome() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
-        return manager.download();
+        return manager.downloadReferenceGenome();
     }
 
     public List<DownloadFile> downloadGene() throws IOException, CellBaseException, InterruptedException {
