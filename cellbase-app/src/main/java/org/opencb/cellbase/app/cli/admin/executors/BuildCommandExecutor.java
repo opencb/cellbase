@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -64,6 +64,10 @@ public class BuildCommandExecutor extends CommandExecutor {
     private boolean flexibleGTFParsing;
     private SpeciesConfiguration speciesConfiguration;
 
+    private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, REFSEQ_DATA,
+            VARIATION_FUNCTIONAL_SCORE_DATA, MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA,
+            CLINICAL_VARIANTS_DATA, REPEATS_DATA, ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
+
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
 
@@ -82,6 +86,9 @@ public class BuildCommandExecutor extends CommandExecutor {
     public void execute() throws CellBaseException {
         String buildOption = null;
         try {
+            // Check data sources
+            List<String> dataList = checkDataSources();
+
             // Output directory need to be created if it doesn't exist
             if (!Files.exists(output)) {
                 Files.createDirectories(output);
@@ -118,92 +125,84 @@ public class BuildCommandExecutor extends CommandExecutor {
                 makeDir(buildFolder);
             }
 
-            if (buildCommandOptions.data != null) {
-                String[] buildOptions;
-                if (buildCommandOptions.data.equals("all")) {
-                    buildOptions = speciesConfiguration.getData().toArray(new String[0]);
-                } else {
-                    buildOptions = buildCommandOptions.data.split(",");
+            for (String data : dataList) {
+                CellBaseBuilder parser;
+                switch (data) {
+                    case GENOME_DATA:
+                        parser = buildGenomeSequence();
+                        break;
+                    case GENE_DATA:
+                        parser = buildGene();
+                        break;
+                    case REFSEQ_DATA:
+                        parser = buildRefSeq();
+                        break;
+                    case VARIATION_FUNCTIONAL_SCORE_DATA:
+                        parser = buildCadd();
+                        break;
+                    case MISSENSE_VARIATION_SCORE_DATA:
+                        parser = buildRevel();
+                        break;
+                    case REGULATION_DATA:
+                        parser = buildRegulation();
+                        break;
+                    case PROTEIN_DATA:
+                        parser = buildProtein();
+                        break;
+                    case CONSERVATION_DATA:
+                        parser = buildConservation();
+                        break;
+                    case CLINICAL_VARIANTS_DATA:
+                        parser = buildClinicalVariants();
+                        break;
+                    case REPEATS_DATA:
+                        parser = buildRepeats();
+                        break;
+                    case ONTOLOGY_DATA:
+                        parser = buildObo();
+                        break;
+                    case SPLICE_SCORE_DATA:
+                        parser = buildSplice();
+                        break;
+                    case PUBMED_DATA:
+                        parser = buildPubMed();
+                        break;
+                    case PHARMACOGENOMICS_DATA:
+                        parser = buildPharmacogenomics();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Value '" + buildOption + "' is not allowed for the data parameter."
+                                + " Valid values are: " + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to build"
+                                + " everything");
                 }
 
-                for (int i = 0; i < buildOptions.length; i++) {
-                    buildOption = buildOptions[i];
-
-                    CellBaseBuilder parser = null;
-                    switch (buildOption) {
-                        case EtlCommons.GENOME_DATA:
-                            parser = buildGenomeSequence();
-                            break;
-                        case EtlCommons.GENE_DATA:
-                            parser = buildGene();
-                            break;
-                        case EtlCommons.REFSEQ_DATA:
-                            parser = buildRefSeq();
-                            break;
-                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-                            parser = buildCadd();
-                            break;
-                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA:
-                            parser = buildRevel();
-                            break;
-                        case EtlCommons.REGULATION_DATA:
-                            parser = buildRegulation();
-                            break;
-                        case EtlCommons.PROTEIN_DATA:
-                            parser = buildProtein();
-                            break;
-                        case EtlCommons.CONSERVATION_DATA:
-                            parser = buildConservation();
-                            break;
-                        case EtlCommons.CLINICAL_VARIANTS_DATA:
-                            parser = buildClinicalVariants();
-                            break;
-                        case EtlCommons.REPEATS_DATA:
-                            parser = buildRepeats();
-                            break;
-                        case ONTOLOGY_DATA:
-                            parser = buildObo();
-                            break;
-                        case EtlCommons.SPLICE_SCORE_DATA:
-                            parser = buildSplice();
-                            break;
-                        case EtlCommons.PUBMED_DATA:
-                            parser = buildPubMed();
-                            break;
-                        case EtlCommons.PHARMACOGENOMICS_DATA:
-                            parser = buildPharmacogenomics();
-                            break;
-                        default:
-                            logger.error("Build option '{}' is not valid", buildCommandOptions.data);
-                            break;
-                    }
-
-                    if (parser != null) {
-                        logger.info("Building '{}' data ...", buildOption);
-                        parser.parse();
-                        logger.info("Building '{}' data. Done.", buildOption);
-                        parser.disconnect();
-                    }
+                if (parser != null) {
+                    logger.info("Building '{}' data ...", buildOption);
+                    parser.parse();
+                    logger.info("Building '{}' data. Done.", buildOption);
+                    parser.disconnect();
                 }
             }
-        } catch (ParameterException e) {
-            logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
         } catch (Exception e) {
-            String msg = "Error executing the command 'build'.";
+            String msg = "Error executing the command 'build'";
             if (StringUtils.isNotEmpty(buildOption)) {
-                msg += " It was building the data '" + buildOption + "'";
+                msg += ". The last data being built was '" + buildOption + "'";
             }
-            throw new CellBaseException(msg, e);
+            throw new CellBaseException(msg + ": " + e.getMessage(), e);
         }
     }
 
-    private CellBaseBuilder buildRepeats() {
-        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_SUBDIRECTORY);
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILENAME)));
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILENAME)));
-        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILENAME)));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
-        return new RepeatsBuilder(repeatsFilesDir, serializer);
+    private CellBaseBuilder buildRepeats() throws CellBaseException {
+        // Sanity check
+        Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_SUBDIRECTORY);
+        List<Path> versionPaths = Arrays.asList(repeatsDownloadPath.resolve(TRF_VERSION_FILENAME),
+                repeatsDownloadPath.resolve(GSD_VERSION_FILENAME),
+                repeatsDownloadPath.resolve(WM_VERSION_FILENAME));
+        copyVersionFiles(versionPaths, buildFolder.resolve(REPEATS_SUBDIRECTORY));
+
+        // Create serializer and return the repeats builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_SUBDIRECTORY), REPEATS_DATA);
+        return new RepeatsBuilder(repeatsDownloadPath, serializer);
     }
 
     private CellBaseBuilder buildObo() {
@@ -447,5 +446,36 @@ public class BuildCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("Something wrong happened when copying version file " + versionPath + " to " + targetPath);
             }
         }
+    }
+
+    private List<String> checkDataSources() {
+        if (StringUtils.isEmpty(buildCommandOptions.data)) {
+            throw new IllegalArgumentException("Missing data parameter. Valid values are: "
+                    + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to download everything");
+        }
+        List<String> dataList = Arrays.asList(buildCommandOptions.data.split(","));
+        for (String data : dataList) {
+            switch (data) {
+                case GENOME_DATA:
+                case GENE_DATA:
+                case REFSEQ_DATA:
+                case VARIATION_FUNCTIONAL_SCORE_DATA:
+                case MISSENSE_VARIATION_SCORE_DATA:
+                case REGULATION_DATA:
+                case PROTEIN_DATA:
+                case CONSERVATION_DATA:
+                case CLINICAL_VARIANTS_DATA:
+                case REPEATS_DATA:
+                case ONTOLOGY_DATA:
+                case SPLICE_SCORE_DATA:
+                case PUBMED_DATA:
+                case PHARMACOGENOMICS_DATA:
+                    break;
+                default:
+                    throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
+                            + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to build everything");
+            }
+        }
+        return dataList;
     }
 }
