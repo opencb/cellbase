@@ -210,6 +210,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new OntologyBuilder(oboDir, serializer);
     }
 
+    @Deprecated
     private void copyVersionFiles(List<Path> pathList) {
         for (Path path : pathList) {
             try {
@@ -274,13 +275,19 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RegulatoryFeatureBuilder(regulatoryRegionFilesDir, serializer);
     }
 
-    private CellBaseBuilder buildProtein() {
-        Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
-        copyVersionFiles(Arrays.asList(proteinFolder.resolve("uniprotVersion.json"),
-                proteinFolder.resolve("interproVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, PROTEIN_DATA);
-        return new ProteinBuilder(proteinFolder.resolve("uniprot_chunks"), downloadFolder.resolve(PROTEIN_SUBDIRECTORY)
-                .resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
+    private CellBaseBuilder buildProtein() throws CellBaseException {
+        // Sanity check
+        Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
+        Path proteinBuildPath = buildFolder.resolve(PROTEIN_SUBDIRECTORY);
+        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(UNIPROT_VERSION_FILENAME),
+                proteinDownloadPath.resolve(INTERPRO_VERSION_FILENAME)), proteinBuildPath);
+
+        // Create the file serializer and the protein builder
+        Path chunksPath = proteinDownloadPath.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
+        String uniprotFilename = getFilenameFromUrl(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);
+        return new ProteinBuilder(chunksPath, proteinDownloadPath.resolve(uniprotFilename), speciesConfiguration.getScientificName(),
+                serializer);
     }
 
     private CellBaseBuilder buildConservation() throws CellBaseException {

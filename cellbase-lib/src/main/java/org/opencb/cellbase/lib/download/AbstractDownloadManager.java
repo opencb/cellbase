@@ -47,6 +47,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.getFilenameFromUrl;
+
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
@@ -352,18 +354,6 @@ public abstract class AbstractDownloadManager {
         } else {
             return props.getHost() + filesValue;
         }
-    }
-
-    protected String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
-        if (!props.getFiles().containsKey(fileId)) {
-            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
-                    + " configuration file");
-        }
-        return getFilenameFromUrl(props.getFiles().get(fileId));
-    }
-
-    protected String getFilenameFromUrl(String url) {
-        return Paths.get(url).getFileName().toString();
     }
 }
 

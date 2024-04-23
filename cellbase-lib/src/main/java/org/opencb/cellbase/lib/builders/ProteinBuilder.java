@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.*;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
@@ -42,13 +43,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class ProteinBuilder extends CellBaseBuilder {
 
     private Path uniprotFilesDir;
     private Path interproFilePath;
     private String species;
-
-    private Map<String, Entry> proteinMap;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -65,23 +66,33 @@ public class ProteinBuilder extends CellBaseBuilder {
     }
 
     @Override
-    public void parse() throws IOException {
+    public void parse() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, PROTEIN_NAME);
 
+        // Check UniProt
         if (uniprotFilesDir == null || !Files.exists(uniprotFilesDir)) {
-            throw new IOException("File '" + uniprotFilesDir + "' not valid");
+            throw new CellBaseException("Could not build " + UNIPROT_NAME + ": folder " + uniprotFilesDir + " does not exist");
         }
 
+        // Check InterPro
+        if (interproFilePath != null && Files.exists(interproFilePath)) {
+            throw new CellBaseException("Could not build " + INTERPRO_NAME + ": file " + interproFilePath + " does not exist");
+        }
+
+        // Prepare RocksDB
         RocksDB rocksDb = getDBConnection();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter jsonObjectWriter = mapper.writerFor(Entry.class);
 
-        proteinMap = new HashMap<>(30000);
-//        UniProtParser up = new UniProtParser();
+        Map<String, Entry> proteinMap = new HashMap<>(30000);
+
+        // Parsing files
         try {
             File[] files = uniprotFilesDir.toFile().listFiles((dir, name) -> name.endsWith(".xml") || name.endsWith(".xml.gz"));
 
             for (File file : files) {
+                logger.info(PARSING_LOG_MESSAGE, file);
                 Uniprot uniprot = (Uniprot) UniProtParser.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
 
                 for (Entry entry : uniprot.getEntry()) {
@@ -89,16 +100,16 @@ public class ProteinBuilder extends CellBaseBuilder {
                     for (OrganismNameType organismNameType : entry.getOrganism().getName()) {
                         entryOrganism = organismNameType.getValue();
                         if (entryOrganism.equals(species)) {
-//                            proteinMap.put(entry.getAccession().get(0), entry);
                             rocksDb.put(entry.getAccession().get(0).getBytes(), jsonObjectWriter.writeValueAsBytes(entry));
                         }
                     }
                 }
+                logger.info(PARSING_DONE_LOG_MESSAGE, file);
             }
             logger.debug("Number of proteins stored in map: '{}'", proteinMap.size());
 
-            if (interproFilePath != null && Files.exists(interproFilePath)) {
-                BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interproFilePath);
+            logger.info(PARSING_LOG_MESSAGE, interproFilePath);
+            try (BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interproFilePath)) {
                 Set<String> hashSet = new HashSet<>(proteinMap.keySet());
                 Set<String> visited = new HashSet<>(30000);
 
@@ -114,7 +125,6 @@ public class ProteinBuilder extends CellBaseBuilder {
                         iprAdded = false;
                         BigInteger start = BigInteger.valueOf(Integer.parseInt(fields[4]));
                         BigInteger end = BigInteger.valueOf(Integer.parseInt(fields[5]));
-//                        for (FeatureType featureType : proteinMap.get(fields[0]).getFeature()) {
                         byte[] bytes = rocksDb.get(fields[0].getBytes());
                         Entry entry = mapper.readValue(bytes, Entry.class);
                         for (FeatureType featureType : entry.getFeature()) {
@@ -145,7 +155,6 @@ public class ProteinBuilder extends CellBaseBuilder {
                             locationType.setEnd(positionType2);
                             featureType.setLocation(locationType);
 
-//                            proteinMap.get(fields[0]).getFeature().add(featureType);
                             bytes = rocksDb.get(fields[0].getBytes());
                             entry = mapper.readValue(bytes, Entry.class);
                             entry.getFeature().add(featureType);
@@ -158,11 +167,13 @@ public class ProteinBuilder extends CellBaseBuilder {
                     }
 
                     if (++numInterProLinesProcessed % 10000000 == 0) {
-                        logger.debug("{} InterPro lines processed. {} unique proteins processed",
-                                numInterProLinesProcessed, numUniqueProteinsProcessed);
+                        logger.debug("{} {} lines processed. {} unique proteins processed", numInterProLinesProcessed, INTERPRO_NAME,
+                                numUniqueProteinsProcessed);
                     }
                 }
-                interproBuffereReader.close();
+                logger.info(PARSING_DONE_LOG_MESSAGE, interproFilePath);
+            } catch (IOException e) {
+                throw new CellBaseException("Error parsing " + INTERPRO_NAME + " file: " + interproFilePath, e);
             }
 
             // Serialize and save results
@@ -173,24 +184,22 @@ public class ProteinBuilder extends CellBaseBuilder {
             }
 
             rocksDb.close();
-        } catch (JAXBException | RocksDBException e) {
-            e.printStackTrace();
+        } catch (JAXBException | RocksDBException | IOException e) {
+            throw new CellBaseException("Error parsing " + PROTEIN_NAME + " files", e);
         }
+
+        logger.info(BUILDING_DONE_LOG_MESSAGE, PROTEIN_NAME);
     }
 
-    private RocksDB getDBConnection() {
-        // a static method that loads the RocksDB C++ library.
+    private RocksDB getDBConnection() throws CellBaseException {
+        // A static method that loads the RocksDB C++ library
         RocksDB.loadLibrary();
-        // the Options class contains a set of configurable DB options
-        // that determines the behavior of a database.
+        // The Options class contains a set of configurable DB options that determines the behavior of a database
         Options options = new Options().setCreateIfMissing(true);
         try {
             return RocksDB.open(options, uniprotFilesDir.resolve("integration.idx").toString());
         } catch (RocksDBException e) {
-            // do some error handling
-            e.printStackTrace();
-            System.exit(1);
+            throw new CellBaseException("Error preparing RocksDB", e);
         }
-        return null;
     }
 }

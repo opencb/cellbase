@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -527,5 +528,17 @@ public class EtlCommons {
         // if exitCode is 0 then the executable is installed at + output.toString().trim()),
         // otherwise, it's not
         return (exitCode == 0);
+    }
+
+    public static String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
+                    + " configuration file");
+        }
+        return getFilenameFromUrl(props.getFiles().get(fileId));
+    }
+
+    public static String getFilenameFromUrl(String url) {
+        return Paths.get(url).getFileName().toString();
     }
 }
