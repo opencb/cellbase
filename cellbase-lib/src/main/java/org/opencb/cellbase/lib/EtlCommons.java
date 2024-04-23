@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -393,7 +394,7 @@ public class EtlCommons {
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
+        logger.info("Executing command: " + StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
 
@@ -507,5 +508,24 @@ public class EtlCommons {
 
     public static String getFilename(String prefix, String chromosome) {
         return prefix + "_" + chromosome;
+    }
+
+    public static boolean isExecutableAvailable(String executable) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder("which", executable);
+        Process process = processBuilder.start();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            StringBuilder output = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+        }
+
+        int exitCode = process.waitFor();
+
+        // if exitCode is 0 then the executable is installed at + output.toString().trim()),
+        // otherwise, it's not
+        return (exitCode == 0);
     }
 }

@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.utils.FileUtils;
 
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -56,6 +58,8 @@ public class ConservationBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws IOException, CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, CONSERVATION_NAME);
+
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory " + conservedRegionPath + " does not exist or it is not a directory or it cannot"
                     + " be read");
@@ -84,7 +88,30 @@ public class ConservationBuilder extends CellBaseBuilder {
             throw new CellBaseException("Only one " + GERP_NAME + " file is expected, but currently there are " + gerpFiles.size()
                     + " files");
         }
-        gerpParser(gerpFiles.get(0).toPath());
+        File bigwigFile = gerpFiles.get(0);
+        File bedgraphFile = Paths.get(gerpFiles.get(0).getAbsolutePath() + ".bedgraph").toFile();
+        String exec = "bigWigToBedGraph";
+        if (!bedgraphFile.exists()) {
+            try {
+                if (isExecutableAvailable(exec)) {
+                    EtlCommons.runCommandLineProcess(null, exec, Arrays.asList(bigwigFile.toString(), bedgraphFile.toString()), null);
+                } else {
+                    throw new CellBaseException(exec + " not found in your system, install it to build " + GERP_NAME + ". It is available"
+                            + " at http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/");
+                }
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing " + exec + " in BIGWIG file " + bigwigFile, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("" + e.getMessage(), e);
+            }
+            if (!bedgraphFile.exists()) {
+                throw new CellBaseException("Something happened when executing " + exec + " in BIGWIG file " + bigwigFile + "; the BED"
+                        + " graph file was not generated. Please, check " + exec);
+            }
+        }
+        gerpParser(bedgraphFile.toPath());
 
         // UCSC phastCons and phylop are stored in the same format. They are processed together.
         Map<String, Path> files = new HashMap<>();
@@ -114,6 +141,8 @@ public class ConservationBuilder extends CellBaseBuilder {
             logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + PHYLOP_DATA));
             processWigFixFile(files.get(chr + PHYLOP_DATA), PHYLOP_NAME);
         }
+
+        logger.info(BUILDING_DONE_LOG_MESSAGE, CONSERVATION_NAME);
     }
 
     private void gerpParser(Path gerpProcessFilePath) throws IOException, CellBaseException {
@@ -132,7 +161,8 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 // Checking line
                 if (fields.length != 4) {
-                    throw new CellBaseException("Invalid " + GERP_NAME + " line (expecting 4 columns): " + line);
+                    throw new CellBaseException("Invalid " + GERP_NAME + " line (expecting 4 columns): " + fields.length + " items: "
+                            + line);
                 }
 
                 chromosome = fields[0];
