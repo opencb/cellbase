@@ -276,6 +276,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
     private void processWigFixFile(Path inGzPath, String conservationSource) throws IOException {
+        logger.info(PARSING_LOG_MESSAGE, inGzPath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(inGzPath)) {
 
             String line;
@@ -334,6 +335,7 @@ public class ConservationBuilder extends CellBaseBuilder {
             conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1, conservationSource, values);
             fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, inGzPath);
     }
 
     private String getOutputFileName(String chromosome) {
