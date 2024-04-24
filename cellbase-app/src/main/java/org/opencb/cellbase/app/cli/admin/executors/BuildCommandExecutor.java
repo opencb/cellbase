@@ -283,11 +283,8 @@ public class BuildCommandExecutor extends CommandExecutor {
                 proteinDownloadPath.resolve(INTERPRO_VERSION_FILENAME)), proteinBuildPath);
 
         // Create the file serializer and the protein builder
-        Path chunksPath = proteinDownloadPath.resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
-        String uniprotFilename = getFilenameFromUrl(configuration.getDownload().getUniprot().getFiles().get(UNIPROT_FILE_ID));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);
-        return new ProteinBuilder(chunksPath, proteinDownloadPath.resolve(uniprotFilename), speciesConfiguration.getScientificName(),
-                serializer);
+        return new ProteinBuilder(proteinDownloadPath, speciesConfiguration.getScientificName(), serializer);
     }
 
     private CellBaseBuilder buildConservation() throws CellBaseException {

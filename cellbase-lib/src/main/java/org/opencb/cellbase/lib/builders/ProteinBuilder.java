@@ -35,52 +35,67 @@ import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class ProteinBuilder extends CellBaseBuilder {
 
-    private Path uniprotFilesDir;
-    private Path interproFilePath;
+    private Path proteinPath;
     private String species;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ProteinBuilder(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
-        this(uniprotFilesDir, null, species, serializer);
-    }
-
-    public ProteinBuilder(Path uniprotFilesDir, Path interproFilePath, String species, CellBaseSerializer serializer) {
+    public ProteinBuilder(Path proteinPath, String species, CellBaseSerializer serializer) {
         super(serializer);
 
-        this.uniprotFilesDir = uniprotFilesDir;
-        this.interproFilePath = interproFilePath;
+        this.proteinPath = proteinPath;
         this.species = species;
     }
 
     @Override
-    public void parse() throws CellBaseException {
+    public void parse() throws CellBaseException, IOException {
         logger.info(BUILDING_LOG_MESSAGE, PROTEIN_NAME);
 
-        // Check UniProt
-        if (uniprotFilesDir == null || !Files.exists(uniprotFilesDir)) {
-            throw new CellBaseException("Could not build " + UNIPROT_NAME + ": folder " + uniprotFilesDir + " does not exist");
+        // Sanity check
+        if (proteinPath == null) {
+            throw new CellBaseException(PROTEIN_NAME + " directory is missing (null)");
+        }
+        if (!Files.exists(proteinPath)) {
+            throw new CellBaseException(PROTEIN_NAME + " directory " + proteinPath + " does not exist");
+        }
+        if (!Files.isDirectory(proteinPath)) {
+            throw new CellBaseException(PROTEIN_NAME + " directory " + proteinPath + " is not a directory");
         }
 
-        // Check InterPro
-        if (interproFilePath != null && Files.exists(interproFilePath)) {
-            throw new CellBaseException("Could not build " + INTERPRO_NAME + ": file " + interproFilePath + " does not exist");
+        // Check UniProt file
+        List<File> uniProtFiles = checkFiles(dataSourceReader.readValue(proteinPath.resolve(UNIPROT_VERSION_FILENAME).toFile()),
+                proteinPath, PROTEIN_NAME + "/" + UNIPROT_NAME);
+        if (uniProtFiles.size() != 1) {
+            throw new CellBaseException("Only one " + UNIPROT_NAME + " file is expected, but currently there are " + uniProtFiles.size()
+                    + " files");
         }
+
+        // Check InterPro file
+        List<File> interProFiles = checkFiles(dataSourceReader.readValue(proteinPath.resolve(INTERPRO_VERSION_FILENAME).toFile()),
+                proteinPath, PROTEIN_NAME + "/" + INTERPRO_NAME);
+        if (interProFiles.size() != 1) {
+            throw new CellBaseException("Only one " + INTERPRO_NAME + " file is expected, but currently there are " + uniProtFiles.size()
+                    + " files");
+        }
+
+        // Prepare UniProt data by splitting data in chunks
+        Path uniProtChunksPath = serializer.getOutdir().resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
+        logger.info("Split {} file {} into chunks at {}", UNIPROT_NAME, uniProtFiles.get(0).getName(), uniProtChunksPath);
+        Files.createDirectories(uniProtChunksPath);
+        splitUniprot(proteinPath.resolve(uniProtFiles.get(0).getName()), uniProtChunksPath);
 
         // Prepare RocksDB
-        RocksDB rocksDb = getDBConnection();
+        RocksDB rocksDb = getDBConnection(uniProtChunksPath);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         ObjectWriter jsonObjectWriter = mapper.writerFor(Entry.class);
@@ -89,7 +104,7 @@ public class ProteinBuilder extends CellBaseBuilder {
 
         // Parsing files
         try {
-            File[] files = uniprotFilesDir.toFile().listFiles((dir, name) -> name.endsWith(".xml") || name.endsWith(".xml.gz"));
+            File[] files = uniProtChunksPath.toFile().listFiles((dir, name) -> name.endsWith(".xml") || name.endsWith(".xml.gz"));
 
             for (File file : files) {
                 logger.info(PARSING_LOG_MESSAGE, file);
@@ -108,8 +123,8 @@ public class ProteinBuilder extends CellBaseBuilder {
             }
             logger.debug("Number of proteins stored in map: '{}'", proteinMap.size());
 
-            logger.info(PARSING_LOG_MESSAGE, interproFilePath);
-            try (BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interproFilePath)) {
+            logger.info(PARSING_LOG_MESSAGE, interProFiles.get(0));
+            try (BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interProFiles.get(0).toPath())) {
                 Set<String> hashSet = new HashSet<>(proteinMap.keySet());
                 Set<String> visited = new HashSet<>(30000);
 
@@ -171,9 +186,9 @@ public class ProteinBuilder extends CellBaseBuilder {
                                 numUniqueProteinsProcessed);
                     }
                 }
-                logger.info(PARSING_DONE_LOG_MESSAGE, interproFilePath);
+                logger.info(PARSING_DONE_LOG_MESSAGE, interProFiles.get(0));
             } catch (IOException e) {
-                throw new CellBaseException("Error parsing " + INTERPRO_NAME + " file: " + interproFilePath, e);
+                throw new CellBaseException("Error parsing " + INTERPRO_NAME + " file: " + interProFiles.get(0), e);
             }
 
             // Serialize and save results
@@ -191,15 +206,63 @@ public class ProteinBuilder extends CellBaseBuilder {
         logger.info(BUILDING_DONE_LOG_MESSAGE, PROTEIN_NAME);
     }
 
-    private RocksDB getDBConnection() throws CellBaseException {
+    private RocksDB getDBConnection(Path uniProtChunksPath) throws CellBaseException {
         // A static method that loads the RocksDB C++ library
         RocksDB.loadLibrary();
         // The Options class contains a set of configurable DB options that determines the behavior of a database
         Options options = new Options().setCreateIfMissing(true);
         try {
-            return RocksDB.open(options, uniprotFilesDir.resolve("integration.idx").toString());
+            return RocksDB.open(options, uniProtChunksPath.resolve("integration.idx").toString());
         } catch (RocksDBException e) {
             throw new CellBaseException("Error preparing RocksDB", e);
+        }
+    }
+
+    private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
+        PrintWriter pw = null;
+        try (BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath)) {
+            StringBuilder header = new StringBuilder();
+            boolean beforeEntry = true;
+            boolean inEntry = false;
+            int count = 0;
+            int chunk = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().startsWith("<entry ")) {
+                    inEntry = true;
+                    beforeEntry = false;
+                    if (count % 10000 == 0) {
+                        pw = new PrintWriter(Files.newOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile().toPath()));
+                        pw.println(header.toString().trim());
+                    }
+                    count++;
+                }
+
+                if (beforeEntry) {
+                    header.append(line).append("\n");
+                }
+
+                if (inEntry) {
+                    pw.println(line);
+                }
+
+                if (line.trim().startsWith("</entry>")) {
+                    inEntry = false;
+                    if (count % 10000 == 0) {
+                        if (pw != null) {
+                            pw.print("</uniprot>");
+                            pw.close();
+                        }
+                        chunk++;
+                    }
+                }
+            }
+            pw.print("</uniprot>");
+            pw.close();
+        } finally {
+            if (pw != null) {
+                pw.close();
+            }
         }
     }
 }
