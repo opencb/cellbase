@@ -210,6 +210,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new OntologyBuilder(oboDir, serializer);
     }
 
+    /**
+     * @deprecated (when using the new copyVersionFiles)
+     */
     @Deprecated
     private void copyVersionFiles(List<Path> pathList) {
         for (Path path : pathList) {
@@ -268,11 +271,16 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RevelScoreBuilder(missensePredictionScorePath, serializer);
     }
 
-    private CellBaseBuilder buildRegulation() {
-        Path regulatoryRegionFilesDir = downloadFolder.resolve("regulation");
-        copyVersionFiles(Collections.singletonList(regulatoryRegionFilesDir.resolve("ensemblRegulationVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_region");
-        return new RegulatoryFeatureBuilder(regulatoryRegionFilesDir, serializer);
+    private CellBaseBuilder buildRegulation() throws CellBaseException {
+        // Sanity check
+        Path regulationDownloadPath = downloadFolder.resolve(REGULATION_DATA);
+        Path regulationBuildPath = buildFolder.resolve(REGULATION_DATA);
+        copyVersionFiles(Arrays.asList(regulationDownloadPath.resolve(REGULATORY_BUILD_VERSION_FILENAME),
+                regulationDownloadPath.resolve(MOTIF_FEATURES_VERSION_FILENAME)), regulationBuildPath);
+
+        // Create the file serializer and the regulatory feature builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(regulationBuildPath, REGULATORY_REGION_BASENAME);
+        return new RegulatoryFeatureBuilder(regulationDownloadPath, serializer);
     }
 
     private CellBaseBuilder buildProtein() throws CellBaseException {

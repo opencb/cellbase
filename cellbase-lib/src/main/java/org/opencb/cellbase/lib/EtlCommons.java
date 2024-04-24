@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -267,8 +268,11 @@ public final class EtlCommons {
     public static final String CADD_FILE_ID = "CADD";
 
     // Regulation
+    public static final String REGULATION_NAME = "Regulation";
     public static final String REGULATION_DATA = "regulation";
-    public static final String REGULATION_SUBDIRECTORY = "regulation";
+    public static final String REGULATION_SUBDIRECTORY = REGULATION_DATA;
+    public static final String REGULATORY_PFM_BASENAME = "regulatory_pfm";
+    public static final String REGULATORY_REGION_BASENAME = "regulatory_region";
     // Regulatory build and motif features (see Ensembl files: regulatory build and motif features files)
     public static final String REGULATORY_BUILD_NAME = "Regulatory Build";
     public static final String REGULATORY_BUILD_VERSION_FILENAME = "regulatoryBuild" + SUFFIX_VERSION_FILENAME;
@@ -528,6 +532,18 @@ public final class EtlCommons {
 
     public static String getFilenameFromUrl(String url) {
         return Paths.get(url).getFileName().toString();
+    }
+
+    public static void checkDirectory(Path path, String name) throws CellBaseException {
+        if (path == null) {
+            throw new CellBaseException(name + " directory is null");
+        }
+        if (!Files.exists(path)) {
+            throw new CellBaseException(name + " directory " + path + " does not exist");
+        }
+        if (!Files.isDirectory(path)) {
+            throw new CellBaseException(name + " directory " + path + " is not a directory");
+        }
     }
 
     private static String getMissingFileIdMessage(String fileId) {

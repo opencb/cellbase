@@ -89,59 +89,11 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
         // Save data source (name, category, version,...)
-        saveDataSource(MOTIF_FEATURES_NAME, REGULATION_DATA, "(Ensembl " + ensemblVersion + ")", getTimeStamp(), urls,
+        saveDataSource(MOTIF_FEATURES_NAME, REGULATION_DATA, "(" + ENSEMBL_NAME + " " + ensemblVersion + ")", getTimeStamp(), urls,
                 regulationFolder.resolve(MOTIF_FEATURES_VERSION_FILENAME));
-
-        // TODO: This will be executed in the CellBase build
-//        loadPfmMatrices();
 
         return downloadFiles;
     }
-
-//    private void loadPfmMatrices()
-//    throws IOException, NoSuchMethodException, FileFormatException, InterruptedException, CellBaseException {
-//        logger.info("Downloading and building pfm matrices...");
-//        if (Files.exists(buildFolder.resolve("regulatory_pfm.json.gz"))) {
-//            logger.info("regulatory_pfm.json.gz is already built");
-//            return;
-//        }
-//        Set<String> motifIds = new HashSet<>();
-//        Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
-//        try (Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile)) {
-//            Gff2 tfbsMotifFeature;
-//            Pattern filePattern = Pattern.compile("ENSPFM(\\d+)");
-//            while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
-//                String pfmId = getMatrixId(filePattern, tfbsMotifFeature);
-//                if (StringUtils.isNotEmpty(pfmId)) {
-//                    motifIds.add(pfmId);
-//                }
-//            }
-//        }
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_pfm", true);
-//        if (logger.isInfoEnabled()) {
-//            logger.info("Looking up {} pfms", motifIds.size());
-//        }
-//        for (String pfmId : motifIds) {
-//            String urlString = "https://rest.ensembl.org/species/homo_sapiens/binding_matrix/" + pfmId
-//                    + "?unit=frequencies;content-type=application/json";
-//            URL url = new URL(urlString);
-//            RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
-//            serializer.serialize(regulatoryPfm);
-//            // https://github.com/Ensembl/ensembl-rest/wiki/Rate-Limits
-//            TimeUnit.MILLISECONDS.sleep(250);
-//        }
-//        serializer.close();
-//    }
-//
-//    private String getMatrixId(Pattern pattern, Gff2 tfbsMotifFeature) {
-//        Matcher matcher = pattern.matcher(tfbsMotifFeature.getAttribute());
-//        if (matcher.find()) {
-//            return matcher.group(0);
-//        }
-//        return null;
-//    }
 
     private DownloadFile downloadMirna() throws IOException, InterruptedException, CellBaseException {
         logger.info("Downloading {} ...", MIRBASE_NAME);
