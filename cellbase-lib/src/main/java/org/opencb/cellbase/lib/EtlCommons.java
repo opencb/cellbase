@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 03/06/16.
  */
-public class EtlCommons {
+public final class EtlCommons {
 
     // Ensembl
     public static final String ENSEMBL_NAME = "Ensembl";
@@ -159,8 +159,8 @@ public class EtlCommons {
     // PharmGKB
     public static final String PHARMGKB_NAME = "PharmGKB";
     public static final String PHARMGKB_DATA = "pharmgkb";
-    public static final String PHARMGKB_SUBDIRECTORY = "pharmgkb";
-    public static final String PHARMGKB_VERSION_FILENAME = "pharmgkb" + SUFFIX_VERSION_FILENAME;
+    public static final String PHARMGKB_SUBDIRECTORY = PHARMGKB_DATA;
+    public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
     // Must match the configuration file
     public static final String PHARMGKB_GENES_FILE_ID = "GENES";
     public static final String PHARMGKB_CHEMICALS_FILE_ID = "CHEMICALS";
@@ -212,6 +212,9 @@ public class EtlCommons {
     public static final String REPEATS_NAME = "Repeats";
     public static final String REPEATS_DATA = "repeats";
     public static final String REPEATS_SUBDIRECTORY = GENOME_SUBDIRECTORY;
+    /**
+     * @deprecated (when refactoring downloaders, builders and loaders)
+     */
     @Deprecated
     public static final String REPEATS_JSON = "repeats";
     // Simple repeats
@@ -290,15 +293,6 @@ public class EtlCommons {
     public static final String CADD_DATA = "cadd";
     public static final String PPI_DATA = "ppi";
     public static final String DRUG_DATA = "drug";
-//    public static final String CLINVAR_DATA = "clinvar";
-//    public static final String DOCM_DATA = "docm";
-//    public static final String COSMIC_DATA = "cosmic";
-//    public static final String GWAS_DATA = "gwas";
-//    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R20.txt";
-//    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
-//    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
-//    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
-//    public static final String HGMD_DATA = "hgmd";
 
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
@@ -348,23 +342,18 @@ public class EtlCommons {
 
     // Splice scores
     public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
-    public static final String MMSPLICE_VERSION_FILENAME = "mmsplice" + SUFFIX_VERSION_FILENAME;
+    public static final String MMSPLICE_VERSION_FILENAME = MMSPLICE_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
     public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
-    public static final String SPLICEAI_VERSION_FILENAME = "spliceai" + SUFFIX_VERSION_FILENAME;
+    public static final String SPLICEAI_VERSION_FILENAME = SPLICEAI_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
 
-    // binary bigwig file
+    /**
+     * @deprecated (when refactoring downloaders, builders and loaders)
+     */
     @Deprecated
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
-    // bigwig file manually transformed to bedGraph file
-    public static final String GERP_PROCESSED_FILE = "gerp.bedGraph.gz"; //"gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
     public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
     public static final String CLINICAL_VARIANTS_ANNOTATED_JSON_FILE = "clinical_variants.full.json.gz";
-    public static final String DOCM_FILE = "docm.json.gz";
     public static final String DOCM_NAME = "DOCM";
-    public static final String STRUCTURAL_VARIANTS_FOLDER = "structuralVariants";
-    public static final String DGV_FILE = "dgv.txt";
-    public static final String DGV_VERSION_FILE = "dgvVersion.json";
-    public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
 
     public static final String OBO_JSON = "ontology";
     public static final String HPO_VERSION_FILE = "hpo" + SUFFIX_VERSION_FILENAME;
@@ -377,17 +366,16 @@ public class EtlCommons {
     // PubMed
     public static final String PUBMED_NAME = "PubMed";
     public static final String PUBMED_DATA = "pubmed";
-    public static final String PUBMED_SUBDIRECTORY = "pubmed";
-    public static final String PUBMED_VERSION_FILENAME = "pubmed" + SUFFIX_VERSION_FILENAME;
+    public static final String PUBMED_SUBDIRECTORY = PUBMED_DATA;
+    public static final String PUBMED_VERSION_FILENAME = PUBMED_DATA + SUFFIX_VERSION_FILENAME;
     public static final String PUBMED_REGEX_FILE_ID = "PUBMED";
+
+    private EtlCommons() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException, CellBaseException {
-        // This small hack allow to configure the appropriate Logger level from the command line, this is done
-        // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
-//        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-//        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stdout");
-//        stderr.setThreshold(Level.toLevel("debug"));
 
         Configurator.setRootLevel(Level.INFO);
 
@@ -395,7 +383,9 @@ public class EtlCommons {
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
+        }
         Process process = builder.start();
         process.waitFor();
 
@@ -408,15 +398,6 @@ public class EtlCommons {
         }
 
         return true;
-//
-//
-//            boolean executedWithoutErrors = true;
-//        int genomeInfoExitValue = process.exitValue();
-//        if (genomeInfoExitValue != 0) {
-//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-//            executedWithoutErrors = false;
-//        }
-//        return executedWithoutErrors;
     }
 
     private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
@@ -466,24 +447,23 @@ public class EtlCommons {
     public static String getEnsemblUrl(DownloadProperties.EnsemblProperties props, String ensemblRelease, String fileId, String species,
                                        String assembly, String chromosome) throws CellBaseException {
         if (!props.getUrl().getFiles().containsKey(fileId)) {
-            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.EnsemblProperties within the CellBase"
-                    + " configuration file");
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
         }
         String url = props.getUrl().getHost() + props.getUrl().getFiles().get(fileId);
 
         // Change release, species, assembly, chromosome if necessary
         if (StringUtils.isNotEmpty(ensemblRelease)) {
-            url = url.replaceAll(PUT_RELEASE_HERE_MARK, ensemblRelease.split("-")[1]);
+            url = url.replace(PUT_RELEASE_HERE_MARK, ensemblRelease.split("-")[1]);
         }
         if (StringUtils.isNotEmpty(species)) {
-            url = url.replaceAll(PUT_SPECIES_HERE_MARK, species);
-            url = url.replaceAll(PUT_CAPITAL_SPECIES_HERE_MARK, Character.toUpperCase(species.charAt(0)) + species.substring(1));
+            url = url.replace(PUT_SPECIES_HERE_MARK, species);
+            url = url.replace(PUT_CAPITAL_SPECIES_HERE_MARK, Character.toUpperCase(species.charAt(0)) + species.substring(1));
         }
         if (StringUtils.isNotEmpty(assembly)) {
-            url = url.replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly);
+            url = url.replace(PUT_ASSEMBLY_HERE_MARK, assembly);
         }
         if (StringUtils.isNotEmpty(chromosome)) {
-            url = url.replaceAll(PUT_CHROMOSOME_HERE_MARK, chromosome);
+            url = url.replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
         }
         return url;
     }
@@ -495,8 +475,7 @@ public class EtlCommons {
     public static String getUrl(DownloadProperties.URLProperties props, String fileId, String species, String assembly, String chromosome)
             throws CellBaseException {
         if (!props.getFiles().containsKey(fileId)) {
-            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
-                    + " configuration file");
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
         }
         String url;
         String filesValue = props.getFiles().get(fileId);
@@ -506,13 +485,13 @@ public class EtlCommons {
             url = props.getHost() + filesValue;
         }
         if (StringUtils.isNotEmpty(species)) {
-            url = url.replaceAll(PUT_SPECIES_HERE_MARK, species);
+            url = url.replace(PUT_SPECIES_HERE_MARK, species);
         }
         if (StringUtils.isNotEmpty(assembly)) {
-            url = url.replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly);
+            url = url.replace(PUT_ASSEMBLY_HERE_MARK, assembly);
         }
         if (StringUtils.isNotEmpty(chromosome)) {
-            url = url.replaceAll(PUT_CHROMOSOME_HERE_MARK, chromosome);
+            url = url.replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
         }
         return url;
     }
@@ -542,13 +521,16 @@ public class EtlCommons {
 
     public static String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
         if (!props.getFiles().containsKey(fileId)) {
-            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
-                    + " configuration file");
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
         }
         return getFilenameFromUrl(props.getFiles().get(fileId));
     }
 
     public static String getFilenameFromUrl(String url) {
         return Paths.get(url).getFileName().toString();
+    }
+
+    private static String getMissingFileIdMessage(String fileId) {
+        return "File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase configuration file";
     }
 }
