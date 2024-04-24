@@ -35,7 +35,7 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         Path pubmedFolder = downloadFolder.resolve(EtlCommons.PUBMED_SUBDIRECTORY);
         Files.createDirectories(pubmedFolder);
         logger.info("Downloading {} files at {} ...", EtlCommons.PUBMED_DATA, pubmedFolder);

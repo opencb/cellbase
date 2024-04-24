@@ -67,8 +67,9 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
      * @return list of files downloaded
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
+     * @throws CellBaseException if there is an error executing the command line
      */
-    public List<DownloadFile> downloadConservation() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadConservation() throws IOException, InterruptedException, CellBaseException {
         if (!speciesHasInfoToDownload(speciesConfiguration, CONSERVATION_DATA)) {
             return Collections.emptyList();
         }
@@ -138,7 +139,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         return downloadFiles;
     }
 
-    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException, CellBaseException {
         if (!speciesHasInfoToDownload(speciesConfiguration, REPEATS_DATA)) {
             return Collections.emptyList();
         }

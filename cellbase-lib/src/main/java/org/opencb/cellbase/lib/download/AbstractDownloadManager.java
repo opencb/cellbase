@@ -259,12 +259,12 @@ public abstract class AbstractDownloadManager {
         }
     }
 
-    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
+    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException, CellBaseException {
         return downloadFile(url, outputFileName, null);
     }
 
     protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, CellBaseException {
         DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
         if (Paths.get(outputFileName).toFile().exists()) {

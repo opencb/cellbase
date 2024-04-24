@@ -42,7 +42,7 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         DownloadProperties.URLProperties pharmGKB = configuration.getDownload().getPharmGKB();
         Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_SUBDIRECTORY).resolve(PHARMGKB_SUBDIRECTORY);
         Files.createDirectories(pharmgkbDownloadFolder);

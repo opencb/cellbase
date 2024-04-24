@@ -382,7 +382,7 @@ public class EtlCommons {
     public static final String PUBMED_REGEX_FILE_ID = "PUBMED";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, CellBaseException {
         // This small hack allow to configure the appropriate Logger level from the command line, this is done
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
 //        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
@@ -395,18 +395,28 @@ public class EtlCommons {
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        logger.info("Executing command: " + StringUtils.join(builder.command(), " "));
+        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
 
         // Check process output
-        boolean executedWithoutErrors = true;
-        int genomeInfoExitValue = process.exitValue();
-        if (genomeInfoExitValue != 0) {
-            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-            executedWithoutErrors = false;
+        if (process.exitValue() != 0) {
+            String msg = "Error executing command '" + binPath + "'; error code = " + process.exitValue() + ". More info in log file: "
+                    + logFilePath;
+            logger.error(msg);
+            throw new CellBaseException(msg);
         }
-        return executedWithoutErrors;
+
+        return true;
+//
+//
+//            boolean executedWithoutErrors = true;
+//        int genomeInfoExitValue = process.exitValue();
+//        if (genomeInfoExitValue != 0) {
+//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
+//            executedWithoutErrors = false;
+//        }
+//        return executedWithoutErrors;
     }
 
     private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
