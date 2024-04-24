@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 public abstract class CellBaseBuilder {
 
     protected CellBaseSerializer serializer;
+    protected ObjectReader dataSourceReader = new ObjectMapper().readerFor(DataSource.class);
 
     protected Logger logger;
 

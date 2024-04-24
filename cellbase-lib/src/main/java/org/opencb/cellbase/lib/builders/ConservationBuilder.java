@@ -16,11 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -64,8 +61,6 @@ public class ConservationBuilder extends CellBaseBuilder {
             throw new IOException("Conservation directory " + conservedRegionPath + " does not exist or it is not a directory or it cannot"
                     + " be read");
         }
-
-        ObjectReader dataSourceReader = new ObjectMapper().readerFor(DataSource.class);
 
         // Check GERP folder and files
         Path gerpPath = conservedRegionPath.resolve(GERP_SUBDIRECTORY);
