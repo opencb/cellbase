@@ -371,9 +371,10 @@ public final class EtlCommons {
     // PubMed
     public static final String PUBMED_NAME = "PubMed";
     public static final String PUBMED_DATA = "pubmed";
-    public static final String PUBMED_SUBDIRECTORY = PUBMED_DATA;
-    public static final String PUBMED_VERSION_FILENAME = PUBMED_DATA + SUFFIX_VERSION_FILENAME;
-    public static final String PUBMED_REGEX_FILE_ID = "PUBMED";
+    public static final String PUBMED_SUBDIRECTORY = "pubmed";
+    public static final String PUBMED_VERSION_FILENAME = "pubMed" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String PUBMED_REGEX_FILE_ID = "PUBMED_REGEX";
 
     private EtlCommons() {
         throw new IllegalStateException("Utility class");

@@ -112,6 +112,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             Thread.currentThread().interrupt();
             throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
         }
     }

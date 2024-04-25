@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class PubMedDownloadManager extends AbstractDownloadManager {
 
     public PubMedDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -36,13 +38,14 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        Path pubmedFolder = downloadFolder.resolve(EtlCommons.PUBMED_SUBDIRECTORY);
+        logger.info(DOWNLOADING_LOG_MESSAGE, PUBMED_NAME);
+
+        Path pubmedFolder = downloadFolder.resolve(PUBMED_SUBDIRECTORY);
         Files.createDirectories(pubmedFolder);
-        logger.info("Downloading {} files at {} ...", EtlCommons.PUBMED_DATA, pubmedFolder);
 
         // Downloads PubMed XML files
-        String url = configuration.getDownload().getPubmed().getHost();
-        String regexp = configuration.getDownload().getPubmed().getFiles().get(EtlCommons.PUBMED_REGEX_FILE_ID);
+        String host = configuration.getDownload().getPubmed().getHost();
+        String regexp = configuration.getDownload().getPubmed().getFiles().get(PUBMED_REGEX_FILE_ID);
         String[] name = regexp.split("[\\[\\]]");
         String[] split = name[1].split("\\.\\.");
         int start = Integer.parseInt(split[0]);
@@ -51,13 +54,18 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
         for (int i = start; i <= end; i++) {
-            String filename = name[0] + String.format("%0" + padding + "d", i) + name[2];
-            logger.info("\tDownloading from {} to {} ", url + "/" + filename, pubmedFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url + "/" + filename, pubmedFolder.resolve(filename).toString()));
+            String padString = "%0" + padding + "d";
+            String filename = name[0] + String.format(padString, i) + name[2];
+            String url = host + filename;
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, pubmedFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, pubmedFolder.resolve(filename).toString()));
         }
 
-        saveDataSource(EtlCommons.PUBMED_NAME, EtlCommons.PUBMED_DATA, configuration.getDownload().getPubmed().getVersion(), getTimeStamp(),
-                Collections.singletonList(url), pubmedFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
+        // Save data source
+        saveDataSource(EtlCommons.PUBMED_NAME, PUBMED_DATA, configuration.getDownload().getPubmed().getVersion(), getTimeStamp(),
+                Collections.singletonList(host), pubmedFolder.resolve(PUBMED_VERSION_FILENAME));
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PUBMED_NAME);
 
         return downloadFiles;
     }
