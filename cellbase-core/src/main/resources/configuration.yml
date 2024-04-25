@@ -247,22 +247,22 @@ download:
   ## OBO Ontologies
   hpoObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2024-03-01"
+    ## The version is retrieved from the OBO file
     files:
       HPO: hp.obo
   goObo:
-    host: http://purl.obolibrary.org/obo/go/
-    version: "2024-03-01"
+    host: http://purl.obolibrary.org/obo/
+    ## The version is retrieved from the OBO file
     files:
       GO: go/go-basic.obo
   doidObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2024-03-01"
+    ## The version is retrieved from the OBO file
     files:
       DOID: doid.obo
   mondoObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2024-03-01"
+    ## The version is retrieved from the OBO file
     files:
       MONDO: mondo.obo
 
