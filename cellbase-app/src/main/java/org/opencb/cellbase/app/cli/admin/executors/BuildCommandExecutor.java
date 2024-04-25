@@ -204,10 +204,18 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RepeatsBuilder(repeatsDownloadPath, serializer, configuration);
     }
 
-    private CellBaseBuilder buildObo() {
-        Path oboDir = downloadFolder.resolve(ONTOLOGY_DATA);
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
-        return new OntologyBuilder(oboDir, serializer);
+    private CellBaseBuilder buildObo() throws CellBaseException {
+        Path oboDownloadPath = downloadFolder.resolve(ONTOLOGY_SUBDIRECTORY);
+        Path oboBuildPath = buildFolder.resolve(ONTOLOGY_SUBDIRECTORY);
+        List<Path> versionPaths = Arrays.asList(oboDownloadPath.resolve(HPO_OBO_VERSION_FILENAME),
+                oboDownloadPath.resolve(GO_OBO_VERSION_FILENAME),
+                oboDownloadPath.resolve(DOID_OBO_VERSION_FILENAME),
+                oboDownloadPath.resolve(MONDO_OBO_VERSION_FILENAME));
+        copyVersionFiles(versionPaths, oboBuildPath);
+
+        // Create serializer and return the ontology builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(oboBuildPath, OBO_BASENAME);
+        return new OntologyBuilder(oboDownloadPath, serializer);
     }
 
     /**
