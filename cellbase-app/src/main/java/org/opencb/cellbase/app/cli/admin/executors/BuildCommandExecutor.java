@@ -409,22 +409,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new PubMedBuilder(pubmedInputFolder, serializer);
     }
 
-    private CellBaseBuilder buildPharmacogenomics() throws IOException {
-        Path inFolder = downloadFolder.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
-        Path outFolder = buildFolder.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
-        if (!outFolder.toFile().exists()) {
-            outFolder.toFile().mkdirs();
-        }
+    private CellBaseBuilder buildPharmacogenomics() throws CellBaseException {
+        // Sanity check
+        Path pharmGkbDownloadPath = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
+        Path pharmGkbBuildPath = buildFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
+        copyVersionFiles(Arrays.asList(pharmGkbDownloadPath.resolve(PHARMGKB_VERSION_FILENAME)), pharmGkbBuildPath);
 
-        logger.info("Copying PharmGKB version file...");
-        if (inFolder.resolve(PHARMGKB_DATA).resolve(EtlCommons.PHARMGKB_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(inFolder.resolve(PHARMGKB_DATA).resolve(EtlCommons.PHARMGKB_VERSION_FILENAME),
-                    outFolder.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME),
-                    StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder);
-        return new PharmGKBBuilder(inFolder, serializer);
+        // Create the file serializer and the PharmGKB feature builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pharmGkbBuildPath);
+        return new PharmGKBBuilder(pharmGkbDownloadPath, serializer);
     }
 
     private void checkVersionFiles(List<Path> versionPaths) throws CellBaseException {

@@ -161,8 +161,8 @@ public final class EtlCommons {
     // PharmGKB
     public static final String PHARMGKB_NAME = "PharmGKB";
     public static final String PHARMGKB_DATA = "pharmgkb";
-    public static final String PHARMGKB_SUBDIRECTORY = PHARMGKB_DATA;
-    public static final String PHARMGKB_VERSION_FILENAME = PHARMGKB_DATA + SUFFIX_VERSION_FILENAME;
+    public static final String PHARMGKB_SUBDIRECTORY = "pharmgkb";
+    public static final String PHARMGKB_VERSION_FILENAME = "pharmGKB" + SUFFIX_VERSION_FILENAME;
     // Must match the configuration file
     public static final String PHARMGKB_GENES_FILE_ID = "GENES";
     public static final String PHARMGKB_CHEMICALS_FILE_ID = "CHEMICALS";
@@ -396,8 +396,8 @@ public final class EtlCommons {
 
         // Check process output
         if (process.exitValue() != 0) {
-            String msg = "Error executing command '" + binPath + "'; error code = " + process.exitValue() + ". More info in log file: "
-                    + logFilePath;
+            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
+                    + ". More info in log file: " + logFilePath;
             logger.error(msg);
             throw new CellBaseException(msg);
         }
