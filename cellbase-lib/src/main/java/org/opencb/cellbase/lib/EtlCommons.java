@@ -155,6 +155,7 @@ public final class EtlCommons {
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
     // Pharmacogenomics
+    public static final String PHARMACOGENOMICS_NAME = "Pharmacogenomics";
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
     public static final String PHARMACOGENOMICS_SUBDIRECTORY = "pharmacogenomics";
     // PharmGKB
