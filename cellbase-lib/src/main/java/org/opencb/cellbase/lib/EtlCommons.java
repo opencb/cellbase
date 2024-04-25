@@ -232,8 +232,9 @@ public final class EtlCommons {
     public static final String WINDOW_MASKER_FILE_ID = "WINDOW_MASKER";
 
     // Ontology
+    public static final String ONTOLOGY_NAME = "Ontology";
     public static final String ONTOLOGY_DATA = "ontology";
-    public static final String ONTOLOGY_SUBDIRECTORY = "ontology";
+    public static final String ONTOLOGY_SUBDIRECTORY = ONTOLOGY_DATA;
     // HPO
     public static final String HPO_OBO_NAME = "HPO";
     public static final String HPO_OBO_VERSION_FILENAME = "hpoObo" + SUFFIX_VERSION_FILENAME;
