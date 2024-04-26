@@ -44,8 +44,11 @@ public abstract class CellBaseBuilder {
     public static final String BUILDING_LOG_MESSAGE = "Building {} ...";
     public static final String BUILDING_DONE_LOG_MESSAGE = "Building {} done.";
 
-    public static final String PARSING_LOG_MESSAGE = "Parsing file {} ...";
-    public static final String PARSING_DONE_LOG_MESSAGE = "Parsing file {} done.";
+    public static final String CATEGORY_BUILDING_LOG_MESSAGE = "Building {}/{} ...";
+    public static final String CATEGORY_BUILDING_DONE_LOG_MESSAGE = "Building {}/{} done.";
+
+    public static final String PARSING_LOG_MESSAGE = "Parsing {} ...";
+    public static final String PARSING_DONE_LOG_MESSAGE = "Parsing {} done.";
 
 
     public CellBaseBuilder(CellBaseSerializer serializer) {

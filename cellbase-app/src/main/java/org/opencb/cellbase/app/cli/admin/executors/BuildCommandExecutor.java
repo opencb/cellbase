@@ -264,12 +264,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
     }
 
-    private CellBaseBuilder buildCadd() {
-        Path variationFunctionalScorePath = downloadFolder.resolve("variation_functional_score");
-        copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("caddVersion.json")));
-        Path caddFilePath = variationFunctionalScorePath.resolve("whole_genome_SNVs.tsv.gz");
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "cadd");
-        return new CaddScoreBuilder(caddFilePath, serializer);
+    private CellBaseBuilder buildCadd() throws CellBaseException {
+        // Sanity check
+        Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        Path caddBuildPath = buildFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        copyVersionFiles(Collections.singletonList(caddDownloadPath.resolve(getDataVersionFilename(CADD_DATA))), caddBuildPath);
+
+        // Create the file serializer and the protein builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(caddBuildPath, CADD_DATA);
+        return new CaddScoreBuilder(caddDownloadPath, serializer);
     }
 
     private CellBaseBuilder buildRevel() {
@@ -391,7 +394,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new SpliceBuilder(spliceInputFolder, serializer);
     }
 
-    private CellBaseBuilder buildPubMed() throws IOException, CellBaseException {
+    private CellBaseBuilder buildPubMed() throws CellBaseException {
         // Sanity check
         Path pubMedDownloadPath = downloadFolder.resolve(PUBMED_DATA);
         Path pubMedBuildPath = buildFolder.resolve(PUBMED_DATA);

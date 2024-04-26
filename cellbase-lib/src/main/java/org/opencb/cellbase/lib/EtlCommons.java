@@ -267,6 +267,8 @@ public final class EtlCommons {
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
     // CADD scores
     public static final String CADD_DATA = "cadd";
+    public static final String CADD_RAW_DATA = "cadd_raw";
+    public static final String CADD_SCALED_DATA = "cadd_scaled";
     // Must match the configuration file
     public static final String CADD_FILE_ID = "CADD";
 
