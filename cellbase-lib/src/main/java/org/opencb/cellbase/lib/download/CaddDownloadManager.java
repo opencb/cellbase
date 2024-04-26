@@ -36,22 +36,25 @@ public class CaddDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_FUNCTIONAL_SCORE_DATA)) {
-            return null;
+        logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+
+        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_FUNCTIONAL_SCORE_DATA)
+                || !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            logger.info("{}/{} not supported for species {}", getDataCategory(CADD_DATA), getDataName(CADD_DATA),
+                    speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            Path variationFunctionalScoreFolder = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_SUBDIRECTORY);
-            Files.createDirectories(variationFunctionalScoreFolder);
-            logger.info("Downloading {} files at {} ...", CADD_NAME, variationFunctionalScoreFolder);
 
+        // Create the CADD download path
+        Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        Files.createDirectories(caddDownloadPath);
 
-            // Download CADD and save data source
-            DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_NAME,
-                    VARIATION_FUNCTIONAL_SCORE_DATA, CADD_VERSION_FILENAME, variationFunctionalScoreFolder);
+        // Download CADD and save data source
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_DATA,
+                caddDownloadPath);
 
-            return Collections.singletonList(downloadFile);
-        }
-        logger.warn("CADD scores are not supported for {}", speciesConfiguration.getScientificName());
-        return Collections.emptyList();
+        logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 }

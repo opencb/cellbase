@@ -52,8 +52,10 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
-    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
     protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {} done!";
+    protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
+    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {}/{} done!";
+    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
 
     protected String species;
     protected String assembly;
@@ -141,12 +143,33 @@ public abstract class AbstractDownloadManager {
         return hasInfo;
     }
 
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveDataSource(props, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, String chromosome,
+                                                     Path outPath) throws IOException, InterruptedException, CellBaseException {
+        String versionFilename = getDataVersionFilename(data);
+
+        // Download file
+        DownloadFile downloadFile = downloadDataSource(props, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, props.getVersion(), getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(versionFilename));
+
+        return downloadFile;
+    }
+
+    @Deprecated
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
                                                      String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {
         return downloadAndSaveDataSource(props, fileId, name, category, null, versionFilename, outPath);
     }
 
+    @Deprecated
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
                                                      String chromosome, String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {

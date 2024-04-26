@@ -265,10 +265,8 @@ public final class EtlCommons {
 
     // Variation functional score
     public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
-    public static final String VARIATION_FUNCTIONAL_SCORE_SUBDIRECTORY = "variation_functional_score";
     // CADD scores
-    public static final String CADD_NAME = "CADD";
-    public static final String CADD_VERSION_FILENAME = "cadd" + SUFFIX_VERSION_FILENAME;
+    public static final String CADD_DATA = "cadd";
     // Must match the configuration file
     public static final String CADD_FILE_ID = "CADD";
 
@@ -299,7 +297,6 @@ public final class EtlCommons {
     public static final String GENOME_INFO_DATA = "genome_info";
     public static final String DISGENET_DATA = "disgenet";
     public static final String HPO_DATA = "hpo";
-    public static final String CADD_DATA = "cadd";
     public static final String PPI_DATA = "ppi";
     public static final String DRUG_DATA = "drug";
 
@@ -384,12 +381,16 @@ public final class EtlCommons {
 
         // Populate data names map
         dataNamesMap.put(PUBMED_DATA, "PubMed");
+        dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Scores");
+        dataNamesMap.put(CADD_DATA, "CADD");
 
         // Populate data categories map
         dataCategoriesMap.put(PUBMED_DATA, "Publication");
+        dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
@@ -570,21 +571,21 @@ public final class EtlCommons {
 
     public static String getDataName(String data) throws CellBaseException {
         if (!dataNamesMap.containsKey(data)) {
-            throw new CellBaseException("Name not found for data " + data);
+            throw new CellBaseException("Name not found for data '" + data + "'");
         }
         return dataNamesMap.get(data);
     }
 
     public static String getDataCategory(String data) throws CellBaseException {
         if (!dataCategoriesMap.containsKey(data)) {
-            throw new CellBaseException("Category not found for data " + data);
+            throw new CellBaseException("Category not found for data '" + data + "'");
         }
         return dataCategoriesMap.get(data);
     }
 
     public static String getDataVersionFilename(String data) throws CellBaseException {
         if (!dataVersionFilenamesMap.containsKey(data)) {
-            throw new CellBaseException("Version filename not found for data " + data);
+            throw new CellBaseException("Version filename not found for data '" + data + "'");
         }
         return dataVersionFilenamesMap.get(data);
     }
