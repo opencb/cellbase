@@ -33,7 +33,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by fjlopez on 03/06/16.
@@ -369,12 +371,26 @@ public final class EtlCommons {
     public static final String HGMD_FILE = "hgmd.vcf";
 
     // PubMed
-    public static final String PUBMED_NAME = "PubMed";
     public static final String PUBMED_DATA = "pubmed";
-    public static final String PUBMED_SUBDIRECTORY = "pubmed";
-    public static final String PUBMED_VERSION_FILENAME = "pubMed" + SUFFIX_VERSION_FILENAME;
     // Must match the configuration file
     public static final String PUBMED_REGEX_FILE_ID = "PUBMED_REGEX";
+
+    // Utilities maps
+    private static Map<String, String> dataNamesMap = new HashMap<>();
+    private static Map<String, String> dataCategoriesMap = new HashMap<>();
+    private static Map<String, String> dataVersionFilenamesMap = new HashMap<>();
+
+    static {
+
+        // Populate data names map
+        dataNamesMap.put(PUBMED_DATA, "PubMed");
+
+        // Populate data categories map
+        dataCategoriesMap.put(PUBMED_DATA, "Publication");
+
+        // Populate data version filenames Map
+        dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
+    }
 
     private EtlCommons() {
         throw new IllegalStateException("Utility class");
@@ -550,5 +566,26 @@ public final class EtlCommons {
 
     private static String getMissingFileIdMessage(String fileId) {
         return "File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase configuration file";
+    }
+
+    public static String getDataName(String data) throws CellBaseException {
+        if (!dataNamesMap.containsKey(data)) {
+            throw new CellBaseException("Name not found for data " + data);
+        }
+        return dataNamesMap.get(data);
+    }
+
+    public static String getDataCategory(String data) throws CellBaseException {
+        if (!dataCategoriesMap.containsKey(data)) {
+            throw new CellBaseException("Category not found for data " + data);
+        }
+        return dataCategoriesMap.get(data);
+    }
+
+    public static String getDataVersionFilename(String data) throws CellBaseException {
+        if (!dataVersionFilenamesMap.containsKey(data)) {
+            throw new CellBaseException("Version filename not found for data " + data);
+        }
+        return dataVersionFilenamesMap.get(data);
     }
 }
