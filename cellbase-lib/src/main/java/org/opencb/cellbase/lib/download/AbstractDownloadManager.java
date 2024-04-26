@@ -47,7 +47,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.opencb.cellbase.lib.EtlCommons.getFilenameFromUrl;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public abstract class AbstractDownloadManager {
 
@@ -201,6 +201,21 @@ public abstract class AbstractDownloadManager {
         return downloadFile(url, outFile.toString());
     }
 
+    protected void saveDataSource(String data, String version, String date, List<String> urls, Path versionFilePath)
+            throws IOException, CellBaseException {
+        String name = getDataName(data);
+        String category = getDataCategory(data);
+        DataSource dataSource = new DataSource(name, category, version, date, urls);
+
+        if (StringUtils.isEmpty(version)) {
+            logger.warn("Version missing for data source {}/{}, using the date as version: {}", category, name, date);
+            dataSource.setVersion(date);
+        }
+
+        dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
+    }
+
+    @Deprecated
     protected void saveDataSource(String name, String category, String version, String date, List<String> urls, Path versionFilePath)
             throws IOException {
         DataSource dataSource = new DataSource(name, category, version, date, urls);
