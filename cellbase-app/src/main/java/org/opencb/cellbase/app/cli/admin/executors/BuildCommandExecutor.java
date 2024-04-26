@@ -391,22 +391,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new SpliceBuilder(spliceInputFolder, serializer);
     }
 
-    private CellBaseBuilder buildPubMed() throws IOException {
-        Path pubmedInputFolder = downloadFolder.resolve(EtlCommons.PUBMED_DATA);
-        Path pubmedOutputFolder = buildFolder.resolve(EtlCommons.PUBMED_DATA);
-        if (!pubmedOutputFolder.toFile().exists()) {
-            pubmedOutputFolder.toFile().mkdirs();
-        }
+    private CellBaseBuilder buildPubMed() throws IOException, CellBaseException {
+        // Sanity check
+        Path pubMedDownloadPath = downloadFolder.resolve(PUBMED_DATA);
+        Path pubMedBuildPath = buildFolder.resolve(PUBMED_DATA);
+        copyVersionFiles(Collections.singletonList(pubMedDownloadPath.resolve(getDataVersionFilename(PUBMED_DATA))), pubMedBuildPath);
 
-        logger.info("Copying PubMed version file...");
-        if (pubmedInputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(pubmedInputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME),
-                    pubmedOutputFolder.resolve(EtlCommons.PUBMED_VERSION_FILENAME),
-                    StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pubmedOutputFolder);
-        return new PubMedBuilder(pubmedInputFolder, serializer);
+        // Create the file serializer and the PubMed builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pubMedBuildPath);
+        return new PubMedBuilder(pubMedDownloadPath, serializer, configuration);
     }
 
     private CellBaseBuilder buildPharmacogenomics() throws CellBaseException {
