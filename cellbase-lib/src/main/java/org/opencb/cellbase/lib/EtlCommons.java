@@ -177,11 +177,9 @@ public final class EtlCommons {
     public static final String PHARMGKB_RELATIONSHIPS_FILE_ID = "RELATIONSHIPS";
 
     // Missense variantion functional score
-    public static final String MISSENSE_VARIATION_SCORE_NAME = "Missense Variation Functional Scores";
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
     // Revel
-    public static final String REVEL_NAME = "Revel";
-    public static final String REVEL_VERSION_FILENAME = "revel" + SUFFIX_VERSION_FILENAME;
+    public static final String REVEL_DATA = "revel";
     // Must match the configuration file
     public static final String REVEL_FILE_ID = "REVEL";
 
@@ -385,14 +383,18 @@ public final class EtlCommons {
         dataNamesMap.put(PUBMED_DATA, "PubMed");
         dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Scores");
         dataNamesMap.put(CADD_DATA, "CADD");
+        dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Scores");
+        dataNamesMap.put(REVEL_DATA, "Revel");
 
         // Populate data categories map
         dataCategoriesMap.put(PUBMED_DATA, "Publication");
         dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
+        dataCategoriesMap.put(REVEL_DATA, dataNamesMap.get(MISSENSE_VARIATION_SCORE_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(REVEL_DATA, "revel" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
