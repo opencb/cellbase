@@ -58,10 +58,10 @@ public class RevelScoreBuilder extends CellBaseBuilder {
             throw new CellBaseException("One " + dataName + " file is expected, but currently there are " + revelFiles.size() + " files");
         }
 
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(String.valueOf(revelDownloadPath)));
-        ZipEntry zipEntry = zis.getNextEntry();
-
         logger.info(PARSING_LOG_MESSAGE, revelFiles.get(0));
+
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(String.valueOf(revelFiles.get(0))));
+        ZipEntry zipEntry = zis.getNextEntry();
 
         ZipFile zipFile = new ZipFile(revelFiles.get(0).toString());
         InputStream inputStream = zipFile.getInputStream(zipEntry);
