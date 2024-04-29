@@ -94,6 +94,7 @@ public class CaddScoreBuilder extends CellBaseBuilder {
         Map<String, Float> rawScoreValuesMap = new HashMap<>();
         Map<String, Float> scaledScoreValuesMap = new HashMap<>();
 
+        logger.info(PARSING_LOG_MESSAGE, caddFiles.get(0));
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFiles.get(0).toPath())) {
             while ((line = bufferedReader.readLine()) != null) {
                 if (!line.startsWith("#")) {
@@ -186,6 +187,7 @@ public class CaddScoreBuilder extends CellBaseBuilder {
 
             serializer.close();
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, caddFiles.get(0));
 
         logger.info(CATEGORY_BUILDING_DONE_LOG_MESSAGE, dataCategory, dataName);
     }
