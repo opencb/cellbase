@@ -40,12 +40,13 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
         if (!speciesHasInfoToDownload(speciesConfiguration, REGULATION_DATA)) {
+            logger.info("{} not supported for the species {}", getDataName(REGULATION_DATA), speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
-        regulationFolder = downloadFolder.resolve(REGULATION_SUBDIRECTORY);
+        regulationFolder = downloadFolder.resolve(REGULATION_DATA);
         Files.createDirectories(regulationFolder);
-        logger.info("Downloading {} files at {} ...", REGULATION_DATA, regulationFolder);
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
@@ -53,6 +54,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadMiRTarBase());
         downloadFiles.add(downloadMirna());
 
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
         return downloadFiles;
     }
 
@@ -62,19 +64,12 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
      * @throws InterruptedException Any issue downloading files
      */
     private List<DownloadFile> downloadRegulatoryaAndMotifFeatures() throws IOException, InterruptedException, CellBaseException {
-//        String baseUrl;
-//        if (configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
-//            baseUrl = ensemblHostUrl + ensemblRelease + "/";
-//        } else {
-//            baseUrl = ensemblHostUrl + ensemblRelease + "/" + getPhylo(speciesConfiguration) + "/";
-//        }
-
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Regulatory build
         downloadFile = downloadAndSaveEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_REGULATORY_BUILD_FILE_ID,
-                REGULATORY_BUILD_NAME, REGULATION_DATA, null, REGULATORY_BUILD_VERSION_FILENAME, regulationFolder);
+                REGULATORY_BUILD_DATA, regulationFolder);
         downloadFiles.add(downloadFile);
 
         // Motifs features
@@ -89,21 +84,29 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
         // Save data source (name, category, version,...)
-        saveDataSource(MOTIF_FEATURES_NAME, REGULATION_DATA, "(" + ENSEMBL_NAME + " " + ensemblVersion + ")", getTimeStamp(), urls,
-                regulationFolder.resolve(MOTIF_FEATURES_VERSION_FILENAME));
+        saveDataSource(MOTIF_FEATURES_DATA, "(" + getDataName(ENSEMBL_DATA) + " " + ensemblVersion + ")", getTimeStamp(), urls,
+                regulationFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)));
 
         return downloadFiles;
     }
 
     private DownloadFile downloadMirna() throws IOException, InterruptedException, CellBaseException {
-        logger.info("Downloading {} ...", MIRBASE_NAME);
-        return downloadAndSaveDataSource(configuration.getDownload().getMirbase(), MIRBASE_FILE_ID, MIRBASE_NAME, REGULATION_DATA,
-                MIRBASE_VERSION_FILENAME, regulationFolder);
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRBASE_DATA));
+
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMirbase(), MIRBASE_FILE_ID, MIRBASE_DATA,
+                regulationFolder);
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRBASE_DATA));
+        return downloadFile;
     }
 
     private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException, CellBaseException {
-        logger.info("Downloading {} ...", MIRTARBASE_NAME);
-        return downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(), MIRTARBASE_FILE_ID, MIRTARBASE_NAME, REGULATION_DATA,
-                MIRTARBASE_VERSION_FILENAME, regulationFolder);
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(), MIRTARBASE_FILE_ID,
+                MIRTARBASE_DATA, regulationFolder);
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+        return downloadFile;
     }
 }

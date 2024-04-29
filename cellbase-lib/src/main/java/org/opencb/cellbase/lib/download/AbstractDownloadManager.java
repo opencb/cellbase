@@ -183,6 +183,25 @@ public abstract class AbstractDownloadManager {
         return downloadFile;
     }
 
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            Path outPath) throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveEnsemblDataSource(ensemblProps, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            String chromosome, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        // Download file
+        DownloadFile downloadFile = downloadEnsemblDataSource(ensemblProps, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, "(Ensembl " + ensemblVersion + ")", getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(getDataVersionFilename(data)));
+
+        return downloadFile;
+    }
+
+    @Deprecated
     protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String name,
                                                             String category, String chromosome, String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {

@@ -44,34 +44,30 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      * @throws CellBaseException if there is an error in the CelllBase configuration file
      */
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, PROTEIN_NAME);
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
         if (!speciesHasInfoToDownload(speciesConfiguration, PROTEIN_DATA)) {
-            logger.info("{} not supported for the species {}", PROTEIN_NAME, speciesConfiguration.getScientificName());
+            logger.info("{} not supported for the species {}", getDataName(PROTEIN_DATA), speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
-        Path proteinFolder = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
+        Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
         Files.createDirectories(proteinFolder);
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Uniprot
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_NAME, PROTEIN_DATA,
-                UNIPROT_VERSION_FILENAME, proteinFolder);
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_DATA, proteinFolder);
         downloadFiles.add(downloadFile);
 
         // InterPro
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_NAME, PROTEIN_DATA,
-                INTERPRO_VERSION_FILENAME, proteinFolder);
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_DATA, proteinFolder);
         downloadFiles.add(downloadFile);
 
         // Intact
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_NAME, PROTEIN_DATA,
-                INTACT_VERSION_FILENAME, proteinFolder);
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_DATA, proteinFolder);
         downloadFiles.add(downloadFile);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PROTEIN_NAME);
-
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
         return downloadFiles;
     }
 }

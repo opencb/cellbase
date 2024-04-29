@@ -38,9 +38,9 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, PHARMACOGENOMICS_NAME);
+        logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
 
-        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_SUBDIRECTORY).resolve(PHARMGKB_SUBDIRECTORY);
+        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
         Files.createDirectories(pharmgkbDownloadFolder);
 
         DownloadProperties.URLProperties pharmGKBProps = configuration.getDownload().getPharmGKB();
@@ -58,12 +58,11 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile);
         }
 
-        // Save versions
-        saveDataSource(PHARMGKB_NAME, PHARMACOGENOMICS_NAME, pharmGKBProps.getVersion(), getTimeStamp(), urls,
-                pharmgkbDownloadFolder.resolve(PHARMGKB_VERSION_FILENAME));
+        // Save data source
+        saveDataSource(PHARMGKB_DATA, pharmGKBProps.getVersion(), getTimeStamp(), urls,
+                pharmgkbDownloadFolder.resolve(getDataVersionFilename(PHARMGKB_DATA)));
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PHARMACOGENOMICS_NAME);
-
+        logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
         return downloadFiles;
     }
 }
