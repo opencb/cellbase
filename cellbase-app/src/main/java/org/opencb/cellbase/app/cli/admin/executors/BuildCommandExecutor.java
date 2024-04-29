@@ -275,11 +275,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CaddScoreBuilder(caddDownloadPath, serializer);
     }
 
-    private CellBaseBuilder buildRevel() {
-        Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-        copyVersionFiles(Arrays.asList(missensePredictionScorePath.resolve("revelVersion.json")));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-        return new RevelScoreBuilder(missensePredictionScorePath, serializer);
+    private CellBaseBuilder buildRevel() throws CellBaseException {
+        // Sanity check
+        Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+        Path revelBuildPath = buildFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+        copyVersionFiles(Collections.singletonList(revelDownloadPath.resolve(getDataVersionFilename(REVEL_DATA))), revelBuildPath);
+
+        // Create the file serializer and the regulatory feature builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(revelBuildPath, REVEL_DATA);
+        return new RevelScoreBuilder(revelDownloadPath, serializer);
     }
 
     private CellBaseBuilder buildRegulation() throws CellBaseException {
