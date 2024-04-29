@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -486,9 +486,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.TRF_VERSION_FILENAME),
-                        input.resolve(EtlCommons.GSD_VERSION_FILENAME),
-                        input.resolve(EtlCommons.WM_VERSION_FILENAME)
+                        input.resolve(getDataVersionFilename(TRF_DATA)),
+                        input.resolve(getDataVersionFilename(GSD_DATA)),
+                        input.resolve(getDataVersionFilename(WM_DATA))
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
@@ -587,7 +587,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(pharmaPath.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME));
+        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(PHARMGKB_DATA)));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 
