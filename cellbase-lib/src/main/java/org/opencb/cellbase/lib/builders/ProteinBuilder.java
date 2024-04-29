@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.*;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
@@ -59,38 +60,30 @@ public class ProteinBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws CellBaseException, IOException {
-        logger.info(BUILDING_LOG_MESSAGE, PROTEIN_NAME);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
 
         // Sanity check
-        if (proteinPath == null) {
-            throw new CellBaseException(PROTEIN_NAME + " directory is missing (null)");
-        }
-        if (!Files.exists(proteinPath)) {
-            throw new CellBaseException(PROTEIN_NAME + " directory " + proteinPath + " does not exist");
-        }
-        if (!Files.isDirectory(proteinPath)) {
-            throw new CellBaseException(PROTEIN_NAME + " directory " + proteinPath + " is not a directory");
-        }
+        checkDirectory(proteinPath, getDataName(PROTEIN_DATA));
 
         // Check UniProt file
-        List<File> uniProtFiles = checkFiles(dataSourceReader.readValue(proteinPath.resolve(UNIPROT_VERSION_FILENAME).toFile()),
-                proteinPath, PROTEIN_NAME + "/" + UNIPROT_NAME);
+        DataSource dataSource = dataSourceReader.readValue(proteinPath.resolve(getDataVersionFilename(UNIPROT_DATA)).toFile());
+        List<File> uniProtFiles = checkFiles(dataSource, proteinPath, getDataCategory(UNIPROT_DATA) + "/" + getDataName(UNIPROT_DATA));
         if (uniProtFiles.size() != 1) {
-            throw new CellBaseException("Only one " + UNIPROT_NAME + " file is expected, but currently there are " + uniProtFiles.size()
-                    + " files");
+            throw new CellBaseException("Only one " + getDataName(UNIPROT_DATA) + " file is expected, but currently there are "
+                    + uniProtFiles.size() + " files");
         }
 
         // Check InterPro file
-        List<File> interProFiles = checkFiles(dataSourceReader.readValue(proteinPath.resolve(INTERPRO_VERSION_FILENAME).toFile()),
-                proteinPath, PROTEIN_NAME + "/" + INTERPRO_NAME);
+        dataSource = dataSourceReader.readValue(proteinPath.resolve(getDataVersionFilename(INTERPRO_DATA)).toFile());
+        List<File> interProFiles = checkFiles(dataSource, proteinPath, getDataCategory(INTERPRO_DATA) + "/" + getDataName(INTERPRO_DATA));
         if (interProFiles.size() != 1) {
-            throw new CellBaseException("Only one " + INTERPRO_NAME + " file is expected, but currently there are " + uniProtFiles.size()
-                    + " files");
+            throw new CellBaseException("Only one " + getDataName(INTERPRO_DATA) + " file is expected, but currently there are "
+                    + interProFiles.size() + " files");
         }
 
         // Prepare UniProt data by splitting data in chunks
         Path uniProtChunksPath = serializer.getOutdir().resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
-        logger.info("Split {} file {} into chunks at {}", UNIPROT_NAME, uniProtFiles.get(0).getName(), uniProtChunksPath);
+        logger.info("Split {} file {} into chunks at {}", getDataName(UNIPROT_DATA), uniProtFiles.get(0).getName(), uniProtChunksPath);
         Files.createDirectories(uniProtChunksPath);
         splitUniprot(proteinPath.resolve(uniProtFiles.get(0).getName()), uniProtChunksPath);
 
@@ -182,13 +175,13 @@ public class ProteinBuilder extends CellBaseBuilder {
                     }
 
                     if (++numInterProLinesProcessed % 10000000 == 0) {
-                        logger.debug("{} {} lines processed. {} unique proteins processed", numInterProLinesProcessed, INTERPRO_NAME,
-                                numUniqueProteinsProcessed);
+                        logger.debug("{} {} lines processed. {} unique proteins processed", numInterProLinesProcessed,
+                                getDataName(INTERPRO_DATA), numUniqueProteinsProcessed);
                     }
                 }
                 logger.info(PARSING_DONE_LOG_MESSAGE, interProFiles.get(0));
             } catch (IOException e) {
-                throw new CellBaseException("Error parsing " + INTERPRO_NAME + " file: " + interProFiles.get(0), e);
+                throw new CellBaseException("Error parsing " + getDataName(INTERPRO_DATA) + " file: " + interProFiles.get(0), e);
             }
 
             // Serialize and save results
@@ -200,10 +193,10 @@ public class ProteinBuilder extends CellBaseBuilder {
 
             rocksDb.close();
         } catch (JAXBException | RocksDBException | IOException e) {
-            throw new CellBaseException("Error parsing " + PROTEIN_NAME + " files", e);
+            throw new CellBaseException("Error parsing " + getDataName(PROTEIN_DATA) + " files", e);
         }
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, PROTEIN_NAME);
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
     }
 
     private RocksDB getDBConnection(Path uniProtChunksPath) throws CellBaseException {

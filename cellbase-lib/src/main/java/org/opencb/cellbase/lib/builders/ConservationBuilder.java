@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -55,7 +56,7 @@ public class ConservationBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws IOException, CellBaseException {
-        logger.info(BUILDING_LOG_MESSAGE, CONSERVATION_NAME);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
 
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory " + conservedRegionPath + " does not exist or it is not a directory or it cannot"
@@ -63,25 +64,25 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
 
         // Check GERP folder and files
-        Path gerpPath = conservedRegionPath.resolve(GERP_SUBDIRECTORY);
-        List<File> gerpFiles = checkFiles(dataSourceReader.readValue(conservedRegionPath.resolve(GERP_VERSION_FILENAME).toFile()), gerpPath,
-                GERP_NAME);
+        Path gerpPath = conservedRegionPath.resolve(GERP_DATA);
+        DataSource dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(GERP_DATA)).toFile());
+        List<File> gerpFiles = checkFiles(dataSource, gerpPath, getDataName(GERP_DATA));
 
         // Check PhastCons folder and files
-        Path phastConsPath = conservedRegionPath.resolve(PHASTCONS_SUBDIRECTORY);
-        List<File> phastConsFiles = checkFiles(dataSourceReader.readValue(conservedRegionPath.resolve(PHASTCONS_VERSION_FILENAME).toFile()),
-                phastConsPath, PHASTCONS_NAME);
+        Path phastConsPath = conservedRegionPath.resolve(PHASTCONS_DATA);
+        dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(PHASTCONS_DATA)).toFile());
+        List<File> phastConsFiles = checkFiles(dataSource, phastConsPath, getDataName(PHASTCONS_DATA));
 
         // Check PhyloP folder and files
-        Path phylopPath = conservedRegionPath.resolve(PHYLOP_SUBDIRECTORY);
-        List<File> phylopFiles = checkFiles(dataSourceReader.readValue(conservedRegionPath.resolve(PHYLOP_VERSION_FILENAME).toFile()),
-                phylopPath, PHYLOP_NAME);
+        Path phylopPath = conservedRegionPath.resolve(PHYLOP_DATA);
+        dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(PHYLOP_DATA)).toFile());
+        List<File> phylopFiles = checkFiles(dataSource, phylopPath, getDataName(PHYLOP_DATA));
 
         // GERP is downloaded from Ensembl as a bigwig file. The library we have doesn't seem to parse
         // this file correctly, so we transform the file into a bedGraph format which is human-readable.
         if (gerpFiles.size() != 1) {
-            throw new CellBaseException("Only one " + GERP_NAME + " file is expected, but currently there are " + gerpFiles.size()
-                    + " files");
+            throw new CellBaseException("Only one " + getDataName(GERP_DATA) + " file is expected, but currently there are "
+                    + gerpFiles.size() + " files");
         }
         File bigwigFile = gerpFiles.get(0);
         File bedgraphFile = Paths.get(gerpFiles.get(0).getAbsolutePath() + ".bedgraph").toFile();
@@ -91,8 +92,8 @@ public class ConservationBuilder extends CellBaseBuilder {
                 if (isExecutableAvailable(exec)) {
                     EtlCommons.runCommandLineProcess(null, exec, Arrays.asList(bigwigFile.toString(), bedgraphFile.toString()), null);
                 } else {
-                    throw new CellBaseException(exec + " not found in your system, install it to build " + GERP_NAME + ". It is available"
-                            + " at http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/");
+                    throw new CellBaseException(exec + " not found in your system, install it to build " + getDataName(GERP_DATA)
+                            + ". It is available at http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/");
                 }
             } catch (IOException e) {
                 throw new CellBaseException("Error executing " + exec + " in BIGWIG file " + bigwigFile, e);
@@ -131,13 +132,13 @@ public class ConservationBuilder extends CellBaseBuilder {
         logger.debug("Chromosomes found '{}'", chromosomes);
         for (String chr : chromosomes) {
             logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + PHASTCONS_DATA));
-            processWigFixFile(files.get(chr + PHASTCONS_DATA), PHASTCONS_NAME);
+            processWigFixFile(files.get(chr + PHASTCONS_DATA), PHASTCONS_DATA);
 
             logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + PHYLOP_DATA));
-            processWigFixFile(files.get(chr + PHYLOP_DATA), PHYLOP_NAME);
+            processWigFixFile(files.get(chr + PHYLOP_DATA), PHYLOP_DATA);
         }
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, CONSERVATION_NAME);
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
     }
 
     private void gerpParser(Path gerpProcessFilePath) throws IOException, CellBaseException {
@@ -156,8 +157,8 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 // Checking line
                 if (fields.length != 4) {
-                    throw new CellBaseException("Invalid " + GERP_NAME + " line (expecting 4 columns): " + fields.length + " items: "
-                            + line);
+                    throw new CellBaseException("Invalid " + getDataName(GERP_DATA) + " line (expecting 4 columns): " + fields.length
+                            + " items: " + line);
                 }
 
                 chromosome = fields[0];
@@ -263,7 +264,7 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
 
         GenomicScoreRegion<Float> conservationScoreRegion = new GenomicScoreRegion<>(chromosome, startOfBatch,
-                startOfBatch + conservationScores.size() - 1, GERP_NAME, conservationScores);
+                startOfBatch + conservationScores.size() - 1, GERP_DATA, conservationScores);
         fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
 
         // Reset

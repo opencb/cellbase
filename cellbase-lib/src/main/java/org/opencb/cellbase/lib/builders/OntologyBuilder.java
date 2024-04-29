@@ -42,34 +42,34 @@ public class OntologyBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, ONTOLOGY_NAME);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
 
         // Sanity check
-        checkDirectory(oboDownloadPath, REGULATION_NAME);
+        checkDirectory(oboDownloadPath, getDataName(REGULATION_DATA));
 
         // Check ontology files
-        List<File> hpoFiles = checkOboFiles(oboDownloadPath.resolve(HPO_OBO_VERSION_FILENAME), HPO_OBO_NAME);
-        List<File> goFiles = checkOboFiles(oboDownloadPath.resolve(GO_OBO_VERSION_FILENAME), GO_OBO_NAME);
-        List<File> doidFiles = checkOboFiles(oboDownloadPath.resolve(DOID_OBO_VERSION_FILENAME), DOID_OBO_NAME);
-        List<File> mondoFiles = checkOboFiles(oboDownloadPath.resolve(MONDO_OBO_VERSION_FILENAME), MONDO_OBO_NAME);
+        List<File> hpoFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(HPO_OBO_DATA)), getDataName(HPO_OBO_DATA));
+        List<File> goFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(GO_OBO_DATA)), getDataName(GO_OBO_DATA));
+        List<File> doidFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(DOID_OBO_DATA)), getDataName(DOID_OBO_DATA));
+        List<File> mondoFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(MONDO_OBO_DATA)), getDataName(MONDO_OBO_DATA));
 
         // Parse OBO files and build
-        parseOboFile(hpoFiles.get(0), HPO_OBO_NAME);
-        parseOboFile(goFiles.get(0), GO_OBO_NAME);
-        parseOboFile(doidFiles.get(0), DOID_OBO_NAME);
-        parseOboFile(mondoFiles.get(0), MONDO_OBO_NAME);
+        parseOboFile(hpoFiles.get(0), HPO_OBO_DATA);
+        parseOboFile(goFiles.get(0), GO_OBO_DATA);
+        parseOboFile(doidFiles.get(0), DOID_OBO_DATA);
+        parseOboFile(mondoFiles.get(0), MONDO_OBO_DATA);
 
         // Close serializer
         serializer.close();
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, ONTOLOGY_NAME);
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
     }
 
-    private void parseOboFile(File oboFile, String name) throws IOException {
+    private void parseOboFile(File oboFile, String data) throws IOException {
         logger.info(PARSING_LOG_MESSAGE, oboFile);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(oboFile.toPath())) {
             OboParser parser = new OboParser();
-            List<OntologyTerm> terms = parser.parseOBO(bufferedReader, name);
+            List<OntologyTerm> terms = parser.parseOBO(bufferedReader, data);
             for (OntologyTerm term : terms) {
                 serializer.serialize(term);
             }
@@ -78,7 +78,8 @@ public class OntologyBuilder extends CellBaseBuilder {
     }
 
     private List<File> checkOboFiles(Path versionFilePath, String name) throws IOException, CellBaseException {
-        List<File> files = checkFiles(dataSourceReader.readValue(versionFilePath.toFile()), oboDownloadPath, ONTOLOGY_NAME + "/" + name);
+        List<File> files = checkFiles(dataSourceReader.readValue(versionFilePath.toFile()), oboDownloadPath, getDataName(ONTOLOGY_DATA)
+                + "/" + name);
         if (files.size() != 1) {
             throw new CellBaseException("One " + name + " file is expected, but currently there are " + files.size() + " files");
         }

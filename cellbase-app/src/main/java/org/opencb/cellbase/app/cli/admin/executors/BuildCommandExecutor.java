@@ -193,24 +193,24 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildRepeats() throws CellBaseException {
         // Sanity check
-        Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_SUBDIRECTORY);
-        List<Path> versionPaths = Arrays.asList(repeatsDownloadPath.resolve(TRF_VERSION_FILENAME),
-                repeatsDownloadPath.resolve(GSD_VERSION_FILENAME),
-                repeatsDownloadPath.resolve(WM_VERSION_FILENAME));
-        copyVersionFiles(versionPaths, buildFolder.resolve(REPEATS_SUBDIRECTORY));
+        Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_DATA);
+        List<Path> versionPaths = Arrays.asList(repeatsDownloadPath.resolve(getDataVersionFilename(TRF_DATA)),
+                repeatsDownloadPath.resolve(getDataVersionFilename(GSD_DATA)),
+                repeatsDownloadPath.resolve(getDataVersionFilename(WM_DATA)));
+        copyVersionFiles(versionPaths, buildFolder.resolve(REPEATS_DATA));
 
         // Create serializer and return the repeats builder
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_SUBDIRECTORY), REPEATS_DATA);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_DATA), REPEATS_BASENAME);
         return new RepeatsBuilder(repeatsDownloadPath, serializer, configuration);
     }
 
     private CellBaseBuilder buildObo() throws CellBaseException {
-        Path oboDownloadPath = downloadFolder.resolve(ONTOLOGY_SUBDIRECTORY);
-        Path oboBuildPath = buildFolder.resolve(ONTOLOGY_SUBDIRECTORY);
-        List<Path> versionPaths = Arrays.asList(oboDownloadPath.resolve(HPO_OBO_VERSION_FILENAME),
-                oboDownloadPath.resolve(GO_OBO_VERSION_FILENAME),
-                oboDownloadPath.resolve(DOID_OBO_VERSION_FILENAME),
-                oboDownloadPath.resolve(MONDO_OBO_VERSION_FILENAME));
+        Path oboDownloadPath = downloadFolder.resolve(ONTOLOGY_DATA);
+        Path oboBuildPath = buildFolder.resolve(ONTOLOGY_DATA);
+        List<Path> versionPaths = Arrays.asList(oboDownloadPath.resolve(getDataVersionFilename(HPO_OBO_DATA)),
+                oboDownloadPath.resolve(getDataVersionFilename(GO_OBO_DATA)),
+                oboDownloadPath.resolve(getDataVersionFilename(DOID_OBO_DATA)),
+                oboDownloadPath.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
         copyVersionFiles(versionPaths, oboBuildPath);
 
         // Create serializer and return the ontology builder
@@ -234,14 +234,14 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildGenomeSequence() throws CellBaseException {
         // Sanity check
-        Path genomeVersionPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(GENOME_VERSION_FILENAME);
-        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_SUBDIRECTORY));
+        Path genomeVersionPath = downloadFolder.resolve(GENOME_DATA).resolve(getDataVersionFilename(GENOME_DATA));
+        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_DATA));
 
         // Get FASTA path
         Path fastaPath = getFastaReferenceGenome();
 
         // Create serializer and return the genome builder
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_SUBDIRECTORY), GENOME_DATA);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_DATA), GENOME_DATA);
         return new GenomeSequenceFastaBuilder(fastaPath, serializer);
     }
 
@@ -290,8 +290,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         // Sanity check
         Path regulationDownloadPath = downloadFolder.resolve(REGULATION_DATA);
         Path regulationBuildPath = buildFolder.resolve(REGULATION_DATA);
-        copyVersionFiles(Arrays.asList(regulationDownloadPath.resolve(REGULATORY_BUILD_VERSION_FILENAME),
-                regulationDownloadPath.resolve(MOTIF_FEATURES_VERSION_FILENAME)), regulationBuildPath);
+        copyVersionFiles(Arrays.asList(regulationDownloadPath.resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)),
+                regulationDownloadPath.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA))), regulationBuildPath);
 
         // Create the file serializer and the regulatory feature builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(regulationBuildPath, REGULATORY_REGION_BASENAME);
@@ -300,10 +300,10 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildProtein() throws CellBaseException {
         // Sanity check
-        Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_SUBDIRECTORY);
-        Path proteinBuildPath = buildFolder.resolve(PROTEIN_SUBDIRECTORY);
-        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(UNIPROT_VERSION_FILENAME),
-                proteinDownloadPath.resolve(INTERPRO_VERSION_FILENAME)), proteinBuildPath);
+        Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_DATA);
+        Path proteinBuildPath = buildFolder.resolve(PROTEIN_DATA);
+        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(getDataVersionFilename(UNIPROT_DATA)),
+                proteinDownloadPath.resolve(getDataVersionFilename(INTERPRO_DATA))), proteinBuildPath);
 
         // Create the file serializer and the protein builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);
@@ -312,13 +312,14 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildConservation() throws CellBaseException {
         // Sanity check
-        Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_SUBDIRECTORY);
-        copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(GERP_VERSION_FILENAME),
-                conservationDownloadPath.resolve(PHASTCONS_VERSION_FILENAME), conservationDownloadPath.resolve(PHYLOP_VERSION_FILENAME)),
-                buildFolder.resolve(CONSERVATION_SUBDIRECTORY));
+        Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_DATA);
+        Path conservationBuildPath = buildFolder.resolve(CONSERVATION_DATA);
+        copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(getDataVersionFilename(GERP_DATA)),
+                        conservationDownloadPath.resolve(getDataVersionFilename(PHASTCONS_DATA)),
+                        conservationDownloadPath.resolve(getDataVersionFilename(PHYLOP_DATA))), conservationBuildPath);
 
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(CONSERVATION_SUBDIRECTORY));
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(conservationBuildPath);
         return new ConservationBuilder(conservationDownloadPath, conservationChunkSize, serializer);
     }
 
@@ -360,7 +361,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         String ensemblUrl = getEnsemblUrl(configuration.getDownload().getEnsembl(), ensemblRelease, ENSEMBL_PRIMARY_FA_FILE_ID,
                 getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
         String fastaFilename = Paths.get(ensemblUrl).getFileName().toString();
-        Path fastaPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(fastaFilename);
+        Path fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename);
         if (fastaPath.toFile().exists()) {
             // Gunzip
             logger.info("Gunzip file: {}", fastaPath);
@@ -374,7 +375,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
             }
         }
-        fastaPath = downloadFolder.resolve(GENOME_SUBDIRECTORY).resolve(fastaFilename.replace(".gz", ""));
+        fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(".gz", ""));
         if (!fastaPath.toFile().exists()) {
             throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
         }
@@ -413,7 +414,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         // Sanity check
         Path pharmGkbDownloadPath = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
         Path pharmGkbBuildPath = buildFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        copyVersionFiles(Arrays.asList(pharmGkbDownloadPath.resolve(PHARMGKB_VERSION_FILENAME)), pharmGkbBuildPath);
+        copyVersionFiles(Arrays.asList(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA))), pharmGkbBuildPath);
 
         // Create the file serializer and the PharmGKB feature builder
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pharmGkbBuildPath);

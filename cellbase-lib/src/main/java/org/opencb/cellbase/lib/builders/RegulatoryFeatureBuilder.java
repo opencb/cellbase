@@ -24,6 +24,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.RegulatoryPfm;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
@@ -54,24 +55,26 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, REGULATION_NAME);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(REGULATION_DATA));
 
         // Sanity check
-        checkDirectory(regulationPath, REGULATION_NAME);
+        checkDirectory(regulationPath, getDataName(REGULATION_DATA));
 
         // Check build regulatory files
-        List<File> regulatoryFiles = checkFiles(dataSourceReader.readValue(regulationPath.resolve(REGULATORY_BUILD_VERSION_FILENAME)
-                .toFile()), regulationPath, REGULATION_NAME + "/" + REGULATORY_BUILD_NAME);
+        DataSource dataSource = dataSourceReader.readValue(regulationPath.resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)).toFile());
+        List<File> regulatoryFiles = checkFiles(dataSource, regulationPath, getDataCategory(REGULATORY_BUILD_DATA) + "/"
+                + getDataName(REGULATORY_BUILD_DATA));
         if (regulatoryFiles.size() != 1) {
-            throw new CellBaseException("One " + REGULATORY_BUILD_NAME + " file is expected, but currently there are "
+            throw new CellBaseException("One " + getDataName(REGULATORY_BUILD_DATA) + " file is expected, but currently there are "
                     + regulatoryFiles.size() + " files");
         }
 
         // Check motif features files
-        List<File> motifFeaturesFiles = checkFiles(dataSourceReader.readValue(regulationPath.resolve(MOTIF_FEATURES_VERSION_FILENAME)
-                .toFile()), regulationPath, REGULATION_NAME + "/" + MOTIF_FEATURES_NAME);
+        dataSource = dataSourceReader.readValue(regulationPath.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)).toFile());
+        List<File> motifFeaturesFiles = checkFiles(dataSource, regulationPath, getDataCategory(MOTIF_FEATURES_DATA) + "/"
+                + getDataName(MOTIF_FEATURES_DATA));
         if (motifFeaturesFiles.size() != 2) {
-            throw new CellBaseException("Two " + MOTIF_FEATURES_NAME + " files are expected, but currently there are "
+            throw new CellBaseException("Two " + getDataName(MOTIF_FEATURES_DATA) + " files are expected, but currently there are "
                     + motifFeaturesFiles.size() + " files");
         }
 
@@ -82,7 +85,7 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
         // Parse regulatory build features
         parseGffFile(regulatoryFiles.get(0).toPath());
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, REGULATION_NAME);
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
     }
 
     protected void parseGffFile(Path regulatoryFeatureFile) throws IOException, NoSuchMethodException, FileFormatException {

@@ -186,6 +186,7 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
+    public static final String REPEATS_BASENAME = "repeats";
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
      */

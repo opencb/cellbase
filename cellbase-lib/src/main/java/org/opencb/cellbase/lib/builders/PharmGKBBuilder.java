@@ -24,6 +24,7 @@ import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.pharma.*;
 import org.opencb.biodata.models.pharma.guideline.BasicObject;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
@@ -97,14 +98,15 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, PHARMGKB_NAME);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
 
         // Sanity check
-        checkDirectory(pharmGkbDownloadPath, PHARMGKB_NAME);
+        checkDirectory(pharmGkbDownloadPath, getDataName(PHARMGKB_DATA));
 
         // Check PharmGKB files
-        List<File> pharmGkbFiles = checkFiles(dataSourceReader.readValue(pharmGkbDownloadPath.resolve(PHARMGKB_VERSION_FILENAME).toFile()),
-                pharmGkbDownloadPath, PHARMACOGENOMICS_NAME + "/" + PHARMGKB_NAME);
+        DataSource dataSource = dataSourceReader.readValue(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA)).toFile());
+        List<File> pharmGkbFiles = checkFiles(dataSource, pharmGkbDownloadPath, getDataCategory(PHARMGKB_DATA) + "/"
+                + getDataName(PHARMGKB_DATA));
 
         // Unzip downloaded file
         unzipDownloadedFiles(pharmGkbFiles);
@@ -129,7 +131,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
         serializer.close();
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, PHARMGKB_NAME);
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
     }
 
     private Map<String, PharmaChemical> parseChemicalFile() throws IOException {
@@ -152,7 +154,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Label Has Dosing Info  Has Rx Annotation  RxNorm Identifiers  ATC Identifiers  PubChem Compound Identifiers
                 PharmaChemical pharmaChemical = new PharmaChemical()
                         .setId(fields[0])
-                        .setSource(PHARMGKB_NAME)
+                        .setSource(PHARMGKB_DATA)
                         .setName(fields[1])
                         .setSmiles(fields[7])
                         .setInChI(fields[8]);
