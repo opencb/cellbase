@@ -64,9 +64,9 @@ public class BuildCommandExecutor extends CommandExecutor {
     private boolean flexibleGTFParsing;
     private SpeciesConfiguration speciesConfiguration;
 
-    private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, REFSEQ_DATA,
-            VARIATION_FUNCTIONAL_SCORE_DATA, MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA,
-            CLINICAL_VARIANTS_DATA, REPEATS_DATA, ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
+    private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
+            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANTS_DATA, REPEATS_DATA,
+            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
@@ -134,9 +134,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                         break;
                     case GENE_DATA:
                         parser = buildGene();
-                        break;
-                    case REFSEQ_DATA:
-                        parser = buildRefSeq();
                         break;
                     case VARIATION_FUNCTIONAL_SCORE_DATA:
                         parser = buildCadd();
@@ -246,22 +243,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildGene() throws CellBaseException {
-        Path geneFolderPath = downloadFolder.resolve("gene");
-        copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
-                geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),
-                geneFolderPath.resolve("geneExpressionAtlasVersion.json"),
-                geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json"),
-                geneFolderPath.resolve("gnomadVersion.json")));
-        Path genomeFastaFilePath = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "gene");
-        return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
-    }
-
-    private CellBaseBuilder buildRefSeq() {
-        Path refseqFolderPath = downloadFolder.resolve("refseq");
-        copyVersionFiles(Arrays.asList(refseqFolderPath.resolve("refSeqVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "refseq");
-        return new RefSeqGeneBuilder(refseqFolderPath, speciesConfiguration, serializer);
+        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing);
     }
 
     private CellBaseBuilder buildCadd() throws CellBaseException {

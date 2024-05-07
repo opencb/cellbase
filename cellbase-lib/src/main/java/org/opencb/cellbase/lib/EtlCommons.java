@@ -44,6 +44,10 @@ import java.util.stream.Collectors;
  */
 public final class EtlCommons {
 
+    // Commons
+    public static final String XLSX_EXTENSION = ".xlsx";
+    public static final String CSV_EXTENSION = ".csv";
+
     // Ensembl
     public static final String ENSEMBL_DATA = "ensembl";
     public static final String PUT_RELEASE_HERE_MARK = "put_release_here";
@@ -61,6 +65,7 @@ public final class EtlCommons {
     public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
 
     public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
+    public static final String HSAPIENS_NAME= "hsapiens";
 
     public static final String GRCH38_NAME = "GRCh38";
     public static final String GRCH37_NAME = "GRCh37";
@@ -74,11 +79,13 @@ public final class EtlCommons {
 
     // Gene
     public static final String GENE_DATA = "gene";
+    public static final String ENSEMBL_GENE_BASENAME = "ensemblGene";
     public static final String GENE_ANNOTATION_DATA = "gene_annotation";
     public static final String GENE_DISEASE_ANNOTATION_DATA = "gene_disease_annotation";
 
     // RefSeq
     public static final String REFSEQ_DATA = "refseq";
+    public static final String REFSEQ_GENE_BASENAME = "refSeqGene";
     // Must match the configuration file
     public static final String REFSEQ_GENOMIC_GTF_FILE_ID = "GENOMIC_GTF";
     public static final String REFSEQ_GENOMIC_FNA_FILE_ID = "GENOMIC_FNA";
