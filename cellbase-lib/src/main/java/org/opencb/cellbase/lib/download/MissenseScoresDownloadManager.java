@@ -37,18 +37,33 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        return Collections.singletonList(downloadRevel());
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        DownloadFile downloadFile = downloadRevel();
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 
     public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
-        if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
-            Path missensePredictionScorePath = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-            Files.createDirectories(missensePredictionScorePath);
-
-            logger.info("Downloading {}/{} ...", MISSENSE_VARIATION_SCORE_NAME, REVEL_NAME);
-            return downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_NAME,
-                    MISSENSE_VARIATION_SCORE_DATA, REVEL_VERSION_FILENAME, missensePredictionScorePath);
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+        if (!speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
+            logger.info("{}/{} not supported for species {}", getDataCategory(REVEL_DATA), getDataName(REVEL_DATA),
+                    speciesConfiguration.getScientificName());
+            return null;
         }
-        return null;
+
+        // Create the REVEL download path
+        Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+        Files.createDirectories(revelDownloadPath);
+
+        // Download REVEL and save data source
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_DATA,
+                revelDownloadPath);
+
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+
+        return downloadFile;
     }
 }

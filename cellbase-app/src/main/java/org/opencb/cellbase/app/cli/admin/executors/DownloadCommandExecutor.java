@@ -17,7 +17,6 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -25,7 +24,6 @@ import org.opencb.cellbase.lib.download.AbstractDownloadManager;
 import org.opencb.cellbase.lib.download.DownloadFile;
 import org.opencb.cellbase.lib.download.Downloader;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -112,12 +110,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 }
             }
             AbstractDownloadManager.writeDownloadLogFile(outputDirectory, downloadFiles);
-        } catch (IOException | NoSuchMethodException | FileFormatException e) {
-            throw new CellBaseException("Error executing command line 'download'", e);
         } catch (InterruptedException e) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
-            throw new CellBaseException("Error executing command line 'download'", e);
+            throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
         }
     }
 

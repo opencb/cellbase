@@ -98,6 +98,7 @@ public class AdminMain {
                     commandExecutor.execute();
                 } catch (IOException | URISyntaxException | CellBaseException e) {
                     commandExecutor.getLogger().error("Error: " + e.getMessage());
+                    e.printStackTrace();
                     System.exit(1);
                 }
             }

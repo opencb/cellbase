@@ -24,26 +24,43 @@ import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDBException;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class RefSeqGeneBuilder extends CellBaseBuilder {
+
+    private Path downloadPath;
 
     private Map<String, Transcript> transcriptDict;
     private Map<String, Exon> exonDict;
     private Path gtfFile;
     private Path fastaFile;
-    private Path proteinFastaFile, cdnaFastaFile;
-    private Path maneFile, lrgFile, disgenetFile, hpoFile, geneDrugFile, miRTarBaseFile;
-    private Path cancerGeneCensus, cancerHotspot;
-    private Path tso500File, eglhHaemOncFile;
+    private Path proteinFastaFile;
+    private Path cdnaFastaFile;
+    private Path maneFile;
+    private Path lrgFile;
+    private Path disgenetFile;
+    private Path hpoFile;
+    private Path geneDrugFile;
+    private Path miRTarBaseFile;
+    private Path cancerGeneCensus;
+    private Path cancerHotspot;
+    private Path tso500File;
+    private Path eglhHaemOncFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
-    private final String status = "KNOWN";
+    private static final String KNOWN_STATUS = "KNOWN";
     private static final String SOURCE = ParamConstants.QueryParams.REFSEQ.key();
     private Gene gene = null;
     private Transcript transcript = null;
@@ -52,85 +69,95 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     // sometimes there are two stop codons (eg NM_018159.4). Only parse the first one, skip the second
     private boolean seenStopCodon = false;
 
-
-    public RefSeqGeneBuilder(Path refSeqDirectoryPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
+    public RefSeqGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
 
+        this.downloadPath = downloadPath;
         this.speciesConfiguration = speciesConfiguration;
-
-        getGtfFileFromDirectoryPath(refSeqDirectoryPath);
-        getFastaFileFromDirectoryPath(refSeqDirectoryPath);
-        getProteinFastaFileFromDirectoryPath(refSeqDirectoryPath);
-        getCdnaFastaFileFromDirectoryPath(refSeqDirectoryPath);
-        setAnnotationFiles(refSeqDirectoryPath);
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
 
-    private void setAnnotationFiles(Path refSeqDirectoryPath) {
-        Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
-        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v1.0.summary.txt.gz");
-        lrgFile = geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt");
-        geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
-        disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
-        hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
-        cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
-        cancerHotspot = geneDirectoryPath.resolve("hotspots_v2.xls");
-        tso500File = geneDirectoryPath.resolve("TSO500_transcripts.txt");
-        eglhHaemOncFile = geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt");
-        miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
-    }
+    public void check() throws Exception {
+        if (checked) {
+            return;
+        }
 
-    private void getGtfFileFromDirectoryPath(Path refSeqDirectoryPath) {
-        for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
-                gtfFile = refSeqDirectoryPath.resolve(fileName);
-                break;
+        String refSeqGeneLabel = getDataName(REFSEQ_DATA) + " " + getDataName(GENE_DATA);
+        logger.info(CHECKING_BEFORE_BUILDING_LOG_MESSAGE, refSeqGeneLabel);
+
+        // Sanity check
+        checkDirectory(downloadPath, refSeqGeneLabel);
+        if (!Files.exists(serializer.getOutdir())) {
+            try {
+                Files.createDirectories(serializer.getOutdir());
+            } catch (IOException e) {
+                throw new CellBaseException("Error creating folder " + serializer.getOutdir(), e);
             }
         }
-    }
 
-    private void getFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
-        for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith("genomic.fna") || fileName.endsWith("genomic.fna.gz")) {
-                fastaFile = refSeqDirectoryPath.resolve(fileName);
-                break;
-            }
-        }
-    }
+        // Check RefSeq files
+        List<File> files = checkFiles(refSeqGeneLabel, REFSEQ_DATA, downloadPath, 4);
+        gtfFile = files.stream().filter(f -> f.getName().contains(".gtf")).findFirst().get().toPath();
+        proteinFastaFile = files.stream().filter(f -> f.getName().contains("_protein")).findFirst().get().toPath();
+        cdnaFastaFile = files.stream().filter(f -> f.getName().contains("_rna")).findFirst().get().toPath();
+        fastaFile = files.stream().filter(f -> f.getName().contains("_genomic.fna")).findFirst().get().toPath();
 
-    private void getProteinFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
-        for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith(".faa") || fileName.endsWith(".faa.gz")) {
-                proteinFastaFile = refSeqDirectoryPath.resolve(fileName);
-                break;
-            }
-        }
-    }
+        // Check common files
+        maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        // hpoFile = checkFiles(HPO_DATA, downloadPath.getParent(), 1);
+        disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        // cancerGeneCensus = ;
+        // tso500File = ;
+        // eglhHaemOncFile = ;
 
-    private void getCdnaFastaFileFromDirectoryPath(Path refSeqDirectoryPath) {
-        for (String fileName : refSeqDirectoryPath.toFile().list()) {
-            if (fileName.endsWith("cdna.fna") || fileName.endsWith("cdna.fna.gz")) {
-                cdnaFastaFile = refSeqDirectoryPath.resolve(fileName);
-                break;
-            }
+        // Check regulation files
+        // mirtarbase
+        // The downloaded .xlsx file contains errors and it has to be fixed manually
+        logger.info("Checking {} folder and files", getDataName(MIRTARBASE_DATA));
+        Path downloadRegulationPath = downloadPath.getParent().getParent().resolve(REGULATION_DATA);
+        List<String> mirTarBaseFiles = ((DataSource) dataSourceReader.readValue(downloadRegulationPath.resolve(
+                getDataVersionFilename(MIRTARBASE_DATA)).toFile())).getUrls().stream().map(u -> Paths.get(u).getFileName().toString())
+                .collect(Collectors.toList());
+        if (mirTarBaseFiles.size() != 1) {
+            throw new CellBaseException("One " + getDataName(MIRTARBASE_DATA) + " file is expected at " + downloadRegulationPath
+                    + ", but currently there are " + mirTarBaseFiles.size() + " files");
         }
+        // The hsa_MIT.xlsx is fixed and converted to hsa_MIT.csv manually
+        if (!mirTarBaseFiles.get(0).endsWith(XLSX_EXTENSION)) {
+            throw new CellBaseException("A " + XLSX_EXTENSION + " " + getDataName(MIRTARBASE_DATA) + " file is expected at "
+                    + downloadRegulationPath + ", but currently it is named " + mirTarBaseFiles.get(0));
+        }
+        miRTarBaseFile = downloadRegulationPath.resolve(mirTarBaseFiles.get(0).replace(XLSX_EXTENSION, CSV_EXTENSION));
+        if (!Files.exists(miRTarBaseFile)) {
+            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist");
+        }
+
+        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE);
+        checked = true;
     }
 
     public void parse() throws Exception {
+        check();
+
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
         if (fastaFile != null) {
             fastaIndex = new FastaIndex(fastaFile);
         }
 
-        // index protein sequences for later
+        // Index protein sequences for later
+        logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
                 cancerGeneCensus, cancerHotspot, tso500File, eglhHaemOncFile);
+        logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
-        logger.info("Parsing RefSeq gtf...");
+        logger.info(PARSING_LOG_MESSAGE, gtfFile);
         GtfReader gtfReader = new GtfReader(gtfFile);
 
         Gtf gtf;
@@ -164,22 +191,24 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             }
         }
 
-        // add xrefs to last transcript
+        // Add xrefs to last transcript
         addXrefs(transcript, geneDbxrefs, exonDbxrefs);
 
-        // last gene must be serialized
+        // Last gene must be serialized
         store();
 
-        // cleaning
+        // Close
         gtfReader.close();
         serializer.close();
         if (fastaIndex != null) {
             fastaIndex.close();
         }
         indexer.close();
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, gtfFile);
     }
 
-    // store right before parsing the previous gene, or the very last gene.
+    // Store right before parsing the previous gene, or the very last gene.
     private void store() {
         serializer.serialize(gene);
         reset();
@@ -235,7 +264,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
                 null, indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
-                status, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);
+                KNOWN_STATUS, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);
         geneDbxrefs = parseXrefs(gtf);
     }
 
@@ -567,7 +596,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         if ("mRNA".equals(biotype)) {
             biotype = "protein_coding";
         }
-        transcript = new Transcript(transcriptId, name, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), biotype, status,
+        transcript = new Transcript(transcriptId, name, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), biotype, KNOWN_STATUS,
                 0, 0, 0, 0, 0,
                 indexer.getCdnaFasta(transcriptId), "", "", "", version, SOURCE,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), new TranscriptAnnotation());
@@ -643,6 +672,20 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         // scaffold
         return fullSequenceName;
     }
+
+//    private void setAnnotationFiles(Path refSeqDirectoryPath) {
+//        Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
+//        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v1.0.summary.txt.gz");
+//        lrgFile = geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt");
+//        geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
+//        disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
+//        hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
+//        cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
+//        cancerHotspot = geneDirectoryPath.resolve("hotspots_v2.xls");
+//        tso500File = geneDirectoryPath.resolve("TSO500_transcripts.txt");
+//        eglhHaemOncFile = geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt");
+//        miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
+//    }
 
     static {
         REFSEQ_CHROMOSOMES.put("NC_000001", "1");

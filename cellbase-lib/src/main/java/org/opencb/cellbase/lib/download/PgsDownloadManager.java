@@ -40,7 +40,7 @@ public class PgsDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         logger.info(DOWNLOADING_LOG_MESSAGE, PGS_NAME);
 
         DownloadProperties.URLProperties pgsUrlProperties = configuration.getDownload().getPgs();

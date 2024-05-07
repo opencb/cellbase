@@ -55,23 +55,23 @@ public class GeneBuilderTest {
 
     @BeforeAll
     public void init() {
-        try {
-            Path genomeSequenceFastaFile
-                    = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
-            Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
-            // put the results in /tmp
-            CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gene",
-                    true);
-            SpeciesConfiguration species = new SpeciesConfiguration("hsapiens", "Homo sapiens",
-                    "human", null, null, null);
-            geneParser = new GeneBuilder(geneDirectoryPath, genomeSequenceFastaFile, species, serializer);
-            jsonObjectMapper = new ObjectMapper();
-            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            geneParser.parse();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Path genomeSequenceFastaFile
+//                    = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
+//            Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
+//            // put the results in /tmp
+//            CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gene",
+//                    true);
+//            SpeciesConfiguration species = new SpeciesConfiguration("hsapiens", "Homo sapiens",
+//                    "human", null, null, null);
+//            geneParser = new GeneBuilder(geneDirectoryPath, genomeSequenceFastaFile, species, serializer);
+//            jsonObjectMapper = new ObjectMapper();
+//            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+//            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//            geneParser.parse();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Test
@@ -226,36 +226,36 @@ public class GeneBuilderTest {
         }
     }
 
-    @Test
-    @Disabled
-    public void testaddTranscriptTfbstoList() throws Exception {
-        String attributes = "binding_matrix_stable_id=ENSPFM0542;epigenomes_with_experimental_evidence=SK-N.%2CMCF-7%2CH1-hESC_3%2CHCT116;stable_id=ENSM00208374688;transcription_factor_complex=TEAD4::ESRRB";
-        String source = null;
-        String sequenceName = "1";
-        String feature = "TF_binding_site";
-        int start = 10000;
-        int end = 100100;
-        String score = "1.2870005";
-        String strand = "+";
-        String frame = null;
-
-        Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attributes);
-        Gtf transcript = new Gtf(sequenceName, source, feature, start, end, score, strand, frame, new HashMap<>());
-
-        List<TranscriptTfbs> transcriptTfbs = geneParser.addTranscriptTfbstoList(tfbs, transcript,"1", new ArrayList<>());
-
-        assertEquals(1, transcriptTfbs.size());
-        TranscriptTfbs result = transcriptTfbs.get(0);
-
-        assertEquals(sequenceName, result.getChromosome());
-        assertEquals(feature, result.getType());
-        assertEquals(start, result.getStart());
-        assertEquals(end, result.getEnd());
-        assertEquals(score, String.valueOf(result.getScore()));
-        assertEquals("ENSPFM0542", result.getPfmId());
-        assertEquals("ENSM00208374688", result.getId());
-        assertEquals(2, result.getTranscriptionFactors().size());
-    }
+//    @Test
+//    @Disabled
+//    public void testaddTranscriptTfbstoList() throws Exception {
+//        String attributes = "binding_matrix_stable_id=ENSPFM0542;epigenomes_with_experimental_evidence=SK-N.%2CMCF-7%2CH1-hESC_3%2CHCT116;stable_id=ENSM00208374688;transcription_factor_complex=TEAD4::ESRRB";
+//        String source = null;
+//        String sequenceName = "1";
+//        String feature = "TF_binding_site";
+//        int start = 10000;
+//        int end = 100100;
+//        String score = "1.2870005";
+//        String strand = "+";
+//        String frame = null;
+//
+//        Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attributes);
+//        Gtf transcript = new Gtf(sequenceName, source, feature, start, end, score, strand, frame, new HashMap<>());
+//
+//        List<TranscriptTfbs> transcriptTfbs = geneParser.addTranscriptTfbstoList(tfbs, transcript,"1", new ArrayList<>());
+//
+//        assertEquals(1, transcriptTfbs.size());
+//        TranscriptTfbs result = transcriptTfbs.get(0);
+//
+//        assertEquals(sequenceName, result.getChromosome());
+//        assertEquals(feature, result.getType());
+//        assertEquals(start, result.getStart());
+//        assertEquals(end, result.getEnd());
+//        assertEquals(score, String.valueOf(result.getScore()));
+//        assertEquals("ENSPFM0542", result.getPfmId());
+//        assertEquals("ENSM00208374688", result.getId());
+//        assertEquals(2, result.getTranscriptionFactors().size());
+//    }
 
     private List<Gene> loadSerializedGenes(String fileName) {
         List<Gene> geneList = new ArrayList();

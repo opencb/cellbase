@@ -47,11 +47,15 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
-    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
     protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {} done!";
+    protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
+    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {}/{} done!";
+    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
 
     protected String species;
     protected String assembly;
@@ -139,12 +143,33 @@ public abstract class AbstractDownloadManager {
         return hasInfo;
     }
 
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveDataSource(props, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, String chromosome,
+                                                     Path outPath) throws IOException, InterruptedException, CellBaseException {
+        String versionFilename = getDataVersionFilename(data);
+
+        // Download file
+        DownloadFile downloadFile = downloadDataSource(props, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, props.getVersion(), getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(versionFilename));
+
+        return downloadFile;
+    }
+
+    @Deprecated
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
                                                      String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {
         return downloadAndSaveDataSource(props, fileId, name, category, null, versionFilename, outPath);
     }
 
+    @Deprecated
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String name, String category,
                                                      String chromosome, String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {
@@ -158,6 +183,25 @@ public abstract class AbstractDownloadManager {
         return downloadFile;
     }
 
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            Path outPath) throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveEnsemblDataSource(ensemblProps, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            String chromosome, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        // Download file
+        DownloadFile downloadFile = downloadEnsemblDataSource(ensemblProps, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, "(Ensembl " + ensemblVersion + ")", getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(getDataVersionFilename(data)));
+
+        return downloadFile;
+    }
+
+    @Deprecated
     protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String name,
                                                             String category, String chromosome, String versionFilename, Path outPath)
             throws IOException, InterruptedException, CellBaseException {
@@ -199,6 +243,21 @@ public abstract class AbstractDownloadManager {
         return downloadFile(url, outFile.toString());
     }
 
+    protected void saveDataSource(String data, String version, String date, List<String> urls, Path versionFilePath)
+            throws IOException, CellBaseException {
+        String name = getDataName(data);
+        String category = getDataCategory(data);
+        DataSource dataSource = new DataSource(name, category, version, date, urls);
+
+        if (StringUtils.isEmpty(version)) {
+            logger.warn("Version missing for data source {}/{}, using the date as version: {}", category, name, date);
+            dataSource.setVersion(date);
+        }
+
+        dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
+    }
+
+    @Deprecated
     protected void saveDataSource(String name, String category, String version, String date, List<String> urls, Path versionFilePath)
             throws IOException {
         DataSource dataSource = new DataSource(name, category, version, date, urls);
@@ -257,12 +316,12 @@ public abstract class AbstractDownloadManager {
         }
     }
 
-    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
+    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException, CellBaseException {
         return downloadFile(url, outputFileName, null);
     }
 
     protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, CellBaseException {
         DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
         if (Paths.get(outputFileName).toFile().exists()) {
@@ -352,18 +411,6 @@ public abstract class AbstractDownloadManager {
         } else {
             return props.getHost() + filesValue;
         }
-    }
-
-    protected String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
-        if (!props.getFiles().containsKey(fileId)) {
-            throw new CellBaseException("File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase"
-                    + " configuration file");
-        }
-        return getFilenameFromUrl(props.getFiles().get(fileId));
-    }
-
-    protected String getFilenameFromUrl(String url) {
-        return Paths.get(url).getFileName().toString();
     }
 }
 

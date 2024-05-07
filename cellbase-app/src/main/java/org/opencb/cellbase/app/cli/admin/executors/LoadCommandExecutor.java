@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 /**
  * Created by imedina on 03/02/15.
  */
@@ -290,7 +292,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadSpliceScores();
                             break;
                         }
-                        case EtlCommons.PUBMED_DATA: {
+                        case PUBMED_DATA: {
                             // Load data, create index and update release
                             loadPubMed();
                             break;
@@ -490,9 +492,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.TRF_VERSION_FILENAME),
-                        input.resolve(EtlCommons.GSD_VERSION_FILENAME),
-                        input.resolve(EtlCommons.WM_VERSION_FILENAME)
+                        input.resolve(getDataVersionFilename(TRF_DATA)),
+                        input.resolve(getDataVersionFilename(GSD_DATA)),
+                        input.resolve(getDataVersionFilename(WM_DATA))
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
@@ -542,7 +544,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadPubMed() throws CellBaseException {
-        Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
+        Path pubmedPath = input.resolve(PUBMED_DATA);
 
         if (Files.exists(pubmedPath)) {
             // Load data
@@ -550,7 +552,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 if (file.isFile() && (file.getName().endsWith("gz"))) {
                     logger.info("Loading file '{}'", file.getName());
                     try {
-                        loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
+                        loadRunner.load(file.toPath(), PUBMED_DATA, dataRelease);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                             | IllegalAccessException | ExecutionException | IOException | InterruptedException | LoaderException e) {
                         logger.error("Error loading file '{}': {}", file.getName(), e.toString());
@@ -558,11 +560,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                 }
             }
             // Create index
-            createIndex(EtlCommons.PUBMED_DATA);
+            createIndex(PUBMED_DATA);
 
             // Update release (collection and sources)
-            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
-            dataReleaseManager.update(dataRelease, EtlCommons.PUBMED_DATA, EtlCommons.PUBMED_DATA, sources);
+            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.getDataVersionFilename(PUBMED_DATA)));
+            dataReleaseManager.update(dataRelease, PUBMED_DATA, PUBMED_DATA, sources);
         } else {
             logger.warn("PubMed folder {} not found", pubmedPath);
         }
@@ -591,7 +593,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(pharmaPath.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME));
+        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(PHARMGKB_DATA)));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 
