@@ -24,7 +24,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.builders.RevelScoreBuilder;
+import org.opencb.cellbase.lib.builders.PolygenicScoreBuilder;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
@@ -44,6 +44,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 03/02/15.
@@ -81,8 +83,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PUBMED_DATA,
-                    EtlCommons.PHARMACOGENOMICS_DATA};
+                    EtlCommons.ONTOLOGY_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA,
+                    EtlCommons.PUBMED_DATA, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
@@ -213,7 +215,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                             // Update release (collection and sources)
                             dataReleaseManager.update(dataRelease, EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA,
-                                    RevelScoreBuilder.SOURCE, Collections.singletonList(path.resolve(EtlCommons.REVEL_VERSION_FILENAME)));
+                                    REVEL_DATA, Collections.singletonList(path.resolve(EtlCommons.REVEL_VERSION_FILENAME)));
                             break;
                         }
                         case EtlCommons.ALPHAMISSENSE_DATA: {
@@ -274,7 +276,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
 //                            loadStructuralVariants();
 //                            break;
-                        case EtlCommons.OBO_DATA: {
+                        case EtlCommons.ONTOLOGY_DATA: {
                             // Load data
                             loadIfExists(input.resolve("ontology.json.gz"), "ontology");
 
@@ -287,7 +289,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve(EtlCommons.GO_VERSION_FILE),
                                     input.resolve(EtlCommons.DO_VERSION_FILE)
                             ));
-                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.OBO_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.ONTOLOGY_DATA, sources);
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -295,7 +297,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadSpliceScores();
                             break;
                         }
-                        case EtlCommons.PUBMED_DATA: {
+                        case PUBMED_DATA: {
                             // Load data, create index and update release
                             loadPubMed();
                             break;
@@ -303,6 +305,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.PHARMACOGENOMICS_DATA: {
                             // Load data, create index and update release
                             loadPharmacogenomica();
+                            break;
+                        }
+                        case EtlCommons.PGS_DATA: {
+                            // Load data, create index and update release
+                            loadPolygenicScores();
                             break;
                         }
                         default:
@@ -523,9 +530,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.TRF_VERSION_FILE),
-                        input.resolve(EtlCommons.GSD_VERSION_FILE),
-                        input.resolve(EtlCommons.WM_VERSION_FILE)
+                        input.resolve(getDataVersionFilename(TRF_DATA)),
+                        input.resolve(getDataVersionFilename(GSD_DATA)),
+                        input.resolve(getDataVersionFilename(WM_DATA))
                 ));
                 dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
@@ -575,7 +582,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadPubMed() throws CellBaseException {
-        Path pubmedPath = input.resolve(EtlCommons.PUBMED_DATA);
+        Path pubmedPath = input.resolve(PUBMED_DATA);
 
         if (Files.exists(pubmedPath)) {
             // Load data
@@ -583,7 +590,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 if (file.isFile() && (file.getName().endsWith("gz"))) {
                     logger.info("Loading file '{}'", file.getName());
                     try {
-                        loadRunner.load(file.toPath(), EtlCommons.PUBMED_DATA, dataRelease);
+                        loadRunner.load(file.toPath(), PUBMED_DATA, dataRelease);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                             | IllegalAccessException | ExecutionException | IOException | InterruptedException | LoaderException e) {
                         logger.error("Error loading file '{}': {}", file.getName(), e.toString());
@@ -591,11 +598,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                 }
             }
             // Create index
-            createIndex(EtlCommons.PUBMED_DATA);
+            createIndex(PUBMED_DATA);
 
             // Update release (collection and sources)
-            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.PUBMED_VERSION_FILENAME));
-            dataReleaseManager.update(dataRelease, EtlCommons.PUBMED_DATA, EtlCommons.PUBMED_DATA, sources);
+            List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.getDataVersionFilename(PUBMED_DATA)));
+            dataReleaseManager.update(dataRelease, PUBMED_DATA, PUBMED_DATA, sources);
         } else {
             logger.warn("PubMed folder {} not found", pubmedPath);
         }
@@ -624,8 +631,51 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(pharmaPath.resolve(EtlCommons.PHARMGKB_VERSION_FILENAME));
+        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(PHARMGKB_DATA)));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
+    }
+
+    private void loadPolygenicScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
+            IllegalAccessException, InvocationTargetException, ClassNotFoundException, IOException, CellBaseException, LoaderException {
+        Path pgsPath = input.resolve(EtlCommons.PGS_DATA);
+
+        if (!Files.exists(pgsPath)) {
+            logger.warn("Polygenic scores (PGS) folder {} not found to load", pgsPath);
+            return;
+        }
+
+        // Load common polygenic scores data
+        Path pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.COMMON_POLYGENIC_SCORE_FILENAME);
+        logger.info("Loading file '{}'", pathToLoad.toFile().getName());
+        try {
+            loadRunner.load(pathToLoad, EtlCommons.PGS_COMMON_COLLECTION, dataRelease);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
+            logger.error("Error loading file '{}': {}", pathToLoad.toFile().getName(), e.toString());
+        }
+
+        // Load variant polygenic scores data
+        pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME);
+        logger.info("Loading file '{}'", pathToLoad.toFile().getName());
+        try {
+            loadRunner.load(pathToLoad, EtlCommons.PGS_VARIANT_COLLECTION, dataRelease);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException
+                | LoaderException e) {
+            logger.error("Error loading file '{}': {}", pathToLoad.toFile().getName(), e.toString());
+        }
+
+        // Create index
+        createIndex(EtlCommons.PGS_COMMON_COLLECTION);
+        createIndex(EtlCommons.PGS_VARIANT_COLLECTION);
+
+        // Update release (collection and sources)
+        List<Path> sources = new ArrayList<>(Arrays.asList(
+                input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_CATALOG_VERSION_FILENAME)
+        ));
+        dataReleaseManager.update(dataRelease, EtlCommons.PGS_VARIANT_COLLECTION, EtlCommons.PGS_DATA, sources);
+        dataReleaseManager.update(dataRelease, EtlCommons.PGS_COMMON_COLLECTION, null, null);
     }
 
     private void createIndex(String collection) {

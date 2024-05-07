@@ -17,12 +17,9 @@
 package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.OntologyQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.OntologyManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
 
@@ -54,17 +51,9 @@ public class OntologyWSServer extends GenericRestWSServer {
                             @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                             @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, species, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
-            List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
-            if (CollectionUtils.isNotEmpty(assemblies)) {
-                assembly = assemblies.get(0);
-            }
-            if (StringUtils.isEmpty(assembly)) {
-                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
-            }
-
-            ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
+            ontologyManager = cellBaseManagerFactory.getOntologyManager(this.species, this.assembly);
         } catch (Exception e) {
             throw new CellBaseServerException(e.getMessage());
         }

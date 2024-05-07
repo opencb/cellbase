@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,36 +25,36 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class CaddDownloadManager extends AbstractDownloadManager {
 
-    private static final String CADD_NAME = "CADD";
     public CaddDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadCaddScores());
-    }
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
 
-    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
-            return null;
+        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_FUNCTIONAL_SCORE_DATA)
+                || !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            logger.info("{}/{} not supported for species {}", getDataCategory(CADD_DATA), getDataName(CADD_DATA),
+                    speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading CADD scores information ...");
 
-            Path variationFunctionalScoreFolder = downloadFolder.resolve("variation_functional_score");
-            Files.createDirectories(variationFunctionalScoreFolder);
+        // Create the CADD download path
+        Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        Files.createDirectories(caddDownloadPath);
 
-            // Downloads CADD scores
-            String url = configuration.getDownload().getCadd().getHost();
+        // Download CADD and save data source
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_DATA,
+                caddDownloadPath);
 
-            saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
-                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
-            return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
-        }
-        return null;
+        logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 }

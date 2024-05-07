@@ -19,14 +19,14 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.builders.RevelScoreBuilder;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class RevelScoresDownloadManager extends AbstractDownloadManager {
 
@@ -36,26 +36,22 @@ public class RevelScoresDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        List<DownloadFile> list = new ArrayList<>();
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
 
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading Revel data ...");
-
-            Path scorePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
-            Files.createDirectories(scorePath);
-
-            String url = configuration.getDownload().getRevel().getHost();
-
-            list.add(downloadFile(url, scorePath.resolve(EtlCommons.REVEL_RAW_FILENAME).toString()));
-
-            saveVersionData(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA, RevelScoreBuilder.SOURCE,
-                    configuration.getDownload().getRevel().getVersion(), getTimeStamp(), Collections.singletonList(url),
-                    scorePath.resolve(EtlCommons.REVEL_VERSION_FILENAME));
-
-            logger.info("Downloaded Revel file. Done!");
+        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            logger.info("{} not supported for the species {}", getDataName(REVEL_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
 
-        return list;
+        Path revelPath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Files.createDirectories(revelPath);
+
+        // Download REVEL file
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_DATA, revelPath);
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REVEL_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 }

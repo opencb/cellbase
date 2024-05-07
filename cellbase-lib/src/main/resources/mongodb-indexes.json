@@ -150,3 +150,11 @@
 {"collection": "protein_substitution_predictions", "fields": {"uniprotId": 1}, "options": {"background": true}}
 {"collection": "protein_substitution_predictions", "fields": {"transcriptId": 1}, "options": {"background": true}}
 {"collection": "protein_substitution_predictions", "fields": {"aaPosition": 1}, "options": {"background": true}}
+
+{"collection": "common_polygenic_scores", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_scores", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_scores", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_scores", "fields": {"polygenicScores.id": 1}, "options": {"background": true}}
+

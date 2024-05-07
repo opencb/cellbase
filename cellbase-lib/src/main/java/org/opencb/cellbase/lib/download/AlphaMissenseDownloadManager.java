@@ -17,18 +17,16 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.lib.EtlCommons.ALPHAMISSENSE_VERSION_FILENAME;
-import static org.opencb.cellbase.lib.EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class AlphaMissenseDownloadManager extends AbstractDownloadManager {
 
@@ -39,37 +37,17 @@ public class AlphaMissenseDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info("Downloading AlphaMissense file...");
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ALPHAMISSENSE_DATA));
 
-        // Downloads AlphaMissense file
-        DownloadProperties.URLProperties alphaMissenseUrlProps = configuration.getDownload().getAlphaMissense();
+        Path alphaMissensePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Files.createDirectories(alphaMissensePath);
 
-        // Sanity check
-        if (alphaMissenseUrlProps.getFiles().size() != 1) {
-            throw new CellBaseException("AlphaMissense configuration mismatch: that downloader only supports to download one single"
-                    + " AlphaMissense file");
-        }
+        // Download AlphaMissense file
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getAlphaMissense(), ALPHAMISSENSE_FILE_ID,
+                ALPHAMISSENSE_DATA, alphaMissensePath);
 
-        Path alphamissenseFolder = downloadFolder.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA);
-        if (!alphamissenseFolder.toFile().exists()) {
-            if (!alphamissenseFolder.toFile().mkdirs()) {
-                throw new IOException("Error creating folder: " + alphamissenseFolder.toAbsolutePath());
-            }
-        }
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ALPHAMISSENSE_DATA));
 
-        // Download the AlphaMissense file
-        List<DownloadFile> list = new ArrayList<>();
-        String file = alphaMissenseUrlProps.getFiles().get(0);
-        String filename = new File(file).getName();
-        logger.info("\tDownloading file " + filename);
-        list.add(downloadFile(file, alphamissenseFolder.resolve(EtlCommons.ALPHAMISSENSE_RAW_FILENAME).toAbsolutePath().toString()));
-
-        // Save version
-        saveVersionData(PROTEIN_SUBSTITUTION_PREDICTION_DATA, EtlCommons.ALPHAMISSENSE_DATA, alphaMissenseUrlProps.getVersion(),
-                getTimeStamp(), alphaMissenseUrlProps.getFiles(), alphamissenseFolder.resolve(ALPHAMISSENSE_VERSION_FILENAME));
-
-        logger.info("Downloaded AlphaMissense file. Done!");
-
-        return list;
+        return Collections.singletonList(downloadFile);
     }
 }

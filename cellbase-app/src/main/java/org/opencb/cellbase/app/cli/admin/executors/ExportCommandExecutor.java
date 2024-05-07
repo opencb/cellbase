@@ -82,11 +82,9 @@ public class ExportCommandExecutor extends CommandExecutor {
         this.assembly = splits[2];
 
         if (exportCommandOptions.data.equals("all")) {
-            this.dataToExport = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
-                    EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    OBO_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
+            this.dataToExport = new String[]{GENOME_DATA, GENE_DATA, REFSEQ_DATA, CONSERVATION_DATA, REGULATION_DATA, PROTEIN_DATA,
+                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, VARIATION_DATA, VARIATION_FUNCTIONAL_SCORE_DATA, CLINICAL_VARIANTS_DATA,
+                    REPEATS_DATA, ONTOLOGY_DATA, SPLICE_SCORE_DATA, PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -277,7 +275,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " repeats";
                             break;
                         }
-                        case OBO_DATA: {
+                        case ONTOLOGY_DATA: {
                             counter = exportOntologyData();
                             counterMsg = counter + " ontology items";
                             break;
@@ -417,7 +415,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
     private int exportOntologyData() throws CellBaseException, IOException {
         int counter = 0;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, OBO_DATA);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, ONTOLOGY_DATA);
         OntologyManager ontologyManager = managerFactory.getOntologyManager(species, assembly);
         CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(new OntologyQuery());
         while (iterator.hasNext()) {

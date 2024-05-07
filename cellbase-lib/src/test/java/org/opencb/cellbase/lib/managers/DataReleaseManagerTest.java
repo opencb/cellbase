@@ -146,11 +146,13 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
     @Test
     @Disabled
-    public void testAnnotationWithDR0() throws CellBaseException, QueryException, ExecutionException, InterruptedException,
+    public void testAnnotation() throws CellBaseException, QueryException, ExecutionException, InterruptedException,
             IllegalAccessException {
         dataReleaseManager.update(1, Arrays.asList("v5.5"));
 
-        VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, 0, apiKey, cellBaseManagerFactory);
+        DataRelease dataRelease = dataReleaseManager.get(1);
+        VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey,
+                cellBaseManagerFactory);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
@@ -160,28 +162,5 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         assertEquals(variant.getStart(), variantAnnotation.getStart());
         assertEquals(variant.getReference(), variantAnnotation.getReference());
         assertEquals(variant.getAlternate(), variantAnnotation.getAlternate());
-    }
-
-    @Test
-    @Disabled
-    public void testAnnotationWithInvalidDR() {
-        CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {
-            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, -1, apiKey, cellBaseManagerFactory);
-            Variant variant = new Variant("10", 113588287, "G", "A");
-            CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
-        });
-        Assertions.assertTrue(thrown.getMessage().contains("Data release must be greater or equal to 0"));
-    }
-
-    @Test
-    @Disabled
-    public void testAnnotationWithInvalidDR_1() {
-        int dr = 12;
-        CellBaseException thrown = Assertions.assertThrows(CellBaseException.class, () -> {
-            VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dr, apiKey, cellBaseManagerFactory);
-            Variant variant = new Variant("10", 113588287, "G", "A");
-            CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
-        });
-        Assertions.assertTrue(thrown.getMessage().contains("data release "+ dr + ". Valid data releases are:"));
     }
 }

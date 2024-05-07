@@ -22,24 +22,20 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import java.io.*;
-import java.net.URI;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
-
-    private static final String CLINVAR_NAME = "ClinVar";
-    private static final String GWAS_NAME = "GWAS catalog";
-    private static final String IARCTP53_NAME = "IARC TP53 Database";
-
 
     public ClinicalDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -47,204 +43,121 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         downloadFiles.addAll(downloadClinical());
         return downloadFiles;
     }
 
-    public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            if (assemblyConfiguration.getName() == null) {
-//                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
-//                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
-//            }
-
-            logger.info("Downloading clinical information ...");
+    public List<DownloadFile> downloadClinical() throws IOException, InterruptedException, CellBaseException {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY).toAbsolutePath();
+            Files.createDirectories(clinicalFolder);
+            logger.info("Downloading clinical information at {} ...", clinicalFolder);
 
             String url;
+            List<String> urls;
+            Path outPath;
+            DownloadProperties.URLProperties props;
+
+            DownloadFile downloadFile;
             List<DownloadFile> downloadFiles = new ArrayList<>();
 
-            Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
-            Files.createDirectories(clinicalFolder);
-            logger.info("\t\tDownloading ClinVar files ...");
+            // COSMIC
+            logger.warn("{} files must be downloaded manually !", COSMIC_NAME);
+            props = configuration.getDownload().getCosmic();
+            urls = Collections.singletonList(props.getHost() + props.getFiles().get(COSMIC_FILE_ID));
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, COSMIC_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(COSMIC_VERSION_FILENAME));
 
-            List<String> clinvarUrls = new ArrayList<>(3);
-            url = configuration.getDownload().getClinvar().getHost();
+            // HGMD
+            logger.warn("{} files must be downloaded manually !", HGMD_NAME);
+            props = configuration.getDownload().getHgmd();
+            urls = Collections.singletonList(props.getHost() + props.getFiles().get(HGMD_FILE_ID));
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, HGMD_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(HGMD_VERSION_FILENAME));
 
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString()));
-            clinvarUrls.add(url);
+            // GWAS catalog
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_NAME,
+                    CLINICAL_VARIANTS_DATA, GWAS_VERSION_FILENAME, clinicalFolder);
+            downloadFiles.add(downloadFile);
 
-            url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString()));
-            clinvarUrls.add(url);
+            // ClinVar
+            logger.info("Downloading {}} files ...", CLINVAR_NAME);
+            props = configuration.getDownload().getClinvar();
+            urls = new ArrayList<>();
+            for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
+                    CLINVAR_EFO_TERMS_FILE_ID)) {
+                url = props.getHost() + props.getFiles().get(fileId);
+                outPath = clinicalFolder.resolve(getFilenameFromUrl(url));
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
+                downloadFiles.add(downloadFile(url, outPath.toString()));
+                urls.add(url);
+            }
+            // Save data source
+            saveDataSource(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, props.getVersion(), getTimeStamp(), urls,
+                    clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
 
-            url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString()));
-            clinvarUrls.add(url);
-
-            url = configuration.getDownload().getClinvarVariationAllele().getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString()));
-            clinvarUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
-                    clinicalFolder.resolve("clinvarVersion.json"));
-
-            // Gwas catalog
-            logger.info("\t\tDownloading GWAS catalog file ...");
-            DownloadProperties.URLProperties gwasCatalog = configuration.getDownload().getGwasCatalog();
-            url = gwasCatalog.getHost();
-            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString()));
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
-
-//            List<String> hgvsList = getDocmHgvsList();
-//            if (!hgvsList.isEmpty()) {
-//                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-//                downloadFiles.add(downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-//                        clinicalFolder.resolve("docmIndex.html").toString()));
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
-//                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
-//                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
-//                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
-//                        clinicalFolder.resolve("docmVersion.json"));
-//            } else {
-//                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
-//                        + "assembly", assemblyConfiguration.getName());
-//            }
-
-            // I am only able to download these files manually
-//            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
-//                url = configuration.getDownload().getIarctp53().getHost();
-//                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString()));
-//
-//                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-//                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//                while (entries.hasMoreElements()) {
-//                    ZipEntry entry = entries.nextElement();
-//                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-//                    if (entry.isDirectory()) {
-//                        entryDestination.mkdirs();
-//                    } else {
-//                        entryDestination.getParentFile().mkdirs();
-//                        InputStream in = zipFile.getInputStream(entry);
-//                        OutputStream out = new FileOutputStream(entryDestination);
-//                        IOUtils.copy(in, out);
-//                        IOUtils.closeQuietly(in);
-//                        out.close();
-//                    }
-//                }
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-//                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-//                                "The version of the database should be identified"), getTimeStamp(),
-//                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
-//            }
-
-            if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
-                Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));
-                splitClinvar(clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE), clinicalFolder.resolve("clinvar_chunks"));
+            // Prepare CliVar chunk files
+            Path chunksPath = clinicalFolder.resolve(CLINVAR_CHUNKS_SUBDIRECTORY);
+            if (Files.notExists(chunksPath)) {
+                Files.createDirectories(chunksPath);
+                Path clinvarPath = clinicalFolder.resolve(getFilenameFromUrl(
+                        props.getHost() + props.getFiles().get(CLINVAR_FULL_RELEASE_FILE_ID)));
+                logger.info("Splitting {} in {} ...", clinvarPath, chunksPath);
+                splitClinvar(clinvarPath, chunksPath);
             }
 
             return downloadFiles;
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath);
         PrintWriter pw = null;
-        StringBuilder header = new StringBuilder();
-        boolean beforeEntry = true;
-        boolean inEntry = false;
-        int count = 0;
-        int chunk = 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.trim().startsWith("<ClinVarSet ")) {
-                inEntry = true;
-                beforeEntry = false;
-                if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
-                    pw.println(header.toString().trim());
+        try (BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath)) {
+            StringBuilder header = new StringBuilder();
+            boolean beforeEntry = true;
+            boolean inEntry = false;
+            int count = 0;
+            int chunk = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().startsWith("<ClinVarSet ")) {
+                    inEntry = true;
+                    beforeEntry = false;
+                    if (count % 10000 == 0) {
+                        pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                        pw.println(header.toString().trim());
+                    }
+                    count++;
                 }
-                count++;
-            }
 
-            if (beforeEntry) {
-                header.append(line).append("\n");
-            }
+                if (beforeEntry) {
+                    header.append(line).append("\n");
+                }
 
-            if (inEntry) {
-                pw.println(line);
-            }
+                if (inEntry) {
+                    pw.println(line);
+                }
 
-            if (line.trim().startsWith("</ClinVarSet>")) {
-                inEntry = false;
-                if (count % 10000 == 0) {
-                    pw.print("</ReleaseSet>");
-                    pw.close();
-                    chunk++;
+                if (line.trim().startsWith("</ClinVarSet>")) {
+                    inEntry = false;
+                    if (count % 10000 == 0) {
+                        if (pw != null) {
+                            pw.print("</ReleaseSet>");
+                            pw.close();
+                        }
+                        chunk++;
+                    }
                 }
             }
-        }
-        pw.print("</ReleaseSet>");
-        pw.close();
-        br.close();
-    }
-
-    private String getDocmVersion(Path docmIndexHtml) {
-        return getVersionFromVersionLine(docmIndexHtml, "<select name=\"version\" id=\"version\"");
-    }
-
-    private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
-        BufferedWriter bufferedWriter = Files.newBufferedWriter(path);
-        Client client = ClientBuilder.newClient();
-        WebTarget restUrlBase = client
-                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
-
-        logger.info("Querying DOCM REST API to get detailed data for all their variants");
-        int counter = 0;
-        for (String hgvs : hgvsList) {
-            WebTarget callUrl = restUrlBase.path(hgvs + ".json");
-            String jsonString = callUrl.request().get(String.class);
-            bufferedWriter.write(jsonString + "\n");
-
-            if (counter % 10 == 0) {
-                logger.info("{} DOCM variants saved", counter);
-            }
-            // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
-            Thread.sleep(300);
-
-            counter++;
-        }
-        logger.info("Finished. {} DOCM variants saved at {}", counter, path.toString());
-        bufferedWriter.close();
-    }
-
-    private List<String> getDocmHgvsList() throws IOException {
-        Client client = ClientBuilder.newClient();
-        WebTarget restUrl = client
-                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants.json"));
-
-        String jsonString;
-        logger.info("Getting full list of DOCM hgvs from: {}", restUrl.getUri().toURL());
-        jsonString = restUrl.request().get(String.class);
-
-        List<Map<String, String>> responseMap = parseResult(jsonString);
-        List<String> hgvsList = new ArrayList<>(responseMap.size());
-        for (Map<String, String> document : responseMap) {
-            if (document.containsKey("reference_version")
-                    && document.get("reference_version").equalsIgnoreCase(assemblyConfiguration.getName())) {
-                hgvsList.add(document.get("hgvs"));
+            if (pw != null) {
+                pw.print("</ReleaseSet>");
+                pw.close();
             }
         }
-        logger.info("{} hgvs found", hgvsList.size());
-
-        return hgvsList;
     }
-
-    private String getClinVarVersion() {
-        // ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz
-        return configuration.getDownload().getClinvar().getHost().split("_")[1].split("\\.")[0];
-    }
-
 }

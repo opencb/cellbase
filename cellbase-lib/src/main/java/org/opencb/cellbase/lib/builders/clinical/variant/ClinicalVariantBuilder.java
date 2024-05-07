@@ -19,8 +19,9 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -38,144 +39,82 @@ import java.nio.file.Paths;
  */
 public class ClinicalVariantBuilder extends CellBaseBuilder {
 
-    private final Path clinvarXMLFile;
-    private final Path clinvarSummaryFile;
-    private final Path clinvarVariationAlleleFile;
-    private final Path clinvarEFOFile;
-    private final Path cosmicFile;
-    private final Path gwasFile;
-    private final Path dbsnpFile;
+    private final Path clinicalVariantFolder;
     private final String assembly;
-    private final Path iarctp53GermlineFile;
-    private final Path iarctp53SomaticFile;
-    private final Path iarctp53GermlineReferencesFile;
-    private final Path iarctp53SomaticReferencesFile;
     private final Path genomeSequenceFilePath;
-    private final Path docmFile;
-    private final Path hgmdFile;
-    private boolean normalize = true;
+    private boolean normalize;
+
+    private final CellBaseConfiguration configuration;
 
     public ClinicalVariantBuilder(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
-                                  String assembly, CellBaseSerializer serializer) {
-        this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.CLINVAR_EFO_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.COSMIC_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.GWAS_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.DBSNP_FILE),
-                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_FILE),
-                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_REFERENCES_FILE),
-                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
-                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.DOCM_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.HGMD_FILE),
-                normalize,
-                genomeSequenceFilePath, assembly, serializer);
-    }
-
-    public ClinicalVariantBuilder(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
-                                  Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
-                                  Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
-                                  Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile, Path hgmdFile,
-                                  boolean normalize, Path genomeSequenceFilePath, String assembly,
-                                  CellBaseSerializer serializer) {
+                                  String assembly, CellBaseConfiguration configuration, CellBaseSerializer serializer) {
         super(serializer);
-        this.clinvarXMLFile = clinvarXMLFile;
-        this.clinvarSummaryFile = clinvarSummaryFile;
-        this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
-        this.clinvarEFOFile = clinvarEFOFile;
-        this.cosmicFile = cosmicFile;
-        this.gwasFile = gwasFile;
-        this.dbsnpFile = dbsnpFile;
-        this.iarctp53GermlineFile = iarctp53GermlineFile;
-        this.iarctp53GermlineReferencesFile = iarctp53GermlineReferencesFile;
-        this.iarctp53SomaticFile = iarctp53SomaticFile;
-        this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
-        this.docmFile = docmFile;
-        this.hgmdFile = hgmdFile;
+        this.clinicalVariantFolder = clinicalVariantFolder;
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
+        this.configuration = configuration;
     }
 
-    public void parse() throws IOException, RocksDBException {
-
+    public void parse() throws IOException, RocksDBException, CellBaseException {
         RocksDB rdb = null;
         Options dbOption = null;
         String dbLocation = null;
 
         try {
-            Object[] dbConnection = getDBConnection(clinvarXMLFile.getParent().toString() + "/integration.idx", true);
+            Object[] dbConnection = getDBConnection(clinicalVariantFolder.toString() + "/integration.idx", true);
             rdb = (RocksDB) dbConnection[0];
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
             // COSMIC
             // IMPORTANT: COSMIC must be indexed first (before ClinVar, IARC TP53, DOCM, HGMD,...)!!!
-            if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath, assembly, rdb);
+            Path cosmicFile = clinicalVariantFolder.resolve(configuration.getDownload().getCosmic().getFiles().get(0));
+            if (cosmicFile != null && Files.exists(cosmicFile)) {
+                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, configuration.getDownload().getCosmic().getVersion(),
+                        normalize, genomeSequenceFilePath, assembly, rdb);
                 cosmicIndexer.index();
             } else {
-                logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
+                throw new CellBaseException("Could not build clinical variants: the COSMIC file " + cosmicFile + " is missing");
             }
 
             // ClinVar
-            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
-                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
-                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
-                clinvarIndexer.index();
-            } else {
-                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
-                        + "Please, ensure that these two files exist:\n"
-                        + "{}\n"
-                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
-            }
-
-            // IARC TP53
-            if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null
-                    && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
-                IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
-                        iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile,
-                        normalize, genomeSequenceFilePath, assembly, rdb);
-                iarctp53Indexer.index();
-            } else {
-                logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
-            }
-
-            // DOCM
-            if (this.docmFile != null && Files.exists(docmFile)) {
-                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, normalize, genomeSequenceFilePath, assembly, rdb);
-                docmIndexer.index();
-            } else {
-                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
-            }
+            Path clinvarXMLFile = getPathFromHost(configuration.getDownload().getClinvar().getHost());
+            Path clinvarSummaryFile = getPathFromHost(configuration.getDownload().getClinvarSummary().getHost());
+            Path clinvarVariationAlleleFile = getPathFromHost(configuration.getDownload().getClinvarVariationAllele().getHost());
+            Path clinvarEFOFile = getPathFromHost(configuration.getDownload().getClinvarEfoTerms().getHost());
+            ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
+                    clinvarVariationAlleleFile, clinvarEFOFile, configuration.getDownload().getClinvar().getVersion(), normalize,
+                    genomeSequenceFilePath, assembly, rdb);
+            clinvarIndexer.index();
 
             // HGMD
-            if (this.hgmdFile != null && Files.exists(hgmdFile)) {
-                HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFile, normalize, genomeSequenceFilePath, assembly, rdb);
+            Path hgmdFile = clinicalVariantFolder.resolve(configuration.getDownload().getHgmd().getFiles().get(0));
+            if (hgmdFile != null && Files.exists(hgmdFile)) {
+                HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFile, configuration.getDownload().getHgmd().getVersion(), normalize,
+                        genomeSequenceFilePath, assembly, rdb);
                 hgmdIndexer.index();
             } else {
-                logger.warn("The HGMD file {} is missing. Skipping HGMD data.", hgmdFile);
+                throw new CellBaseException("Could not build clinical variants: the HGMD file " + hgmdFile + " is missing");
             }
 
             // GWAS catalog
+            Path gwasFile = clinicalVariantFolder.resolve(Paths.get(configuration.getDownload().getGwasCatalog().getHost()).getFileName());
             if (gwasFile != null && Files.exists(gwasFile)) {
+                Path dbsnpFile = clinicalVariantFolder.resolve(configuration.getDownload().getGwasCatalog().getFiles().get(0));
                 if (dbsnpFile != null && Files.exists(dbsnpFile)) {
                     Path tabixFile = Paths.get(dbsnpFile.toAbsolutePath() + ".tbi");
                     if (tabixFile != null && Files.exists(tabixFile)) {
                         GwasIndexer gwasIndexer = new GwasIndexer(gwasFile, dbsnpFile, genomeSequenceFilePath, assembly, rdb);
                         gwasIndexer.index();
                     } else {
-                        logger.warn("The dbSNP tabix file {} is missing. Skipping GWAS catalog data.", tabixFile);
+                        throw new CellBaseException("Could not build clinical variants: the dbSNP tabix file " + tabixFile + " is missing");
                     }
                 } else {
-                    logger.warn("The dbSNP file {} is missing. Skipping GWAS catalog data.", dbsnpFile);
+                    throw new CellBaseException("Could not build clinical variants: the dbSNP file " + dbsnpFile + " is missing");
                 }
             } else {
-                logger.warn("The GWAS catalog file {} is missing. Skipping GWAS catalog data.", gwasFile);
+                throw new CellBaseException("Could not build clinical variants: the GWAS catalog file " + gwasFile + " is missing");
             }
 
             serializeRDB(rdb);
@@ -186,7 +125,14 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             serializer.close();
             throw e;
         }
+    }
 
+    private Path getPathFromHost(String host) throws CellBaseException {
+        Path path = clinicalVariantFolder.resolve(Paths.get(host).getFileName());
+        if (!Files.exists(path)) {
+            throw new CellBaseException("Could not build clinical variants. The file " + path + " is missing");
+        }
+        return path;
     }
 
     private void serializeRDB(RocksDB rdb) throws IOException {

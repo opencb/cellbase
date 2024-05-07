@@ -40,7 +40,7 @@ public class Downloader {
 
     public List<DownloadFile> downloadGenome() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
-        return manager.download();
+        return manager.downloadReferenceGenome();
     }
 
     public List<DownloadFile> downloadGene() throws IOException, CellBaseException, InterruptedException {
@@ -101,6 +101,11 @@ public class Downloader {
 
     public List<DownloadFile> downloadAlphaMissense() throws IOException, CellBaseException, InterruptedException {
         AlphaMissenseDownloadManager manager = new AlphaMissenseDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
+
+    public List<DownloadFile> downloadPolygenicScores() throws IOException, CellBaseException, InterruptedException {
+        PgsDownloadManager manager = new PgsDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 }
