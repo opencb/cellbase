@@ -73,7 +73,7 @@ download:
       host: ftp://ftp.ensemblgenomes.org/pub
   refSeq:
     host: https://ftp.ncbi.nih.gov/refseq/
-    version: "October 16, 2023 (GRCh38.p14)"
+    version: "2023-10-11"
     files:
       GENOMIC_GTF: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
       GENOMIC_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
@@ -81,9 +81,9 @@ download:
       RNA_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   maneSelect:
     host: https://ftp.ncbi.nlm.nih.gov/refseq/
-    version: "1.1"
+    version: "1.2"
     files:
-      MANE_SELECT: MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
+      MANE_SELECT: MANE/MANE_human/release_1.2/MANE.GRCh38.v1.2.summary.txt.gz
   lrg:
     host: http://ftp.ebi.ac.uk/
     version: "2021-03-30"
@@ -91,9 +91,9 @@ download:
       LRG: pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
   hgnc:
     host: https://ftp.ebi.ac.uk/
-    version: "2023-11-01"
+    version: "2024-04-01"
     files:
-      HGNC: pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
+      HGNC: pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2024-04-01.txt
   cancerHotspot:
     host: https://www.cancerhotspots.org/
     version: "v2"
@@ -106,7 +106,7 @@ download:
       DGIDB: data/monthly_tsvs/2022-Feb/interactions.tsv
   geneUniprotXref:
     host: http://ftp.uniprot.org/
-    version: "2024_01 (24-Jan-2024)"
+    version: "2024-03-27"
     files:
       UNIPROT_XREF: pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping_selected.tab.gz
   geneExpressionAtlas:
@@ -116,6 +116,7 @@ download:
       GENE_EXPRESSION_ATLAS: pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
   hpo:
     ## NOTE: Download manually from here now
+    version: "2024-04-26"
     host: https://hpo.jax.org/app/data/annotations
   disgenet:
     host: https://www.disgenet.org/
@@ -151,12 +152,12 @@ download:
   ## Protein Data
   uniprot:
     host: https://ftp.uniprot.org/
-    version: "2024-01-24"
+    version: "2024-03-27"
     files:
       UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
     host: https://ftp.ebi.ac.uk/
-    version: "2024-01-24"
+    version: "2024-03-27"
     files:
       INTERPRO: pub/databases/interpro/current_release/protein2ipr.dat.gz
   intact:
@@ -182,7 +183,7 @@ download:
     host: http://ftp.ensembl.org/
     version: "2023-05-17"
     files:
-      GERP: pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+      GERP: pub/release-111/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
 
   ## Clinical Variant
   clinvar:
@@ -206,11 +207,11 @@ download:
     files:
       HGMD: hgmd.vcf
   gwasCatalog:
-    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e110_r2023-12-20'
+    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
     host: https://ftp.ebi.ac.uk/
-    version: "2024-02-12"
+    version: "2024-04-22"
     files:
-      GWAS: pub/databases/gwas/releases/2024/02/12/gwas-catalog-associations_ontology-annotated.tsv
+      GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
   dgv:
@@ -292,7 +293,7 @@ species:
     - id: hsapiens
       scientificName: Homo sapiens
       assemblies:
-        - ensemblVersion: '110_38'
+        - ensemblVersion: '111_38'
           name: GRCh38
         - ensemblVersion: '82_37'
           name: GRCh37
