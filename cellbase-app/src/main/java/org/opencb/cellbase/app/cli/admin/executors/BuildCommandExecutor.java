@@ -66,7 +66,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
             MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANTS_DATA, REPEATS_DATA,
-            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
+            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA, PGS_DATA);
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
@@ -168,7 +168,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     case PHARMACOGENOMICS_DATA:
                         parser = buildPharmacogenomics();
                         break;
-                    case EtlCommons.PGS_DATA:
+                    case PGS_DATA:
                         parser = buildPolygenicScores();
                         break;
                     default:
@@ -470,6 +470,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 case SPLICE_SCORE_DATA:
                 case PUBMED_DATA:
                 case PHARMACOGENOMICS_DATA:
+                case PGS_DATA:
                     break;
                 default:
                     throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
