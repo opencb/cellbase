@@ -132,6 +132,11 @@ download:
     host: http://geneontology.org/
     files:
       GO_ANNOTATION: gene-associations/goa_human.gaf.gz
+  pgs:
+    host: https://www.pgscatalog.org/
+    version: "Dec. 15, 2023"
+    files:
+      PGS_METADATA: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
 
   ## Regulation
   mirbase:
@@ -288,11 +293,6 @@ download:
       CLINICAL_VARIANTS: clinicalVariants.zip
       DRUG_LABELS: drugLabels.zip
       RELATIONSHIPS: relationships.zip
-pgs:
-  host: https://www.pgscatalog.org/
-  version: "Dec. 15, 2023"
-  files:
-    PGS_METADATA: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
 species:
   vertebrates:
     - id: hsapiens
