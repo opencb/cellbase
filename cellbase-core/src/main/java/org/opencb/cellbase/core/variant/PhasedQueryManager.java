@@ -87,7 +87,7 @@ public abstract class PhasedQueryManager {
         return StringUtils.isBlank(field) || field.equals(MISSING_VALUE);
     }
 
-    private Variant getVariant(List<Variant> variantList, Variant variant) {
+    protected Variant getVariant(List<Variant> variantList, Variant variant) {
         for (Variant variant1 : variantList) {
             // TODO: simple chr, start, ref, alt matching here - shall implement something fancier
             if (variant.getChromosome().equals(variant1.getChromosome())
