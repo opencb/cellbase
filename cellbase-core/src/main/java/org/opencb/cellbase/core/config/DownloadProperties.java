@@ -44,10 +44,6 @@ public class DownloadProperties {
     private URLProperties phylop;
     private URLProperties gerp;
     private URLProperties clinvar;
-    private URLProperties clinvarVariation;
-    private URLProperties clinvarSummary;
-    private URLProperties clinvarVariationAllele;
-    private URLProperties clinvarEfoTerms;
     private URLProperties cosmic;
     private URLProperties hgmd;
     private URLProperties dgv;
@@ -222,41 +218,6 @@ public class DownloadProperties {
 
     public DownloadProperties setClinvar(URLProperties clinvar) {
         this.clinvar = clinvar;
-        return this;
-    }
-
-    public URLProperties getClinvarVariation() {
-        return clinvarVariation;
-    }
-
-    public DownloadProperties setClinvarVariation(URLProperties clinvarVariation) {
-        this.clinvarVariation = clinvarVariation;
-        return this;
-    }
-
-    public URLProperties getClinvarSummary() {
-        return clinvarSummary;
-    }
-
-    public DownloadProperties setClinvarSummary(URLProperties clinvarSummary) {
-        this.clinvarSummary = clinvarSummary;
-        return this;
-    }
-
-    public URLProperties getClinvarVariationAllele() {
-        return clinvarVariationAllele;
-    }
-
-    public void setClinvarVariationAllele(URLProperties clinvarVariationAllele) {
-        this.clinvarVariationAllele = clinvarVariationAllele;
-    }
-
-    public URLProperties getClinvarEfoTerms() {
-        return clinvarEfoTerms;
-    }
-
-    public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
-        this.clinvarEfoTerms = clinvarEfoTerms;
         return this;
     }
 
