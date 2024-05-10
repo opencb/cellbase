@@ -55,6 +55,7 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
             Path downloadedFilePath = pharmgkbDownloadFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, downloadedFilePath);
             DownloadFile downloadFile = downloadFile(url, downloadedFilePath.toString());
+            logger.info(OK_LOG_MESSAGE);
             downloadFiles.add(downloadFile);
         }
 

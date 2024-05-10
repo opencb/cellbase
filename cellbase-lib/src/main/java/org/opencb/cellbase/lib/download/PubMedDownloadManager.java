@@ -51,6 +51,7 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
             String url = host + filename;
             logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, pubmedDownloadFolder.resolve(filename));
             downloadFiles.add(downloadFile(url, pubmedDownloadFolder.resolve(filename).toString()));
+            logger.info(OK_LOG_MESSAGE);
         }
 
         // Save data source

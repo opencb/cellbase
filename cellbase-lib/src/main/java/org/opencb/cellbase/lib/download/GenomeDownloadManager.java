@@ -102,6 +102,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
                     logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phastConsUrl, outputPath);
                     downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
+                    logger.info(OK_LOG_MESSAGE);
                     phastconsUrls.add(phastConsUrl);
 
                     // PhyloP
@@ -112,6 +113,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                     outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
                     logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phyloPUrl, outputPath);
                     downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
+                    logger.info(OK_LOG_MESSAGE);
                     phyloPUrls.add(phyloPUrl);
                 }
 
@@ -123,6 +125,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
                 logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, gerpUrl, outputPath);
                 downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+                logger.info(OK_LOG_MESSAGE);
+
 
                 // Save data version
                 saveDataSource(PHASTCONS_DATA, configuration.getDownload().getPhastCons().getVersion(), getTimeStamp(), phastconsUrls,
@@ -162,6 +166,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             Path outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
+            logger.info(OK_LOG_MESSAGE);
             saveDataSource(TRF_DATA, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(TRF_DATA)));
 
@@ -171,6 +176,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
             downloadFiles.add(downloadFile(url, outputPath.toString()));
+            logger.info(OK_LOG_MESSAGE);
             saveDataSource(GSD_DATA, configuration.getDownload().getGenomicSuperDups().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(GSD_DATA)));
 
@@ -181,6 +187,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                 outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
                 logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
                 downloadFiles.add(downloadFile(url, outputPath.toString()));
+                logger.info(OK_LOG_MESSAGE);
                 saveDataSource(WM_DATA, configuration.getDownload().getWindowMasker().getVersion(), getTimeStamp(),
                         Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(WM_DATA)));
             }
