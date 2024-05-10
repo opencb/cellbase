@@ -89,7 +89,7 @@ public class ClinicalVariantBuilderTest {
                         .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
                 clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANT_DATA, true);
         (new ClinicalVariantBuilder(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
@@ -145,7 +145,7 @@ public class ClinicalVariantBuilderTest {
 
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANT_DATA, true);
         (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
@@ -230,7 +230,7 @@ public class ClinicalVariantBuilderTest {
                         .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
                 clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANT_DATA, true);
         (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
