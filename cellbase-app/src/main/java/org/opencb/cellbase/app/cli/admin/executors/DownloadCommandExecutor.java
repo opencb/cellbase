@@ -41,7 +41,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private Path outputDirectory;
 
     private static final List<String> VALID_SOURCES_TO_DOWNLOAD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
-            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANTS_DATA, REPEATS_DATA,
+            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
             ONTOLOGY_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA, PGS_DATA);
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
@@ -86,7 +86,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case CONSERVATION_DATA:
                         downloadFiles.addAll(downloader.downloadConservation());
                         break;
-                    case CLINICAL_VARIANTS_DATA:
+                    case CLINICAL_VARIANT_DATA:
                         downloadFiles.addAll(downloader.downloadClinicalVariants());
                         break;
                     case REPEATS_DATA:
@@ -135,7 +135,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 case REGULATION_DATA:
                 case PROTEIN_DATA:
                 case CONSERVATION_DATA:
-                case CLINICAL_VARIANTS_DATA:
+                case CLINICAL_VARIANT_DATA:
                 case REPEATS_DATA:
                 case ONTOLOGY_DATA:
                 case PUBMED_DATA:

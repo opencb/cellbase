@@ -183,7 +183,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         // Check genome fasta file
         genomeSequenceFilePath = checkFiles(GENOME_DATA, downloadPath.getParent().getParent().resolve(GENOME_DATA), 1).get(0).toPath();
 
-        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE);
+        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, ensemblGeneLabel);
         checked = true;
     }
 

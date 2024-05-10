@@ -137,7 +137,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist");
         }
 
-        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE);
+        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, refSeqGeneLabel);
         checked = true;
     }
 

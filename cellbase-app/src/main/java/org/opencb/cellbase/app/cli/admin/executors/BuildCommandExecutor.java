@@ -39,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +64,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private SpeciesConfiguration speciesConfiguration;
 
     private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
-            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANTS_DATA, REPEATS_DATA,
+            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
             ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA, PGS_DATA);
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
@@ -150,7 +149,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     case CONSERVATION_DATA:
                         parser = buildConservation();
                         break;
-                    case CLINICAL_VARIANTS_DATA:
+                    case CLINICAL_VARIANT_DATA:
                         parser = buildClinicalVariants();
                         break;
                     case REPEATS_DATA:
@@ -309,30 +308,24 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
-        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_SUBDIRECTORY);
+        // Sanity check
+        Path clinicalDownloadPath = downloadFolder.resolve(CLINICAL_VARIANT_DATA);
+        Path clinicalBuildPath = buildFolder.resolve(CLINICAL_VARIANT_DATA);
+        copyVersionFiles(Arrays.asList(clinicalDownloadPath.resolve(getDataVersionFilename(CLINVAR_DATA)),
+                clinicalDownloadPath.resolve(getDataVersionFilename(COSMIC_DATA)),
+                clinicalDownloadPath.resolve(getDataVersionFilename(HGMD_DATA)),
+                clinicalDownloadPath.resolve(getDataVersionFilename(GWAS_DATA))), clinicalBuildPath);
 
-        List<Path> versionFiles = new ArrayList<>();
-        List<String> versionFilenames = Arrays.asList(CLINVAR_VERSION_FILENAME, COSMIC_VERSION_FILENAME, GWAS_VERSION_FILENAME,
-                HGMD_VERSION_FILENAME);
-        for (String versionFilename : versionFilenames) {
-            Path versionFile = clinicalVariantFolder.resolve(versionFilename);
-            if (!versionFile.toFile().exists()) {
-                throw new CellBaseException("Could not build clinical variants because of the file " + versionFilename + " does not exist");
-            }
-            versionFiles.add(versionFile);
-        }
-        copyVersionFiles(versionFiles);
-
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
-                EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
-        return new ClinicalVariantBuilder(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
+        // Create the file serializer and the clinical variants builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(clinicalBuildPath, CLINICAL_VARIANTS_BASENAME, true);
+        return new ClinicalVariantBuilder(clinicalDownloadPath, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
                 configuration, serializer);
     }
 
     private String getDefaultHumanAssembly() {
         for (SpeciesConfiguration species : configuration.getSpecies().getVertebrates()) {
-            if (species.getId().equals("hsapiens")) {
+            if (species.getId().equals(HSAPIENS_NAME)) {
                 return species.getAssemblies().get(0).getName();
             }
         }
@@ -464,7 +457,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 case REGULATION_DATA:
                 case PROTEIN_DATA:
                 case CONSERVATION_DATA:
-                case CLINICAL_VARIANTS_DATA:
+                case CLINICAL_VARIANT_DATA:
                 case REPEATS_DATA:
                 case ONTOLOGY_DATA:
                 case SPLICE_SCORE_DATA:

@@ -52,9 +52,9 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
-    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {} done!";
+    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Ok. {}";
     protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
-    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {}/{} done!";
+    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Ok. {}/{}";
     protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
 
     protected String species;
@@ -195,8 +195,8 @@ public abstract class AbstractDownloadManager {
         DownloadFile downloadFile = downloadEnsemblDataSource(ensemblProps, fileId, chromosome, outPath);
 
         // Save data source
-        saveDataSource(data, "(Ensembl " + ensemblVersion + ")", getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                outPath.resolve(getDataVersionFilename(data)));
+        saveDataSource(data, "(" + getDataName(ENSEMBL_DATA) + " " + ensemblVersion + ")", getTimeStamp(),
+                Collections.singletonList(downloadFile.getUrl()), outPath.resolve(getDataVersionFilename(data)));
 
         return downloadFile;
     }
@@ -226,7 +226,9 @@ public abstract class AbstractDownloadManager {
         String url = EtlCommons.getUrl(props, fileId, species, assembly, chromosome);
         File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
         logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
-        return downloadFile(url, outFile.toString());
+        DownloadFile downloadFile = downloadFile(url, outFile.toString());
+        logger.info(OK_LOG_MESSAGE);
+        return downloadFile;
     }
 
     protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, Path outPath)
@@ -240,7 +242,9 @@ public abstract class AbstractDownloadManager {
                 chromosome);
         File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
         logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
-        return downloadFile(url, outFile.toString());
+        DownloadFile downloadFile = downloadFile(url, outFile.toString());
+        logger.info(OK_LOG_MESSAGE);
+        return downloadFile;
     }
 
     protected void saveDataSource(String data, String version, String date, List<String> urls, Path versionFilePath)
