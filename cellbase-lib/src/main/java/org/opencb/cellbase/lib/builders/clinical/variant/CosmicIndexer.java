@@ -471,7 +471,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         String id = fields[ID_COLUMN];
         String url = "https://cancer.sanger.ac.uk/cosmic/search?q=" + id;
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_NAME, version, null);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, version, null);
         SomaticInformation somaticInformation = getSomaticInformation(fields);
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 

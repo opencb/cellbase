@@ -298,7 +298,6 @@ download:
       CLINICAL_VARIANTS: clinicalVariants.zip
       DRUG_LABELS: drugLabels.zip
       RELATIONSHIPS: relationships.zip
-
 species:
   vertebrates:
     - id: hsapiens

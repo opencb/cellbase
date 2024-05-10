@@ -23,100 +23,155 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by fjlopez on 26/09/16.
  */
 public class ClinicalVariantBuilder extends CellBaseBuilder {
 
-    private final Path clinicalVariantFolder;
+    private final Path clinicalVariantPath;
     private final String assembly;
     private final Path genomeSequenceFilePath;
     private boolean normalize;
+
+    private Path clinvarFullReleaseFilePath;
+    private Path clinvarSummaryFilePath;
+    private Path clinvarVariationAlleleFilePath;
+    private Path clinvarEFOFilePath;
+    private Path cosmicFilePath;
+    private Path hgmdFilePath;
+    private Path gwasFilePath;
+    private Path gwasDbSnpFilePath;
 
     private final CellBaseConfiguration configuration;
 
     public ClinicalVariantBuilder(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
                                   String assembly, CellBaseConfiguration configuration, CellBaseSerializer serializer) {
         super(serializer);
-        this.clinicalVariantFolder = clinicalVariantFolder;
+        this.clinicalVariantPath = clinicalVariantFolder;
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
         this.configuration = configuration;
     }
 
+    public void check() throws CellBaseException, IOException {
+        if (checked) {
+            return;
+        }
+
+        logger.info(CHECKING_BEFORE_BUILDING_LOG_MESSAGE, getDataName(CLINICAL_VARIANT_DATA));
+
+        // Sanity check
+        checkDirectory(clinicalVariantPath, getDataName(CLINICAL_VARIANT_DATA));
+        if (!Files.exists(serializer.getOutdir())) {
+            try {
+                Files.createDirectories(serializer.getOutdir());
+            } catch (IOException e) {
+                throw new CellBaseException("Error creating folder " + serializer.getOutdir(), e);
+            }
+        }
+
+        // Check genome file
+        logger.info("Checking genome FASTA file ...");
+        if (!Files.exists(genomeSequenceFilePath)) {
+            throw new CellBaseException("Genome file path does not exist " + genomeSequenceFilePath);
+        }
+        logger.info(OK_LOG_MESSAGE);
+        logger.info("Checking index for genome FASTA file ...");
+        getIndexFastaReferenceGenome(genomeSequenceFilePath);
+        logger.info(OK_LOG_MESSAGE);
+
+        // Check ClinVar files
+        clinvarFullReleaseFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_FULL_RELEASE_FILE_ID,
+                clinicalVariantPath).toPath();
+        clinvarSummaryFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_SUMMARY_FILE_ID,
+                clinicalVariantPath).toPath();
+        clinvarVariationAlleleFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_ALLELE_FILE_ID,
+                clinicalVariantPath).toPath();
+        clinvarEFOFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_EFO_TERMS_FILE_ID,
+                clinicalVariantPath).toPath();
+
+        // Check COSMIC file
+        cosmicFilePath = checkFiles(COSMIC_DATA, clinicalVariantPath, 1).get(0).toPath();
+
+        // Check HGMD file
+        hgmdFilePath = checkFiles(HGMD_DATA, clinicalVariantPath, 1).get(0).toPath();
+
+        // Check GWAS files
+        gwasFilePath = checkFiles(GWAS_DATA, clinicalVariantPath, 1).get(0).toPath();
+        String dbSnpFilename = Paths.get(configuration.getDownload().getGwasCatalog().getFiles().get(GWAS_DBSNP_FILE_ID)).getFileName()
+                .toString();
+        gwasDbSnpFilePath = clinicalVariantPath.resolve(dbSnpFilename);
+        if (!Files.exists(gwasDbSnpFilePath)) {
+            throw new CellBaseException("Could not build clinical variants: the dbSNP file " + dbSnpFilename + " is missing at "
+                    + clinicalVariantPath);
+        }
+        if (!Files.exists(clinicalVariantPath.resolve(dbSnpFilename + TBI_EXTENSION))) {
+            throw new CellBaseException("Could not build clinical variants: the dbSNP tabix file " + dbSnpFilename + TBI_EXTENSION
+                    + " is missing at " + clinicalVariantPath);
+        }
+
+        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, getDataName(CLINICAL_VARIANT_DATA));
+        checked = true;
+    }
+
     public void parse() throws IOException, RocksDBException, CellBaseException {
+        check();
+
+        // Prepare ClinVar chunk files before building (if necessary)
+        Path chunksPath = serializer.getOutdir().resolve(CLINVAR_CHUNKS_SUBDIRECTORY);
+        if (Files.notExists(chunksPath)) {
+            Files.createDirectories(chunksPath);
+            logger.info("Splitting CliVar file {} in {} ...", clinvarFullReleaseFilePath, chunksPath);
+            splitClinvar(clinvarFullReleaseFilePath, chunksPath);
+            logger.info(OK_LOG_MESSAGE);
+        }
+
         RocksDB rdb = null;
         Options dbOption = null;
         String dbLocation = null;
 
         try {
-            Object[] dbConnection = getDBConnection(clinicalVariantFolder.toString() + "/integration.idx", true);
+            Object[] dbConnection = getDBConnection(clinicalVariantPath.toString() + "/integration.idx", true);
             rdb = (RocksDB) dbConnection[0];
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
             // COSMIC
-            // IMPORTANT: COSMIC must be indexed first (before ClinVar, IARC TP53, DOCM, HGMD,...)!!!
-            Path cosmicFile = clinicalVariantFolder.resolve(configuration.getDownload().getCosmic().getFiles().get(0));
-            if (cosmicFile != null && Files.exists(cosmicFile)) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, configuration.getDownload().getCosmic().getVersion(),
-                        normalize, genomeSequenceFilePath, assembly, rdb);
-                cosmicIndexer.index();
-            } else {
-                throw new CellBaseException("Could not build clinical variants: the COSMIC file " + cosmicFile + " is missing");
-            }
+            // IMPORTANT: COSMIC must be indexed first (before ClinVar, HGMD,...)!!!
+            CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFilePath, configuration.getDownload().getCosmic().getVersion(),
+                    normalize, genomeSequenceFilePath, assembly, rdb);
+            cosmicIndexer.index();
 
             // ClinVar
-            Path clinvarXMLFile = getPathFromHost(configuration.getDownload().getClinvar().getHost());
-            Path clinvarSummaryFile = getPathFromHost(configuration.getDownload().getClinvarSummary().getHost());
-            Path clinvarVariationAlleleFile = getPathFromHost(configuration.getDownload().getClinvarVariationAllele().getHost());
-            Path clinvarEFOFile = getPathFromHost(configuration.getDownload().getClinvarEfoTerms().getHost());
-            ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-                    clinvarVariationAlleleFile, clinvarEFOFile, configuration.getDownload().getClinvar().getVersion(), normalize,
-                    genomeSequenceFilePath, assembly, rdb);
+            ClinVarIndexer clinvarIndexer = new ClinVarIndexer(serializer.getOutdir().resolve(CLINVAR_CHUNKS_SUBDIRECTORY),
+                    clinvarSummaryFilePath, clinvarVariationAlleleFilePath, clinvarEFOFilePath, configuration.getDownload().getClinvar()
+                    .getVersion(), normalize, genomeSequenceFilePath, assembly, rdb);
             clinvarIndexer.index();
 
             // HGMD
-            Path hgmdFile = clinicalVariantFolder.resolve(configuration.getDownload().getHgmd().getFiles().get(0));
-            if (hgmdFile != null && Files.exists(hgmdFile)) {
-                HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFile, configuration.getDownload().getHgmd().getVersion(), normalize,
-                        genomeSequenceFilePath, assembly, rdb);
-                hgmdIndexer.index();
-            } else {
-                throw new CellBaseException("Could not build clinical variants: the HGMD file " + hgmdFile + " is missing");
-            }
+            HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFilePath, configuration.getDownload().getHgmd().getVersion(), normalize,
+                    genomeSequenceFilePath, assembly, rdb);
+            hgmdIndexer.index();
 
             // GWAS catalog
-            Path gwasFile = clinicalVariantFolder.resolve(Paths.get(configuration.getDownload().getGwasCatalog().getHost()).getFileName());
-            if (gwasFile != null && Files.exists(gwasFile)) {
-                Path dbsnpFile = clinicalVariantFolder.resolve(configuration.getDownload().getGwasCatalog().getFiles().get(0));
-                if (dbsnpFile != null && Files.exists(dbsnpFile)) {
-                    Path tabixFile = Paths.get(dbsnpFile.toAbsolutePath() + ".tbi");
-                    if (tabixFile != null && Files.exists(tabixFile)) {
-                        GwasIndexer gwasIndexer = new GwasIndexer(gwasFile, dbsnpFile, genomeSequenceFilePath, assembly, rdb);
-                        gwasIndexer.index();
-                    } else {
-                        throw new CellBaseException("Could not build clinical variants: the dbSNP tabix file " + tabixFile + " is missing");
-                    }
-                } else {
-                    throw new CellBaseException("Could not build clinical variants: the dbSNP file " + dbsnpFile + " is missing");
-                }
-            } else {
-                throw new CellBaseException("Could not build clinical variants: the GWAS catalog file " + gwasFile + " is missing");
-            }
+            GwasIndexer gwasIndexer = new GwasIndexer(gwasFilePath, gwasDbSnpFilePath, genomeSequenceFilePath, assembly, rdb);
+            gwasIndexer.index();
 
+            // Serialize
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();
@@ -125,14 +180,6 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             serializer.close();
             throw e;
         }
-    }
-
-    private Path getPathFromHost(String host) throws CellBaseException {
-        Path path = clinicalVariantFolder.resolve(Paths.get(host).getFileName());
-        if (!Files.exists(path)) {
-            throw new CellBaseException("Could not build clinical variants. The file " + path + " is missing");
-        }
-        return path;
     }
 
     private void serializeRDB(RocksDB rdb) throws IOException {
@@ -169,7 +216,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
                 return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
             }
         } catch (Exception e) {
-            logger.warn(e.getMessage() + ". Impossible to create the variant object from the variant ID: " + variantId);
+            logger.warn("{}. Impossible to create the variant object from the variant ID: {}", e.getMessage(), variantId);
             return null;
         }
     }
@@ -221,4 +268,53 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
 
     }
 
+    private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
+        PrintWriter pw = null;
+        try (BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath)) {
+            StringBuilder header = new StringBuilder();
+            boolean beforeEntry = true;
+            boolean inEntry = false;
+            int count = 0;
+            int chunk = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().startsWith("<ClinVarSet ")) {
+                    inEntry = true;
+                    beforeEntry = false;
+                    if (count % 10000 == 0) {
+                        pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                        pw.println(header.toString().trim());
+                    }
+                    count++;
+                }
+
+                if (beforeEntry) {
+                    header.append(line).append("\n");
+                }
+
+                if (inEntry) {
+                    pw.println(line);
+                }
+
+                if (line.trim().startsWith("</ClinVarSet>")) {
+                    inEntry = false;
+                    if (count % 10000 == 0) {
+                        if (pw != null) {
+                            pw.print("</ReleaseSet>");
+                            pw.close();
+                        }
+                        chunk++;
+                    }
+                }
+            }
+            if (pw != null) {
+                pw.print("</ReleaseSet>");
+                pw.close();
+            }
+        } finally {
+            if (pw != null) {
+                pw.close();
+            }
+        }
+    }
 }

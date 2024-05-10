@@ -83,7 +83,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
         if (exportCommandOptions.data.equals("all")) {
             this.dataToExport = new String[]{GENOME_DATA, GENE_DATA, REFSEQ_DATA, CONSERVATION_DATA, REGULATION_DATA, PROTEIN_DATA,
-                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, VARIATION_DATA, VARIATION_FUNCTIONAL_SCORE_DATA, CLINICAL_VARIANTS_DATA,
+                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, VARIATION_DATA, VARIATION_FUNCTIONAL_SCORE_DATA, CLINICAL_VARIANT_DATA,
                     REPEATS_DATA, ONTOLOGY_DATA, SPLICE_SCORE_DATA, PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
@@ -259,7 +259,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " protein substitution predictions";
                             break;
                         }
-                        case EtlCommons.CLINICAL_VARIANTS_DATA: {
+                        case EtlCommons.CLINICAL_VARIANT_DATA: {
                             counter = exportClinicalVariantData(regions);
                             counterMsg = counter + " clinical variants";
                             break;
@@ -390,7 +390,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
     private int exportClinicalVariantData(List<Region> regions) throws CellBaseException, QueryException, IllegalAccessException,
             IOException {
-        String baseFilename = CLINICAL_VARIANTS_DATA + ".full";
+        String baseFilename = CLINICAL_VARIANT_DATA + ".full";
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, baseFilename);
         ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
         ClinicalVariantQuery query = new ClinicalVariantQuery();

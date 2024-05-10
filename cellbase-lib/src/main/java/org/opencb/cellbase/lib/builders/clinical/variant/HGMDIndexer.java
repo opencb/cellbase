@@ -95,7 +95,7 @@ public class HGMDIndexer extends ClinicalIndexer {
             }
 
             // Source
-            entry.setSource(new EvidenceSource(EtlCommons.HGMD_NAME, version, null));
+            entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, version, null));
 
             // Assembly
             entry.setAssembly(assembly);

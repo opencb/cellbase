@@ -82,7 +82,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
                     EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
                     EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
+                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANT_DATA, EtlCommons.REPEATS_DATA,
                     EtlCommons.ONTOLOGY_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA,
                     EtlCommons.PUBMED_DATA, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
         } else {
@@ -199,11 +199,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, sources);
                             break;
                         }
-                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
-                            // Load data, create index and update release
-                            loadProteinFunctionalPrediction();
-                            break;
-                        }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
                             // Load data
                             Path path = input.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
@@ -263,7 +258,12 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            loadIfExists(input.resolve("intactVersion.json"), METADATA);
 //                            createIndex("protein_protein_interaction");
 //                            break;
-                        case EtlCommons.CLINICAL_VARIANTS_DATA: {
+                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
+                            // Load data, create index and update release
+                            loadProteinFunctionalPrediction();
+                            break;
+                        }
+                        case EtlCommons.CLINICAL_VARIANT_DATA: {
                             // Load data, create index and update release
                             loadClinical();
                             break;
@@ -505,7 +505,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve("cosmicVersion.json"),
                         input.resolve("gwasVersion.json")
                 ));
-                dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANTS_DATA, sources);
+                dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANT_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());

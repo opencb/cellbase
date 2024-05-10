@@ -83,7 +83,7 @@ public abstract class ClinicalIndexer {
                 .setDecomposeMNVs(true);
 
         if (genomeSequenceFilePath != null) {
-            logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath.toString());
+            logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath);
             variantNormalizerConfig.enableLeftAlign(genomeSequenceFilePath.toString());
         } else {
             logger.info("Left alignment is NOT enabled.");

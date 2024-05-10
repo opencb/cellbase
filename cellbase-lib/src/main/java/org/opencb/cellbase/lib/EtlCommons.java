@@ -47,6 +47,10 @@ public final class EtlCommons {
     // Commons
     public static final String XLSX_EXTENSION = ".xlsx";
     public static final String CSV_EXTENSION = ".csv";
+    public static final String TBI_EXTENSION = ".tbi";
+    public static final String FAI_EXTENSION = ".fai";
+
+    public static final String OK_LOG_MESSAGE = "Ok.";
 
     // Ensembl
     public static final String ENSEMBL_DATA = "ensembl";
@@ -139,8 +143,6 @@ public final class EtlCommons {
     public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
 
     public static final String VARIATION_DATA = "variation";
-
-    public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
     // PGS (polygenic scores)
@@ -173,10 +175,10 @@ public final class EtlCommons {
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
 
     // Clinical variants data
-    public static final String CLINICAL_VARIANTS_SUBDIRECTORY = "clinicalVariant";
+    public static final String CLINICAL_VARIANT_DATA = "clinical_variant";
+    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariant";
     // ClinVar
-    public static final String CLINVAR_NAME = "ClinVar";
-    public static final String CLINVAR_VERSION_FILENAME = "clinvar" + SUFFIX_VERSION_FILENAME;
+    public static final String CLINVAR_DATA = "clinvar";
     public static final String CLINVAR_CHUNKS_SUBDIRECTORY = "clinvar_chunks";
     // Must match the configuration file
     public static final String CLINVAR_FULL_RELEASE_FILE_ID = "FULL_RELEASE";
@@ -184,20 +186,18 @@ public final class EtlCommons {
     public static final String CLINVAR_ALLELE_FILE_ID = "ALLELE";
     public static final String CLINVAR_EFO_TERMS_FILE_ID = "EFO_TERMS";
     // COSMIC
-    public static final String COSMIC_NAME = "COSMIC";
-    public static final String COSMIC_VERSION_FILENAME = "cosmic" + SUFFIX_VERSION_FILENAME;
+    public static final String COSMIC_DATA = "cosmic";
     // Must match the configuration file
     public static final String COSMIC_FILE_ID = "COSMIC";
     // HGMD
-    public static final String HGMD_NAME = "HGMD";
-    public static final String HGMD_VERSION_FILENAME = "hgmd" + SUFFIX_VERSION_FILENAME;
+    public static final String HGMD_DATA = "hgmd";
     // Must match the configuration file
     public static final String HGMD_FILE_ID = "HGMD";
     // GWAS
-    public static final String GWAS_NAME = "GWAS catalog";
-    public static final String GWAS_VERSION_FILENAME = "gwas" + SUFFIX_VERSION_FILENAME;
+    public static final String GWAS_DATA = "gwas";
     // Must match the configuration file
     public static final String GWAS_FILE_ID = "GWAS";
+    public static final String GWAS_DBSNP_FILE_ID = "DBSNP";
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
@@ -381,7 +381,7 @@ public final class EtlCommons {
         dataNamesMap.put(GENE_DISEASE_ANNOTATION_DATA, "Gene Disease Annotation");
         dataNamesMap.put(HPO_DATA, "HPO");
         dataNamesMap.put(DISGENET_DATA, "DisGeNet");
-        dataNamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomAD Constraints");
+        dataNamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomAD Constraint");
         dataNamesMap.put(GO_ANNOTATION_DATA, "EBI Gene Ontology Annotation");
         dataNamesMap.put(PROTEIN_DATA, "Protein");
         dataNamesMap.put(UNIPROT_DATA, "UniProt");
@@ -408,10 +408,15 @@ public final class EtlCommons {
         dataNamesMap.put(PUBMED_DATA, "PubMed");
         dataNamesMap.put(PHARMACOGENOMICS_DATA, "Pharmacogenomics");
         dataNamesMap.put(PHARMGKB_DATA, "PharmGKB");
-        dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Scores");
+        dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Score");
         dataNamesMap.put(CADD_DATA, "CADD");
-        dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Scores");
+        dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Score");
         dataNamesMap.put(REVEL_DATA, "Revel");
+        dataNamesMap.put(CLINICAL_VARIANT_DATA, "Clinical Variant");
+        dataNamesMap.put(CLINVAR_DATA, "ClinVar");
+        dataNamesMap.put(COSMIC_DATA, "Cosmic");
+        dataNamesMap.put(HGMD_DATA, "HGMD");
+        dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -449,6 +454,10 @@ public final class EtlCommons {
         dataCategoriesMap.put(PHARMGKB_DATA, dataNamesMap.get(PHARMACOGENOMICS_DATA));
         dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
         dataCategoriesMap.put(REVEL_DATA, dataNamesMap.get(MISSENSE_VARIATION_SCORE_DATA));
+        dataCategoriesMap.put(CLINVAR_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -487,6 +496,10 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(REVEL_DATA, "revel" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(ALPHAMISSENSE_DATA, "alphaMissense" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CLINVAR_DATA, "clinVar" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
