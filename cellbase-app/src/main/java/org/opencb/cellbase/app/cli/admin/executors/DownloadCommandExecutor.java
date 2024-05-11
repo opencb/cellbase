@@ -40,9 +40,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions;
     private Path outputDirectory;
 
-    private static final List<String> VALID_SOURCES_TO_DOWNLOAD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
+    public static final List<String> VALID_SOURCES_TO_DOWNLOAD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
             MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
-            ONTOLOGY_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
+            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.conf);
@@ -95,6 +95,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case ONTOLOGY_DATA:
                         downloadFiles.addAll(downloader.downloadOntologies());
                         break;
+                    case SPLICE_SCORE_DATA:
+                        downloadFiles.addAll(downloader.downloadSpliceScores());
+                        break;
                     case PUBMED_DATA:
                         downloadFiles.addAll(downloader.downloadPubMed());
                         break;
@@ -124,21 +127,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
         List<String> dataList = Arrays.asList(downloadCommandOptions.data.split(","));
         for (String data : dataList) {
-            switch (data) {
-                case GENOME_DATA:
-                case GENE_DATA:
-                case VARIATION_FUNCTIONAL_SCORE_DATA:
-                case MISSENSE_VARIATION_SCORE_DATA:
-                case REGULATION_DATA:
-                case PROTEIN_DATA:
-                case CONSERVATION_DATA:
-                case CLINICAL_VARIANT_DATA:
-                case REPEATS_DATA:
-                case ONTOLOGY_DATA:
-                case PUBMED_DATA:
-                case PHARMACOGENOMICS_DATA:
-                    break;
-                default:
+            if (!VALID_SOURCES_TO_DOWNLOAD.contains(data)) {
                     throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
                             + StringUtils.join(VALID_SOURCES_TO_DOWNLOAD, ",") + "; or use 'all' to download everything");
             }

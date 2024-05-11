@@ -143,7 +143,6 @@ public final class EtlCommons {
     public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
 
     public static final String VARIATION_DATA = "variation";
-    public static final String SPLICE_SCORE_DATA = "splice_score";
 
     // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
@@ -297,10 +296,11 @@ public final class EtlCommons {
     public static final String PHYLOP_FILE_ID = "PHYLOP";
 
     // Splice scores
-    public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
-    public static final String MMSPLICE_VERSION_FILENAME = MMSPLICE_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
-    public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
-    public static final String SPLICEAI_VERSION_FILENAME = SPLICEAI_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String SPLICE_SCORE_DATA = "splice_score";
+    // MMSplice
+    public static final String MMSPLICE_DATA = "mmsplice";
+    // SpliceAI
+    public static final String SPLICEAI_DATA = "spliceai";
 
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
@@ -335,7 +335,6 @@ public final class EtlCommons {
         dataNamesMap.put(GENOME_DATA, "Genome");
         dataNamesMap.put(GENE_DATA, "Gene");
         dataNamesMap.put(GENE_ANNOTATION_DATA, "Gene Annotation");
-        dataCategoriesMap.put(REFSEQ_DATA, "Gene");
         dataNamesMap.put(MANE_SELECT_DATA, "MANE Select");
         dataNamesMap.put(LRG_DATA, "LRG");
         dataNamesMap.put(HGNC_DATA, "HGNC Gene");
@@ -382,6 +381,10 @@ public final class EtlCommons {
         dataNamesMap.put(COSMIC_DATA, "Cosmic");
         dataNamesMap.put(HGMD_DATA, "HGMD");
         dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
+        dataNamesMap.put(SPLICE_SCORE_DATA, "Splice Score");
+        dataNamesMap.put(MMSPLICE_DATA, "MMSplice");
+        dataNamesMap.put(SPLICEAI_DATA, "SpliceAI");
+
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -423,6 +426,8 @@ public final class EtlCommons {
         dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(MMSPLICE_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
+        dataCategoriesMap.put(SPLICEAI_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -464,6 +469,8 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MMSPLICE_DATA, "mmSplice" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {

@@ -52,9 +52,9 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public abstract class AbstractDownloadManager {
 
     protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
-    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Ok. {}";
+    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Ok ({})";
     protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
-    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Ok. {}/{}";
+    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Ok ({}/{})";
     protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
 
     protected String species;
@@ -259,6 +259,8 @@ public abstract class AbstractDownloadManager {
         }
 
         dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
+        logger.info("Created the " + getDataName(data) + " version file " + versionFilePath.getFileName() + " at "
+                + versionFilePath.getParent());
     }
 
     @Deprecated

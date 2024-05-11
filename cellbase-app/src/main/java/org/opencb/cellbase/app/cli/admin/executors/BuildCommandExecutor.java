@@ -357,16 +357,16 @@ public class BuildCommandExecutor extends CommandExecutor {
         return fastaPath;
     }
 
-    private CellBaseBuilder buildSplice() throws IOException {
+    private CellBaseBuilder buildSplice() throws IOException, CellBaseException {
         Path spliceInputFolder = downloadFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
         Path spliceOutputFolder = buildFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
         if (!spliceOutputFolder.toFile().exists()) {
             spliceOutputFolder.toFile().mkdirs();
         }
 
-        if (spliceInputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(spliceInputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME),
-                    spliceOutputFolder.resolve(EtlCommons.MMSPLICE_VERSION_FILENAME),
+        if (spliceInputFolder.resolve(getDataVersionFilename(MMSPLICE_DATA)).toFile().exists()) {
+            Files.copy(spliceInputFolder.resolve(getDataVersionFilename(MMSPLICE_DATA)),
+                    spliceOutputFolder.resolve(EtlCommons.getDataVersionFilename(MMSPLICE_DATA)),
                     StandardCopyOption.REPLACE_EXISTING);
         }
 

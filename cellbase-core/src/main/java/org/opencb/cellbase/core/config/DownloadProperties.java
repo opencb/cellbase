@@ -65,6 +65,8 @@ public class DownloadProperties {
     private URLProperties mondoObo;
     private URLProperties goAnnotation;
     private URLProperties revel;
+    private URLProperties mmSplice;
+    private URLProperties spliceAi;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
 
@@ -403,6 +405,24 @@ public class DownloadProperties {
 
     public DownloadProperties setRevel(URLProperties revel) {
         this.revel = revel;
+        return this;
+    }
+
+    public URLProperties getMmSplice() {
+        return mmSplice;
+    }
+
+    public DownloadProperties setMmSplice(URLProperties mmSplice) {
+        this.mmSplice = mmSplice;
+        return this;
+    }
+
+    public URLProperties getSpliceAi() {
+        return spliceAi;
+    }
+
+    public DownloadProperties setSpliceAi(URLProperties spliceAi) {
+        this.spliceAi = spliceAi;
         return this;
     }
 

@@ -24,7 +24,6 @@ import org.opencb.biodata.models.core.SpliceScoreAlternate;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -35,7 +34,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static org.opencb.cellbase.lib.EtlCommons.MMSPLICE_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.SPLICEAI_DATA;
 
 public class SpliceBuilder extends CellBaseBuilder {
 
@@ -58,14 +61,14 @@ public class SpliceBuilder extends CellBaseBuilder {
 
         logger.info("Parsing splice files...");
 
-        Path splicePath = spliceDir.resolve(EtlCommons.MMSPLICE_SUBDIRECTORY);
+        Path splicePath = spliceDir.resolve(MMSPLICE_DATA);
         if (splicePath.toFile().exists()) {
             logger.info("Parsing MMSplice data...");
             mmspliceParser(splicePath);
         } else {
             logger.debug("MMSplice data not found: " + splicePath);
         }
-        splicePath = spliceDir.resolve(EtlCommons.SPLICEAI_SUBDIRECTORY);
+        splicePath = spliceDir.resolve(SPLICEAI_DATA);
         if (splicePath.toFile().exists()) {
             logger.info("Parsing SpliceAI data...");
             spliceaiParser(splicePath);
@@ -85,7 +88,7 @@ public class SpliceBuilder extends CellBaseBuilder {
      */
     private void mmspliceParser(Path mmsplicePath) throws IOException {
         // Check output folder: MMSplice
-        Path mmspliceOutFolder = fileSerializer.getOutdir().resolve(EtlCommons.MMSPLICE_SUBDIRECTORY);
+        Path mmspliceOutFolder = fileSerializer.getOutdir().resolve(MMSPLICE_DATA);
         if (!mmspliceOutFolder.toFile().exists()) {
             mmspliceOutFolder.toFile().mkdirs();
         }
@@ -177,7 +180,7 @@ public class SpliceBuilder extends CellBaseBuilder {
         }
 
         // Dump rocksDB to JSON file
-        dumpRocksDB(EtlCommons.MMSPLICE_SUBDIRECTORY + "/splice_score_mmsplice_chr", rocksDB);
+        dumpRocksDB(MMSPLICE_DATA + "/splice_score_mmsplice_chr", rocksDB);
 
         // Clean up
         rocksDB.close();
@@ -195,7 +198,7 @@ public class SpliceBuilder extends CellBaseBuilder {
      */
     private void spliceaiParser(Path spliceaiPath) throws IOException {
         // Check output folder: MMSplice
-        Path spliceaiOutFolder = fileSerializer.getOutdir().resolve(EtlCommons.SPLICEAI_SUBDIRECTORY);
+        Path spliceaiOutFolder = fileSerializer.getOutdir().resolve(SPLICEAI_DATA);
         if (!spliceaiOutFolder.toFile().exists()) {
             spliceaiOutFolder.toFile().mkdirs();
         }
@@ -292,7 +295,7 @@ public class SpliceBuilder extends CellBaseBuilder {
         }
 
         // Dump rocksDB to JSON file
-        dumpRocksDB(EtlCommons.SPLICEAI_SUBDIRECTORY + "/splice_score_spliceai_chr", rocksDB);
+        dumpRocksDB(SPLICEAI_DATA + "/splice_score_spliceai_chr", rocksDB);
 
         // Clean up
         rocksDB.close();
