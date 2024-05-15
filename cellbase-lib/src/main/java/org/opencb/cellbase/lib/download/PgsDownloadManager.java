@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -41,17 +40,17 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, PGS_NAME);
+        String pgslabel = getDataCategory(PGS_CATALOG_DATA) + "/" + getDataName(PGS_CATALOG_DATA);
+        logger.info(DOWNLOADING_LOG_MESSAGE, pgslabel);
 
-        DownloadProperties.URLProperties pgsUrlProperties = configuration.getDownload().getPgs();
+        DownloadProperties.URLProperties pgsProps = configuration.getDownload().getPgsCatalog();
 
-        Path pgsFolder = downloadFolder.resolve(PGS_DATA);
-        Files.createDirectories(pgsFolder);
+        Path pgsPath = downloadFolder.resolve(PGS_DATA);
+        Files.createDirectories(pgsPath);
 
         List<String> urls = new ArrayList<>();
-        urls.add(pgsUrlProperties.getHost());
 
-        String urlAllMeta = pgsUrlProperties.getFiles().get(PGS_CATALOG_METADATA_FILE_ID);
+        String urlAllMeta = pgsProps.getFiles().get(PGS_CATALOG_FILE_ID);
         urls.add(urlAllMeta);
 
         String filename = new File(urlAllMeta).getName();
@@ -60,33 +59,35 @@ public class PgsDownloadManager extends AbstractDownloadManager {
         String url;
         Path outPath;
         List<DownloadFile> list = new ArrayList<>();
-        list.add(downloadFile(urlAllMeta, pgsFolder.resolve(filename).toString()));
+        list.add(downloadFile(urlAllMeta, pgsPath.resolve(filename).toString()));
 
         String baseUrl = urlAllMeta.replace(filename, "").replace("metadata", "scores");
-        BufferedReader br = FileUtils.newBufferedReader(pgsFolder.resolve(filename));
-        // Skip first line
-        String line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            String[] field = line.split(",");
-            String pgsId = field[0];
+        try (BufferedReader br = FileUtils.newBufferedReader(pgsPath.resolve(filename))) {
+            // Skip first line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] field = line.split(",");
+                String pgsId = field[0];
 
-            url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
-            outPath = pgsFolder.resolve(new File(url).getName());
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-            list.add(downloadFile(url, outPath.toString()));
+                url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
+                outPath = pgsPath.resolve(new File(url).getName());
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
+                list.add(downloadFile(url, outPath.toString()));
+                urls.add(url);
 
-            url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
-            outPath = pgsFolder.resolve(new File(url).getName());
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-            list.add(downloadFile(url, outPath.toString()));
+                url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
+                outPath = pgsPath.resolve(new File(url).getName());
+                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
+                list.add(downloadFile(url, outPath.toString()));
+                urls.add(url);
+            }
         }
-        br.close();
 
         // Save version file
-        saveDataSource(PGS_CATALOG_NAME, PGS_NAME, pgsUrlProperties.getVersion(), getTimeStamp(), urls,
-                pgsFolder.resolve(EtlCommons.PGS_CATALOG_VERSION_FILENAME));
+        saveDataSource(PGS_CATALOG_DATA, pgsProps.getVersion(), getTimeStamp(), urls,
+                pgsPath.resolve(getDataVersionFilename(PGS_CATALOG_DATA)));
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PGS_NAME);
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, pgslabel);
 
         return list;
     }

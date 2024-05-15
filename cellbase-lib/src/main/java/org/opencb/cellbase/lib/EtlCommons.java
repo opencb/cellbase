@@ -49,6 +49,9 @@ public final class EtlCommons {
     public static final String CSV_EXTENSION = ".csv";
     public static final String TBI_EXTENSION = ".tbi";
     public static final String FAI_EXTENSION = ".fai";
+    public static final String TXT_GZ_EXTENSION = ".txt.gz";
+    public static final String TAR_GZ_EXTENSION = ".tar.gz";
+    public static final String JSON_GZ_EXTENSION = ".json.gz";
 
     public static final String OK_LOG_MESSAGE = "Ok.";
 
@@ -146,15 +149,13 @@ public final class EtlCommons {
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
     // PGS (polygenic scores)
-    public static final String PGS_NAME = "Polygenic Scores";
     public static final String PGS_DATA = "polygenic_score";
     public static final String PGS_COMMON_COLLECTION = "common_polygenic_scores";
     public static final String PGS_VARIANT_COLLECTION = "variant_polygenic_scores";
     // PGS Catalog
-    public static final String PGS_CATALOG_NAME = "PGS Catalog";
-    public static final String PGS_CATALOG_VERSION_FILENAME = "pgsCatalog" + SUFFIX_VERSION_FILENAME;
+    public static final String PGS_CATALOG_DATA = "pgs_catalog";
     // Must match the configuration file
-    public static final String PGS_CATALOG_METADATA_FILE_ID = "PGS_METADATA";
+    public static final String PGS_CATALOG_FILE_ID = "PGS_CATALOG";
 
     // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
@@ -393,6 +394,8 @@ public final class EtlCommons {
         dataNamesMap.put(COSMIC_DATA, "Cosmic");
         dataNamesMap.put(HGMD_DATA, "HGMD");
         dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
+        dataNamesMap.put(PGS_DATA, "Polygenic Score");
+        dataNamesMap.put(PGS_CATALOG_DATA, "PGS Catalog");
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -434,6 +437,7 @@ public final class EtlCommons {
         dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(PGS_CATALOG_DATA, dataNamesMap.get(PGS_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -475,6 +479,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PGS_CATALOG_DATA, "pgsCatalog" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {

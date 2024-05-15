@@ -132,11 +132,11 @@ download:
     host: http://geneontology.org/
     files:
       GO_ANNOTATION: gene-associations/goa_human.gaf.gz
-  pgs:
+  pgsCatalog:
     host: https://www.pgscatalog.org/
     version: "Dec. 15, 2023"
     files:
-      PGS_METADATA: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
+      PGS_CATALOG: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
 
   ## Regulation
   mirbase:

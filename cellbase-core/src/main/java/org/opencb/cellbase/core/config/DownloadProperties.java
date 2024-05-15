@@ -67,7 +67,7 @@ public class DownloadProperties {
     private URLProperties revel;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
-    private URLProperties pgs;
+    private URLProperties pgsCatalog;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -425,12 +425,12 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getPgs() {
-        return pgs;
+    public URLProperties getPgsCatalog() {
+        return pgsCatalog;
     }
 
-    public DownloadProperties setPgs(URLProperties pgs) {
-        this.pgs = pgs;
+    public DownloadProperties setPgsCatalog(URLProperties pgsCatalog) {
+        this.pgsCatalog = pgsCatalog;
         return this;
     }
 
