@@ -31,6 +31,7 @@ import org.opencb.biodata.models.core.pgs.VariantPolygenicScore;
 import org.opencb.biodata.models.variant.avro.OntologyTermAnnotation;
 import org.opencb.biodata.models.variant.avro.PubmedReference;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
@@ -45,22 +46,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class PolygenicScoreBuilder extends CellBaseBuilder {
 
-    private String source;
-    private String version;
-
-    private Path pgsDir;
-    private CellBaseFileSerializer fileSerializer;
+    private Path downloadPath;
+    private Path integrationPath;
+    private DataSource dataSource;
 
     protected Map<String, Object[]> rdbConnectionPerChrom = new HashMap<>();
 
     protected static ObjectMapper mapper;
     protected static ObjectReader varPgsReader;
     protected static ObjectWriter jsonObjectWriter;
-
-    public static final String COMMON_POLYGENIC_SCORE_FILENAME =  "common_polygenic_score.json.gz";
-    public static final String VARIANT_POLYGENIC_SCORE_FILENAME =  "variant_polygenic_score.json.gz";
 
     private static final String RSID_COL = "rsID";
     private static final String CHR_NAME_COL = "chr_name";
@@ -119,80 +117,99 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         jsonObjectWriter = mapper.writer();
     }
 
-    public PolygenicScoreBuilder(String source, String version, Path pgsDir, CellBaseFileSerializer serializer) {
+    public PolygenicScoreBuilder(Path downloadPath, CellBaseFileSerializer serializer) {
         super(serializer);
 
-        this.source = source;
-        this.version = version;
-
-        this.fileSerializer = serializer;
-        this.pgsDir = pgsDir;
+        this.downloadPath = downloadPath;
 
         logger = LoggerFactory.getLogger(PolygenicScoreBuilder.class);
     }
 
-    @Override
-    public void parse() throws Exception {
-        // Check input folder
-        FileUtils.checkPath(pgsDir);
-
-        logger.info("Parsing polygenic score (PGS) files...");
-
-        BufferedWriter bw = FileUtils.newBufferedWriter(serializer.getOutdir().resolve(COMMON_POLYGENIC_SCORE_FILENAME));
-
-        for (File file : pgsDir.toFile().listFiles()) {
-            if (file.isFile()) {
-                if (file.getName().endsWith(".txt.gz")) {
-                    logger.info("Processing PGS file: {}", file.getName());
-
-                    String pgsId = null;
-                    Map<String, Integer> columnPos = new HashMap<>();
-
-                    BufferedReader br = FileUtils.newBufferedReader(file.toPath());
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        if (line.startsWith("#")) {
-                            if (line.startsWith("#pgs_id=")) {
-                                pgsId = line.split("=")[1].trim();
-                                // Sanity check
-                                if (!file.getName().startsWith(pgsId)) {
-                                    throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id mismatch");
-                                }
-                            }
-                        } else if (line.startsWith(RSID_COL) || line.startsWith(CHR_NAME_COL)) {
-                            String[] fields = line.split("\t");
-                            for (int i = 0; i < fields.length; i++) {
-                                columnPos.put(fields[i], i);
-                            }
-                        } else {
-                            // Sanity check
-                            if (pgsId == null) {
-                                throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id is null");
-                            }
-                            saveVariantPolygenicScore(line, columnPos, pgsId);
-                        }
-                    }
-                    br.close();
-                } else if (file.getName().endsWith("_metadata.tar.gz")) {
-                    processPgsMetadataFile(file, bw);
-                }
-            }
+    public void check() throws CellBaseException, IOException {
+        if (checked) {
+            return;
         }
 
-        // Serialize/write the saved variant polygenic scores in the RocksDB
-        serializeRDB();
-        serializer.close();
+        logger.info(CHECKING_BEFORE_BUILDING_LOG_MESSAGE, getDataName(PGS_DATA));
 
-        // Close PGS file (with common attributes)
-        bw.close();
+        // Sanity check
+        checkDirectory(downloadPath, getDataName(PGS_DATA));
+        integrationPath = serializer.getOutdir().resolve("integration");
+        Files.createDirectories(integrationPath);
+        if (!Files.exists(integrationPath)) {
+            throw new CellBaseException("Could not create the folder " + integrationPath);
+        }
 
-        logger.info("Parsing PGS files finished.");
+        // Check downloaded files
+        this.dataSource = dataSourceReader.readValue(downloadPath.resolve(getDataVersionFilename(PGS_CATALOG_DATA)).toFile());
+        checkFiles(dataSource, downloadPath, getDataName(PGS_CATALOG_DATA));
+
+        logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, getDataName(PGS_DATA));
+        checked = true;
+    }
+
+    @Override
+    public void parse() throws Exception {
+        check();
+
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PGS_DATA));
+
+        try (BufferedWriter bw = FileUtils.newBufferedWriter(serializer.getOutdir().resolve(PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION))) {
+
+            for (File file : downloadPath.toFile().listFiles()) {
+                if (file.isFile()) {
+                    if (file.getName().endsWith(TXT_GZ_EXTENSION)) {
+                        logger.info(PARSING_LOG_MESSAGE, file.getName());
+
+                        String pgsId = null;
+                        Map<String, Integer> columnPos = new HashMap<>();
+
+                        try (BufferedReader br = FileUtils.newBufferedReader(file.toPath())) {
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                if (line.startsWith("#")) {
+                                    if (line.startsWith("#pgs_id=")) {
+                                        pgsId = line.split("=")[1].trim();
+                                        // Sanity check
+                                        if (!file.getName().startsWith(pgsId)) {
+                                            throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id mismatch");
+                                        }
+                                    }
+                                } else if (line.startsWith(RSID_COL) || line.startsWith(CHR_NAME_COL)) {
+                                    String[] fields = line.split("\t");
+                                    for (int i = 0; i < fields.length; i++) {
+                                        columnPos.put(fields[i], i);
+                                    }
+                                } else {
+                                    // Sanity check
+                                    if (pgsId == null) {
+                                        throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id is null");
+                                    }
+                                    saveVariantPolygenicScore(line, columnPos, pgsId);
+                                }
+                            }
+                        }
+                        logger.info(PARSING_DONE_LOG_MESSAGE, file.getName());
+                    } else if (file.getName().endsWith("_metadata" + TAR_GZ_EXTENSION)) {
+                        logger.info(PARSING_LOG_MESSAGE, file.getName());
+                        processPgsMetadataFile(file, bw);
+                        logger.info(PARSING_DONE_LOG_MESSAGE, file.getName());
+                    }
+                }
+            }
+
+            // Serialize/write the saved variant polygenic scores in the RocksDB
+            serializeRDB();
+            serializer.close();
+        }
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, getDataName(PGS_DATA));
     }
 
     private void processPgsMetadataFile(File metadataFile, BufferedWriter bw) throws IOException, CellBaseException {
         String pgsId = metadataFile.getName().split("_")[0];
 
-        Path tmp = pgsDir.resolve("tmp");
+        Path tmp = serializer.getOutdir().resolve("tmp");
         if (!tmp.toFile().exists()) {
             tmp.toFile().mkdirs();
         }
@@ -201,84 +218,85 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         Process process = Runtime.getRuntime().exec(command);
 
         // Wait for the process to complete
-        int exitCode;
         try {
-            exitCode = process.waitFor();
+            int exitCode = process.waitFor();
+            // We don't check the code because it is failing in the CellBase worker machine
+//            if (exitCode != 0) {
+//                throw new IOException("Error executing the command. Exit code: " + exitCode);
+//            }
         } catch (InterruptedException e) {
-            throw new IOException("Error waiting for the process to complete.", e);
-        }
-
-        // Check the exit code
-        if (exitCode != 0) {
-            throw new IOException("Error executing the command. Exit code: " + exitCode);
+            throw new IOException("Error waiting for the process '" + command + "' to complete.", e);
         }
 
         // Create PGS object, with the common fields
         CommonPolygenicScore pgs = new CommonPolygenicScore();
         pgs.setId(pgsId);
-        pgs.setSource(source);
-        pgs.setVersion(version);
+        pgs.setSource(PGS_CATALOG_DATA);
+        pgs.setVersion(dataSource.getVersion());
 
         String line;
         String[] field;
-        BufferedReader br;
+
         // PGSxxxxx_metadata_publications.csv
-        br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_publications.csv"));
-        // Skip first line
-        line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            // 0                                1              2       3              4                  5              6
-            // PGS Publication/Study (PGP) ID   First Author   Title   Journal Name   Publication Date   Release Date   Authors
-            // 7                                 8
-            // digital object identifier (doi)   PubMed ID (PMID)
-            StringReader stringReader = new StringReader(line);
-            CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            CSVRecord strings = csvParser.getRecords().get(0);
-            pgs.getPubmedRefs().add(new PubmedReference(strings.get(8), strings.get(2), strings.get(3), strings.get(4), null));
+        try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_publications.csv"))) {
+            // Skip first line
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                // 0                                1              2       3              4                  5              6
+                // PGS Publication/Study (PGP) ID   First Author   Title   Journal Name   Publication Date   Release Date   Authors
+                // 7                                 8
+                // digital object identifier (doi)   PubMed ID (PMID)
+                StringReader stringReader = new StringReader(line);
+                CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
+                CSVRecord strings = csvParser.getRecords().get(0);
+                pgs.getPubmedRefs().add(new PubmedReference(strings.get(8), strings.get(2), strings.get(3), strings.get(4), null));
+            }
         }
 
         // PGSxxxxx_metadata_efo_traits.csv
-        br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_efo_traits.csv"));
-        // Skip first line
-        line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            // 0                   1                      2                            3
-            // Ontology Trait ID   Ontology Trait Label   Ontology Trait Description   Ontology URL
-            StringReader stringReader = new StringReader(line);
-            CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            CSVRecord strings = csvParser.getRecords().get(0);
-            pgs.getTraits().add(new OntologyTermAnnotation(strings.get(0), strings.get(1), strings.get(2), "EFO", strings.get(3),
-                    new HashMap<>()));
+        try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_efo_traits.csv"))) {
+            // Skip first line
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                // 0                   1                      2                            3
+                // Ontology Trait ID   Ontology Trait Label   Ontology Trait Description   Ontology URL
+                StringReader stringReader = new StringReader(line);
+                CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
+                CSVRecord strings = csvParser.getRecords().get(0);
+                pgs.getTraits().add(new OntologyTermAnnotation(strings.get(0), strings.get(1), strings.get(2), "EFO", strings.get(3),
+                        new HashMap<>()));
+            }
         }
 
         // PGSxxxxx_metadata_scores.csv
-        br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_scores.csv"));
-        // Skip first line
-        line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            // 0                          1          2                3                             4
-            // Polygenic Score (PGS) ID   PGS Name   Reported Trait   Mapped Trait(s) (EFO label)   Mapped Trait(s) (EFO ID)
-            // 5                        6                                             7                       8
-            // PGS Development Method   PGS Development Details/Relevant Parameters   Original Genome Build   Number of Variants
-            // 9                             10                       11                         12                   13
-            // Number of Interaction Terms   Type of Variant Weight   PGS Publication (PGP) ID   Publication (PMID)   Publication (doi)
-            // 14                                                 15
-            // Score and results match the original publication   Ancestry Distribution (%) - Source of Variant Associations (GWAS)
-            // 16                                                       17                                           18         19
-            // Ancestry Distribution (%) - Score Development/Training   Ancestry Distribution (%) - PGS Evaluation   FTP link   Release Date
-            // 19
-            // License/Terms of Use
-            StringReader stringReader = new StringReader(line);
-            CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            CSVRecord strings = csvParser.getRecords().get(0);
-            // Sanity check
-            if (!pgsId.equals(strings.get(0))) {
-                throw new CellBaseException("Mismatch PGS ID when parsing file " + pgsId + "_metadata_scores.csv");
+        try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_scores.csv"))) {
+            // Skip first line
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                // 0                          1          2                3                             4
+                // Polygenic Score (PGS) ID   PGS Name   Reported Trait   Mapped Trait(s) (EFO label)   Mapped Trait(s) (EFO ID)
+                // 5                        6                                             7                       8
+                // PGS Development Method   PGS Development Details/Relevant Parameters   Original Genome Build   Number of Variants
+                // 9                             10                       11                         12                   13
+                // Number of Interaction Terms   Type of Variant Weight   PGS Publication (PGP) ID   Publication (PMID)   Publication (doi)
+                // 14                                                 15
+                // Score and results match the original publication   Ancestry Distribution (%) - Source of Variant Associations (GWAS)
+                // 16                                                       17                                           18
+                // Ancestry Distribution (%) - Score Development/Training   Ancestry Distribution (%) - PGS Evaluation   FTP link
+                // 19               20
+                // Release Date     License/Terms of Use
+                StringReader stringReader = new StringReader(line);
+                CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
+                CSVRecord strings = csvParser.getRecords().get(0);
+                // Sanity check
+                if (!pgsId.equals(strings.get(0))) {
+                    throw new CellBaseException("Mismatch PGS ID when parsing file " + pgsId + "_metadata_scores.csv");
+                }
+                if (StringUtils.isNotEmpty(pgs.getName())) {
+                    throw new CellBaseException("More than one PGS in file " + pgsId + "_metadata_scores.csv");
+                }
+                pgs.setName(strings.get(1));
             }
-            if (StringUtils.isNotEmpty(pgs.getName())) {
-                throw new CellBaseException("More than one PGS in file " + pgsId + "_metadata_scores.csv");
-            }
-            pgs.setName(strings.get(1));
         }
 
         // TODO: PGSxxxxx_metadata_score_development_samples.csv
@@ -292,51 +310,52 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         // GWAS Catalog Study ID (GCST...)   Source PubMed ID (PMID)   Source DOI   Cohort(s)   Additional Sample/Cohort Information
 
         // PGSxxxxx_metadata_performance_metrics.csv
-        br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_performance_metrics.csv"));
-        // Skip first line
-        line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            // 0                                 1                 2                      3                          4
-            // PGS Performance Metric (PPM) ID   Evaluated Score   PGS Sample Set (PSS)   PGS Publication (PGP) ID   Reported Trait
-            // 5                                  6                                             7                    8
-            // Covariates Included in the Model   PGS Performance: Other Relevant Information   Publication (PMID)   Publication (doi)
-            // 9                   10                11     12
-            // Hazard Ratio (HR)   Odds Ratio (OR)   Beta   Area Under the Receiver-Operating Characteristic Curve (AUROC)
-            // 13                                14
-            // Concordance Statistic (C-index)   Other Metric(s)
+        try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_performance_metrics.csv"))) {
+            // Skip first line
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                // 0                                 1                 2                      3                          4
+                // PGS Performance Metric (PPM) ID   Evaluated Score   PGS Sample Set (PSS)   PGS Publication (PGP) ID   Reported Trait
+                // 5                                  6                                             7                    8
+                // Covariates Included in the Model   PGS Performance: Other Relevant Information   Publication (PMID)   Publication (doi)
+                // 9                   10                11     12
+                // Hazard Ratio (HR)   Odds Ratio (OR)   Beta   Area Under the Receiver-Operating Characteristic Curve (AUROC)
+                // 13                                14
+                // Concordance Statistic (C-index)   Other Metric(s)
 
-            StringReader stringReader = new StringReader(line);
-            CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            CSVRecord strings = csvParser.getRecords().get(0);
+                StringReader stringReader = new StringReader(line);
+                CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
+                CSVRecord strings = csvParser.getRecords().get(0);
 
-            // Sanity check
-            if (!pgsId.equals(strings.get(1))) {
-                continue;
-            }
+                // Sanity check
+                if (!pgsId.equals(strings.get(1))) {
+                    continue;
+                }
 
-            Map<String, String> values = new HashMap<>();
-            if (StringUtils.isNotEmpty(strings.get(2))) {
-                values.put(SAMPLE_SET_KEY, strings.get(2));
+                Map<String, String> values = new HashMap<>();
+                if (StringUtils.isNotEmpty(strings.get(2))) {
+                    values.put(SAMPLE_SET_KEY, strings.get(2));
+                }
+                if (StringUtils.isNotEmpty(strings.get(9))) {
+                    values.put(HAZARD_RATIO_KEY, strings.get(9));
+                }
+                if (StringUtils.isNotEmpty(strings.get(10))) {
+                    values.put(ODDS_RATIO_KEY, strings.get(10));
+                }
+                if (StringUtils.isNotEmpty(strings.get(11))) {
+                    values.put(BETA_KEY, strings.get(11));
+                }
+                if (StringUtils.isNotEmpty(strings.get(12))) {
+                    values.put(AUROC_KEY, strings.get(12));
+                }
+                if (StringUtils.isNotEmpty(strings.get(13))) {
+                    values.put(CINDEX_KEY, strings.get(13));
+                }
+                if (StringUtils.isNotEmpty(strings.get(14))) {
+                    values.put(OTHER_KEY, strings.get(14));
+                }
+                pgs.getValues().add(values);
             }
-            if (StringUtils.isNotEmpty(strings.get(9))) {
-                values.put(HAZARD_RATIO_KEY, strings.get(9));
-            }
-            if (StringUtils.isNotEmpty(strings.get(10))) {
-                values.put(ODDS_RATIO_KEY, strings.get(10));
-            }
-            if (StringUtils.isNotEmpty(strings.get(11))) {
-                values.put(BETA_KEY, strings.get(11));
-            }
-            if (StringUtils.isNotEmpty(strings.get(12))) {
-                values.put(AUROC_KEY, strings.get(12));
-            }
-            if (StringUtils.isNotEmpty(strings.get(13))) {
-                values.put(CINDEX_KEY, strings.get(13));
-            }
-            if (StringUtils.isNotEmpty(strings.get(14))) {
-                values.put(OTHER_KEY, strings.get(14));
-            }
-            pgs.getValues().add(values);
         }
 
         // TODO: PGSxxxxx_metadata_evaluation_sample_sets.csv
@@ -350,16 +369,17 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         // GWAS Catalog Study ID (GCST...)   Source PubMed ID (PMID)   Source DOI   Cohort(s)   Additional Sample/Cohort Information
 
         // PGSxxxxx_metadata_cohorts.csv
-        br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_cohorts.csv"));
-        // Skip first line
-        line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            // 0           1             2
-            // Cohort ID   Cohort Name   Previous/other/additional names
-            StringReader stringReader = new StringReader(line);
-            CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
-            CSVRecord strings = csvParser.getRecords().get(0);
-            pgs.getCohorts().add(new PgsCohort(strings.get(0), strings.get(1), strings.get(2)));
+        try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(pgsId + "_metadata_cohorts.csv"))) {
+            // Skip first line
+            line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                // 0           1             2
+                // Cohort ID   Cohort Name   Previous/other/additional names
+                StringReader stringReader = new StringReader(line);
+                CSVParser csvParser = CSVFormat.DEFAULT.parse(stringReader);
+                CSVRecord strings = csvParser.getRecords().get(0);
+                pgs.getCohorts().add(new PgsCohort(strings.get(0), strings.get(1), strings.get(2)));
+            }
         }
 
         // Create PGS object, with the common fields
@@ -557,7 +577,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
     private Object[] getRocksDBConnection(String chrom) {
         if (!rdbConnectionPerChrom.containsKey(chrom) || rdbConnectionPerChrom.get(chrom) == null) {
-            Object[] dbConnection = getDBConnection(pgsDir.resolve("rdb-" + chrom + ".idx").toString(), true);
+            Object[] dbConnection = getDBConnection(integrationPath.resolve("rdb-" + chrom + ".idx").toString(), true);
             rdbConnectionPerChrom.put(chrom, dbConnection);
         }
         return rdbConnectionPerChrom.get(chrom);

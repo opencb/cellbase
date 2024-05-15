@@ -474,20 +474,19 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildPolygenicScores() throws IOException {
-        Path inFolder = downloadFolder.resolve(EtlCommons.PGS_DATA);
-        Path outFolder = buildFolder.resolve(EtlCommons.PGS_DATA);
-        if (!outFolder.toFile().exists()) {
-            outFolder.toFile().mkdirs();
+        Path downloadPath = downloadFolder.resolve(EtlCommons.PGS_DATA);
+        Path buildPath = buildFolder.resolve(EtlCommons.PGS_DATA);
+        if (!buildPath.toFile().exists()) {
+            buildPath.toFile().mkdirs();
         }
 
-        logger.info("Copying PGS version file...");
-        if (inFolder.resolve(PGS_CATALOG_VERSION_FILENAME).toFile().exists()) {
-            Files.copy(inFolder.resolve(PGS_CATALOG_VERSION_FILENAME), outFolder.resolve(PGS_CATALOG_VERSION_FILENAME),
-                    StandardCopyOption.REPLACE_EXISTING);
-        }
+//        logger.info("Copying PGS version file...");
+//        if (downloadPath.resolve(PGS_CATALOG_VERSION_FILENAME).toFile().exists()) {
+//            Files.copy(downloadPath.resolve(PGS_CATALOG_VERSION_FILENAME), buildPath.resolve(PGS_CATALOG_VERSION_FILENAME),
+//                    StandardCopyOption.REPLACE_EXISTING);
+//        }
 
-        String basename = PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME.split("\\.")[0];
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(outFolder, basename);
-        return new PolygenicScoreBuilder(PGS_CATALOG_NAME, configuration.getDownload().getPgs().getVersion(), inFolder, serializer);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildPath, PGS_VARIANT_COLLECTION);
+        return new PolygenicScoreBuilder(downloadPath, serializer);
     }
 }
