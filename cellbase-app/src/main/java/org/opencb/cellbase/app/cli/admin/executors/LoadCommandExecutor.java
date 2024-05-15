@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.builders.PolygenicScoreBuilder;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.loader.LoadRunner;
@@ -607,7 +606,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Load common polygenic scores data
-        Path pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.COMMON_POLYGENIC_SCORE_FILENAME);
+        Path pathToLoad = pgsPath.resolve(PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION);
         logger.info("Loading file '{}'", pathToLoad.toFile().getName());
         try {
             loadRunner.load(pathToLoad, EtlCommons.PGS_COMMON_COLLECTION, dataRelease);
@@ -618,7 +617,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
 
         // Load variant polygenic scores data
-        pathToLoad = pgsPath.resolve(PolygenicScoreBuilder.VARIANT_POLYGENIC_SCORE_FILENAME);
+        pathToLoad = pgsPath.resolve(PGS_VARIANT_COLLECTION + JSON_GZ_EXTENSION);
         logger.info("Loading file '{}'", pathToLoad.toFile().getName());
         try {
             loadRunner.load(pathToLoad, EtlCommons.PGS_VARIANT_COLLECTION, dataRelease);
@@ -634,8 +633,8 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Update release (collection and sources)
         List<Path> sources = new ArrayList<>(Arrays.asList(
-                input.resolve(EtlCommons.PGS_DATA + "/" + EtlCommons.PGS_CATALOG_VERSION_FILENAME)
-        ));
+                input.resolve(EtlCommons.PGS_DATA + "/" + getDataVersionFilename(PGS_CATALOG_DATA)
+        )));
         dataReleaseManager.update(dataRelease, EtlCommons.PGS_VARIANT_COLLECTION, EtlCommons.PGS_DATA, sources);
         dataReleaseManager.update(dataRelease, EtlCommons.PGS_COMMON_COLLECTION, null, null);
     }
