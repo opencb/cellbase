@@ -63,6 +63,17 @@ download:
         REGULATORY_BUILD: "release-put_release_here/regulation/put_species_here/put_species_here.put_assembly_here.Regulatory_Build.regulatory_features.20221007.gff.gz"
         MOTIF_FEATURES: "release-put_release_here/regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz"
         MOTIF_FEATURES_INDEX: "release-put_release_here/regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz.tbi"
+        # To be generated manually
+        DESCRIPTION: "manual@description.txt"
+        # To be generated manually
+        XREFS: "manual@xrefs.txt"
+        # To be downloaded manually
+        HAEM_ONC_TRANSCRIPTS: "manual@EGLH_HaemOnc_transcripts.txt"
+        # To be downloaded manually
+        TSO500: "manual@TSO500_transcripts.txt"
+        # To be downloaded manually
+        CANONICAL: "manual@ensembl_canonical.txt"
+
   ensemblGenomes:
     database:
       host: mysql-eg-publicsql.ebi.ac.uk:4157
@@ -116,8 +127,10 @@ download:
       GENE_EXPRESSION_ATLAS: pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
   hpo:
     ## NOTE: Download manually from here now
+    host: https://hpo.jax.org/app/data/annotations/
     version: "2024-04-26"
-    host: https://hpo.jax.org/app/data/annotations
+    files:
+      HPO: "manual@phenotype_to_genes.txt"
   disgenet:
     host: https://www.disgenet.org/
     version: "7.0 (January 2020)"
@@ -132,6 +145,12 @@ download:
     host: http://geneontology.org/
     files:
       GO_ANNOTATION: gene-associations/goa_human.gaf.gz
+  cancerGeneCensus:
+    ## To be downloaded manually
+    host: https://cancer.sanger.ac.uk/census/
+    version: "v99"
+    files:
+      CANCER_GENE_CENSUS: "manual@cancer-gene-census.tsv"
 
   ## Regulation
   mirbase:

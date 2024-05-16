@@ -45,6 +45,18 @@ import java.util.stream.Collectors;
 public final class EtlCommons {
 
     // Commons
+    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
+    public static final String HSAPIENS_NAME= "hsapiens";
+
+    public static final String GRCH38_NAME = "GRCh38";
+    public static final String GRCH37_NAME = "GRCh37";
+    public static final String HG38_NAME = "hg38";
+    public static final String HG19_NAME = "hg19";
+
+    public static final String MANUAL_PREFIX = "manual@";
+
+    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+
     public static final String XLSX_EXTENSION = ".xlsx";
     public static final String CSV_EXTENSION = ".csv";
     public static final String TBI_EXTENSION = ".tbi";
@@ -67,16 +79,11 @@ public final class EtlCommons {
     public static final String ENSEMBL_REGULATORY_BUILD_FILE_ID = "REGULATORY_BUILD";
     public static final String ENSEMBL_MOTIF_FEATURES_FILE_ID = "MOTIF_FEATURES";
     public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
-
-    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
-    public static final String HSAPIENS_NAME= "hsapiens";
-
-    public static final String GRCH38_NAME = "GRCh38";
-    public static final String GRCH37_NAME = "GRCh37";
-    public static final String HG38_NAME = "hg38";
-    public static final String HG19_NAME = "hg19";
-
-    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+    public static final String ENSEMBL_DESCRIPTION_FILE_ID = "DESCRIPTION";
+    public static final String ENSEMBL_XREFS_FILE_ID = "XREFS";
+    public static final String ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID = "HAEM_ONC_TRANSCRIPTS";
+    public static final String ENSEMBL_TSO500_FILE_ID = "TSO500";
+    public static final String ENSEMBL_CANONICAL_FILE_ID = "CANONICAL";
 
     // Genome
     public static final String GENOME_DATA = "genome";
@@ -128,7 +135,9 @@ public final class EtlCommons {
     //   - Gene Disease Annotation
     public static final String GENE_DISEASE_ANNOTATION_NAME = "Gene Disease Annotation";
     //     - HPO
-    public static final String HPO_DATA = "hpo";
+    public static final String HPO_DISEASE_DATA = "hpo_disease";
+    // Must match the configuration file
+    public static final String HPO_FILE_ID = "HPO";
     //     - DISGENET
     public static final String DISGENET_DATA = "disgenet";
     // Must match the configuration file
@@ -141,6 +150,10 @@ public final class EtlCommons {
     public static final String GO_ANNOTATION_DATA = "go_annotation";
     // Must match the configuration file
     public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
+    //   - Cancer Gene Census
+    public static final String CANCER_GENE_CENSUS_DATA = "cancer_gene_census";
+    // Must match the configuration file
+    public static final String CANCER_GENE_CENSUS_FILE_ID = "CANCER_GENE_CENSUS";
 
     public static final String VARIATION_DATA = "variation";
 
@@ -343,10 +356,11 @@ public final class EtlCommons {
         dataNamesMap.put(UNIPROT_XREF_DATA, "UniProt Xref");
         dataNamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "Gene Expression Atlas");
         dataNamesMap.put(GENE_DISEASE_ANNOTATION_DATA, "Gene Disease Annotation");
-        dataNamesMap.put(HPO_DATA, "HPO");
+        dataNamesMap.put(HPO_DISEASE_DATA, "HPO Disease");
         dataNamesMap.put(DISGENET_DATA, "DisGeNet");
         dataNamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomAD Constraint");
         dataNamesMap.put(GO_ANNOTATION_DATA, "EBI Gene Ontology Annotation");
+        dataNamesMap.put(CANCER_GENE_CENSUS_DATA, "Cancer Gene Census");
         dataNamesMap.put(PROTEIN_DATA, "Protein");
         dataNamesMap.put(UNIPROT_DATA, "UniProt");
         dataNamesMap.put(INTERPRO_DATA, "InterPro");
@@ -397,10 +411,11 @@ public final class EtlCommons {
         dataCategoriesMap.put(DGIDB_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(UNIPROT_XREF_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GENE_EXPRESSION_ATLAS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
-        dataCategoriesMap.put(HPO_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(HPO_DISEASE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(DISGENET_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GNOMAD_CONSTRAINTS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GO_ANNOTATION_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(CANCER_GENE_CENSUS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(UNIPROT_DATA, dataNamesMap.get(PROTEIN_DATA));
         dataCategoriesMap.put(INTERPRO_DATA, dataNamesMap.get(PROTEIN_DATA));
         dataCategoriesMap.put(INTACT_DATA, dataNamesMap.get(PROTEIN_DATA));
@@ -440,10 +455,11 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DGIDB_DATA, "dgidb" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(UNIPROT_XREF_DATA, "uniProtXref" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME);
-        dataVersionFilenamesMap.put(HPO_DATA, "hpo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HPO_DISEASE_DATA, "hpoDisease" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(DISGENET_DATA, "disGeNet" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomadConstraints" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GO_ANNOTATION_DATA, "goAnnotation" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CANCER_GENE_CENSUS_DATA, "cancerGeneCensus" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(UNIPROT_DATA, "uniProt" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(INTERPRO_DATA, "interPro" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(INTACT_DATA, "intAct" + SUFFIX_VERSION_FILENAME);
@@ -672,5 +688,27 @@ public final class EtlCommons {
 
     public static List<String> getUrls(List<DownloadFile> downloadFiles) {
         return downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList());
+    }
+
+    public static List<String> getManualUrls(DownloadProperties.URLProperties props) {
+        List<String> urls = new ArrayList<>();
+        for (String value : props.getFiles().values()) {
+            String url = getManualUrl(props.getHost(), value);
+            if (StringUtils.isNotEmpty(url)) {
+                urls.add(url);
+            }
+        }
+        return urls;
+    }
+
+    public static String getManualUrl(DownloadProperties.URLProperties props, String fileId) {
+        return getManualUrl(props.getHost(), props.getFiles().get(fileId));
+    }
+
+    public static String getManualUrl(String host, String file) {
+        if (file.startsWith(MANUAL_PREFIX)) {
+            return MANUAL_PREFIX + host + file.replace(MANUAL_PREFIX, "");
+        }
+        return null;
     }
 }

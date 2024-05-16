@@ -54,6 +54,7 @@ public class DownloadProperties {
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
     private URLProperties dgidb;
+    private URLProperties cancerGeneCensus;
     private URLProperties gwasCatalog;
     private URLProperties dbsnp;
     private URLProperties cadd;
@@ -306,6 +307,15 @@ public class DownloadProperties {
 
     public DownloadProperties setDgidb(URLProperties dgidb) {
         this.dgidb = dgidb;
+        return this;
+    }
+
+    public URLProperties getCancerGeneCensus() {
+        return cancerGeneCensus;
+    }
+
+    public DownloadProperties setCancerGeneCensus(URLProperties cancerGeneCensus) {
+        this.cancerGeneCensus = cancerGeneCensus;
         return this;
     }
 
