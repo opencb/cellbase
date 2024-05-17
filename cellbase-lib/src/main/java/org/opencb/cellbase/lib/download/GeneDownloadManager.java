@@ -83,6 +83,20 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadGO(geneDownloadPath));
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_ANNOTATION_DATA));
 
+        // Save data sources manually downloaded
+        // HPO
+        saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
+                Collections.singletonList(getManualUrl(configuration.getDownload().getHpo(), HPO_FILE_ID)),
+                geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)));
+        logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(HPO_DISEASE_DATA),
+                getDataVersionFilename(HPO_DISEASE_DATA), geneDownloadPath);
+        // Cancer gene census
+        saveDataSource(CANCER_GENE_CENSUS_DATA, configuration.getDownload().getCancerGeneCensus().getVersion(), getTimeStamp(),
+                Collections.singletonList(getManualUrl(configuration.getDownload().getCancerGeneCensus(), CANCER_GENE_CENSUS_FILE_ID)),
+                geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)));
+        logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
+                getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
+
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_DATA));
 
         return downloadFiles;
@@ -102,7 +116,10 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadEnsemblDataSource(ensemblProps, ENSEMBL_CDNA_FA_FILE_ID, ensemblDownloadPath));
 
         // Save data source (i.e., metadata)
-        saveDataSource(ENSEMBL_DATA, ensemblVersion, getTimeStamp(), getUrls(downloadFiles),
+        List<String> urls = getUrls(downloadFiles);
+        // Add manually downloaded files
+        urls.addAll(getManualUrls(ensemblProps.getUrl()));
+        saveDataSource(ENSEMBL_DATA, ensemblVersion, getTimeStamp(), urls,
                 ensemblDownloadPath.resolve(getDataVersionFilename(ENSEMBL_DATA)));
 
         logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ENSEMBL_DATA), getDataCategory(ENSEMBL_DATA));
@@ -225,15 +242,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
     private DownloadFile downloadGeneDiseaseAnnotation(Path geneDownloadPath) throws IOException, InterruptedException, CellBaseException {
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENE_DISEASE_ANNOTATION_DATA));
-
-        // HPO
-        // IMPORTANT !!!
-        logger.warn("{} must be downloaded manually from {} and then create the file {} with data ({}), name ({}) and the version",
-                getDataName(HPO_DATA), configuration.getDownload().getHpo().getHost(), getDataVersionFilename(HPO_DATA),
-                getDataCategory(HPO_DATA), getDataName(HPO_DATA));
-        saveDataSource(HPO_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
-                Collections.singletonList(configuration.getDownload().getHpo().getHost()),
-                geneDownloadPath.resolve(getDataVersionFilename(HPO_DATA)));
 
         // DisGeNet
         DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDisgenet(), DISGENET_FILE_ID, DISGENET_DATA,

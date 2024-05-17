@@ -54,6 +54,7 @@ public class DownloadProperties {
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
     private URLProperties dgidb;
+    private URLProperties cancerGeneCensus;
     private URLProperties gwasCatalog;
     private URLProperties dbsnp;
     private URLProperties cadd;
@@ -65,6 +66,8 @@ public class DownloadProperties {
     private URLProperties mondoObo;
     private URLProperties goAnnotation;
     private URLProperties revel;
+    private URLProperties mmSplice;
+    private URLProperties spliceAi;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
     private URLProperties pgsCatalog;
@@ -308,6 +311,15 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getCancerGeneCensus() {
+        return cancerGeneCensus;
+    }
+
+    public DownloadProperties setCancerGeneCensus(URLProperties cancerGeneCensus) {
+        this.cancerGeneCensus = cancerGeneCensus;
+        return this;
+    }
+
     public URLProperties getGwasCatalog() {
         return gwasCatalog;
     }
@@ -404,6 +416,24 @@ public class DownloadProperties {
 
     public DownloadProperties setRevel(URLProperties revel) {
         this.revel = revel;
+        return this;
+    }
+
+    public URLProperties getMmSplice() {
+        return mmSplice;
+    }
+
+    public DownloadProperties setMmSplice(URLProperties mmSplice) {
+        this.mmSplice = mmSplice;
+        return this;
+    }
+
+    public URLProperties getSpliceAi() {
+        return spliceAi;
+    }
+
+    public DownloadProperties setSpliceAi(URLProperties spliceAi) {
+        this.spliceAi = spliceAi;
         return this;
     }
 

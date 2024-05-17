@@ -26,6 +26,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
@@ -92,12 +93,13 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
     private Gtf nextGtfToReturn;
 
     public EnsemblGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                              CellBaseSerializer serializer) {
+                              CellBaseConfiguration configuration, CellBaseSerializer serializer) {
         super(serializer);
 
         this.downloadPath = downloadPath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
+        this.configuration = configuration;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -122,14 +124,17 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         }
 
         // Check Ensembl files
-        List<File> files = checkFiles(ensemblGeneLabel, ENSEMBL_DATA, downloadPath, 3);
-        gtfFile = files.stream().filter(f -> f.getName().contains(".gtf")).findFirst().get().toPath();
-        proteinFastaFile = files.stream().filter(f -> f.getName().contains(".pep.all.fa")).findFirst().get().toPath();
-        cDnaFastaFile = files.stream().filter(f -> f.getName().contains(".cdna.all.fa")).findFirst().get().toPath();
+        DownloadProperties.URLProperties props = configuration.getDownload().getEnsembl().getUrl();
+        gtfFile = checkFile(props, ENSEMBL_GTF_FILE_ID, downloadPath, "Ensembl GTF").toPath();
+        proteinFastaFile = checkFile(props, ENSEMBL_PEP_FA_FILE_ID, downloadPath, "Ensembl Protein Fasta").toPath();
+        cDnaFastaFile = checkFile(props, ENSEMBL_CDNA_FA_FILE_ID, downloadPath, "Ensembl CDNA Fasta").toPath();
 
-        // Check common files
-        // geneDescriptionFile =
-        // xrefsFile =
+        // Commons
+        geneDescriptionFile = checkFile(props, ENSEMBL_DESCRIPTION_FILE_ID, downloadPath.getParent(), "Ensembl Description").toPath();
+        xrefsFile = checkFile(props, ENSEMBL_XREFS_FILE_ID, downloadPath.getParent(), "Ensembl Xrefs").toPath();
+        ensemblCanonicalFile = checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical").toPath();
+        tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+        eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
         maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
         lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
         hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
@@ -137,18 +142,16 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
         uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
         geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // hpoFile = checkFiles(HPO_DATA, downloadPath.getParent(), 1);
+        hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
         disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
         gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
         geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // ensemblCanonicalFile = ;
-        // cancerGeneCensus =
-        // tso500File =
-        // eglhHaemOncFile =
+        cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
 
         // Check regulation files
         // Motif features
-        files = checkFiles(ensemblGeneLabel, MOTIF_FEATURES_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 2);
+        List<File> files = checkFiles(ensemblGeneLabel, MOTIF_FEATURES_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA),
+                2);
         if (files.get(0).getName().endsWith("tbi")) {
             tabixFile = files.get(0).toPath();
             tfbsFile = files.get(1).toPath();
@@ -177,7 +180,9 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         }
         miRTarBaseFile = downloadRegulationPath.resolve(mirTarBaseFiles.get(0).replace(XLSX_EXTENSION, CSV_EXTENSION));
         if (!Files.exists(miRTarBaseFile)) {
-            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist");
+            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist. You"
+                    + " have to export the file " + mirTarBaseFiles.get(0) + " to " + miRTarBaseFile.getFileName() + " format separated by"
+                    + " tabs and then execute the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbols.sh");
         }
 
         // Check genome fasta file

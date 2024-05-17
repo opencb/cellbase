@@ -22,13 +22,14 @@ import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDBException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,6 +42,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public class RefSeqGeneBuilder extends CellBaseBuilder {
 
     private Path downloadPath;
+    private CellBaseConfiguration configuration;
 
     private Map<String, Transcript> transcriptDict;
     private Map<String, Exon> exonDict;
@@ -54,7 +56,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path hpoFile;
     private Path geneDrugFile;
     private Path miRTarBaseFile;
-    private Path cancerGeneCensus;
+    private Path cancerGeneCensusFile;
     private Path cancerHotspot;
     private Path tso500File;
     private Path eglhHaemOncFile;
@@ -69,11 +71,13 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     // sometimes there are two stop codons (eg NM_018159.4). Only parse the first one, skip the second
     private boolean seenStopCodon = false;
 
-    public RefSeqGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
+    public RefSeqGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, CellBaseConfiguration configuration,
+                             CellBaseSerializer serializer) {
         super(serializer);
 
         this.downloadPath = downloadPath;
         this.speciesConfiguration = speciesConfiguration;
+        this.configuration = configuration;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -98,22 +102,24 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
 
         // Check RefSeq files
-        List<File> files = checkFiles(refSeqGeneLabel, REFSEQ_DATA, downloadPath, 4);
-        gtfFile = files.stream().filter(f -> f.getName().contains(".gtf")).findFirst().get().toPath();
-        proteinFastaFile = files.stream().filter(f -> f.getName().contains("_protein")).findFirst().get().toPath();
-        cdnaFastaFile = files.stream().filter(f -> f.getName().contains("_rna")).findFirst().get().toPath();
-        fastaFile = files.stream().filter(f -> f.getName().contains("_genomic.fna")).findFirst().get().toPath();
+        DownloadProperties.URLProperties props = configuration.getDownload().getRefSeq();
+        gtfFile = checkFile(props, REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath();
+        proteinFastaFile = checkFile(props, REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA").toPath();
+        cdnaFastaFile = checkFile(props, REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath();
+        fastaFile = checkFile(props, REFSEQ_GENOMIC_FNA_FILE_ID, downloadPath, "RefSeq Genomic FNA").toPath();
 
         // Check common files
+        props = configuration.getDownload().getEnsembl().getUrl();
+        tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+        eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+
         maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
         lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
         cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
         geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // hpoFile = checkFiles(HPO_DATA, downloadPath.getParent(), 1);
+        hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
         disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // cancerGeneCensus = ;
-        // tso500File = ;
-        // eglhHaemOncFile = ;
+        cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
 
         // Check regulation files
         // mirtarbase
@@ -134,7 +140,9 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
         miRTarBaseFile = downloadRegulationPath.resolve(mirTarBaseFiles.get(0).replace(XLSX_EXTENSION, CSV_EXTENSION));
         if (!Files.exists(miRTarBaseFile)) {
-            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist");
+            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist. You"
+                    + " have to export the file " + mirTarBaseFiles.get(0) + " to " + miRTarBaseFile.getFileName() + " format separated by"
+                    + " tabs and then execute the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbols.sh");
         }
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, refSeqGeneLabel);
@@ -154,7 +162,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
-                cancerGeneCensus, cancerHotspot, tso500File, eglhHaemOncFile);
+                cancerGeneCensusFile, cancerHotspot, tso500File, eglhHaemOncFile);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);

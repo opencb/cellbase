@@ -15,7 +15,7 @@ class EnsemblGeneBuilderTest {
         CellBaseConfiguration configuration = CellBaseConfiguration.load(Paths.get("/home/jtarraga/appl/cellbase/build/conf/configuration.yml"));
         SpeciesConfiguration speciesConfiguration = configuration.getSpeciesConfig("hsapiens");
 
-        GeneBuilder geneBuilder = new GeneBuilder(downloadPath, buildPath, speciesConfiguration, flexibleGTFParsing);
+        GeneBuilder geneBuilder = new GeneBuilder(downloadPath, buildPath, speciesConfiguration, flexibleGTFParsing, configuration);
         geneBuilder.check();
         geneBuilder.parse();
     }

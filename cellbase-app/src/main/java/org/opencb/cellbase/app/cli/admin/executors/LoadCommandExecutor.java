@@ -513,19 +513,19 @@ public class LoadCommandExecutor extends CommandExecutor {
         // Load data
         logger.info("Loading splice scores from '{}'", input);
         // MMSplice scores
-        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_SUBDIRECTORY));
+        loadSpliceScores(input.resolve(SPLICE_SCORE_DATA + "/" + MMSPLICE_DATA));
         // SpliceAI scores
-        loadSpliceScores(input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_SUBDIRECTORY));
+        loadSpliceScores(input.resolve(SPLICE_SCORE_DATA + "/" + SPLICEAI_DATA));
 
         // Create index
         createIndex("splice_score");
 
         // Update release (collection and sources)
         List<Path> sources = new ArrayList<>(Arrays.asList(
-                input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.MMSPLICE_VERSION_FILENAME),
-                input.resolve(EtlCommons.SPLICE_SCORE_DATA + "/" + EtlCommons.SPLICEAI_VERSION_FILENAME)
+                input.resolve(SPLICE_SCORE_DATA + "/" + getDataVersionFilename(MMSPLICE_DATA)),
+                input.resolve(SPLICE_SCORE_DATA + "/" + getDataVersionFilename(SPLICEAI_DATA))
         ));
-        dataReleaseManager.update(dataRelease, "splice_score", EtlCommons.SPLICE_SCORE_DATA, sources);
+        dataReleaseManager.update(dataRelease, "splice_score", SPLICE_SCORE_DATA, sources);
     }
 
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,

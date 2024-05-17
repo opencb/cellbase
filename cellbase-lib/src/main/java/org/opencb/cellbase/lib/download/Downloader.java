@@ -89,6 +89,11 @@ public class Downloader {
         return manager.download();
     }
 
+    public List<DownloadFile> downloadSpliceScores() throws IOException, CellBaseException, InterruptedException {
+        SpliceScoreDownloadManager manager = new SpliceScoreDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
+
     public List<DownloadFile> downloadPubMed() throws IOException, CellBaseException, InterruptedException {
         PubMedDownloadManager manager = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();

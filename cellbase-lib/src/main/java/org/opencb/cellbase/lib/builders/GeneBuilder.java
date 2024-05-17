@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -29,7 +30,8 @@ public class GeneBuilder extends CellBaseBuilder {
     private EnsemblGeneBuilder ensemblGeneBuilder;
     private RefSeqGeneBuilder refSeqGeneBuilder;
 
-    public GeneBuilder(Path downloadPath, Path buildPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing)
+    public GeneBuilder(Path downloadPath, Path buildPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseConfiguration configuration)
             throws CellBaseException {
         super(null);
 
@@ -37,12 +39,13 @@ public class GeneBuilder extends CellBaseBuilder {
         CellBaseJsonFileSerializer ensemblGeneSerializer = new CellBaseJsonFileSerializer(buildPath.resolve(ENSEMBL_DATA),
                 ENSEMBL_GENE_BASENAME);
         this.ensemblGeneBuilder = new EnsemblGeneBuilder(downloadPath.resolve(ENSEMBL_DATA), speciesConfiguration, flexibleGTFParsing,
-                ensemblGeneSerializer);
+                configuration, ensemblGeneSerializer);
 
         // Create RefSeq gene builder
         CellBaseJsonFileSerializer refSeqGeneSerializer = new CellBaseJsonFileSerializer(buildPath.resolve(REFSEQ_DATA),
                 REFSEQ_GENE_BASENAME);
-        this.refSeqGeneBuilder = new RefSeqGeneBuilder(downloadPath.resolve(REFSEQ_DATA), speciesConfiguration, refSeqGeneSerializer);
+        this.refSeqGeneBuilder = new RefSeqGeneBuilder(downloadPath.resolve(REFSEQ_DATA), speciesConfiguration, configuration,
+                refSeqGeneSerializer);
     }
 
     public void check() throws Exception {
@@ -60,7 +63,7 @@ public class GeneBuilder extends CellBaseBuilder {
         // Check folders and files before building
         check();
 
-        // Build Ensembl/RefSeq genes
+//        // Build Ensembl/RefSeq genes
         ensemblGeneBuilder.parse();
         refSeqGeneBuilder.parse();
 
