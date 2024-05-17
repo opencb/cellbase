@@ -47,6 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          FAIL_NEVER=""
           if [ "${{ github.event.inputs.fail-never }}" == "true" ]; then
             FAIL_NEVER="--fail-never"
           fi
