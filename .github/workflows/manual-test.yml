@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test and push Sonar analysis
+    name: JUnit Test
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
