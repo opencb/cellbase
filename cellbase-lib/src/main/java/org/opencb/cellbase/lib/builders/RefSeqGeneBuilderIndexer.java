@@ -41,9 +41,9 @@ public class RefSeqGeneBuilderIndexer extends GeneBuilderIndexer {
         indexDrugs(geneDrugFile);
         indexDiseases(hpoFilePath, disgenetFile);
         indexMiRTarBase(miRTarBaseFile);
-//        indexCancerGeneCensus(cancerGeneGensus);
+        indexCancerGeneCensus(cancerGeneGensus);
         indexCancerHotspot(cancerHotspot);
-//        indexTSO500(tso500File);
-//        indexEGLHHaemOnc(eglhHaemOncFile);
+        indexTSO500(tso500File);
+        indexEGLHHaemOnc(eglhHaemOncFile);
     }
 }

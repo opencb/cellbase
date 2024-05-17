@@ -242,7 +242,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseBuilder buildGene() throws CellBaseException {
-        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing);
+        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing,
+                configuration);
     }
 
     private CellBaseBuilder buildCadd() throws CellBaseException {

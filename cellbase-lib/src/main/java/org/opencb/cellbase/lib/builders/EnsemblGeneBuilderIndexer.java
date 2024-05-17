@@ -74,8 +74,8 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
                       Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
                       Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile, Path tso500File, Path eglhHaemOncFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
-//        indexDescriptions(geneDescriptionFile);
-//        indexXrefs(xrefsFile, uniprotIdMappingFile);
+        indexDescriptions(geneDescriptionFile);
+        indexXrefs(xrefsFile, uniprotIdMappingFile);
         indexHgncIdMapping(hgncFile);
         indexManeMapping(maneFile, ENSEMBL_DATA);
         indexLrgMapping(lrgFile, ENSEMBL_DATA);
@@ -88,15 +88,15 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(species, miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
-//        indexCancerGeneCensus(cancerGeneGensusFile);
+        indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
-//        indexCanonical(canonicalFile);
-//        indexTSO500(tso500File);
-//        indexEGLHHaemOnc(eglhHaemOncFile);
+        indexCanonical(canonicalFile);
+        indexTSO500(tso500File);
+        indexEGLHHaemOnc(eglhHaemOncFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
-        logger.info("Loading gene description data...");
+        logger.info(PARSING_LOG_MESSAGE, geneDescriptionFile);
         String[] fields;
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, StandardCharsets.ISO_8859_1);
@@ -108,6 +108,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
             logger.warn("Gene description file " + geneDescriptionFile + " not found");
             logger.warn("Gene description data not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     public String getDescription(String id) throws RocksDBException {
@@ -120,7 +121,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexXrefs(Path xrefsFile, Path uniprotIdMappingFile) throws IOException, RocksDBException {
-        logger.info("Loading xref data...");
+        logger.info(PARSING_LOG_MESSAGE, xrefsFile);
         String[] fields;
         if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
             List<String> lines = Files.readAllLines(xrefsFile, StandardCharsets.ISO_8859_1);
@@ -182,6 +183,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
             logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
             logger.warn("Protein mapping into xref data not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     public List<Xref> getXrefs(String id) throws RocksDBException, IOException {
