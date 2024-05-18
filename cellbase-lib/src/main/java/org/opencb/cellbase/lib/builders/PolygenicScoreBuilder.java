@@ -54,11 +54,15 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private Path integrationPath;
     private DataSource dataSource;
 
-    protected Map<String, Object[]> rdbConnectionPerChrom = new HashMap<>();
+    private Set<String> pgsIdSet;
+    private Object[] varRDBConn;
+    private Object[] varPgsRDBConn;
 
-    protected static ObjectMapper mapper;
-    protected static ObjectReader varPgsReader;
-    protected static ObjectWriter jsonObjectWriter;
+    private long duplicatedKeys = 0;
+
+    private static ObjectMapper mapper;
+    private static ObjectReader varPgsReader;
+    private static ObjectWriter jsonObjectWriter;
 
     private static final String RSID_COL = "rsID";
     private static final String CHR_NAME_COL = "chr_name";
@@ -110,6 +114,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private static final Set<String> VALID_CHROMOSOMES = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
             "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", "M"));
 
+    private static final byte[] ONE = "1".getBytes();
+
     static {
         mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -139,6 +145,9 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         if (!Files.exists(integrationPath)) {
             throw new CellBaseException("Could not create the folder " + integrationPath);
         }
+        this.varRDBConn = getDBConnection(integrationPath.resolve("rdb-var.idx").toString(), true);
+        this.varPgsRDBConn = getDBConnection(integrationPath.resolve("rdb-var-pgsd.idx").toString(), true);
+        this.pgsIdSet = new HashSet<>();
 
         // Check downloaded files
         this.dataSource = dataSourceReader.readValue(downloadPath.resolve(getDataVersionFilename(PGS_CATALOG_DATA)).toFile());
@@ -156,7 +165,9 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
 
         try (BufferedWriter bw = FileUtils.newBufferedWriter(serializer.getOutdir().resolve(PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION))) {
 
-            for (File file : downloadPath.toFile().listFiles()) {
+            int counter = 0;
+            File[] files = downloadPath.toFile().listFiles();
+            for (File file : files) {
                 if (file.isFile()) {
                     if (file.getName().endsWith(TXT_GZ_EXTENSION)) {
                         logger.info(PARSING_LOG_MESSAGE, file.getName());
@@ -174,6 +185,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                                         if (!file.getName().startsWith(pgsId)) {
                                             throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id mismatch");
                                         }
+                                        // Add PGS ID to the set
+                                        pgsIdSet.add(pgsId);
                                     }
                                 } else if (line.startsWith(RSID_COL) || line.startsWith(CHR_NAME_COL)) {
                                     String[] fields = line.split("\t");
@@ -196,6 +209,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                         logger.info(PARSING_DONE_LOG_MESSAGE, file.getName());
                     }
                 }
+                logger.info("Progress {} of {} files", ++counter, files.length);
             }
 
             // Serialize/write the saved variant polygenic scores in the RocksDB
@@ -203,7 +217,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
             serializer.close();
         }
 
-        logger.info(PARSING_DONE_LOG_MESSAGE, getDataName(PGS_DATA));
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PGS_DATA));
     }
 
     private void processPgsMetadataFile(File metadataFile, BufferedWriter bw) throws IOException, CellBaseException {
@@ -393,7 +407,7 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     }
 
     private void saveVariantPolygenicScore(String line, Map<String, Integer> columnPos, String pgsId)
-            throws RocksDBException, IOException {
+            throws RocksDBException, IOException, CellBaseException {
         String chrom;
         int position;
         String effectAllele;
@@ -408,24 +422,24 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                 return;
             }
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", HM_CHR_COL, line);
+//            logger.warn("Missing field '{}', skipping line: {}", HM_CHR_COL, line);
             return;
         }
         if (columnPos.containsKey(HM_POS_COL)) {
             try {
                 position = Integer.parseInt(field[columnPos.get(HM_POS_COL)]);
             } catch (NumberFormatException e) {
-                logger.warn("Invalid field '{}' (value = {}), skipping line: {}", HM_POS_COL, field[columnPos.get(HM_POS_COL)], line);
+//                logger.warn("Invalid field '{}' (value = {}), skipping line: {}", HM_POS_COL, field[columnPos.get(HM_POS_COL)], line);
                 return;
             }
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", HM_POS_COL, line);
+//            logger.warn("Missing field '{}', skipping line: {}", HM_POS_COL, line);
             return;
         }
         if (columnPos.containsKey(EFFECT_ALLELE_COL)) {
             effectAllele = field[columnPos.get(EFFECT_ALLELE_COL)];
         } else {
-            logger.warn("Missing field '{}', skipping line: {}", EFFECT_ALLELE_COL, line);
+//            logger.warn("Missing field '{}', skipping line: {}", EFFECT_ALLELE_COL, line);
             return;
         }
         if (columnPos.containsKey(HM_INFEROTHERALLELE_COL) && StringUtils.isNotEmpty(field[columnPos.get(HM_INFEROTHERALLELE_COL)])) {
@@ -433,8 +447,8 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         } else if (columnPos.containsKey(OTHER_ALLELE_COL)) {
             otherAllele = field[columnPos.get(OTHER_ALLELE_COL)];
         } else {
-            logger.warn("Missing fields '{}' and '{}' (at least one is mandatory), skipping line: {}", HM_INFEROTHERALLELE_COL,
-                    OTHER_ALLELE_COL, line);
+//            logger.warn("Missing fields '{}' and '{}' (at least one is mandatory), skipping line: {}", HM_INFEROTHERALLELE_COL,
+//                    OTHER_ALLELE_COL, line);
             return;
         }
 
@@ -490,43 +504,75 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
 
         // Creating and/or updating variant polygenic score
-        VariantPolygenicScore varPgs;
-        RocksDB rdb = getRocksDB(chrom);
+
+        // First, we store the variant
+        RocksDB rdb = (RocksDB) varRDBConn[0];
         String key = chrom + ":" + position + ":" + otherAllele + ":" + effectAllele;
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
-            varPgs = new VariantPolygenicScore(chrom, position, otherAllele, effectAllele,
-                    Collections.singletonList(new PolygenicScore(pgsId, values)));
-        } else {
-            varPgs = varPgsReader.readValue(dbContent);
-            varPgs.getPolygenicScores().add(new PolygenicScore(pgsId, values));
+            rdb.put(key.getBytes(), ONE);
         }
-        rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
+
+        // Second, we store the polygenic scores
+        rdb = (RocksDB) varPgsRDBConn[0];
+        key = chrom + ":" + position + ":" + otherAllele + ":" + effectAllele + ":" + pgsId;
+        dbContent = rdb.get(key.getBytes());
+        if (dbContent != null) {
+//            throw new CellBaseException("Error indexing PGS key " + key + ": it must be unique");
+            duplicatedKeys++;
+            logger.warn("Warning: the indexing PGS key " + key + ": it should be unique");
+        } else {
+            VariantPolygenicScore varPgs = new VariantPolygenicScore(chrom, position, otherAllele, effectAllele,
+                    Collections.singletonList(new PolygenicScore(pgsId, values)));
+            rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
+        }
     }
 
-    private void serializeRDB() throws IOException {
-        for (Map.Entry<String, Object[]> entry : rdbConnectionPerChrom.entrySet()) {
-            RocksDB rdb = (RocksDB) entry.getValue()[0];
-            Options dbOption = (Options) entry.getValue()[1];
-            String dbLocation = (String) entry.getValue()[2];
+    private void serializeRDB() throws IOException, RocksDBException {
+        long counter = 0;
+        long numVariants = 0;
 
-            // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
-            // named "iterator"
-            RocksIterator rocksIterator = rdb.newIterator();
+        RocksDB varRDB = (RocksDB) varRDBConn[0];
+        RocksDB varPgsRDB = (RocksDB) varPgsRDBConn[0];
 
-            logger.info("Reading from RocksDB index ({}) and serializing to {}.json.gz", dbLocation,
-                    serializer.getOutdir().resolve(serializer.getFileName()));
-            int counter = 0;
-            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-                VariantPolygenicScore varPgs = varPgsReader.readValue(rocksIterator.value());
-                serializer.serialize(varPgs);
-                counter++;
-                if (counter % 10000 == 0) {
-                    logger.info("{} written", counter);
+        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+        // named "iterator"
+        RocksIterator rocksIterator = varRDB.newIterator();
+        // Move the iterator to the first key-value pair
+        rocksIterator.seekToFirst();
+        while (rocksIterator.isValid()) {
+            numVariants++;
+            rocksIterator.next();
+        }
+
+        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+            String varKey = new String(rocksIterator.key());
+            VariantPolygenicScore varPgs = null;
+            for (String pgsId : pgsIdSet) {
+                String varPgsKey = varKey + ":" + pgsId;
+                byte[] dbContent = varPgsRDB.get(varPgsKey.getBytes());
+                if (dbContent != null) {
+                    VariantPolygenicScore newVarPgs = varPgsReader.readValue(dbContent);
+                    if (varPgs == null) {
+                        varPgs = newVarPgs;
+                    } else {
+                        varPgs.getPolygenicScores().addAll(newVarPgs.getPolygenicScores());
+                    }
                 }
             }
-            closeIndex(rdb, dbOption, dbLocation);
+            if (varPgs != null) {
+                serializer.serialize(varPgs);
+            }
+            if (++counter % 500000 == 0) {
+                logger.info("Progress {} of {} variants", counter, numVariants);
+            }
         }
+
+        logger.info("Num. duplicated keys = {}", duplicatedKeys);
+
+        // Close RocksDB
+        closeIndex((RocksDB) varRDBConn[0], (Options) varRDBConn[1], (String) varRDBConn[2]);
+        closeIndex((RocksDB) varPgsRDBConn[0], (Options) varPgsRDBConn[1], (String) varPgsRDBConn[2]);
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {
@@ -573,17 +619,5 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         }
 
         return new Object[]{db, options, dbLocation, indexingNeeded};
-    }
-
-    private Object[] getRocksDBConnection(String chrom) {
-        if (!rdbConnectionPerChrom.containsKey(chrom) || rdbConnectionPerChrom.get(chrom) == null) {
-            Object[] dbConnection = getDBConnection(integrationPath.resolve("rdb-" + chrom + ".idx").toString(), true);
-            rdbConnectionPerChrom.put(chrom, dbConnection);
-        }
-        return rdbConnectionPerChrom.get(chrom);
-    }
-
-    private RocksDB getRocksDB(String chrom) {
-        return (RocksDB) getRocksDBConnection(chrom)[0];
     }
 }
