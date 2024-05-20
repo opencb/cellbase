@@ -34,10 +34,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.utils.FileUtils;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
+import org.rocksdb.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
@@ -57,12 +54,18 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private Set<String> pgsIdSet;
     private Object[] varRDBConn;
     private Object[] varPgsRDBConn;
+    private int varBatchSize;
+    private int varPgsBatchSize;
+    private WriteBatch varBatch;
+    private WriteBatch varPgsBatch;
 
     private long duplicatedKeys = 0;
 
     private static ObjectMapper mapper;
     private static ObjectReader varPgsReader;
     private static ObjectWriter jsonObjectWriter;
+
+    private static final int MAX_BATCH_SIZE = 1024 * 1024; // 1 MB
 
     private static final String RSID_COL = "rsID";
     private static final String CHR_NAME_COL = "chr_name";
@@ -145,8 +148,15 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         if (!Files.exists(integrationPath)) {
             throw new CellBaseException("Could not create the folder " + integrationPath);
         }
+        // Prepare RocksDB for variant IDs
         this.varRDBConn = getDBConnection(integrationPath.resolve("rdb-var.idx").toString(), true);
-        this.varPgsRDBConn = getDBConnection(integrationPath.resolve("rdb-var-pgsd.idx").toString(), true);
+        this.varBatch = new WriteBatch();
+        this.varBatchSize = 0;
+        // Prepare RocksDB for PGS/variants
+        this.varPgsRDBConn = getDBConnection(integrationPath.resolve("rdb-var-pgs.idx").toString(), true);
+        this.varPgsBatch = new WriteBatch();
+        this.varPgsBatchSize = 0;
+        // PGS set
         this.pgsIdSet = new HashSet<>();
 
         // Check downloaded files
@@ -164,7 +174,6 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         logger.info(BUILDING_LOG_MESSAGE, getDataName(PGS_DATA));
 
         try (BufferedWriter bw = FileUtils.newBufferedWriter(serializer.getOutdir().resolve(PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION))) {
-
             int counter = 0;
             File[] files = downloadPath.toFile().listFiles();
             for (File file : files) {
@@ -211,6 +220,18 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                 }
                 logger.info("Progress {} of {} files", ++counter, files.length);
             }
+
+            // Write remaining variant ID batch
+            RocksDB rdb = (RocksDB) varRDBConn[0];
+//            logger.info("Writing variant ID batch with {} items, {} KB", varBatch.count(), varBatchSize / 1024);
+            rdb.write(new WriteOptions(), varBatch);
+            varBatch.clear();
+            // Write remaining PGS/variant batch
+            rdb = (RocksDB) varPgsRDBConn[0];
+//            logger.info("Writing PGS batch with {} items, {} KB", varPgsBatch.count(), varPgsBatchSize / 1024);
+            rdb.write(new WriteOptions(), varPgsBatch);
+            varPgsBatch.clear();
+
 
             // Serialize/write the saved variant polygenic scores in the RocksDB
             serializeRDB();
@@ -510,7 +531,19 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         String key = chrom + ":" + position + ":" + otherAllele + ":" + effectAllele;
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
-            rdb.put(key.getBytes(), ONE);
+            // Add data to batch
+            varBatch.put(key.getBytes(), ONE);
+            varBatchSize += key.getBytes().length + ONE.length;
+            if (varBatchSize >= MAX_BATCH_SIZE) {
+                // Write the batch to the database
+//                logger.info("Writing variant ID batch with {} items, {} KB", varBatch.count(), varBatchSize / 1024);
+                rdb.write(new WriteOptions(), varBatch);
+                // Reset batch
+                varBatch.clear();
+                varBatch = new WriteBatch();
+                varBatchSize = 0;
+            }
+//            rdb.put(key.getBytes(), ONE);
         }
 
         // Second, we store the polygenic scores
@@ -524,27 +557,34 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         } else {
             VariantPolygenicScore varPgs = new VariantPolygenicScore(chrom, position, otherAllele, effectAllele,
                     Collections.singletonList(new PolygenicScore(pgsId, values)));
-            rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
+            // Add data to batch
+            byte[] rdbKey = key.getBytes();
+            byte[] rdbValue = jsonObjectWriter.writeValueAsBytes(varPgs);
+            varPgsBatch.put(rdbKey, rdbValue);
+            varPgsBatchSize += rdbKey.length + rdbValue.length;
+            if (varPgsBatchSize >= MAX_BATCH_SIZE) {
+                // Write the batch to the database
+//                logger.info("Writing PGS batch with {} items, {} KB", varPgsBatch.count(), varPgsBatchSize / 1024);
+                rdb.write(new WriteOptions(), varPgsBatch);
+                // Reset batch
+                varPgsBatch.clear();
+                varPgsBatch = new WriteBatch();
+                varPgsBatchSize = 0;
+            }
+//            rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
         }
     }
 
     private void serializeRDB() throws IOException, RocksDBException {
         long counter = 0;
-        long numVariants = 0;
 
         RocksDB varRDB = (RocksDB) varRDBConn[0];
         RocksDB varPgsRDB = (RocksDB) varPgsRDBConn[0];
 
         // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
         // named "iterator"
+        logger.info("Writing variants ...");
         RocksIterator rocksIterator = varRDB.newIterator();
-        // Move the iterator to the first key-value pair
-        rocksIterator.seekToFirst();
-        while (rocksIterator.isValid()) {
-            numVariants++;
-            rocksIterator.next();
-        }
-
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
             String varKey = new String(rocksIterator.key());
             VariantPolygenicScore varPgs = null;
@@ -564,11 +604,11 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
                 serializer.serialize(varPgs);
             }
             if (++counter % 500000 == 0) {
-                logger.info("Progress {} of {} variants", counter, numVariants);
+                logger.info("Writing {} variants...", counter);
             }
         }
-
-        logger.info("Num. duplicated keys = {}", duplicatedKeys);
+        logger.info("Writing done.");
+        logger.info("Num. duplicated keys (PGS/Variant) = {}", duplicatedKeys);
 
         // Close RocksDB
         closeIndex((RocksDB) varRDBConn[0], (Options) varRDBConn[1], (String) varRDBConn[2]);
@@ -593,7 +633,22 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
         RocksDB.loadLibrary();
         // the Options class contains a set of configurable DB options
         // that determines the behavior of a database.
-        Options options = new Options().setCreateIfMissing(true);
+        BlockBasedTableConfig tableConfig = new BlockBasedTableConfig();
+        tableConfig.setBlockCacheSize(4 * 1024 * 1024 * 1024L); // 16 GB block cache
+
+        Options options = new Options()
+                .setCreateIfMissing(true)
+                .setWriteBufferSize(256 * 1024 * 1024) // 256 MB
+                .setMaxWriteBufferNumber(4)
+                .setMinWriteBufferNumberToMerge(2)
+                .setIncreaseParallelism(4)
+                .setMaxBackgroundCompactions(4)
+                .setMaxBackgroundFlushes(2)
+                .setLevelCompactionDynamicLevelBytes(true)
+                .setTargetFileSizeBase(64 * 1024 * 1024) // 64 MB
+                .setMaxBytesForLevelBase(512 * 1024 * 1024) // 512 MB
+                .setTableFormatConfig(tableConfig)
+                .setCompressionType(CompressionType.LZ4_COMPRESSION);
 
 //        options.setMaxBackgroundCompactions(4);
 //        options.setMaxBackgroundFlushes(1);
