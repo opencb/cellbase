@@ -61,6 +61,7 @@ public final class EtlCommons {
     public static final String CSV_EXTENSION = ".csv";
     public static final String TBI_EXTENSION = ".tbi";
     public static final String FAI_EXTENSION = ".fai";
+    public static final String GZ_EXTENSION = ".gz";
     public static final String TXT_GZ_EXTENSION = ".txt.gz";
     public static final String TAR_GZ_EXTENSION = ".tar.gz";
     public static final String JSON_GZ_EXTENSION = ".json.gz";

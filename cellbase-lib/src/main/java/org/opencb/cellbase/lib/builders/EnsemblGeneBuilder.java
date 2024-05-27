@@ -31,6 +31,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDBException;
 
 import java.io.File;
@@ -185,8 +186,30 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
                     + " tabs and then execute the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbols.sh");
         }
 
-        // Check genome fasta file
-        genomeSequenceFilePath = checkFiles(GENOME_DATA, downloadPath.getParent().getParent().resolve(GENOME_DATA), 1).get(0).toPath();
+        // Check genome FASTA file
+        Path genomeDownloadPath = downloadPath.getParent().getParent().resolve(GENOME_DATA);
+        String genomeGzFilename = Paths.get(((DataSource) dataSourceReader.readValue(genomeDownloadPath
+                .resolve(getDataVersionFilename(GENOME_DATA)).toFile())).getUrls().get(0)).getFileName().toString();
+        genomeSequenceFilePath = genomeDownloadPath.resolve(genomeGzFilename);
+        if (Files.exists(genomeSequenceFilePath)) {
+            // Need to be gunzip-ed
+            logger.info("Gunzip file: {}", genomeSequenceFilePath);
+            try {
+                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(genomeSequenceFilePath.toString()), null);
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + genomeSequenceFilePath, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("Error executing gunzip in FASTA file " + genomeSequenceFilePath, e);
+            }
+        }
+        String genomeFilename = genomeGzFilename.replace(GZ_EXTENSION, "");
+        genomeSequenceFilePath = genomeDownloadPath.resolve(genomeFilename);
+        if (!Files.exists(genomeSequenceFilePath)) {
+            throw new CellBaseException("Genome FASTA file " + genomeSequenceFilePath.getFileName() + " does not exist at "
+                    + genomeSequenceFilePath.getParent());
+        }
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, ensemblGeneLabel);
         checked = true;
