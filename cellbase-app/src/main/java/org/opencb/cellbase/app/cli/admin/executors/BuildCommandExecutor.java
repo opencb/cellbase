@@ -351,7 +351,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
             }
         }
-        fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(".gz", ""));
+        fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(GZ_EXTENSION, ""));
         if (!fastaPath.toFile().exists()) {
             throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
         }

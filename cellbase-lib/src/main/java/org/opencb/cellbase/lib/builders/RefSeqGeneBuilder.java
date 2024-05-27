@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
@@ -106,7 +107,28 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         gtfFile = checkFile(props, REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath();
         proteinFastaFile = checkFile(props, REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA").toPath();
         cdnaFastaFile = checkFile(props, REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath();
-        fastaFile = checkFile(props, REFSEQ_GENOMIC_FNA_FILE_ID, downloadPath, "RefSeq Genomic FNA").toPath();
+
+        // Check genome FASTA file
+        String genomeGzFilename = Paths.get(props.getFiles().get(REFSEQ_GENOMIC_FNA_FILE_ID)).getFileName().toString();
+        fastaFile = downloadPath.resolve(genomeGzFilename);
+        if (Files.exists(fastaFile)) {
+            // Need to be gunzip-ed
+            logger.info("Gunzip file: {}", fastaFile);
+            try {
+                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(fastaFile.toString()), null);
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaFile, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaFile, e);
+            }
+        }
+        String genomeFilename = genomeGzFilename.replace(GZ_EXTENSION, "");
+        fastaFile = downloadPath.resolve(genomeFilename);
+        if (!Files.exists(fastaFile)) {
+            throw new CellBaseException("Genome FASTA file " + fastaFile.getFileName() + " does not exist at " + fastaFile.getParent());
+        }
 
         // Check common files
         props = configuration.getDownload().getEnsembl().getUrl();
