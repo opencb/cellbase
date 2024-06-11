@@ -11,6 +11,15 @@ jobs:
     name: Test and push Sonar analysis
     runs-on: ubuntu-22.04
     steps:
+      - name: Retrieve secrets from Keeper
+        id: ksecrets
+        uses: Keeper-Security/ksm-action@master
+        with:
+          keeper-secret-config: ${{ secrets.KEEPER_SM_GH_OPENCB }}
+          secrets: |
+            ID_GITHUB_TOKEN/custom_field/GITHUB_TOKEN > env:GITHUB_TOKEN
+            ID_SONAR_TOKEN/custom_field/SONAR_TOKEN > env:SONAR_TOKEN
+            ID_AZURE_KUBE_CONFIG/custom_field/AZURE_KUBE_CONFIG > env:AZURE_KUBE_CONFIG
       - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
@@ -24,7 +33,7 @@ jobs:
         run: |
           wget https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl
           chmod +x ./kubectl
-          echo "${{ secrets.AZURE_KUBE_CONFIG }}" > admin.conf 
+          echo "${{ env.AZURE_KUBE_CONFIG }}" > admin.conf 
           ./kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 --kubeconfig ./admin.conf &
       - name: Install dependencies branches
         run: |
@@ -36,8 +45,8 @@ jobs:
           fi
       - name: Test and Analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }} # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
         run: mvn -B verify surefire-report:report --fail-never -Dcheckstyle.skip org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=opencb_cellbase
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1

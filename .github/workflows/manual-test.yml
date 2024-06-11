@@ -18,6 +18,15 @@ jobs:
     name: JUnit Test
     runs-on: ubuntu-22.04
     steps:
+      - name: Retrieve secrets from Keeper
+        id: ksecrets
+        uses: Keeper-Security/ksm-action@master
+        with:
+          keeper-secret-config: ${{ secrets.KEEPER_SM_GH_OPENCB }}
+          secrets: |
+            ID_GITHUB_TOKEN/custom_field/GITHUB_TOKEN > env:GITHUB_TOKEN
+            ID_SONAR_TOKEN/custom_field/SONAR_TOKEN > env:SONAR_TOKEN
+            ID_AZURE_KUBE_CONFIG/custom_field/AZURE_KUBE_CONFIG > env:AZURE_KUBE_CONFIG
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.branch }}
@@ -32,7 +41,7 @@ jobs:
         run: |
           wget https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl
           chmod +x ./kubectl
-          echo "${{ secrets.AZURE_KUBE_CONFIG }}" > admin.conf 
+          echo "${{ env.AZURE_KUBE_CONFIG }}" > admin.conf 
           ./kubectl -n cellbase-db port-forward services/cellbase-rs0-svc 27017:27017 --kubeconfig ./admin.conf &
       - name: Install dependencies branches
         run: |
@@ -44,8 +53,8 @@ jobs:
           fi
       - name: Test and Analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }} # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
         run: |
           FAIL_NEVER=""
           if [ "${{ github.event.inputs.fail-never }}" == "true" ]; then
