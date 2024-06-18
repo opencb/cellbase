@@ -1,0 +1,15 @@
+name: Pull request approve workflow
+
+on:
+  pull_request_review:
+    types: [ submitted ]
+
+jobs:
+  build:
+    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
+
+  test:
+    name: "Test analysis"
+    uses: ./.github/workflows/test-analysis.yml
+    needs: build
+    secrets: inherit
