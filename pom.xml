@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>6.1.0-SNAPSHOT</version>
+    <version>6.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -23,8 +23,8 @@
 
     <properties>
         <pycellbase.version>${project.version}</pycellbase.version>
-        <java-common-libs.version>5.1.0-SNAPSHOT</java-common-libs.version>
-        <biodata.version>3.1.0-SNAPSHOT</biodata.version>
+        <java-common-libs.version>5.2.0-SNAPSHOT</java-common-libs.version>
+        <biodata.version>3.2.0-SNAPSHOT</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jetty.version>9.4.51.v20230217</jetty.version>
 
@@ -615,6 +615,15 @@
                 <CELLBASE.DB.MONGODB.READPREFERENCE>secondaryPreferred</CELLBASE.DB.MONGODB.READPREFERENCE>
                 <CELLBASE.SERVER.REST.PORT>9090</CELLBASE.SERVER.REST.PORT>
                 <CELLBASE.MONITOR.AGENT></CELLBASE.MONITOR.AGENT>
+
+                <!--
+                Configuration for JUnit tets (using the file configuration.test.yaml)
+                -->
+                <JUNIT.CELLBASE.DB.MONGODB.HOST>localhost:27017</JUNIT.CELLBASE.DB.MONGODB.HOST>
+                <JUNIT.CELLBASE.DB.USER>cellbase</JUNIT.CELLBASE.DB.USER>
+                <JUNIT.CELLBASE.DB.PASSWORD>cellbase</JUNIT.CELLBASE.DB.PASSWORD>
+                <JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>admin</JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
+                <JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>SCRAM-SHA-256</JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>
             </properties>
         </profile>
 
