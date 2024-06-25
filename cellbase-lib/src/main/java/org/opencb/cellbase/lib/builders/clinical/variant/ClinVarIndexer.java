@@ -270,7 +270,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 try {
                     accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
                 } catch (Exception e) {
-                    logger.warn("Error getting accession\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                    logger.warn("Error getting accession. Ignore error and leave it as null.", e);
                 }
                 String clinicalSignficanceDescription = null;
                 try {
@@ -278,20 +278,20 @@ public class ClinVarIndexer extends ClinicalIndexer {
                             .getClinicalSignificance()
                             .getDescription();
                 } catch (Exception e) {
-                    logger.warn("Error getting clinical Significance description\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                    logger.warn("Error getting clinical significance description. Ignore error and leave it as null.", e);
                 }
                 String reviewStatusName = null;
                 try {
                     reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
                             .getReviewStatus().name();
                 } catch (Exception e) {
-                    logger.warn("Error getting review status name\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                    logger.warn("Error getting review status name. Ignore error and leave it as null.", e);
                 }
                 List<ObservationSet> getObservedIn = null;
                 try {
                     getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
                 } catch (Exception e) {
-                    logger.warn("Error getting observed in\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                    logger.warn("Error getting observed in. Ignore error and leave it as null.", e);
                 }
 
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
