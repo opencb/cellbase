@@ -41,7 +41,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
 
-    private static final String COSMIC_VERSION = "v95";
+    private static final String COSMIC_VERSION = "v99";
 
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
