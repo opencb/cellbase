@@ -74,13 +74,12 @@ public abstract class ClinicalIndexer {
     protected VariantNormalizer normalizer;
 
     public ClinicalIndexer(Path genomeSequenceFilePath) throws IOException {
-        // Forcing decomposition here in all cases - assuming the way CellBase stores clinical variants from here
-        // onwards will be decomposed and Adaptors will deal with phased/no-phased queries
+        // Use the same OpenCGA normalization parameters
         VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig
                 = (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(true)
-                .setNormalizeAlleles(false)
-                .setDecomposeMNVs(true);
+                .setNormalizeAlleles(true)
+                .setDecomposeMNVs(false);
 
         if (genomeSequenceFilePath != null) {
             logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath.toString());
