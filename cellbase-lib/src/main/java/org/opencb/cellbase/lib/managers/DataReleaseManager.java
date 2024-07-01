@@ -26,7 +26,7 @@ import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
-import org.opencb.cellbase.core.models.DataReleaseSource;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.ReleaseMongoDBAdaptor;
@@ -107,7 +107,7 @@ public class DataReleaseManager extends AbstractManager {
                 }
             }
         }
-        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
+        throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
     }
 
     public DataRelease getDefault(String cellBaseVersion) throws CellBaseException {
@@ -119,8 +119,7 @@ public class DataReleaseManager extends AbstractManager {
                 }
             }
         }
-        throw new CellBaseException("No data release found for CellBase " + cellBaseVersion + " (species = " + species + ", assembly = "
-                + assembly + ")");
+        throw new CellBaseException("No data release found for CellBase " + cellBaseVersion + getSpeciesAssemblyMessage());
     }
 
     public DataRelease update(int release, List<String> versions) throws CellBaseException {
@@ -136,28 +135,27 @@ public class DataReleaseManager extends AbstractManager {
 
             // Check sources
             if (StringUtils.isNotEmpty(data) && CollectionUtils.isNotEmpty(dataSourcePaths)) {
-                List<DataReleaseSource> newSources = new ArrayList<>();
+                List<DataSource> newSources = new ArrayList<>();
 
                 // First, add new data sources
                 Set<String> sourceSet = new HashSet<>();
                 ObjectMapper jsonObjectMapper = new ObjectMapper();
-                ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
+                ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataSource.class);
                 for (Path dataSourcePath : dataSourcePaths) {
                     if (dataSourcePath.toFile().exists()) {
                         try {
-                            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-                            newSources.add(dataReleaseSource);
-                            sourceSet.add(dataReleaseSource.getData() + "__" + dataReleaseSource.getName());
+                            DataSource dataSource = jsonObjectReader.readValue(dataSourcePath.toFile());
+                            newSources.add(dataSource);
+                            sourceSet.add(dataSource.getCategory() + "__" + dataSource.getName());
                         } catch (IOException e) {
-                            logger.warn("Something wrong happened when reading data release source " + dataSourcePath + ". "
-                                    + e.getMessage());
+                            logger.warn("Something wrong happened when reading data release source {}: {}", dataSourcePath, e.getMessage());
                         }
                     }
                 }
 
                 // Second, add previous data sources if necessary (to avoid duplicated sources)
-                for (DataReleaseSource source : currDataRelease.getSources()) {
-                    String key = source.getData() + "__" + source.getName();
+                for (DataSource source : currDataRelease.getSources()) {
+                    String key = source.getCategory() + "__" + source.getName();
                     if (!sourceSet.contains(key)) {
                         newSources.add(source);
                     }
@@ -173,7 +171,7 @@ public class DataReleaseManager extends AbstractManager {
 
             return currDataRelease;
         }
-        throw new CellBaseException("Data release '" + release + "' does not exist for species = " + species + ", assembly = " + assembly);
+        throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
     }
 
     public void update(DataRelease dataRelase) {
@@ -184,22 +182,22 @@ public class DataReleaseManager extends AbstractManager {
         if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
             // TODO: use native functions
             List<Map<String, Object>> tmp = new ArrayList<>();
-            for (DataReleaseSource source : dataRelase.getSources()) {
+            for (DataSource source : dataRelase.getSources()) {
                 Map<String, Object> map = new HashMap<>();
-                if (StringUtils.isNotEmpty(source.getData())) {
-                    map.put("data", source.getData());
-                }
                 if (StringUtils.isNotEmpty(source.getName())) {
                     map.put("name", source.getName());
+                }
+                if (StringUtils.isNotEmpty(source.getCategory())) {
+                    map.put("category", source.getCategory());
                 }
                 if (StringUtils.isNotEmpty(source.getVersion())) {
                     map.put("version", source.getVersion());
                 }
-                if (CollectionUtils.isNotEmpty(source.getUrl())) {
-                    map.put("url", source.getUrl());
+                if (StringUtils.isNotEmpty(source.getDownloadDate())) {
+                    map.put("downloadDate", source.getDownloadDate());
                 }
-                if (StringUtils.isNotEmpty(source.getDate())) {
-                    map.put("date", source.getDate());
+                if (CollectionUtils.isNotEmpty(source.getUrls())) {
+                    map.put("urls", source.getUrls());
                 }
                 tmp.add(map);
             }
@@ -223,9 +221,11 @@ public class DataReleaseManager extends AbstractManager {
         if (inRelease == 0) {
             String[] split = GitRepositoryState.get().getBuildVersion().split("[.-]");
             String version = "v" + split[0] + "." + split[1];
+
             outRelease = getDefault(version);
-            logger.info("Using data release 0: it means to take default data release '" + outRelease.getRelease()
-                    + "' for CellBase version '" + version + "'");
+            logger.info("Using data release 0: it means to take default data release {} for CellBase version {}", outRelease.getRelease(),
+                    version);
+
             return outRelease;
         }
 
@@ -236,8 +236,11 @@ public class DataReleaseManager extends AbstractManager {
             }
         }
 
-        throw new CellBaseException("Invalid data release " + inRelease + " for species = " + species + ", assembly = " + assembly
-                + ". Valid data releases are: " + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
-                .collect(Collectors.toList()), ","));
+        throw new CellBaseException("Invalid data release " + inRelease + getSpeciesAssemblyMessage() + ". Valid data releases are: "
+                + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease()).collect(Collectors.toList()), ","));
+    }
+
+    private String getSpeciesAssemblyMessage() {
+        return " (species = " + species + ", assembly = " + assembly + ")";
     }
 }

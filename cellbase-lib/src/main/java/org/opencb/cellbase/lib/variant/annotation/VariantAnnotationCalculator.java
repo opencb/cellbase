@@ -40,6 +40,7 @@ import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.futures.FuturePolygenicScoreAnnotator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -57,11 +58,6 @@ import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
 /**
  * Created by imedina on 06/02/16.
  */
-/**
- * Created by imedina on 11/07/14.
- *
- * @author Javier Lopez fjlopez@ebi.ac.uk;
- */
 public class VariantAnnotationCalculator {
 
     private static final String EMPTY_STRING = "";
@@ -74,6 +70,7 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private PharmacogenomicsManager pharmacogenomicsManager;
+    private PolygenicScoreManager polygenicScoreManager;
     private DataRelease dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
@@ -108,6 +105,7 @@ public class VariantAnnotationCalculator {
         this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
         this.pharmacogenomicsManager = cellbaseManagerFactory.getPharmacogenomicsManager(species, assembly);
+        this.polygenicScoreManager = cellbaseManagerFactory.getPolygenicScoreManager(species, assembly);
 
         // Init data release and API key
         this.dataRelease = dataRelease;
@@ -523,6 +521,14 @@ public class VariantAnnotationCalculator {
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
+        FuturePolygenicScoreAnnotator futurePolygenicScoreAnnotator = null;
+        Future<List<CellBaseDataResult<PolygenicScoreAnnotation>>> polygenicScoreFuture = null;
+        if (annotatorSet.contains(EtlCommons.PGS_DATA)) {
+            futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
+                    dataRelease.getRelease(), polygenicScoreManager, logger);
+            polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
+        }
+
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
         long startTime = System.currentTimeMillis();
@@ -663,6 +669,9 @@ public class VariantAnnotationCalculator {
         }
         if (futurePharmacogenomicsAnnotator != null) {
             futurePharmacogenomicsAnnotator.processResults(pharmacogenomicsFuture, variantAnnotationList);
+        }
+        if (futurePolygenicScoreAnnotator != null) {
+            futurePolygenicScoreAnnotator.processResults(polygenicScoreFuture, variantAnnotationList);
         }
 
         // Not needed with newCachedThreadPool
@@ -1171,7 +1180,8 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets", "pharmacogenomics",
-                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs"));
+                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs",
+                    EtlCommons.PGS_DATA));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1420,8 +1430,6 @@ public class VariantAnnotationCalculator {
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
-//        return variantList.stream().map((variant) -> variantToRegion(variant)).collect(Collectors.toList());
-
         // In great majority of cases returned region list size will equal variant list; this will happen except when
         // there's a breakend within the variantList
         List<Region> regionList = new ArrayList<>(variantList.size());

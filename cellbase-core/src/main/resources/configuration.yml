@@ -45,6 +45,7 @@ server:
     port: "${CELLBASE.SERVER.REST.PORT}"
 defaultOutdir: "/tmp"
 download:
+  ## Genomic and Gene information
   ensembl:
     database:
       host: ensembldb.ensembl.org:3306
@@ -52,7 +53,16 @@ download:
       password: ''
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
-      host: ftp://ftp.ensembl.org/pub
+      host: https://ftp.ensembl.org/pub/
+      files:
+        # New Homo sapiens assemblies contain too many ALT regions, so we download 'primary_assembly' file instead
+        PRIMARY_FA: "release-put_release_here/fasta/put_species_here/dna/put_capital_species_here.put_assembly_here.dna.primary_assembly.fa.gz"
+        GTF: "release-put_release_here/gtf/put_species_here/put_capital_species_here.put_assembly_here.put_release_here.gtf.gz"
+        PEP_FA: "release-put_release_here/fasta/put_species_here/pep/put_capital_species_here.put_assembly_here.pep.all.fa.gz"
+        CDNA_FA: "release-put_release_here/fasta/put_species_here/cdna/put_capital_species_here.put_assembly_here.cdna.all.fa.gz"
+        REGULATORY_BUILD: "release-put_release_here/regulation/put_species_here/put_species_here.put_assembly_here.Regulatory_Build.regulatory_features.20221007.gff.gz"
+        MOTIF_FEATURES: "release-put_release_here/regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz"
+        MOTIF_FEATURES_INDEX: "release-put_release_here/regulation/put_species_here/MotifFeatures/put_species_here.put_assembly_here.motif_features.gff.gz.tbi"
   ensemblGenomes:
     database:
       host: mysql-eg-publicsql.ebi.ac.uk:4157
@@ -61,164 +71,239 @@ download:
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
       host: ftp://ftp.ensemblgenomes.org/pub
-  hgnc:
-    host: https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2023-11-01.txt
-    version: 2023-11-01
-  cancerHotspot:
-    host: https://www.cancerhotspots.org/files/hotspots_v2.xls
-    version: "v2"
   refSeq:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
-  refSeqFasta:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
-  refSeqProteinFasta:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
-  refSeqCdna:
-    host: https://ftp.ncbi.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
+    host: https://ftp.ncbi.nih.gov/refseq/
+    version: "2023-10-11"
+    files:
+      GENOMIC_GTF: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gtf.gz
+      GENOMIC_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
+      PROTEIN_FAA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
+      RNA_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
   maneSelect:
-#    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_0.93/MANE.GRCh38.v0.93.summary.txt.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.0/MANE.GRCh38.v1.0.summary.txt.gz
-    host: https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/release_1.1/MANE.GRCh38.v1.1.summary.txt.gz
-    version: "1.1"
+    host: https://ftp.ncbi.nlm.nih.gov/refseq/
+    version: "1.2"
+    files:
+      MANE_SELECT: MANE/MANE_human/release_1.2/MANE.GRCh38.v1.2.summary.txt.gz
   lrg:
-    host: http://ftp.ebi.ac.uk/pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
+    host: http://ftp.ebi.ac.uk/
     version: "2021-03-30"
+    files:
+      LRG: pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
+  hgnc:
+    host: https://ftp.ebi.ac.uk/
+    version: "2024-04-01"
+    files:
+      HGNC: pub/databases/genenames/hgnc/archive/monthly/tsv/hgnc_complete_set_2024-04-01.txt
+  cancerHotspot:
+    host: https://www.cancerhotspots.org/
+    version: "v2"
+    files:
+      CANCER_HOTSPOT: files/hotspots_v2.xls
+  dgidb:
+    host: https://old.dgidb.org/
+    version: "2022-02-01"
+    files:
+      DGIDB: data/monthly_tsvs/2022-Feb/interactions.tsv
   geneUniprotXref:
-    host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
-    version: "2023-11-08"
+    host: http://ftp.uniprot.org/
+    version: "2024-03-27"
+    files:
+      UNIPROT_XREF: pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping_selected.tab.gz
   geneExpressionAtlas:
-    host: ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+    host: https://ftp.ebi.ac.uk/
+    version: "2.0.14"
+    files:
+      GENE_EXPRESSION_ATLAS: pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
+  hpo:
+    ## NOTE: Download manually from here now
+    version: "2024-04-26"
+    host: https://hpo.jax.org/app/data/annotations
+  disgenet:
+    host: https://www.disgenet.org/
+    version: "7.0 (January 2020)"
+    files:
+      DISGENET: static/disgenet_ap1/files/downloads/all_gene_disease_associations.tsv.gz
+  gnomadConstraints:
+    host: https://storage.googleapis.com/
+    version: "2.1.1"
+    files:
+      GNOMAD_CONSTRAINTS: gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
+  goAnnotation:
+    host: http://geneontology.org/
+    files:
+      GO_ANNOTATION: gene-associations/goa_human.gaf.gz
+  pgs:
+    host: https://www.pgscatalog.org/
+    version: "Dec. 15, 2023"
+    files:
+      PGS_METADATA: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
+
+  ## Regulation
   mirbase:
-    host: ftp://mirbase.org/pub/mirbase/CURRENT/miRNA.xls.gz
-  mirbaseReadme:
-    host: ftp://mirbase.org/pub/mirbase/CURRENT/README
+    host: https://www.mirbase.org/
+    version: "22.1"
+    files:
+      MIRBASE: download/miRNA.dat
   targetScan:
     host: http://hgdownload.cse.ucsc.edu/goldenPath/
   miRTarBase:
-    host: https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
+    host: https://mirtarbase.cuhk.edu.cn/
     version: "9.0"
+    files:
+      # This file contains errors and has to be fixed before building
+      # check the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbol.sh
+      MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
 
   ## Protein Data
   uniprot:
-    host: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-    version: "2023-11-08"
-  uniprotRelNotes:
-    host: https://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt
-    version: "2023-11-08"
+    host: https://ftp.uniprot.org/
+    version: "2024-03-27"
+    files:
+      UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
-    host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/protein2ipr.dat.gz
-    version: "2023-11-08"
-  interproRelNotes:
-    host: https://ftp.ebi.ac.uk/pub/databases/interpro/current_release/release_notes.txt
+    host: https://ftp.ebi.ac.uk/
+    version: "2024-03-27"
+    files:
+      INTERPRO: pub/databases/interpro/current_release/protein2ipr.dat.gz
   intact:
-    host: https://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt
-    version: "2023-10-07"
+    host: https://ftp.ebi.ac.uk/
+    version: "2024-02-16"
+    files:
+      INTACT: pub/databases/intact/current/psimitab/intact.txt
 
   ## Conservation Scores
-  conservation:
-    host: https://hgdownload.cse.ucsc.edu/goldenPath/
+  phastCons:
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
+    host: https://hgdownload.cse.ucsc.edu/
     version: "2022-08-30"
+    files:
+      PHASTCONS: goldenPath/put_assembly_here/phastCons470way/put_assembly_here.470way.phastCons/chrput_chromosome_here.phastCons470way.wigFix.gz
+  phylop:
+    ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
+    host: https://hgdownload.cse.ucsc.edu/
+    version: "2022-08-30"
+    files:
+      PHYLOP: goldenPath/put_assembly_here/phyloP470way/put_assembly_here.470way.phyloP/chrput_chromosome_here.phyloP470way.wigFix.gz
   gerp:
-    host: http://ftp.ensembl.org/pub/release-110/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+    host: http://ftp.ensembl.org/
     version: "2023-05-17"
+    files:
+      GERP: pub/release-111/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+
+  ## Clinical Variant
   clinvar:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2021-07.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-02.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2022-11.xml.gz
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2023-12.xml.gz
-    version: "2023-12-01"
-  clinvarVariation:
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2021-07.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-02.xml.gz
-#    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2022-11.xml.gz
-    host: https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_2023-12.xml.gz
-  clinvarSummary:
-    host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
-    version: "2023-12-01"
-  clinvarVariationAllele:
-    host: http://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz
-    version: "2023-12-01"
-  clinvarEfoTerms:
-    host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
-  iarctp53:
-    host: http://p53.iarc.fr/ajax/Zipper.ashx
-  docm:
-    host: http://docm.info/api/
-  docmVersion:
-    host: http://docm.info
+    host: https://ftp.ncbi.nlm.nih.gov/
+    version: "2024-02"
+    files:
+      FULL_RELEASE: pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2024-02.xml.gz
+      SUMMARY: pub/clinvar/tab_delimited/variant_summary.txt.gz
+      ALLELE: pub/clinvar/tab_delimited/variation_allele.txt.gz
+      EFO_TERMS: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
+  cosmic:
+    ## To be downloaded manually
+    host: https://cancer.sanger.ac.uk/cosmic/
+    version: "v99"
+    files:
+      COSMIC: CosmicMutantExport.tsv.gz
+  hgmd:
+    ## To be downloaded manually
+    host: https://www.hgmd.cf.ac.uk/
+    version: "2020-03"
+    files:
+      HGMD: hgmd.vcf
+  gwasCatalog:
+    ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
+    host: https://ftp.ebi.ac.uk/
+    version: "2024-04-22"
+    files:
+      GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
+      DBSNP: All.vcf.gz
+
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
-  windowMasker:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
-  genomicSuperDups:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
-  gwasCatalog:
-#    host: http://resources.opencb.org/opencb/cellbase/data/gwas/gwas_catalog_v1.0.2-associations_e106_r2022-05-17.tsv
-#    version: "1.0.2 associations_e106_r2022-05-17"
-    host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2023/12/21/gwas-catalog-associations.tsv
-    version: "23-12-21"
-  hpo:
-    ## Downlaod manually from here now:  https://hpo.jax.org/app/data/annotations
-    host: https://ci.monarchinitiative.org/view/hpo/job/hpo.annotations/lastSuccessfulBuild/artifact/rare-diseases/util/annotation/phenotype_to_genes.txt
-  disgenet:
-    host: https://www.disgenet.org/static/disgenet_ap1/files/downloads
+    host: http://hgdownload.cse.ucsc.edu/
     files:
-      - all_gene_disease_associations.tsv.gz
-      - readme.txt
-  dgidb:
-    host: https://old.dgidb.org/data/monthly_tsvs/2022-Feb/interactions.tsv
-    version: "2022-02-01"
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      SIMPLE_REPEATS: goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
+  windowMasker:
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      WINDOW_MASKER: goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
+  genomicSuperDups:
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      GENOMIC_SUPER_DUPS: goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
+
+  ## Variant Pathogenic Prediction
+  revel:
+    host: https://zenodo.org/
+    version: "1.3"
+    files:
+      REVEL: record/7072866/files/revel-v1.3_all_chromosomes.zip
+  alphaMissense:
+    host: https://github.com/google-deepmind/alphamissense
+    version: "Aug. 3, 2023"
+    files:
+      ALPHAMISSENSE: https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz
   cadd:
-    ## Nacho: Move to https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz ASAP!
-#    host: https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/whole_genome_SNVs.tsv.gz
-    host: https://krishna.gs.washington.edu/download/CADD/v1.7-pre/GRCh38/whole_genome_SNVs.tsv.gz
-    version: "1.7-pre"
+    host: https://krishna.gs.washington.edu/
+    version: "1.7"
+    files:
+      CADD: download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
+
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
-  gnomadConstraints:
-    host: https://storage.googleapis.com/gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
-    version: "2.1.1"
+
+  ## OBO Ontologies
   hpoObo:
-    host: http://purl.obolibrary.org/obo/hp.obo
-    version: "2023-12-01"
+    host: http://purl.obolibrary.org/obo/
+    ## The version is retrieved from the OBO file
+    files:
+      HPO: hp.obo
   goObo:
-    host: http://purl.obolibrary.org/obo/go/go-basic.obo
-    version: "2023-12-01"
+    host: http://purl.obolibrary.org/obo/
+    ## The version is retrieved from the OBO file
+    files:
+      GO: go/go-basic.obo
   doidObo:
-    host: http://purl.obolibrary.org/obo/doid.obo
-    version: "2023-12-01"
+    host: http://purl.obolibrary.org/obo/
+    ## The version is retrieved from the OBO file
+    files:
+      DOID: doid.obo
   mondoObo:
-    host: http://purl.obolibrary.org/obo/mondo.obo
-    version: "2023-12-01"
-  goAnnotation:
-    host: http://geneontology.org/gene-associations/goa_human.gaf.gz
-  revel:
-    host: https://zenodo.org/record/7072866/files/revel-v1.3_all_chromosomes.zip
+    host: http://purl.obolibrary.org/obo/
+    ## The version is retrieved from the OBO file
+    files:
+      MONDO: mondo.obo
+
+  ## Others
   pubmed:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
+    version: 2024
     files:
-      - pubmed22n[1..1114..4].xml.gz
+      PUBMED_REGEX: pubmed24n[1..1219..4].xml.gz
   pharmGKB:
-    host: https://www.pharmgkb.org/downloads
+    host: https://api.pharmgkb.org/v1/download/file/data/
     version: v1
     files:
-      - https://api.pharmgkb.org/v1/download/file/data/genes.zip
-      - https://api.pharmgkb.org/v1/download/file/data/chemicals.zip
-      - https://api.pharmgkb.org/v1/download/file/data/variants.zip
-      - https://api.pharmgkb.org/v1/download/file/data/guidelineAnnotations.json.zip
-      - https://api.pharmgkb.org/v1/download/file/data/variantAnnotations.zip
-      - https://api.pharmgkb.org/v1/download/file/data/clinicalAnnotations.zip
-      - https://api.pharmgkb.org/v1/download/file/data/clinicalVariants.zip
-      - https://api.pharmgkb.org/v1/download/file/data/drugLabels.zip
-      - https://api.pharmgkb.org/v1/download/file/data/relationships.zip
+      GENES: genes.zip
+      CHEMICALS: chemicals.zip
+      VARIANTS: variants.zip
+      GUIDELINE_ANNOTATIONS: guidelineAnnotations.json.zip
+      VARIANT_ANNOTATIONS: variantAnnotations.zip
+      CLINICAL_ANNOTATIONS: clinicalAnnotations.zip
+      CLINICAL_VARIANTS: clinicalVariants.zip
+      DRUG_LABELS: drugLabels.zip
+      RELATIONSHIPS: relationships.zip
 species:
   vertebrates:
     - id: hsapiens
       scientificName: Homo sapiens
       assemblies:
-        - ensemblVersion: '110_38'
+        - ensemblVersion: '111_38'
           name: GRCh38
         - ensemblVersion: '82_37'
           name: GRCh37

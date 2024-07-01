@@ -16,9 +16,12 @@
 
 package org.opencb.cellbase.lib;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.download.DownloadFile;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,120 +29,485 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 03/06/16.
  */
-public class EtlCommons {
+public final class EtlCommons {
 
+    // Commons
+    public static final String XLSX_EXTENSION = ".xlsx";
+    public static final String CSV_EXTENSION = ".csv";
+    public static final String TBI_EXTENSION = ".tbi";
+    public static final String FAI_EXTENSION = ".fai";
+
+    public static final String OK_LOG_MESSAGE = "Ok.";
+
+    // Ensembl
+    public static final String ENSEMBL_DATA = "ensembl";
+    public static final String PUT_RELEASE_HERE_MARK = "put_release_here";
+    public static final String PUT_SPECIES_HERE_MARK = "put_species_here";
+    public static final String PUT_CAPITAL_SPECIES_HERE_MARK = "put_capital_species_here";
+    public static final String PUT_ASSEMBLY_HERE_MARK = "put_assembly_here";
+    public static final String PUT_CHROMOSOME_HERE_MARK = "put_chromosome_here";
+    // Must match the configuration file
+    public static final String ENSEMBL_PRIMARY_FA_FILE_ID = "PRIMARY_FA";
+    public static final String ENSEMBL_GTF_FILE_ID = "GTF";
+    public static final String ENSEMBL_PEP_FA_FILE_ID = "PEP_FA";
+    public static final String ENSEMBL_CDNA_FA_FILE_ID = "CDNA_FA";
+    public static final String ENSEMBL_REGULATORY_BUILD_FILE_ID = "REGULATORY_BUILD";
+    public static final String ENSEMBL_MOTIF_FEATURES_FILE_ID = "MOTIF_FEATURES";
+    public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
+
+    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
+    public static final String HSAPIENS_NAME= "hsapiens";
+
+    public static final String GRCH38_NAME = "GRCh38";
+    public static final String GRCH37_NAME = "GRCh37";
+    public static final String HG38_NAME = "hg38";
+    public static final String HG19_NAME = "hg19";
+
+    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+
+    // Genome
     public static final String GENOME_DATA = "genome";
+
+    // Gene
     public static final String GENE_DATA = "gene";
+    public static final String ENSEMBL_GENE_BASENAME = "ensemblGene";
+    public static final String GENE_ANNOTATION_DATA = "gene_annotation";
+    public static final String GENE_DISEASE_ANNOTATION_DATA = "gene_disease_annotation";
+
+    // RefSeq
     public static final String REFSEQ_DATA = "refseq";
-    public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
+    public static final String REFSEQ_GENE_BASENAME = "refSeqGene";
+    // Must match the configuration file
+    public static final String REFSEQ_GENOMIC_GTF_FILE_ID = "GENOMIC_GTF";
+    public static final String REFSEQ_GENOMIC_FNA_FILE_ID = "GENOMIC_FNA";
+    public static final String REFSEQ_PROTEIN_FAA_FILE_ID = "PROTEIN_FAA";
+    public static final String REFSEQ_RNA_FNA_FILE_ID = "RNA_FNA";
+
+    // Gene annotation
+    //   - MANE Select
+    public static final String MANE_SELECT_DATA = "MANE Select";
+    // Must match the configuration file
+    public static final String MANE_SELECT_FILE_ID = "MANE_SELECT";
+    //   - LRG
+    public static final String LRG_DATA = "lrg";
+    // Must match the configuration file
+    public static final String LRG_FILE_ID = "LRG";
+    //   - HGNC
+    public static final String HGNC_DATA = "hgnc";
+    // Must match the configuration file
+    public static final String HGNC_FILE_ID = "HGNC";
+    //   - Cancer HotSpot
+    public static final String CANCER_HOTSPOT_DATA = "cancer_hotspot";
+    // Must match the configuration file
+    public static final String CANCER_HOTSPOT_FILE_ID = "CANCER_HOTSPOT";
+    //   - DGID (drug)
+    public static final String DGIDB_DATA = "dgidb";
+    // Must match the configuration file
+    public static final String DGIDB_FILE_ID = "DGIDB";
+    //   - UniProt Xref
+    public static final String UNIPROT_XREF_DATA = "uniprot_xref";
+    // Must match the configuration file
+    public static final String UNIPROT_XREF_FILE_ID = "UNIPROT_XREF";
+    //   - Gene Expression Atlas
+    public static final String GENE_EXPRESSION_ATLAS_DATA = "gene_expression_atlas";
+    // Must match the configuration file
+    public static final String GENE_EXPRESSION_ATLAS_FILE_ID = "GENE_EXPRESSION_ATLAS";
+    //   - Gene Disease Annotation
+    public static final String GENE_DISEASE_ANNOTATION_NAME = "Gene Disease Annotation";
+    //     - HPO
+    public static final String HPO_DATA = "hpo";
+    //     - DISGENET
+    public static final String DISGENET_DATA = "disgenet";
+    // Must match the configuration file
+    public static final String DISGENET_FILE_ID = "DISGENET";
+    //   - gnomAD Constraints
+    public static final String GNOMAD_CONSTRAINTS_DATA = "gnomad_constraints";
+    // Must match the configuration file
+    public static final String GNOMAD_CONSTRAINTS_FILE_ID = "GNOMAD_CONSTRAINTS";
+    //   - GO Annotation
+    public static final String GO_ANNOTATION_DATA = "go_annotation";
+    // Must match the configuration file
+    public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
+
     public static final String VARIATION_DATA = "variation";
-    public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
-    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
-    public static final String REGULATION_DATA = "regulation";
-    public static final String PROTEIN_DATA = "protein";
-    public static final String CONSERVATION_DATA = "conservation";
-    public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
     public static final String SPLICE_SCORE_DATA = "splice_score";
 
+    // PGS (polygenic scores)
+    public static final String PGS_NAME = "Polygenic Scores";
+    public static final String PGS_DATA = "polygenic_score";
+    public static final String PGS_COMMON_COLLECTION = "common_polygenic_scores";
+    public static final String PGS_VARIANT_COLLECTION = "variant_polygenic_scores";
+    // PGS Catalog
+    public static final String PGS_CATALOG_NAME = "PGS Catalog";
+    public static final String PGS_CATALOG_VERSION_FILENAME = "pgsCatalog" + SUFFIX_VERSION_FILENAME;
+    // Must match the configuration file
+    public static final String PGS_CATALOG_METADATA_FILE_ID = "PGS_METADATA";
+
+    // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
-    public static final String PHARMGKB_NAME = "PharmGKB";
+    // PharmGKB
     public static final String PHARMGKB_DATA = "pharmgkb";
-    public static final String PHARMGKB_VERSION_FILENAME = "pharmgkbVersion.json";
+    // Must match the configuration file
+    public static final String PHARMGKB_GENES_FILE_ID = "GENES";
+    public static final String PHARMGKB_CHEMICALS_FILE_ID = "CHEMICALS";
+    public static final String PHARMGKB_VARIANTS_FILE_ID = "VARIANTS";
+    public static final String PHARMGKB_GUIDELINE_ANNOTATIONS_FILE_ID = "GUIDELINE_ANNOTATIONS";
+    public static final String PHARMGKB_VARIANT_ANNOTATIONS_FILE_ID = "VARIANT_ANNOTATIONS";
+    public static final String PHARMGKB_CLINICAL_ANNOTATIONS_FILE_ID = "CLINICAL_ANNOTATIONS";
+    public static final String PHARMGKB_CLINICAL_VARIANTS_FILE_ID = "CLINICAL_VARIANTS";
+    public static final String PHARMGKB_DRUG_LABELS_FILE_ID = "DRUG_LABELS";
+    public static final String PHARMGKB_RELATIONSHIPS_FILE_ID = "RELATIONSHIPS";
 
-    public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
-    public static final String CLINVAR_VERSION = "2022.11";
-    public static final String CLINVAR_DATE = "2022-11";
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2022-11.xml.gz";
-    public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
-    public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
-    public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
-    public static final String IARCTP53_FILE = "IARC-TP53.zip";
-    public static final String GWAS_FILE = "gwas_catalog.tsv";
-    public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
-    public static final String DBSNP_FILE = "All.vcf.gz";
+    // Missense variantion functional score
+    public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
 
-    public static final String STRUCTURAL_VARIANTS_DATA = "svs";
+    // Clinical variants data
+    public static final String CLINICAL_VARIANT_DATA = "clinical_variant";
+    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariant";
+    // ClinVar
+    public static final String CLINVAR_DATA = "clinvar";
+    public static final String CLINVAR_CHUNKS_SUBDIRECTORY = "clinvar_chunks";
+    // Must match the configuration file
+    public static final String CLINVAR_FULL_RELEASE_FILE_ID = "FULL_RELEASE";
+    public static final String CLINVAR_SUMMARY_FILE_ID = "SUMMARY";
+    public static final String CLINVAR_ALLELE_FILE_ID = "ALLELE";
+    public static final String CLINVAR_EFO_TERMS_FILE_ID = "EFO_TERMS";
+    // COSMIC
+    public static final String COSMIC_DATA = "cosmic";
+    // Must match the configuration file
+    public static final String COSMIC_FILE_ID = "COSMIC";
+    // HGMD
+    public static final String HGMD_DATA = "hgmd";
+    // Must match the configuration file
+    public static final String HGMD_FILE_ID = "HGMD";
+    // GWAS
+    public static final String GWAS_DATA = "gwas";
+    // Must match the configuration file
+    public static final String GWAS_FILE_ID = "GWAS";
+    public static final String GWAS_DBSNP_FILE_ID = "DBSNP";
+
+    // Repeats
     public static final String REPEATS_DATA = "repeats";
-    public static final String OBO_DATA = "ontology";
-    public static final String HPO_FILE = "hp.obo";
-    public static final String GO_FILE = "go-basic.obo";
-    public static final String DOID_FILE = "doid.obo";
-    public static final String MONDO_FILE = "mondo.obo";
+    public static final String REPEATS_BASENAME = "repeats";
+    /**
+     * @deprecated (when refactoring downloaders, builders and loaders)
+     */
+    @Deprecated
+    public static final String REPEATS_JSON = "repeats";
+    // Simple repeats
+    public static final String TRF_DATA = "trf";
+    // Must match the configuration file
+    public static final String SIMPLE_REPEATS_FILE_ID = "SIMPLE_REPEATS";
+    // Genomic super duplications
+    public static final String GSD_DATA = "gsd";
+    // Must match the configuration file
+    public static final String GENOMIC_SUPER_DUPS_FILE_ID = "GENOMIC_SUPER_DUPS";
+    // Window masker
+    public static final String WM_DATA = "wm";
+    // Must match the configuration file
+    public static final String WINDOW_MASKER_FILE_ID = "WINDOW_MASKER";
+
+    // Ontology
+    public static final String ONTOLOGY_DATA = "ontology";
+    public static final String OBO_BASENAME = "ontology";
+    // HPO
+    public static final String HPO_OBO_DATA = "hpo";
+    // Must match the configuration file
+    public static final String HPO_OBO_FILE_ID = "HPO";
+    // GO
+    public static final String GO_OBO_DATA = "go";
+    // Must match the configuration file
+    public static final String GO_OBO_FILE_ID = "GO";
+    // DOID
+    public static final String DOID_OBO_DATA = "doid";
+    // Must match the configuration file
+    public static final String DOID_OBO_FILE_ID = "DOID";
+    // MONDO
+    public static final String MONDO_OBO_DATA = "mondo";
+    // Must match the configuration file
+    public static final String MONDO_OBO_FILE_ID = "MONDO";
+
+
     public static final String PFM_DATA = "regulatory_pfm";
 
-    // Build specific data options
-    public static final String GENOME_INFO_DATA = "genome_info";
-    public static final String DISGENET_DATA = "disgenet";
-    public static final String HPO_DATA = "hpo";
+    // Variation functional score
+    public static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
+    // CADD scores
     public static final String CADD_DATA = "cadd";
-    public static final String PPI_DATA = "ppi";
-    public static final String DRUG_DATA = "drug";
-    public static final String CLINVAR_DATA = "clinvar";
-    public static final String DOCM_DATA = "docm";
-    public static final String COSMIC_DATA = "cosmic";
-    public static final String GWAS_DATA = "gwas";
-    public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_GERMLINE_REFERENCES_FILE = "germlineMutationReferenceIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_SOMATIC_FILE = "somaticMutationDataIARC TP53 Database, R20.txt";
-    public static final String IARCTP53_SOMATIC_REFERENCES_FILE = "somaticMutationReferenceIARC TP53 Database, R20.txt";
-    public static final String HGMD_DATA = "hgmd";
+    public static final String CADD_RAW_DATA = "cadd_raw";
+    public static final String CADD_SCALED_DATA = "cadd_scaled";
+    // Must match the configuration file
+    public static final String CADD_FILE_ID = "CADD";
 
-    public static final String PUBMED_DATA = "pubmed";
+    // Regulation
+    public static final String REGULATION_DATA = "regulation";
+    public static final String REGULATORY_PFM_BASENAME = "regulatory_pfm";
+    public static final String REGULATORY_REGION_BASENAME = "regulatory_region";
+    // Regulatory build and motif features (see Ensembl files: regulatory build and motif features files)
+    public static final String REGULATORY_BUILD_DATA = "regulatory_build";
+    // Motif features (see Ensembl files)
+    public static final String MOTIF_FEATURES_DATA = "motif_features";
+    // miRBase
+    public static final String MIRBASE_DATA = "mirbase";
+    // Must match the configuration file
+    public static final String MIRBASE_FILE_ID = "MIRBASE";
+    // miRTarBase
+    public static final String MIRTARBASE_DATA = "mirtarbase";
+    // Must match the configuration file
+    public static final String MIRTARBASE_FILE_ID = "MIRTARBASE";
 
-    // Load specific data options
+    // Protein substitution predictions consist of sift, polyphen, revel and alphamissense
+    public static final String PROTEIN_SUBSTITUTION_PREDICTION_DATA = "protein_substitution_predictions";
+    // Sift and polyphen
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
+    public static final String SIFT_SOURCE_NAME = "Sift";
+    public static final String POLYPHEN_SOURCE_NAME = "PolyPhen";
+    public static final String SIFT_VERSION_FILENAME = "siftVersion.json";
+    public static final String POLYPHEN_VERSION_FILENAME = "polyphenVersion.json";
+    // Revel
+    public static final String REVEL_DATA = "revel";
+    // Must match the configuration file
+    public static final String REVEL_FILE_ID = "REVEL";
+    @Deprecated
+    public static final String MISSENSE_VARIATION_SCORE_JSON_FILENAME = "missense_variation_functional_score.json.gz";
+    @Deprecated
+    public static final String REVEL_RAW_FILENAME = "revel-v1.3_all_chromosomes.zip";
+    @Deprecated
+    public static final String REVEL_JSON_FILENAME = "revel-v1.3_all_chromosomes.json.gz";
+    @Deprecated
+    public static final String REVEL_VERSION_FILENAME = "revelVersion.json";
+    // AlphaMissense
+    public static final String ALPHAMISSENSE_DATA = "alphamissense";
+    // Must match the configuration file
+    public static final String ALPHAMISSENSE_FILE_ID = "ALPHAMISSENSE";
+    @Deprecated
+    public static final String ALPHAMISSENSE_RAW_FILENAME = "AlphaMissense_hg38.tsv.gz";
+    @Deprecated
+    public static final String ALPHAMISSENSE_JSON_FILENAME = "alphamissense_hg38.json.gz";
+    @Deprecated
+    public static final String ALPHAMISSENSE_VERSION_FILENAME = "alphamissenseVersion.json";
 
-    // Path and file names
-    public static final String GERP_SUBDIRECTORY = "gerp";
+    // Protein
+    public static final String PROTEIN_DATA = "protein";
+    // UniProt
+    public static final String UNIPROT_DATA = "uniprot";
+    public static final String UNIPROT_CHUNKS_SUBDIRECTORY = "uniprot_chunks";
+    // Must match the configuration file
+    public static final String UNIPROT_FILE_ID = "UNIPROT";
+    // InterPro
+    public static final String INTERPRO_DATA = "interpro";
+    // Must match the configuration file
+    public static final String INTERPRO_FILE_ID = "INTERPRO";
+    // IntAct
+    public static final String INTACT_DATA = "intact";
+    // Must match the configuration file
+    public static final String INTACT_FILE_ID = "INTACT";
+
+    // Conservation scores
+    public static final String CONSERVATION_DATA = "conservation";
+    // GERP
+    public static final String GERP_DATA = "gerp";
+    // Must match the configuration file
+    public static final String GERP_FILE_ID = "GERP";
+    // PHASTCONS
+    public static final String PHASTCONS_DATA = "phastCons";
+    // Must match the configuration file
+    public static final String PHASTCONS_FILE_ID = "PHASTCONS";
+    // PHYLOP
+    public static final String PHYLOP_DATA = "phylop";
+    // Must match the configuration file
+    public static final String PHYLOP_FILE_ID = "PHYLOP";
+
+    // Splice scores
     public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
-    public static final String MMSPLICE_VERSION_FILENAME = "mmspliceVersion.json";
+    public static final String MMSPLICE_VERSION_FILENAME = MMSPLICE_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
     public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
-    public static final String SPLICEAI_VERSION_FILENAME = "spliceaiVersion.json";
+    public static final String SPLICEAI_VERSION_FILENAME = SPLICEAI_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
 
-    // binary bigwig file
+    /**
+     * @deprecated (when refactoring downloaders, builders and loaders)
+     */
+    @Deprecated
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
-    // bigwig file manually transformed to bedGraph file
-    public static final String GERP_PROCESSED_FILE = "gerp.bedGraph.gz"; //"gerp_conservation_scores.homo_sapiens.GRCh38.bedGraph.gz";
     public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
     public static final String CLINICAL_VARIANTS_ANNOTATED_JSON_FILE = "clinical_variants.full.json.gz";
-    public static final String DOCM_FILE = "docm.json.gz";
     public static final String DOCM_NAME = "DOCM";
-    public static final String STRUCTURAL_VARIANTS_FOLDER = "structuralVariants";
-    public static final String DGV_FILE = "dgv.txt";
-    public static final String DGV_VERSION_FILE = "dgvVersion.json";
-    public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
-    public static final String TRF_FILE = "simpleRepeat.txt.gz";
-    public static final String TRF_VERSION_FILE = "simpleRepeat.json";
-    public static final String GSD_FILE = "genomicSuperDups.txt.gz";
-    public static final String GSD_VERSION_FILE = "genomicSuperDups.json";
-    public static final String WM_FILE = "windowMasker.txt.gz";
-    public static final String WM_VERSION_FILE = "windowMasker.json";
-    public static final String REPEATS_FOLDER = "genome";
-    public static final String REPEATS_JSON = "repeats";
-    public static final String OBO_JSON = "ontology";
-    public static final String HPO_VERSION_FILE = "hpoVersion.json";
-    public static final String GO_VERSION_FILE = "goVersion.json";
-    public static final String DO_VERSION_FILE = "doVersion.json";
-    public static final String HGMD_FILE = "hgmd.vcf";
-    public static final String PUBMED_VERSION_FILENAME = "pubmedVersion.json";
+    public static final String HPO_VERSION_FILE = "hpo" + SUFFIX_VERSION_FILENAME;
+    public static final String GO_VERSION_FILE = "go" + SUFFIX_VERSION_FILENAME;
+    public static final String DO_VERSION_FILE = "do" + SUFFIX_VERSION_FILENAME;
+    public static final String MONDO_VERSION_FILE = "mondo" + SUFFIX_VERSION_FILENAME;
 
-    public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
-    public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
+    public static final String HGMD_FILE = "hgmd.vcf";
+
+    // PubMed
+    public static final String PUBMED_DATA = "pubmed";
+    // Must match the configuration file
+    public static final String PUBMED_REGEX_FILE_ID = "PUBMED_REGEX";
+
+    // Utilities maps
+    private static Map<String, String> dataNamesMap = new HashMap<>();
+    private static Map<String, String> dataCategoriesMap = new HashMap<>();
+    private static Map<String, String> dataVersionFilenamesMap = new HashMap<>();
+
+    static {
+
+        // Populate data names map
+        dataNamesMap.put(ENSEMBL_DATA, "Ensembl");
+        dataNamesMap.put(REFSEQ_DATA, "RefSeq");
+        dataNamesMap.put(GENOME_DATA, "Genome");
+        dataNamesMap.put(GENE_DATA, "Gene");
+        dataNamesMap.put(GENE_ANNOTATION_DATA, "Gene Annotation");
+        dataCategoriesMap.put(REFSEQ_DATA, "Gene");
+        dataNamesMap.put(MANE_SELECT_DATA, "MANE Select");
+        dataNamesMap.put(LRG_DATA, "LRG");
+        dataNamesMap.put(HGNC_DATA, "HGNC Gene");
+        dataNamesMap.put(CANCER_HOTSPOT_DATA, "Cancer HotSpot");
+        dataNamesMap.put(DGIDB_DATA, "DGIdb");
+        dataNamesMap.put(UNIPROT_XREF_DATA, "UniProt Xref");
+        dataNamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "Gene Expression Atlas");
+        dataNamesMap.put(GENE_DISEASE_ANNOTATION_DATA, "Gene Disease Annotation");
+        dataNamesMap.put(HPO_DATA, "HPO");
+        dataNamesMap.put(DISGENET_DATA, "DisGeNet");
+        dataNamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomAD Constraint");
+        dataNamesMap.put(GO_ANNOTATION_DATA, "EBI Gene Ontology Annotation");
+        dataNamesMap.put(PROTEIN_DATA, "Protein");
+        dataNamesMap.put(UNIPROT_DATA, "UniProt");
+        dataNamesMap.put(INTERPRO_DATA, "InterPro");
+        dataNamesMap.put(INTACT_DATA, "IntAct");
+        dataNamesMap.put(CONSERVATION_DATA, "Conservation");
+        dataNamesMap.put(GERP_DATA, "GERP++");
+        dataNamesMap.put(PHASTCONS_DATA, "PhastCons");
+        dataNamesMap.put(PHYLOP_DATA, "PhyloP");
+        dataNamesMap.put(REPEATS_DATA, "Repeats");
+        dataNamesMap.put(TRF_DATA, "Tandem Repeats Finder");
+        dataNamesMap.put(WM_DATA, "Window Masker");
+        dataNamesMap.put(GSD_DATA, "Genomic Super Duplications");
+        dataNamesMap.put(REGULATION_DATA, "Regulation");
+        dataNamesMap.put(REGULATORY_BUILD_DATA, "Regulatory Build");
+        dataNamesMap.put(MOTIF_FEATURES_DATA, "Motif Features");
+        dataNamesMap.put(MIRBASE_DATA, "miRBase");
+        dataNamesMap.put(MIRTARBASE_DATA, "miRTarBase");
+        dataNamesMap.put(ONTOLOGY_DATA, "Ontology");
+        dataNamesMap.put(HPO_OBO_DATA, "HPO");
+        dataNamesMap.put(GO_OBO_DATA, "GO");
+        dataNamesMap.put(DOID_OBO_DATA, "DOID");
+        dataNamesMap.put(MONDO_OBO_DATA, "Mondo");
+        dataNamesMap.put(PUBMED_DATA, "PubMed");
+        dataNamesMap.put(PHARMACOGENOMICS_DATA, "Pharmacogenomics");
+        dataNamesMap.put(PHARMGKB_DATA, "PharmGKB");
+        dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Score");
+        dataNamesMap.put(CADD_DATA, "CADD");
+        dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Score");
+        dataNamesMap.put(REVEL_DATA, "Revel");
+        dataNamesMap.put(CLINICAL_VARIANT_DATA, "Clinical Variant");
+        dataNamesMap.put(CLINVAR_DATA, "ClinVar");
+        dataNamesMap.put(COSMIC_DATA, "Cosmic");
+        dataNamesMap.put(HGMD_DATA, "HGMD");
+        dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
+
+        // Populate data categories map
+        dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
+        dataCategoriesMap.put(REFSEQ_DATA, "Gene");
+        dataCategoriesMap.put(GENOME_DATA, dataNamesMap.get(ENSEMBL_DATA));
+        dataCategoriesMap.put(MANE_SELECT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(LRG_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(HGNC_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(CANCER_HOTSPOT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(DGIDB_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(UNIPROT_XREF_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GENE_EXPRESSION_ATLAS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(HPO_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(DISGENET_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GNOMAD_CONSTRAINTS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GO_ANNOTATION_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(UNIPROT_DATA, dataNamesMap.get(PROTEIN_DATA));
+        dataCategoriesMap.put(INTERPRO_DATA, dataNamesMap.get(PROTEIN_DATA));
+        dataCategoriesMap.put(INTACT_DATA, dataNamesMap.get(PROTEIN_DATA));
+        dataCategoriesMap.put(GERP_DATA, dataNamesMap.get(CONSERVATION_DATA));
+        dataCategoriesMap.put(PHASTCONS_DATA, dataNamesMap.get(CONSERVATION_DATA));
+        dataCategoriesMap.put(PHYLOP_DATA, dataNamesMap.get(CONSERVATION_DATA));
+        dataCategoriesMap.put(TRF_DATA, dataNamesMap.get(REPEATS_DATA));
+        dataCategoriesMap.put(WM_DATA, dataNamesMap.get(REPEATS_DATA));
+        dataCategoriesMap.put(GSD_DATA, dataNamesMap.get(REPEATS_DATA));
+        dataCategoriesMap.put(REGULATORY_BUILD_DATA, dataNamesMap.get(REGULATION_DATA));
+        dataCategoriesMap.put(MOTIF_FEATURES_DATA, dataNamesMap.get(REGULATION_DATA));
+        dataCategoriesMap.put(MIRBASE_DATA, dataNamesMap.get(REGULATION_DATA));
+        dataCategoriesMap.put(MIRTARBASE_DATA, dataNamesMap.get(REGULATION_DATA));
+        dataCategoriesMap.put(HPO_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
+        dataCategoriesMap.put(GO_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
+        dataCategoriesMap.put(DOID_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
+        dataCategoriesMap.put(MONDO_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
+        dataCategoriesMap.put(PUBMED_DATA, "Publication");
+        dataCategoriesMap.put(PHARMGKB_DATA, dataNamesMap.get(PHARMACOGENOMICS_DATA));
+        dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
+        dataCategoriesMap.put(REVEL_DATA, dataNamesMap.get(MISSENSE_VARIATION_SCORE_DATA));
+        dataCategoriesMap.put(CLINVAR_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+
+        // Populate data version filenames Map
+        dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(REFSEQ_DATA, "refSeqCore" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GENOME_DATA, "genome" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MANE_SELECT_DATA, "maneSelect" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(LRG_DATA, "lrg" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HGNC_DATA, "hgnc" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CANCER_HOTSPOT_DATA, "cancerHotSpot" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(DGIDB_DATA, "dgidb" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(UNIPROT_XREF_DATA, "uniProtXref" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HPO_DATA, "hpo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(DISGENET_DATA, "disGeNet" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomadConstraints" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GO_ANNOTATION_DATA, "goAnnotation" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(UNIPROT_DATA, "uniProt" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(INTERPRO_DATA, "interPro" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(INTACT_DATA, "intAct" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GERP_DATA, "gerp" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PHASTCONS_DATA, "phastCons" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PHYLOP_DATA, "phyloP" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(TRF_DATA, "simpleRepeat" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(WM_DATA, "windowMasker" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GSD_DATA, "genomicSuperDups" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(REGULATORY_BUILD_DATA, "regulatoryBuild" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MOTIF_FEATURES_DATA, "motifFeatures" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MIRBASE_DATA, "mirBase" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MIRTARBASE_DATA, "mirTarBase" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HPO_OBO_DATA, "hpoObo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GO_OBO_DATA, "goObo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(DOID_OBO_DATA, "doidObo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MONDO_OBO_DATA, "mondoObo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGKB" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(REVEL_DATA, "revel" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(ALPHAMISSENSE_DATA, "alphaMissense" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CLINVAR_DATA, "clinVar" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
+    }
+
+    private EtlCommons() {
+        throw new IllegalStateException("Utility class");
+    }
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-            throws IOException, InterruptedException {
-        // This small hack allow to configure the appropriate Logger level from the command line, this is done
-        // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
-//        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
-//        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stdout");
-//        stderr.setThreshold(Level.toLevel("debug"));
+            throws IOException, InterruptedException, CellBaseException {
 
         Configurator.setRootLevel(Level.INFO);
 
@@ -147,18 +515,21 @@ public class EtlCommons {
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
+        }
         Process process = builder.start();
         process.waitFor();
 
         // Check process output
-        boolean executedWithoutErrors = true;
-        int genomeInfoExitValue = process.exitValue();
-        if (genomeInfoExitValue != 0) {
-            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-            executedWithoutErrors = false;
+        if (process.exitValue() != 0) {
+            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
+                    + ". More info in log file: " + logFilePath;
+            logger.error(msg);
+            throw new CellBaseException(msg);
         }
-        return executedWithoutErrors;
+
+        return true;
     }
 
     private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
@@ -203,7 +574,132 @@ public class EtlCommons {
             }
             return nLines;
         }
-
     }
 
+    public static String getEnsemblUrl(DownloadProperties.EnsemblProperties props, String ensemblRelease, String fileId, String species,
+                                       String assembly, String chromosome) throws CellBaseException {
+        if (!props.getUrl().getFiles().containsKey(fileId)) {
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
+        }
+        String url = props.getUrl().getHost() + props.getUrl().getFiles().get(fileId);
+
+        // Change release, species, assembly, chromosome if necessary
+        if (StringUtils.isNotEmpty(ensemblRelease)) {
+            url = url.replace(PUT_RELEASE_HERE_MARK, ensemblRelease.split("-")[1]);
+        }
+        if (StringUtils.isNotEmpty(species)) {
+            url = url.replace(PUT_SPECIES_HERE_MARK, species);
+            url = url.replace(PUT_CAPITAL_SPECIES_HERE_MARK, Character.toUpperCase(species.charAt(0)) + species.substring(1));
+        }
+        if (StringUtils.isNotEmpty(assembly)) {
+            url = url.replace(PUT_ASSEMBLY_HERE_MARK, assembly);
+        }
+        if (StringUtils.isNotEmpty(chromosome)) {
+            url = url.replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
+        }
+        return url;
+    }
+
+    public static String getUrl(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        return getUrl(props, fileId, null, null, null);
+    }
+
+    public static String getUrl(DownloadProperties.URLProperties props, String fileId, String species, String assembly, String chromosome)
+            throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
+        }
+        String url;
+        String filesValue = props.getFiles().get(fileId);
+        if (filesValue.startsWith("https://") || filesValue.startsWith("http://") || filesValue.startsWith("ftp://")) {
+            url = filesValue;
+        } else {
+            url = props.getHost() + filesValue;
+        }
+        if (StringUtils.isNotEmpty(species)) {
+            url = url.replace(PUT_SPECIES_HERE_MARK, species);
+        }
+        if (StringUtils.isNotEmpty(assembly)) {
+            url = url.replace(PUT_ASSEMBLY_HERE_MARK, assembly);
+        }
+        if (StringUtils.isNotEmpty(chromosome)) {
+            url = url.replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
+        }
+        return url;
+    }
+
+    public static String getFilename(String prefix, String chromosome) {
+        return prefix + "_" + chromosome;
+    }
+
+    public static boolean isExecutableAvailable(String executable) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder("which", executable);
+        Process process = processBuilder.start();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            StringBuilder output = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+        }
+
+        int exitCode = process.waitFor();
+
+        // if exitCode is 0 then the executable is installed at + output.toString().trim()),
+        // otherwise, it's not
+        return (exitCode == 0);
+    }
+
+    public static String getFilenameFromProps(DownloadProperties.URLProperties props, String fileId) throws CellBaseException {
+        if (!props.getFiles().containsKey(fileId)) {
+            throw new CellBaseException(getMissingFileIdMessage(fileId));
+        }
+        return getFilenameFromUrl(props.getFiles().get(fileId));
+    }
+
+    public static String getFilenameFromUrl(String url) {
+        return Paths.get(url).getFileName().toString();
+    }
+
+    public static void checkDirectory(Path path, String name) throws CellBaseException {
+        if (path == null) {
+            throw new CellBaseException(name + " directory is null");
+        }
+        if (!Files.exists(path)) {
+            throw new CellBaseException(name + " directory " + path + " does not exist");
+        }
+        if (!Files.isDirectory(path)) {
+            throw new CellBaseException(name + " directory " + path + " is not a directory");
+        }
+    }
+
+    private static String getMissingFileIdMessage(String fileId) {
+        return "File ID " + fileId + " is missing in the DownloadProperties.URLProperties within the CellBase configuration file";
+    }
+
+    public static String getDataName(String data) throws CellBaseException {
+        if (!dataNamesMap.containsKey(data)) {
+            throw new CellBaseException("Name not found for data '" + data + "'");
+        }
+        return dataNamesMap.get(data);
+    }
+
+    public static String getDataCategory(String data) throws CellBaseException {
+        if (!dataCategoriesMap.containsKey(data)) {
+            throw new CellBaseException("Category not found for data '" + data + "'");
+        }
+        return dataCategoriesMap.get(data);
+    }
+
+    public static String getDataVersionFilename(String data) throws CellBaseException {
+        if (!dataVersionFilenamesMap.containsKey(data)) {
+            throw new CellBaseException("Version filename not found for data '" + data + "'");
+        }
+        return dataVersionFilenamesMap.get(data);
+    }
+
+    public static List<String> getUrls(List<DownloadFile> downloadFiles) {
+        return downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList());
+    }
 }

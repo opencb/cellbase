@@ -151,8 +151,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (dr.getCollections().containsKey(data)) {
                     String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
                     if (dr.getCollections().get(data).equals(collectionName)) {
-                        throw new LoaderException("Impossible load data " + data + " with release " + dataRelease + " since it"
-                                + " has already been done.");
+                        logger.warn("Loading new data " + data + " with release " + dataRelease + " (already populated previously)");
                     }
                 }
             }

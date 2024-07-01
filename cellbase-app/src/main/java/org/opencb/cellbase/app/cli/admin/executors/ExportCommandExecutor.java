@@ -82,11 +82,9 @@ public class ExportCommandExecutor extends CommandExecutor {
         this.assembly = splits[2];
 
         if (exportCommandOptions.data.equals("all")) {
-            this.dataToExport = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
-                    EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-                    EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.REPEATS_DATA,
-                    OBO_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
+            this.dataToExport = new String[]{GENOME_DATA, GENE_DATA, REFSEQ_DATA, CONSERVATION_DATA, REGULATION_DATA, PROTEIN_DATA,
+                    PROTEIN_SUBSTITUTION_PREDICTION_DATA, VARIATION_DATA, VARIATION_FUNCTIONAL_SCORE_DATA, CLINICAL_VARIANT_DATA,
+                    REPEATS_DATA, ONTOLOGY_DATA, SPLICE_SCORE_DATA, PHARMACOGENOMICS_DATA};
         } else {
             this.dataToExport = exportCommandOptions.data.split(",");
         }
@@ -200,38 +198,6 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " CADD items";
                             break;
                         }
-                        case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
-                            CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
-                            ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
-                            Map<String, List<Integer>> positionMap = new HashMap<>();
-                            for (Variant variant : variants) {
-                                if (!positionMap.containsKey(variant.getChromosome())) {
-                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
-                                }
-                                positionMap.get(variant.getChromosome()).add(variant.getStart());
-                                if (positionMap.get(variant.getChromosome()).size() >= 200) {
-                                    CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
-                                            .getMissenseVariantFunctionalScores(variant.getChromosome(),
-                                                    positionMap.get(variant.getChromosome()), null, dataRelease);
-                                    counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
-                                    positionMap.put(variant.getChromosome(), new ArrayList<>());
-                                }
-                            }
-
-                            // Process map
-                            for (Map.Entry<String, List<Integer>> entry : positionMap.entrySet()) {
-                                if (CollectionUtils.isEmpty(entry.getValue())) {
-                                    continue;
-                                }
-                                CellBaseDataResult<MissenseVariantFunctionalScore> results = proteinManager
-                                        .getMissenseVariantFunctionalScores(entry.getKey(), entry.getValue(), null, dataRelease);
-                                counter += writeExportedData(results.getResults(), "missense_variation_functional_score", serializer);
-                            }
-                            serializer.close();
-
-                            counterMsg = counter + " missense variation functional scores";
-                            break;
-                        }
                         case EtlCommons.CONSERVATION_DATA: {
                             // Export data
                             CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
@@ -271,7 +237,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " proteins";
                             break;
                         }
-                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA: {
+                        case EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA: {
                             ProteinManager proteinManager = managerFactory.getProteinManager(species, assembly);
                             Map<String, List<String>> transcriptsMap = new HashMap<>();
                             for (Gene gene : genes) {
@@ -290,10 +256,10 @@ public class ExportCommandExecutor extends CommandExecutor {
                             }
                             serializer.close();
 
-                            counterMsg = counter + " protein functional predictions";
+                            counterMsg = counter + " protein substitution predictions";
                             break;
                         }
-                        case EtlCommons.CLINICAL_VARIANTS_DATA: {
+                        case EtlCommons.CLINICAL_VARIANT_DATA: {
                             counter = exportClinicalVariantData(regions);
                             counterMsg = counter + " clinical variants";
                             break;
@@ -309,7 +275,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                             counterMsg = counter + " repeats";
                             break;
                         }
-                        case OBO_DATA: {
+                        case ONTOLOGY_DATA: {
                             counter = exportOntologyData();
                             counterMsg = counter + " ontology items";
                             break;
@@ -424,7 +390,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
     private int exportClinicalVariantData(List<Region> regions) throws CellBaseException, QueryException, IllegalAccessException,
             IOException {
-        String baseFilename = CLINICAL_VARIANTS_DATA + ".full";
+        String baseFilename = CLINICAL_VARIANT_DATA + ".full";
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, baseFilename);
         ClinicalManager clinicalManager = managerFactory.getClinicalManager(species, assembly);
         ClinicalVariantQuery query = new ClinicalVariantQuery();
@@ -449,7 +415,7 @@ public class ExportCommandExecutor extends CommandExecutor {
 
     private int exportOntologyData() throws CellBaseException, IOException {
         int counter = 0;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, OBO_DATA);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, ONTOLOGY_DATA);
         OntologyManager ontologyManager = managerFactory.getOntologyManager(species, assembly);
         CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(new OntologyQuery());
         while (iterator.hasNext()) {
