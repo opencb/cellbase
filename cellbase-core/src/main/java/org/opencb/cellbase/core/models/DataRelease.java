@@ -21,14 +21,9 @@ import java.util.*;
 public class DataRelease {
     private int release;
     private String date;
-    /**
-     * @deprecated it is maintained to back-compatibility with previous CellBase versions to v5.5
-     */
-    @Deprecated
-    private boolean active;
     private List<String> activeByDefaultIn;
     private Map<String, String> collections;
-    private List<DataReleaseSource> sources;
+    private List<DataSource> sources;
 
     public DataRelease() {
         this.activeByDefaultIn = Collections.emptyList();
@@ -37,7 +32,7 @@ public class DataRelease {
     }
 
     public DataRelease(int release, String date, List<String> activeByDefaultIn, Map<String, String> collections,
-                       List<DataReleaseSource> sources) {
+                       List<DataSource> sources) {
         this.release = release;
         this.date = date;
         this.activeByDefaultIn = activeByDefaultIn;
@@ -75,15 +70,6 @@ public class DataRelease {
         return this;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public DataRelease setActive(boolean active) {
-        this.active = active;
-        return this;
-    }
-
     public List<String> getActiveByDefaultIn() {
         return activeByDefaultIn;
     }
@@ -102,11 +88,11 @@ public class DataRelease {
         return this;
     }
 
-    public List<DataReleaseSource> getSources() {
+    public List<DataSource> getSources() {
         return sources;
     }
 
-    public DataRelease setSources(List<DataReleaseSource> sources) {
+    public DataRelease setSources(List<DataSource> sources) {
         this.sources = sources;
         return this;
     }

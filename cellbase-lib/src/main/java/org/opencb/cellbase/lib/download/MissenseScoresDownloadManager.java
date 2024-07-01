@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
     public MissenseScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -34,23 +36,34 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadRevel());
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        DownloadFile downloadFile = downloadRevel();
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 
-    public DownloadFile downloadRevel() throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading Revel data ...");
-
-            Path missensePredictionScore = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-            Files.createDirectories(missensePredictionScore);
-
-            String url = configuration.getDownload().getRevel().getHost();
-
-            saveVersionData(EtlCommons.MISSENSE_VARIATION_SCORE_DATA, "Revel", null, getTimeStamp(),
-                    Collections.singletonList(url), missensePredictionScore.resolve("revelVersion.json"));
-            return downloadFile(url, missensePredictionScore.resolve("revel_grch38_all_chromosomes.csv.zip").toString());
+    public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+        if (!speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
+            logger.info("{}/{} not supported for species {}", getDataCategory(REVEL_DATA), getDataName(REVEL_DATA),
+                    speciesConfiguration.getScientificName());
+            return null;
         }
-        return null;
+
+        // Create the REVEL download path
+        Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+        Files.createDirectories(revelDownloadPath);
+
+        // Download REVEL and save data source
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_DATA,
+                revelDownloadPath);
+
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+
+        return downloadFile;
     }
 }

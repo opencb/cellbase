@@ -134,10 +134,10 @@ our $ENSEMBL_GENOMES_PORT = "4157";
 our $ENSEMBL_GENOMES_USER = "anonymous";
 
 ## Vertebrates
-our $HOMO_SAPIENS_CORE = "homo_sapiens_core_110_38";
-our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_110_38";
-our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_110_38";
-our $HOMO_SAPIENS_COMPARA = "homo_sapiens_compara_110_38";
+our $HOMO_SAPIENS_CORE = "homo_sapiens_core_111_38";
+our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_111_38";
+our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_111_38";
+our $HOMO_SAPIENS_COMPARA = "homo_sapiens_compara_111_38";
 #our $HOMO_SAPIENS_CORE = "homo_sapiens_core_78_38";
 #our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_78_38";
 #our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_78_38";

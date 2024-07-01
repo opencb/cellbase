@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.*;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -54,12 +55,14 @@ public class RefSeqGeneBuilderTest {
     public void init() throws Exception {
         try {
             Path geneDirectoryPath = Paths.get(RefSeqGeneBuilderTest.class.getResource("/gene_refseq").toURI());
+            Path configurationPath = Paths.get(RefSeqGeneBuilderTest.class.getResource("configuration.test.yml").toURI());
             // put the results in /tmp
             CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "refseq",
                     true);
             SpeciesConfiguration species = new SpeciesConfiguration("hsapiens", "Homo sapiens",
                     "human", null, null, null);
-            geneParser = new RefSeqGeneBuilder(geneDirectoryPath, species, serializer);
+            CellBaseConfiguration configuration = CellBaseConfiguration.load(configurationPath);
+            geneParser = new RefSeqGeneBuilder(geneDirectoryPath, species, configuration, serializer);
             geneParser.parse();
             jsonObjectMapper = new ObjectMapper();
             jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);

@@ -16,63 +16,71 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.pubmed.PubMedParser;
 import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticle;
 import org.opencb.biodata.formats.pubmed.v233jaxb.PubmedArticleSet;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.download.PubMedDownloadManager;
 import org.opencb.commons.utils.FileUtils;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.getDataName;
+
 public class PubMedBuilder extends CellBaseBuilder {
 
-    private Path pubmedDir;
-    private CellBaseFileSerializer fileSerializer;
+    private Path pubMedDownloadPath;
+    private CellBaseConfiguration configuration;
 
-    public PubMedBuilder(Path pubmedDir, CellBaseFileSerializer serializer) {
+    public PubMedBuilder(Path pubMedDownloadPath, CellBaseFileSerializer serializer, CellBaseConfiguration configuration) {
         super(serializer);
-
-        this.fileSerializer = serializer;
-        this.pubmedDir = pubmedDir;
-
-        logger = LoggerFactory.getLogger(PubMedBuilder.class);
+        this.pubMedDownloadPath = pubMedDownloadPath;
+        this.configuration = configuration;
     }
 
     @Override
     public void parse() throws Exception {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PUBMED_DATA));
+
         // Check input folder
-        FileUtils.checkPath(pubmedDir);
+        FileUtils.checkPath(pubMedDownloadPath);
 
-        logger.info("Parsing PubMed files...");
-
-        for (File file : pubmedDir.toFile().listFiles()) {
-            if (file.isFile() && (file.getName().endsWith("gz") || file.getName().endsWith("xml"))) {
-                String name = file.getName().split("\\.")[0];
-
-
-                ObjectWriter objectWriter = new ObjectMapper().writerFor(PubmedArticle.class);
-                PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) PubMedParser.loadXMLInfo(file.getAbsolutePath());
-
-                List<Object> objects = pubmedArticleSet.getPubmedArticleOrPubmedBookArticle();
-                logger.info("Parsing PubMed file {} of {} articles ...", file.getName(), objects.size());
-                int counter = 0;
-                for (Object object : objects) {
-                    PubmedArticle pubmedArticle = (PubmedArticle) object;
-                    fileSerializer.serialize(pubmedArticle, name);
-                    if (++counter % 2000 == 0) {
-                        logger.info("\t\t" + counter + " articles");
-                    }
-                }
-                fileSerializer.close();
-                logger.info("\t\tDone: " + counter + " articles.");
+        // Check PubMed files before parsing them
+        List<String> pubMedFilenames = PubMedDownloadManager.getPubMedFilenames(configuration.getDownload().getPubmed());
+        for (String pubMedFilename : pubMedFilenames) {
+            Path pubMedPath = pubMedDownloadPath.resolve(pubMedFilename);
+            if (!Files.exists(pubMedPath)) {
+                throw new CellBaseException("Expected PubMed file " + pubMedFilename + ", but it was not found at " + pubMedDownloadPath);
             }
         }
 
-        logger.info("Parsing PubMed files finished.");
+        for (String pubMedFilename : pubMedFilenames) {
+            Path pubMedPath = pubMedDownloadPath.resolve(pubMedFilename);
+            String basename = pubMedFilename.split("\\.")[0];
+
+            PubmedArticleSet pubmedArticleSet = (PubmedArticleSet) PubMedParser.loadXMLInfo(pubMedPath.toAbsolutePath().toString());
+
+            List<Object> objects = pubmedArticleSet.getPubmedArticleOrPubmedBookArticle();
+            logger.info(PARSING_LOG_MESSAGE, pubMedPath);
+            int counter = 0;
+            for (Object object : objects) {
+                PubmedArticle pubmedArticle = (PubmedArticle) object;
+                ((CellBaseFileSerializer) serializer).serialize(pubmedArticle, basename);
+                if (++counter % 2000 == 0) {
+                    logger.info("{} articles", counter);
+                }
+            }
+            serializer.close();
+
+            String logMsg = pubMedPath + " (" + counter + " articles)";
+            logger.info(PARSING_DONE_LOG_MESSAGE, logMsg);
+        }
+
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PUBMED_DATA));
     }
 }

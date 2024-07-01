@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -46,9 +47,10 @@ public class RepeatsBuilderTest extends GenericBuilderTest<Repeat> {
 
     @Test
     public void testParse() throws Exception {
+        CellBaseConfiguration configuration = CellBaseConfiguration.load(getClass().getResourceAsStream("configuration.test.yaml"));
         Path repeatsFilesDir = Paths.get(getClass().getResource("/repeats").getPath());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "repeats.test");
-        (new RepeatsBuilder(repeatsFilesDir, serializer)).parse();
+        (new RepeatsBuilder(repeatsFilesDir, serializer, configuration)).parse();
         serializer.close();
         assertEquals(loadRepeatSet(Paths.get(getClass().getResource("/repeats/repeats.test.json.gz").getFile())),
                 loadRepeatSet(Paths.get("/tmp/repeats.test.json.gz")));

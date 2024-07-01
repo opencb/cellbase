@@ -40,7 +40,7 @@ public class Downloader {
 
     public List<DownloadFile> downloadGenome() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
-        return manager.download();
+        return manager.downloadReferenceGenome();
     }
 
     public List<DownloadFile> downloadGene() throws IOException, CellBaseException, InterruptedException {
@@ -89,6 +89,11 @@ public class Downloader {
         return manager.download();
     }
 
+    public List<DownloadFile> downloadSpliceScores() throws IOException, CellBaseException, InterruptedException {
+        SpliceScoreDownloadManager manager = new SpliceScoreDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
+
     public List<DownloadFile> downloadPubMed() throws IOException, CellBaseException, InterruptedException {
         PubMedDownloadManager manager = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
@@ -96,6 +101,11 @@ public class Downloader {
 
     public List<DownloadFile> downloadPharmKGB() throws IOException, CellBaseException, InterruptedException {
         PharmGKBDownloadManager manager = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.download();
+    }
+
+    public List<DownloadFile> downloadPolygenicScores() throws IOException, CellBaseException, InterruptedException {
+        PgsDownloadManager manager = new PgsDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
 }

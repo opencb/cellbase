@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -41,6 +42,8 @@ public class ConservationBuilderTest {
 
     @Test
     public void testParse() throws Exception {
+        CellBaseConfiguration configuration = CellBaseConfiguration.load(getClass().getResourceAsStream("configuration.test.yaml"));
+
         Path conservationDir = Paths.get(ConservationBuilderTest.class.getResource("/conservation").toURI());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gerp.test");
         (new ConservationBuilder(conservationDir, BATCH_SIZE, serializer)).parse();

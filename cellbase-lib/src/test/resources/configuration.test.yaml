@@ -85,12 +85,23 @@ download:
     host: http://docm.genome.wustl.edu
   dgv:
     host: http://dgv.tcag.ca/v106/docs
+
   simpleRepeats:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      SIMPLE_REPEATS: goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
   windowMasker:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      WINDOW_MASKER: goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
   genomicSuperDups:
-    host: http://hgdownload.cse.ucsc.edu/goldenPath
+    host: http://hgdownload.cse.ucsc.edu/
+    files:
+      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
+      GENOMIC_SUPER_DUPS: goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
+
   gwasCatalog:
     host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv
   hpo:
