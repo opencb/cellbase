@@ -16,13 +16,15 @@
 
 package org.opencb.cellbase.lib.download;
 
+import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.commons.exec.Command;
+import org.opencb.commons.utils.DockerUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,21 +62,29 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         return Collections.singletonList(downloadFile);
     }
 
-    public void downloadGenomeInfo() throws IOException, InterruptedException, CellBaseException {
+    public void downloadGenomeInfo() throws IOException, CellBaseException {
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
         Path sequenceFolder = downloadFolder.resolve(GENOME_DATA);
         Files.createDirectories(sequenceFolder);
 
-        String s = "docker run --mount type=bind,source=\"" + sequenceFolder.toAbsolutePath() + "\",target=\"/tmp\" "
-                + "opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/genome_info.pl "
-                + "--species \"Homo sapiens\" --outfile \"/tmp/genome_info.json\"";
-        logger.info(s);
-        logger.info(sequenceFolder.toAbsolutePath().toString());
-        Command command = new Command(s);
-        command.run();
+        String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
+        try {
+            // Build command line to run Perl script via docker image
+            // Output binding
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
+                    sequenceFolder.toAbsolutePath().toString(), "/tmp");
 
-        // FIXME Joaquin please use DockerUtils.
-//        DockerUtils.run("opencb/cellbase-builder:6.2.0-SNAPSHOT", sequenceFolder.toAbsolutePath(), "/tmp" )
+            // Params
+            String params = "/opt/cellbase/scripts/ensembl-scripts/genome_info.pl"
+                    + " --species \"Homo sapiens\""
+                    + " --outfile \"" + outputBinding.getValue() + "/genome_info.json\"";
+
+            // Execute perl script in docker
+            DockerUtils.run(dockerImage, null, outputBinding, params, null);
+        } catch (Exception e) {
+            throw new CellBaseException("Error executing Perl script from Docker " + dockerImage, e);
+        }
+
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
     }
 
