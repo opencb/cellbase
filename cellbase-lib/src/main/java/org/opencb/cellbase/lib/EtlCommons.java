@@ -47,6 +47,10 @@ public final class EtlCommons {
     // Commons
     public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
     public static final String HSAPIENS_NAME= "hsapiens";
+    public static final String MUS_MUSCULUS_NAME= "Mus musculus";
+    public static final String RATTUS_NORVEGICUS_NAME= "Rattus norvegicus";
+    public static final String BOS_TAURUS_NAME= "Bos taurus";
+    public static final String DANIO_RERIO_NAME= "Danio rerio";
 
     public static final String GRCH38_NAME = "GRCh38";
     public static final String GRCH37_NAME = "GRCh37";
@@ -88,6 +92,7 @@ public final class EtlCommons {
 
     // Genome
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_INFO_DATA = "genome_info";
 
     // Gene
     public static final String GENE_DATA = "gene";
@@ -347,6 +352,7 @@ public final class EtlCommons {
         dataNamesMap.put(ENSEMBL_DATA, "Ensembl");
         dataNamesMap.put(REFSEQ_DATA, "RefSeq");
         dataNamesMap.put(GENOME_DATA, "Genome");
+        dataNamesMap.put(GENOME_INFO_DATA, "Genome Info");
         dataNamesMap.put(GENE_DATA, "Gene");
         dataNamesMap.put(GENE_ANNOTATION_DATA, "Gene Annotation");
         dataNamesMap.put(MANE_SELECT_DATA, "MANE Select");

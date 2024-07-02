@@ -14,11 +14,6 @@ databases:
     host: "${CELLBASE.DB.MONGODB.HOST}"
     user: "${CELLBASE.DB.USER}"
     password: "${CELLBASE.DB.PASSWORD}"
-    shards:
-      - id: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
-        nodes: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
-      - id: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"
-        nodes: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
     options:
       authenticationDatabase: "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}"
       readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
@@ -26,15 +21,6 @@ databases:
       connectionsPerHost: 20
       sslEnabled: false
       enableSharding: true
-  neo4j:
-    hsapiens:
-      host: "${CELLBASE.DB.NEO4J.HOST}"
-      user: "${CELLBASE.DB.USER}"
-      password: "${CELLBASE.DB.PASSWORD}"
-    mmusculus:
-      host: "${CELLBASE.DB.NEO4J.HOST}"
-      user: "${CELLBASE.DB.USER}"
-      password: "${CELLBASE.DB.PASSWORD}"
 server:
   rest:
     port: 9090
@@ -162,30 +148,6 @@ species:
         - repeats
         - variation_functional_score
         - splice_score
-      shards:
-        - collection: "variation"
-          key:
-            - chromosome
-            - start
-            - end
-          rangeKey: "chromosome"
-          zones:
-            - name: "zone0"
-              shardRanges:
-                - minimum: "1"
-                  maximum: "10"
-                - minimum: "2"
-                  maximum: "20"
-                - minimum: "3"
-                  maximum: "9"
-            - name: "zone1"
-              shardRanges:
-                - minimum: "10"
-                  maximum: "2"
-                - minimum: "20"
-                  maximum: "3"
-                - minimum: "9"
-                  maximum: "Z"
     - id: mmusculus
       scientificName: Mus musculus
       assemblies:

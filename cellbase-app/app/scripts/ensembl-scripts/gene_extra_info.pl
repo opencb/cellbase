@@ -16,6 +16,8 @@ my $help = '0';
 ####################################################################
 ## Parsing command line options	####################################
 ####################################################################
+##docker run -it --mount type=bind,source=/tmp,target=/tmp opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/gene_extra_info.pl -s "Mus musculus" -o /tmp
+
 # USAGE: ./gene_extra_info.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
@@ -50,8 +52,8 @@ use Bio::EnsEMBL::DBSQL::DBAdaptor;
 
 if ($phylo eq "" || $phylo eq "vertebrate") {
 	print ("In vertebrates section\n");
-	if ($species eq "Homo sapiens" && $assembly eq "GRCh38") {
-		print ("Human selected, assembly ".$assembly." selected, connecting to port ".$ENSEMBL_PORT."\n");
+	if ($species eq "Homo sapiens" || $species eq "Mus musculus") {
+		print ($species." selected, assembly ".$assembly." selected, connecting to port ".$ENSEMBL_PORT."\n");
 		Bio::EnsEMBL::Registry->load_registry_from_db(
 			-host     => $ENSEMBL_HOST,
 			-user     => $ENSEMBL_USER,

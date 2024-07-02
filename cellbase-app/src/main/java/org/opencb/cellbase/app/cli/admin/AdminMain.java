@@ -25,9 +25,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-/**
- * Created by imedina on 03/02/15.
- */
+
 public class AdminMain {
 
     public static void main(String[] args) {
@@ -63,14 +61,14 @@ public class AdminMain {
                     case "build":
                         commandExecutor = new BuildCommandExecutor(cliOptionsParser.getBuildCommandOptions());
                         break;
+                    case "load":
+                        commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
+                        break;
                     case "data-release":
                         commandExecutor = new DataReleaseCommandExecutor(cliOptionsParser.getDataReleaseCommandOptions());
                         break;
                     case "api-key":
                         commandExecutor = new ApiKeyCommandExecutor(cliOptionsParser.getApiKeyCommandOptions());
-                        break;
-                    case "load":
-                        commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
                     case "export":
                         commandExecutor = new ExportCommandExecutor(cliOptionsParser.getExportCommandOptions());
@@ -78,14 +76,11 @@ public class AdminMain {
                     case "index":
                         commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());
                         break;
-                    case "install":
-                        commandExecutor = new InstallCommandExecutor(cliOptionsParser.getInstallCommandOptions());
+                    case "validate":
+                        commandExecutor = new ValidationCommandExecutor(cliOptionsParser.getValidationCommandOptions());
                         break;
                     case "server":
                         commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
-                        break;
-                    case "validate":
-                        commandExecutor = new ValidationCommandExecutor(cliOptionsParser.getValidationCommandOptions());
                         break;
                     default:
                         break;

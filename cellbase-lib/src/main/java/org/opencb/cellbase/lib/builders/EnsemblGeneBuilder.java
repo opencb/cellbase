@@ -134,20 +134,23 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         geneDescriptionFile = checkFile(props, ENSEMBL_DESCRIPTION_FILE_ID, downloadPath.getParent(), "Ensembl Description").toPath();
         xrefsFile = checkFile(props, ENSEMBL_XREFS_FILE_ID, downloadPath.getParent(), "Ensembl Xrefs").toPath();
         ensemblCanonicalFile = checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical").toPath();
-        tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
-        eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
-        maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        cancerHostpotFile = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+            maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            cancerHostpotFile = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        }
 
         // Check regulation files
         // Motif features

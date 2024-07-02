@@ -52,7 +52,7 @@ public class MongoDBManager {
     public static final String DBNAME_SEPARATOR = "_";
 
     private MongoDataStoreManager mongoDataStoreManager;
-    private CellBaseConfiguration cellBaseConfiguration;
+    private final CellBaseConfiguration cellBaseConfiguration;
 
     private Logger logger;
 
@@ -105,13 +105,13 @@ public class MongoDBManager {
         } catch (CellBaseException e) {
             e.printStackTrace();
             logger.error("Species name is not valid: '{}'. Valid species: {}", speciesStr,
-                    String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                    String.join(",", SpeciesUtils.getAllSpecies(cellBaseConfiguration).stream().map((tmpSpeciesObject)
+                                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
                             .collect(Collectors.toList())));
             throw new InvalidParameterException("Species name is not valid: '" + speciesStr + "'. Please provide one"
                     + " of supported species: {"
-                    + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                    + String.join(",", SpeciesUtils.getAllSpecies(cellBaseConfiguration).stream().map((tmpSpeciesObject)
+                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
                     .collect(Collectors.toList())) + "}");
         }
     }

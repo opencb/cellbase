@@ -18,12 +18,12 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -40,21 +40,21 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
-        if (!speciesHasInfoToDownload(speciesConfiguration, REGULATION_DATA)) {
-            logger.info("{} not supported for the species {}", getDataName(REGULATION_DATA), speciesConfiguration.getScientificName());
-            return Collections.emptyList();
-        }
-        regulationFolder = downloadFolder.resolve(REGULATION_DATA);
-        Files.createDirectories(regulationFolder);
-
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
-        downloadFiles.add(downloadMiRTarBase());
-        downloadFiles.add(downloadMirna());
+        // Check if species is supported
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), REGULATION_DATA)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
+            regulationFolder = downloadFolder.resolve(REGULATION_DATA);
+            Files.createDirectories(regulationFolder);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
+            downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
+            downloadFiles.add(downloadMiRTarBase());
+            downloadFiles.add(downloadMirna());
+
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
+        }
+
         return downloadFiles;
     }
 
@@ -78,11 +78,13 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
                 regulationFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
+
         // And now the index file
         downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID, null,
                 regulationFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
+
         // Save data source (name, category, version,...)
         saveDataSource(MOTIF_FEATURES_DATA, "(" + getDataName(ENSEMBL_DATA) + " " + ensemblVersion + ")", getTimeStamp(), urls,
                 regulationFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)));
@@ -101,12 +103,16 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     }
 
     private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+        DownloadFile downloadFile = null;
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        if (configuration.getDownload().getMiRTarBase().getFiles().containsKey(prefixId + MIRTARBASE_FILE_ID)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
 
-        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(), MIRTARBASE_FILE_ID,
-                MIRTARBASE_DATA, regulationFolder);
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(),
+                    prefixId + MIRTARBASE_FILE_ID, MIRTARBASE_DATA, regulationFolder);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+        }
         return downloadFile;
     }
 }

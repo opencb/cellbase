@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,32 +37,37 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+        DownloadFile downloadFile = null;
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), MISSENSE_VARIATION_SCORE_DATA)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
 
-        DownloadFile downloadFile = downloadRevel();
+            downloadFile = downloadRevel();
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+        }
 
         return Collections.singletonList(downloadFile);
     }
 
     public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
-        if (!speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
-            logger.info("{}/{} not supported for species {}", getDataCategory(REVEL_DATA), getDataName(REVEL_DATA),
-                    speciesConfiguration.getScientificName());
-            return null;
+        DownloadFile downloadFile = null;
+
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+
+        // Check if the species is supported
+        if (configuration.getDownload().getRevel().getFiles().containsKey(prefixId + REVEL_FILE_ID)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+
+            // Create the REVEL download path
+            Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+            Files.createDirectories(revelDownloadPath);
+
+            // Download REVEL and save data source
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), prefixId + REVEL_FILE_ID, REVEL_DATA,
+                    revelDownloadPath);
+
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
         }
-
-        // Create the REVEL download path
-        Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
-        Files.createDirectories(revelDownloadPath);
-
-        // Download REVEL and save data source
-        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_DATA,
-                revelDownloadPath);
-
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
 
         return downloadFile;
     }
