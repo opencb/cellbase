@@ -59,8 +59,7 @@ public class RefSeqGeneBuilderTest {
             // put the results in /tmp
             CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "refseq",
                     true);
-            SpeciesConfiguration species = new SpeciesConfiguration("hsapiens", "Homo sapiens",
-                    "human", null, null, null);
+            SpeciesConfiguration species = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null);
             CellBaseConfiguration configuration = CellBaseConfiguration.load(configurationPath);
             geneParser = new RefSeqGeneBuilder(geneDirectoryPath, species, configuration, serializer);
             geneParser.parse();

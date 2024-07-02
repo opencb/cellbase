@@ -103,13 +103,14 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         }
 
         // Check RefSeq files
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
         DownloadProperties.URLProperties props = configuration.getDownload().getRefSeq();
-        gtfFile = checkFile(props, REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath();
-        proteinFastaFile = checkFile(props, REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA").toPath();
-        cdnaFastaFile = checkFile(props, REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath();
+        gtfFile = checkFile(props, prefixId + REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath();
+        proteinFastaFile = checkFile(props, prefixId + REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA").toPath();
+        cdnaFastaFile = checkFile(props, prefixId + REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath();
 
         // Check genome FASTA file
-        String genomeGzFilename = Paths.get(props.getFiles().get(REFSEQ_GENOMIC_FNA_FILE_ID)).getFileName().toString();
+        String genomeGzFilename = Paths.get(props.getFiles().get(prefixId + REFSEQ_GENOMIC_FNA_FILE_ID)).getFileName().toString();
         fastaFile = downloadPath.resolve(genomeGzFilename);
         if (Files.exists(fastaFile)) {
             // Need to be gunzip-ed
@@ -132,16 +133,17 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
 
         // Check common files
         props = configuration.getDownload().getEnsembl().getUrl();
-        tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
-        eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
-
-        maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+            maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        }
 
         // Check regulation files
         // mirtarbase

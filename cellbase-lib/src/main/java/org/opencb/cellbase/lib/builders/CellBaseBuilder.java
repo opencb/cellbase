@@ -39,9 +39,7 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-/**
- * Created by imedina on 30/08/14.
- */
+
 public abstract class CellBaseBuilder {
 
     protected CellBaseSerializer serializer;
@@ -80,6 +78,15 @@ public abstract class CellBaseBuilder {
                 logger.error("Error closing serializer:\n" + StringUtils.join(e.getStackTrace(), "\n"));
             }
         }
+    }
+
+    protected String getConfigurationFileIdPrefix(String scientificSpecies) {
+        String prefix = "";
+        if (StringUtils.isNotEmpty(scientificSpecies) && !scientificSpecies.equals("Homo sapiens") && scientificSpecies.contains(" ")) {
+            char c = scientificSpecies.charAt(0);
+            prefix = (c + scientificSpecies.split(" ")[1] + "_").toUpperCase();
+        }
+        return prefix;
     }
 
     protected File checkFile(DownloadProperties.URLProperties props, String fileId, Path targetPath, String name) throws CellBaseException {

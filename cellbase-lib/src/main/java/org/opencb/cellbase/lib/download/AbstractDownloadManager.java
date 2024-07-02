@@ -134,13 +134,22 @@ public abstract class AbstractDownloadManager {
 
     public abstract List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException;
 
-    protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
+    protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String data) {
         boolean hasInfo = true;
-        if (sp.getData() == null || !sp.getData().contains(info)) {
-            logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), info);
+        if (sp.getData() == null || !sp.getData().contains(data)) {
+            logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), data);
             hasInfo = false;
         }
         return hasInfo;
+    }
+
+    protected String getConfigurationFileIdPrefix(String scientificSpecies) {
+        String prefix = "";
+        if (StringUtils.isNotEmpty(scientificSpecies) && !scientificSpecies.equals("Homo sapiens") && scientificSpecies.contains(" ")) {
+            char c = scientificSpecies.charAt(0);
+            prefix = (c + scientificSpecies.split(" ")[1] + "_").toUpperCase();
+        }
+        return prefix;
     }
 
     protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, Path outPath)

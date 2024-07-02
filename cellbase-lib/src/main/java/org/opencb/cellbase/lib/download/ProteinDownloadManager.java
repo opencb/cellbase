@@ -18,12 +18,12 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -44,30 +44,34 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      * @throws CellBaseException if there is an error in the CelllBase configuration file
      */
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
-        if (!speciesHasInfoToDownload(speciesConfiguration, PROTEIN_DATA)) {
-            logger.info("{} not supported for the species {}", getDataName(PROTEIN_DATA), speciesConfiguration.getScientificName());
-            return Collections.emptyList();
-        }
-        Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
-        Files.createDirectories(proteinFolder);
-
-        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Uniprot
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_DATA, proteinFolder);
-        downloadFiles.add(downloadFile);
+        // Check if the species is supported
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PROTEIN_DATA)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
+            Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
+            Files.createDirectories(proteinFolder);
 
-        // InterPro
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_DATA, proteinFolder);
-        downloadFiles.add(downloadFile);
+            DownloadFile downloadFile;
 
-        // Intact
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_DATA, proteinFolder);
-        downloadFiles.add(downloadFile);
+            // Uniprot
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(),
+                    UNIPROT_FILE_ID, UNIPROT_DATA, proteinFolder);
+            downloadFiles.add(downloadFile);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
+            // InterPro
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(),
+                    INTERPRO_FILE_ID, INTERPRO_DATA, proteinFolder);
+            downloadFiles.add(downloadFile);
+
+            // Intact
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(),
+                    INTACT_FILE_ID, INTACT_DATA, proteinFolder);
+            downloadFiles.add(downloadFile);
+
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
+        }
+
         return downloadFiles;
     }
 }

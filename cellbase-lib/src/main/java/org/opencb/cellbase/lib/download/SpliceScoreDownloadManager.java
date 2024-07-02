@@ -37,12 +37,14 @@ public class SpliceScoreDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(SPLICE_SCORE_DATA));
+        // Check if the species is supported
         if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info("{} not supported for the species {}", getDataName(SPLICE_SCORE_DATA),
                     speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
+
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(SPLICE_SCORE_DATA));
 
         // Create splice score directory
         Path spliceScorePath = downloadFolder.resolve(SPLICE_SCORE_DATA).toAbsolutePath();

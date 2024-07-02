@@ -16,15 +16,13 @@
 
 package org.opencb.cellbase.lib.download;
 
-import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.commons.exec.Command;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +37,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        downloadGenomeInfo();
         return downloadReferenceGenome();
     }
 
@@ -61,140 +60,22 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         return Collections.singletonList(downloadFile);
     }
 
-    /**
-     * This method downloads bith PhastCons and PhyloP data from UCSC for Human and Mouse species.
-     * @return list of files downloaded
-     * @throws IOException if there is an error writing to a file
-     * @throws InterruptedException if there is an error downloading files
-     * @throws CellBaseException if there is an error executing the command line
-     */
-    public List<DownloadFile> downloadConservation() throws IOException, InterruptedException, CellBaseException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, CONSERVATION_DATA)) {
-            return Collections.emptyList();
-        }
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
-            Path conservationFolder = downloadFolder.resolve(CONSERVATION_DATA);
+    public void downloadGenomeInfo() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
+        Path sequenceFolder = downloadFolder.resolve(GENOME_DATA);
+        Files.createDirectories(sequenceFolder);
 
-            Files.createDirectories(conservationFolder);
-            Files.createDirectories(conservationFolder.resolve(GERP_DATA));
-            Files.createDirectories(conservationFolder.resolve(PHASTCONS_DATA));
-            Files.createDirectories(conservationFolder.resolve(PHYLOP_DATA));
+        String s = "docker run --mount type=bind,source=\"" + sequenceFolder.toAbsolutePath() + "\",target=\"/tmp\" "
+                + "opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/genome_info.pl "
+                + "--species \"Homo sapiens\" --outfile \"/tmp/genome_info.json\"";
+        logger.info(s);
+        logger.info(sequenceFolder.toAbsolutePath().toString());
+        Command command = new Command(s);
+        command.run();
 
-            String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-                    "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M", };
-
-            if (assemblyConfiguration.getName().equalsIgnoreCase(GRCH38_NAME)) {
-                String filename;
-                Path outputPath;
-                String assembly = HG38_NAME;
-                List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
-                List<String> phyloPUrls = new ArrayList<>(chromosomes.length);
-                // Downloading PhastCons and PhyloP
-                logger.info(DOWNLOADING_LOG_MESSAGE, (getDataName(PHASTCONS_DATA) + "/" + getDataName(PHYLOP_DATA)));
-                for (String chromosome : chromosomes) {
-                    // PhastCons
-                    String phastConsUrl = configuration.getDownload().getPhastCons().getHost() + configuration.getDownload().getPhastCons()
-                            .getFiles().get(PHASTCONS_FILE_ID).replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
-                            .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
-                    filename = Paths.get(phastConsUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
-                    logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phastConsUrl, outputPath);
-                    downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
-                    logger.info(OK_LOG_MESSAGE);
-                    phastconsUrls.add(phastConsUrl);
-
-                    // PhyloP
-                    String phyloPUrl = configuration.getDownload().getPhylop().getHost() + configuration.getDownload().getPhylop()
-                            .getFiles().get(PHYLOP_FILE_ID).replaceAll(PUT_ASSEMBLY_HERE_MARK, assembly)
-                            .replace(PUT_CHROMOSOME_HERE_MARK, chromosome);
-                    filename = Paths.get(phyloPUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
-                    logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, phyloPUrl, outputPath);
-                    downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
-                    logger.info(OK_LOG_MESSAGE);
-                    phyloPUrls.add(phyloPUrl);
-                }
-
-                // Downloading Gerp
-                logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GERP_DATA));
-                String gerpUrl = configuration.getDownload().getGerp().getHost() + configuration.getDownload().getGerp().getFiles()
-                        .get(GERP_FILE_ID);
-                filename = Paths.get(gerpUrl).getFileName().toString();
-                outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, gerpUrl, outputPath);
-                downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
-                logger.info(OK_LOG_MESSAGE);
-
-
-                // Save data version
-                saveDataSource(PHASTCONS_DATA, configuration.getDownload().getPhastCons().getVersion(), getTimeStamp(), phastconsUrls,
-                        conservationFolder.resolve(getDataVersionFilename(PHASTCONS_DATA)));
-                saveDataSource(PHYLOP_DATA, configuration.getDownload().getPhylop().getVersion(), getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve(getDataVersionFilename(PHYLOP_DATA)));
-                saveDataSource(GERP_DATA, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
-                        Collections.singletonList(gerpUrl), conservationFolder.resolve(getDataVersionFilename(GERP_DATA)));
-            }
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
-        }
-
-        return downloadFiles;
+        // FIXME Joaquin please use DockerUtils.
+//        DockerUtils.run("opencb/cellbase-builder:6.2.0-SNAPSHOT", sequenceFolder.toAbsolutePath(), "/tmp" )
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
     }
 
-    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException, CellBaseException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, REPEATS_DATA)) {
-            return Collections.emptyList();
-        }
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REPEATS_DATA));
-            Path repeatsFolder = downloadFolder.resolve(REPEATS_DATA);
-            Files.createDirectories(repeatsFolder);
-            List<DownloadFile> downloadFiles = new ArrayList<>();
-            String pathParam;
-            if (assemblyConfiguration.getName().equalsIgnoreCase(GRCH38_NAME)) {
-                pathParam = HG38_NAME;
-            } else {
-                logger.error("Please provide a valid human assembly: {}, {}", GRCH37_NAME, GRCH38_NAME);
-                throw new ParameterException("Assembly '" + assemblyConfiguration.getName() + "' is not valid. Please provide "
-                        + "a valid human assembly: " + GRCH37_NAME + ", " + GRCH38_NAME);
-            }
-
-            // Download tandem repeat finder
-            String url = configuration.getDownload().getSimpleRepeats().getHost() + configuration.getDownload().getSimpleRepeats()
-                    .getFiles().get(SIMPLE_REPEATS_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-            Path outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
-            downloadFiles.add(downloadFile(url, outputPath.toString()));
-            logger.info(OK_LOG_MESSAGE);
-            saveDataSource(TRF_DATA, configuration.getDownload().getSimpleRepeats().getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(TRF_DATA)));
-
-            // Download genomic super duplications
-            url = configuration.getDownload().getGenomicSuperDups().getHost() + configuration.getDownload().getGenomicSuperDups()
-                    .getFiles().get(GENOMIC_SUPER_DUPS_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-            outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
-            downloadFiles.add(downloadFile(url, outputPath.toString()));
-            logger.info(OK_LOG_MESSAGE);
-            saveDataSource(GSD_DATA, configuration.getDownload().getGenomicSuperDups().getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(GSD_DATA)));
-
-            // Download WindowMasker
-            if (!pathParam.equalsIgnoreCase(HG19_NAME)) {
-                url = configuration.getDownload().getWindowMasker().getHost() + configuration.getDownload().getWindowMasker().getFiles()
-                        .get(WINDOW_MASKER_FILE_ID).replace(PUT_ASSEMBLY_HERE_MARK, pathParam);
-                outputPath = repeatsFolder.resolve(getFilenameFromUrl(url));
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outputPath);
-                downloadFiles.add(downloadFile(url, outputPath.toString()));
-                logger.info(OK_LOG_MESSAGE);
-                saveDataSource(WM_DATA, configuration.getDownload().getWindowMasker().getVersion(), getTimeStamp(),
-                        Collections.singletonList(url), repeatsFolder.resolve(getDataVersionFilename(WM_DATA)));
-            }
-
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REPEATS_DATA));
-            return downloadFiles;
-        }
-        return Collections.emptyList();
-    }
 }

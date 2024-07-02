@@ -17,6 +17,8 @@ my $help = '0';
 ####################################################################
 ## Parsing command line options ####################################
 ####################################################################
+##docker run -it --mount type=bind,source=/tmp,target=/tmp opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/genome_info.pl --species "Mus musculus" --outfile /tmp
+
 # USAGE: ./genome_info.pl --species "Homo sapiens" --outfile ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line

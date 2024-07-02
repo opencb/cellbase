@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.download;
 
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 
@@ -26,10 +25,10 @@ import java.util.List;
 
 public class Downloader {
 
-    private String species;
-    private String assembly;
-    private Path outputDirectory;
-    private CellBaseConfiguration configuration;
+    private final String species;
+    private final String assembly;
+    private final Path outputDirectory;
+    private final CellBaseConfiguration configuration;
 
     public Downloader(String species, String assembly, Path outputDirectory, CellBaseConfiguration configuration) {
         this.species = species;
@@ -40,7 +39,12 @@ public class Downloader {
 
     public List<DownloadFile> downloadGenome() throws IOException, CellBaseException, InterruptedException {
         GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
-        return manager.downloadReferenceGenome();
+        return manager.download();
+    }
+
+    public List<DownloadFile> downloadRepeats() throws IOException, CellBaseException, InterruptedException {
+        RepeatsDownloadManager manager = new RepeatsDownloadManager(species, assembly, outputDirectory, configuration);
+        return manager.downloadRepeats();
     }
 
     public List<DownloadFile> downloadGene() throws IOException, CellBaseException, InterruptedException {
@@ -48,8 +52,7 @@ public class Downloader {
         return manager.download();
     }
 
-    public List<DownloadFile> downloadRegulation() throws IOException, CellBaseException, InterruptedException,
-            NoSuchMethodException, FileFormatException {
+    public List<DownloadFile> downloadRegulation() throws IOException, CellBaseException, InterruptedException {
         RegulationDownloadManager manager = new RegulationDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }
@@ -60,18 +63,13 @@ public class Downloader {
     }
 
     public List<DownloadFile> downloadConservation() throws IOException, CellBaseException, InterruptedException {
-        GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
+        ConservationDownloadManager manager = new ConservationDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.downloadConservation();
     }
 
     public List<DownloadFile> downloadClinicalVariants() throws IOException, CellBaseException, InterruptedException {
         ClinicalDownloadManager manager = new ClinicalDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
-    }
-
-    public List<DownloadFile> downloadRepeats() throws IOException, CellBaseException, InterruptedException {
-        GenomeDownloadManager manager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
-        return manager.downloadRepeats();
     }
 
     public List<DownloadFile> downloadOntologies() throws IOException, CellBaseException, InterruptedException {

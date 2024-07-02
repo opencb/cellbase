@@ -11,7 +11,7 @@ LABEL org.label-schema.vendor="OpenCB" \
 ## We need to be root to install dependencies
 USER root
 RUN apt-get update -y && \
-    apt-get install -y git default-mysql-client libjson-perl libdbi-perl libdbd-mysql-perl libdbd-mysql-perl libtry-tiny-perl && \
+    apt-get install -y git default-mysql-client libjson-perl libdbi-perl libdbd-mysql-perl libdbd-mysql-perl libtry-tiny-perl libxml-simple-perl liblog-log4perl-perl libxml-parser-perl libxml-dom-perl && \
     mkdir /opt/ensembl && chown cellbase:cellbase /opt/ensembl && \
     rm -rf /var/lib/apt/lists/*
 
@@ -26,6 +26,7 @@ RUN cd /opt/ensembl && \
     git clone https://github.com/Ensembl/ensembl-variation.git && \
     git clone https://github.com/Ensembl/ensembl-funcgen.git && \
     git clone https://github.com/Ensembl/ensembl-compara.git && \
-    git clone https://github.com/Ensembl/ensembl-io.git
+    git clone https://github.com/Ensembl/ensembl-io.git && \
+    git clone --branch cvs/release-0_7 https://github.com/biomart/biomart-perl
 
-ENV PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase/scripts/ensembl-scripts
+ENV PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase/scripts/ensembl-scripts:/opt/ensembl/biomart-perl/lib

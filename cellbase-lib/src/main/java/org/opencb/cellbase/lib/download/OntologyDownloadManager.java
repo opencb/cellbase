@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -30,6 +31,7 @@ import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
+
 public class OntologyDownloadManager extends AbstractDownloadManager {
 
     private static final String DATA_VERSION_FIELD = "data-version:";
@@ -40,51 +42,57 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
-
-        Path oboFolder = downloadFolder.resolve(ONTOLOGY_DATA);
-        Files.createDirectories(oboFolder);
-
-        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // HPO
-        downloadFile = downloadDataSource(configuration.getDownload().getHpoObo(), HPO_OBO_FILE_ID, oboFolder);
-        String version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-        saveDataSource(HPO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                oboFolder.resolve(getDataVersionFilename(HPO_OBO_DATA)));
-        downloadFiles.add(downloadFile);
+        // Check if the species has the data to download
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), ONTOLOGY_DATA)) {
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
 
-        // GO
-        downloadFile = downloadDataSource(configuration.getDownload().getGoObo(), GO_OBO_FILE_ID, oboFolder);
-        version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-        saveDataSource(GO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                oboFolder.resolve(getDataVersionFilename(GO_OBO_DATA)));
-        downloadFiles.add(downloadFile);
+            Path oboFolder = downloadFolder.resolve(ONTOLOGY_DATA);
+            Files.createDirectories(oboFolder);
 
-        // DOID
-        downloadFile = downloadDataSource(configuration.getDownload().getDoidObo(), DOID_OBO_FILE_ID, oboFolder);
-        version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-        saveDataSource(DOID_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                oboFolder.resolve(getDataVersionFilename(DOID_OBO_DATA)));
-        downloadFiles.add(downloadFile);
+            DownloadFile downloadFile;
 
-        // Mondo
-        downloadFile = downloadDataSource(configuration.getDownload().getMondoObo(), MONDO_OBO_FILE_ID, oboFolder);
-        version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-        saveDataSource(MONDO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                oboFolder.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
-        downloadFiles.add(downloadFile);
+            // HPO
+            downloadFile = downloadDataSource(configuration.getDownload().getHpoObo(), HPO_OBO_FILE_ID, oboFolder);
+            String version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+            saveDataSource(HPO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                    oboFolder.resolve(getDataVersionFilename(HPO_OBO_DATA)));
+            downloadFiles.add(downloadFile);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
+            // GO
+            downloadFile = downloadDataSource(configuration.getDownload().getGoObo(), GO_OBO_FILE_ID, oboFolder);
+            version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+            saveDataSource(GO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                    oboFolder.resolve(getDataVersionFilename(GO_OBO_DATA)));
+            downloadFiles.add(downloadFile);
+
+            // DOID
+            downloadFile = downloadDataSource(configuration.getDownload().getDoidObo(), DOID_OBO_FILE_ID, oboFolder);
+            version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+            saveDataSource(DOID_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                    oboFolder.resolve(getDataVersionFilename(DOID_OBO_DATA)));
+            downloadFiles.add(downloadFile);
+
+            // Mondo
+            downloadFile = downloadDataSource(configuration.getDownload().getMondoObo(), MONDO_OBO_FILE_ID, oboFolder);
+            version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+            saveDataSource(MONDO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                    oboFolder.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
+            downloadFiles.add(downloadFile);
+
+            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
+        }
+
         return downloadFiles;
     }
 
     private String getVersionFromOboFile(Path oboPath) throws CellBaseException, IOException {
-        String version = null;
         if (!oboPath.toFile().exists()) {
             throw new CellBaseException("OBO file " + oboPath + " does not exit");
         }
+
+        String version = null;
         try (BufferedReader reader = FileUtils.newBufferedReader(oboPath)) {
             String line;
             while ((line = reader.readLine()) != null) {

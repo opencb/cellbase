@@ -16,11 +16,6 @@ databases:
     host: "${CELLBASE.DB.MONGODB.HOST}"
     user: "${CELLBASE.DB.USER}"
     password: "${CELLBASE.DB.PASSWORD}"
-    shards:
-      - id: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
-        nodes: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
-      - id: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"
-        nodes: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
     options:
       authenticationDatabase: "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}"
       authenticationMechanism: "${CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM}"
@@ -28,18 +23,9 @@ databases:
       replicaSet: "${CELLBASE.DB.MONGODB.REPLICASET}"
       connectionsPerHost: 20
       sslEnabled: false
-#      sslInvalidCertificatesAllowed: true
-#      sslInvalidHostnameAllowed: true
+      #      sslInvalidCertificatesAllowed: true
+      #      sslInvalidHostnameAllowed: true
       enableSharding: false
-  neo4j:
-    hsapiens:
-      host: "${CELLBASE.DB.NEO4J.HOST}"
-      user: "${CELLBASE.DB.USER}"
-      password: "${CELLBASE.DB.PASSWORD}"
-    mmusculus:
-      host: "${CELLBASE.DB.NEO4J.HOST}"
-      user: "${CELLBASE.DB.USER}"
-      password: "${CELLBASE.DB.PASSWORD}"
 server:
   rest:
     port: "${CELLBASE.SERVER.REST.PORT}"
@@ -90,6 +76,18 @@ download:
       GENOMIC_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.fna.gz
       PROTEIN_FAA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_protein.faa.gz
       RNA_FNA: H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz
+      MMUSCULUS_GENOMIC_GTF: M_musculus/annotation_releases/GCF_000001635.27-RS_2024_02/GCF_000001635.27_GRCm39_genomic.gtf.gz
+      MMUSCULUS_GENOMIC_FNA: M_musculus/annotation_releases/GCF_000001635.27-RS_2024_02/GCF_000001635.27_GRCm39_genomic.fna.gz
+      MMUSCULUS_PROTEIN_FAA: M_musculus/annotation_releases/GCF_000001635.27-RS_2024_02/GCF_000001635.27_GRCm39_protein.faa.gz
+      MMUSCULUS_RNA_FNA: M_musculus/annotation_releases/GCF_000001635.27-RS_2024_02/GCF_000001635.27_GRCm39_rna.fna.gz
+      RNORVEGICUS_GENOMIC_GTF: R_norvegicus/annotation_releases/GCF_036323735.1-RS_2024_02/GCF_036323735.1_GRCr8_genomic.gtf.gz
+      RNORVEGICUS_GENOMIC_FNA: R_norvegicus/annotation_releases/GCF_036323735.1-RS_2024_02/GCF_036323735.1_GRCr8_genomic.fna.gz
+      RNORVEGICUS_PROTEIN_FAA: R_norvegicus/annotation_releases/GCF_036323735.1-RS_2024_02/GCF_036323735.1_GRCr8_protein.faa.gz
+      RNORVEGICUS_RNA_FNA: R_norvegicus/annotation_releases/GCF_036323735.1-RS_2024_02/GCF_036323735.1_GRCr8_rna.fna.gz
+      BTAURUS_GENOMIC_GTF: B_taurus/annotation_releases/GCF_002263795.3-RS_2023_09/GCF_002263795.3_ARS-UCD2.0_genomic.gtf.gz
+      BTAURUS_GENOMIC_FNA: B_taurus/annotation_releases/GCF_002263795.3-RS_2023_09/GCF_002263795.3_ARS-UCD2.0_genomic.fna.gz
+      BTAURUS_PROTEIN_FAA: B_taurus/annotation_releases/GCF_002263795.3-RS_2023_09/GCF_002263795.3_ARS-UCD2.0_protein.faa.gz
+      BTAURUS_RNA_FNA: B_taurus/annotation_releases/GCF_002263795.3-RS_2023_09/GCF_002263795.3_ARS-UCD2.0_rna.fna.gz
   maneSelect:
     host: https://ftp.ncbi.nlm.nih.gov/refseq/
     version: "1.2"
@@ -116,10 +114,16 @@ download:
     files:
       DGIDB: data/monthly_tsvs/2022-Feb/interactions.tsv
   geneUniprotXref:
-    host: http://ftp.uniprot.org/
+    host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
     version: "2024-03-27"
     files:
-      UNIPROT_XREF: pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping_selected.tab.gz
+      UNIPROT_XREF: HUMAN_9606_idmapping_selected.tab.gz
+      MMUSCULUS_UNIPROT_XREF: MOUSE_10090_idmapping_selected.tab.gz
+      RNORVEGICUS_UNIPROT_XREF: RAT_10116_idmapping_selected.tab.gz
+      DRERIO_UNIPROT_XREF: DANRE_7955_idmapping_selected.tab.gz
+      DMELOANOGASTER_UNIPROT_XREF: DROME_7227_idmapping_selected.tab.gz
+      SCEREVISIAE_UNIPROT_XREF: YEAST_559292_idmapping_selected.tab.gz
+      CELEGANS_UNIPROT_XREF: CAEEL_6239_idmapping_selected.tab.gz
   geneExpressionAtlas:
     host: https://ftp.ebi.ac.uk/
     version: "2.0.14"
@@ -145,6 +149,7 @@ download:
     host: http://geneontology.org/
     files:
       GO_ANNOTATION: gene-associations/goa_human.gaf.gz
+      MMUSCULUS_GO_ANNOTATION: gene-associations/mgi.gaf.gz
   cancerGeneCensus:
     ## To be downloaded manually
     host: https://cancer.sanger.ac.uk/census/
@@ -167,6 +172,8 @@ download:
       # This file contains errors and has to be fixed before building
       # check the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbol.sh
       MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
+      MMUSCULUS_MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/mmu_MTI.xlsx
+      RNORVEGICUS_MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/rno_MTI.xlsx
 
   ## Protein Data
   uniprot:
@@ -191,18 +198,21 @@ download:
     host: https://hgdownload.cse.ucsc.edu/
     version: "2022-08-30"
     files:
-      PHASTCONS: goldenPath/put_assembly_here/phastCons470way/put_assembly_here.470way.phastCons/chrput_chromosome_here.phastCons470way.wigFix.gz
+      PHASTCONS: goldenPath/hg38/phastCons470way/hg38.470way.phastCons/
+      MMUSCULUS_PHASTCONS: goldenPath/mm39/phastCons35way/mm39.35way.phastCons/
   phylop:
     ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38; and put_chromosome_here by the chromosomes: 1,2,..X,Y,M
     host: https://hgdownload.cse.ucsc.edu/
     version: "2022-08-30"
     files:
-      PHYLOP: goldenPath/put_assembly_here/phyloP470way/put_assembly_here.470way.phyloP/chrput_chromosome_here.phyloP470way.wigFix.gz
+      PHYLOP: goldenPath/hg38/phyloP470way/hg38.470way.phyloP/
+      MMUSCULUS_PHYLOP: goldenPath/mm39/phyloP35way/mm39.35way.phyloP/
   gerp:
     host: http://ftp.ensembl.org/
     version: "2023-05-17"
     files:
       GERP: pub/release-111/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+      MMUSCULUS_GERP: pub/release-111/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.mus_musculus.GRCm39.bw
 
   ## Clinical Variant
   clinvar:
@@ -232,24 +242,36 @@ download:
     files:
       GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
+  pharmGKB:
+    host: https://api.pharmgkb.org/v1/download/file/data/
+    version: v1
+    files:
+      GENES: genes.zip
+      CHEMICALS: chemicals.zip
+      VARIANTS: variants.zip
+      GUIDELINE_ANNOTATIONS: guidelineAnnotations.json.zip
+      VARIANT_ANNOTATIONS: variantAnnotations.zip
+      CLINICAL_ANNOTATIONS: clinicalAnnotations.zip
+      CLINICAL_VARIANTS: clinicalVariants.zip
+      DRUG_LABELS: drugLabels.zip
+      RELATIONSHIPS: relationships.zip
 
   dgv:
     host: http://dgv.tcag.ca/v106/docs
   simpleRepeats:
     host: http://hgdownload.cse.ucsc.edu/
     files:
-      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-      SIMPLE_REPEATS: goldenPath/put_assembly_here/database/simpleRepeat.txt.gz
+      SIMPLE_REPEATS: goldenPath/hg38/database/simpleRepeat.txt.gz
+      MMUSCULUS_SIMPLE_REPEATS: goldenPath/mm39/database/simpleRepeat.txt.gz
   windowMasker:
     host: http://hgdownload.cse.ucsc.edu/
     files:
-      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-      WINDOW_MASKER: goldenPath/put_assembly_here/database/windowmaskerSdust.txt.gz
+      WINDOW_MASKER: goldenPath/hg38/database/windowmaskerSdust.txt.gz
+      MMUSCULUS_WINDOW_MASKER: goldenPath/mm39/database/windowmaskerSdust.txt.gz
   genomicSuperDups:
     host: http://hgdownload.cse.ucsc.edu/
     files:
-      ## The CellBase downloader will change put_assembly_here by the assembly, e.g. hg38
-      GENOMIC_SUPER_DUPS: goldenPath/put_assembly_here/database/genomicSuperDups.txt.gz
+      GENOMIC_SUPER_DUPS: goldenPath/hg38/database/genomicSuperDups.txt.gz
 
   ## Variant Pathogenic Prediction
   revel:
@@ -263,28 +285,22 @@ download:
     files:
       CADD: download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
 
-  reactome:
-    host: http://www.reactome.org/download/current/biopax.zip
-
   ## OBO Ontologies
+  ## The version is retrieved from the OBO file
   hpoObo:
     host: http://purl.obolibrary.org/obo/
-    ## The version is retrieved from the OBO file
     files:
       HPO: hp.obo
   goObo:
     host: http://purl.obolibrary.org/obo/
-    ## The version is retrieved from the OBO file
     files:
       GO: go/go-basic.obo
   doidObo:
     host: http://purl.obolibrary.org/obo/
-    ## The version is retrieved from the OBO file
     files:
       DOID: doid.obo
   mondoObo:
     host: http://purl.obolibrary.org/obo/
-    ## The version is retrieved from the OBO file
     files:
       MONDO: mondo.obo
 
@@ -302,19 +318,10 @@ download:
     version: 2024
     files:
       PUBMED_REGEX: pubmed24n[1..1219..4].xml.gz
-  pharmGKB:
-    host: https://api.pharmgkb.org/v1/download/file/data/
-    version: v1
-    files:
-      GENES: genes.zip
-      CHEMICALS: chemicals.zip
-      VARIANTS: variants.zip
-      GUIDELINE_ANNOTATIONS: guidelineAnnotations.json.zip
-      VARIANT_ANNOTATIONS: variantAnnotations.zip
-      CLINICAL_ANNOTATIONS: clinicalAnnotations.zip
-      CLINICAL_VARIANTS: clinicalVariants.zip
-      DRUG_LABELS: drugLabels.zip
-      RELATIONSHIPS: relationships.zip
+  reactome:
+    host: http://www.reactome.org/download/current/biopax.zip
+
+
 species:
   vertebrates:
     - id: hsapiens
@@ -322,74 +329,74 @@ species:
       assemblies:
         - ensemblVersion: '111_38'
           name: GRCh38
-        - ensemblVersion: '82_37'
-          name: GRCh37
+#        - ensemblVersion: '82_37'
+#          name: GRCh37
       data:
-        - clinical_variants
-        - conservation
-        - gene
         - genome
+        - conservation
+        - repeats
+        - gene
+        - regulation
+        - protein
+        - clinical_variant
         - missense_variation_functional_score
         - ontology
-        - protein
-        - refseq
-        - regulation
-        - repeats
         - variation_functional_score
         - splice_score
-      shards:
-        - collection: "variation"
-          key:
-            - chromosome
-            - start
-            - end
-          rangeKey: "chromosome"
-          zones:
-            - name: "zone0"
-              shardRanges:
-                - minimum: "1"
-                  maximum: "10"
-                - minimum: "2"
-                  maximum: "20"
-                - minimum: "3"
-                  maximum: "9"
-            - name: "zone1"
-              shardRanges:
-                - minimum: "10"
-                  maximum: "2"
-                - minimum: "20"
-                  maximum: "3"
-                - minimum: "9"
-                  maximum: "Z"
+        - pharmacogenomics
     - id: mmusculus
       scientificName: Mus musculus
       assemblies:
-        - ensemblVersion: '82_38'
-          name: GRCm38
+        - ensemblVersion: '111_39'
+          name: GRCm39
       data:
         - genome
-        - genome_info
+        - conservation
+        - repeats
         - gene
-        - variation
         - regulation
         - protein
-        - conservation
-    - id: drerio
-      scientificName: Danio rerio
-      assemblies:
-        - ensemblVersion: '82_10'
-          name: GRCz10
-      data:
-        - genome
-        - genome_info
-        - gene
-        - variation
-        - protein
+#        - variation
     - id: rnorvegicus
       scientificName: Rattus norvegicus
       assemblies:
-        - ensemblVersion: '82_6'
-          name: Rnor_6.0
+        - ensemblVersion: '111_7.2'
+          name: mRatBN7.2
+      data:
+        - genome
+        - gene
+        - regulation
+        - protein
+#        - variation
+    - id: drerio
+      scientificName: Danio rerio
+      assemblies:
+        - ensemblVersion: '111_11'
+          name: GRCz11
+      data:
+        - genome
+        - gene
+        - regulation
+        - protein
+#        - variation
+    - id: btaurus
+      scientificName: Bos taurus
+      assemblies:
+        - ensemblVersion: '111_1.3'
+          name: ARS-UCD1.3
+      data:
+        - genome
+        - genome_info
+        - gene
+#        - refseq
+        - regulation
+        - variation
+        - protein
+    - id: sscrofa
+      scientificName: Sus scrofa
+      assemblies:
+        - ensemblVersion: '111_11.1'
+          name: Sscrofa11.1
       data:
         - genome
         - genome_info

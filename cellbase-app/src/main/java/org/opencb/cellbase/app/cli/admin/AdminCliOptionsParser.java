@@ -17,20 +17,16 @@
 package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.*;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
 import org.opencb.cellbase.core.api.key.ApiKeyQuota;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-/**
- * Created by imedina on 03/02/15.
- */
+
 public class AdminCliOptionsParser extends CliOptionsParser {
 
     private final CommonCommandOptions commonCommandOptions;
@@ -44,7 +40,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private ExportCommandOptions exportCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
-    private InstallCommandOptions installCommandOptions;
     private ServerCommandOptions serverCommandOptions;
     private ValidationCommandOptions validationCommandOptions;
 
@@ -61,7 +56,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         exportCommandOptions = new ExportCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
-        installCommandOptions = new InstallCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
         validationCommandOptions = new ValidationCommandOptions();
 
@@ -73,7 +67,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("export", exportCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
-        jCommander.addCommand("install", installCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
         jCommander.addCommand("validate", validationCommandOptions);
     }
@@ -322,16 +315,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public boolean validate;
     }
 
-    @Parameters(commandNames = {"install"}, commandDescription = "Set up sharding for CellBase")
-    public class InstallCommandOptions {
-
-        @ParametersDelegate
-        public CommonCommandOptions commonOptions = commonCommandOptions;
-
-        @ParametersDelegate
-        public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
-    }
-
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
     public class ServerCommandOptions {
 
@@ -424,8 +407,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public IndexCommandOptions getIndexCommandOptions() {
         return indexCommandOptions;
     }
-
-    public InstallCommandOptions getInstallCommandOptions() { return installCommandOptions; }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 
