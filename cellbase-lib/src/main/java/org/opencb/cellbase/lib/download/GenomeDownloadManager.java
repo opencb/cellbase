@@ -76,7 +76,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
             // Params
             String params = "/opt/cellbase/scripts/ensembl-scripts/genome_info.pl"
-                    + " --species \"Homo sapiens\""
+                    + " --species \"" + speciesConfiguration.getScientificName() + "\""
                     + " --outfile \"" + outputBinding.getValue() + "/genome_info.json\"";
 
             // Execute perl script in docker

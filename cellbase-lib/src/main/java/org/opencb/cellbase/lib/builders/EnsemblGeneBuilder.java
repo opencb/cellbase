@@ -44,15 +44,15 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class EnsemblGeneBuilder extends CellBaseBuilder {
+public class EnsemblGeneBuilder extends AbstractBuilder {
 
     private Path downloadPath;
     private SpeciesConfiguration speciesConfiguration;
     private boolean flexibleGTFParsing;
     private CellBaseConfiguration configuration;
 
-    private Map<String, Integer> transcriptDict;
-    private Map<String, Exon> exonDict;
+    private final Map<String, Integer> transcriptDict;
+    private final Map<String, Exon> exonDict;
 
     private Path gtfFile;
     private Path proteinFastaFile;
@@ -77,8 +77,8 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
     private Path cancerGeneCensusFile;
     private Path cancerHostpotFile;
     private Path ensemblCanonicalFile;
-    private Path tso500File;
-    private Path eglhHaemOncFile;
+//    private Path tso500File;
+//    private Path eglhHaemOncFile;
 
     // source for genes is either ensembl or refseq
     private final String SOURCE = ParamConstants.QueryParams.ENSEMBL.key();
@@ -136,8 +136,8 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         ensemblCanonicalFile = checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical").toPath();
 
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
-            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+//            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+//            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
             maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
             lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
             hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
@@ -228,14 +228,12 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         int cds = 1;
 
         EnsemblGeneBuilderIndexer indexer = new EnsemblGeneBuilderIndexer(serializer.getOutdir());
-
         try {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile,
                     proteinFastaFile, cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile,
                     geneDrugFile, hpoFile, disgenetFile, gnomadFile, geneOntologyAnnotationFile, miRBaseFile,
-                    miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
-                    tso500File, eglhHaemOncFile);
+                    miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -245,7 +243,6 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
             }
 
             // Preparing the fasta file for fast accessing
-//            System.out.println("genomeSequenceFilePath.toString() = " + genomeSequenceFilePath.toString());
             FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
             // Empty transcript and exon dictionaries
@@ -493,6 +490,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         if (StringUtils.isNotEmpty(tags)) {
             transcript.getFlags().addAll(Arrays.asList(tags.split(",")));
         }
+
         // 2. TSL
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
@@ -500,11 +498,13 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
             String truncatedSupportLevel = supportLevel.split(" ")[0];
             transcript.getFlags().add("TSL:" + truncatedSupportLevel);
         }
+
         // 3. MANE Flag
         String maneFlag = indexer.getMane(transcriptIdWithVersion, "flag");
         if (StringUtils.isNotEmpty(maneFlag)) {
             transcript.getFlags().add(maneFlag);
         }
+
         // 4. LRG Flag
         String lrg = indexer.getLrg(transcriptIdWithVersion, "ensembl");
         if (StringUtils.isNotEmpty(lrg)) {
@@ -516,6 +516,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
                 }
             }
         }
+
         // 5. Ensembl Canonical
         String canonicalFlag = indexer.getCanonical(transcriptIdWithVersion);
         if (StringUtils.isNotEmpty(canonicalFlag)) {
@@ -523,18 +524,18 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         }
 
         // 6. TSO500 and EGLH HaemOnc
-        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
-        if (StringUtils.isNotEmpty(maneRefSeq)) {
-            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
-            if (StringUtils.isNotEmpty(tso500Flag)) {
-                transcript.getFlags().add(tso500Flag);
-            }
-
-            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
-            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-                transcript.getFlags().add(eglhHaemOncFlag);
-            }
-        }
+//        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
+//        if (StringUtils.isNotEmpty(maneRefSeq)) {
+//            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
+//            if (StringUtils.isNotEmpty(tso500Flag)) {
+//                transcript.getFlags().add(tso500Flag);
+//            }
+//
+//            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
+//            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+//                transcript.getFlags().add(eglhHaemOncFlag);
+//            }
+//        }
 
         gene.getTranscripts().add(transcript);
 

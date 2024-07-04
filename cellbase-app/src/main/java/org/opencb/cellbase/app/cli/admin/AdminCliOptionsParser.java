@@ -86,8 +86,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: " + GENOME_DATA + "," + GENE_DATA
                 + "," + VARIATION_FUNCTIONAL_SCORE_DATA + "," + MISSENSE_VARIATION_SCORE_DATA + "," + REGULATION_DATA + "," + PROTEIN_DATA
-                + "," + CONSERVATION_DATA + "," + CLINICAL_VARIANT_DATA + "," + REPEATS_DATA + "," + ONTOLOGY_DATA + "," + PUBMED_DATA
-                + "," + PHARMACOGENOMICS_DATA + "; or use 'all' to download everything", required = true, arity = 1)
+                + "," + CONSERVATION_DATA + "," + CLINICAL_VARIANT_DATA + "," + REPEATS_DATA + "," + ONTOLOGY_DATA + "," + SPLICE_SCORE_DATA
+                + "," + PUBMED_DATA + "," + PHARMACOGENOMICS_DATA + "; or use 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
@@ -101,9 +101,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: " + GENOME_DATA + "," + GENE_DATA + ","
-                + VARIATION_FUNCTIONAL_SCORE_DATA + "," + MISSENSE_VARIATION_SCORE_DATA + "," + REGULATION_DATA + "," + PROTEIN_DATA + ","
-                + CONSERVATION_DATA + "," + CLINICAL_VARIANT_DATA + "," + REPEATS_DATA + "," + ONTOLOGY_DATA + "," + SPLICE_SCORE_DATA
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: " + GENOME_DATA + "," + GENE_DATA
+                + "," + VARIATION_FUNCTIONAL_SCORE_DATA + "," + MISSENSE_VARIATION_SCORE_DATA + "," + REGULATION_DATA + "," + PROTEIN_DATA
+                + "," + CONSERVATION_DATA + "," + CLINICAL_VARIANT_DATA + "," + REPEATS_DATA + "," + ONTOLOGY_DATA + "," + SPLICE_SCORE_DATA
                 + "," + PUBMED_DATA + "," + PHARMACOGENOMICS_DATA + "; or use 'all' to build everything", required = true, arity = 1)
         public String data;
 

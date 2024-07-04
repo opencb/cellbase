@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
+public class RegulatoryFeatureBuilder extends AbstractBuilder {
 
     private Path regulationPath;
 

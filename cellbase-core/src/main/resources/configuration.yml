@@ -54,11 +54,11 @@ download:
         # To be generated manually
         XREFS: "manual@xrefs.txt"
         # To be downloaded manually
-        HAEM_ONC_TRANSCRIPTS: "manual@EGLH_HaemOnc_transcripts.txt"
+#        HAEM_ONC_TRANSCRIPTS: "manual@EGLH_HaemOnc_transcripts.txt"
+#        # To be downloaded manually
+#        TSO500: "manual@TSO500_transcripts.txt"
         # To be downloaded manually
-        TSO500: "manual@TSO500_transcripts.txt"
-        # To be downloaded manually
-        CANONICAL: "manual@ensembl_canonical.txt"
+#        CANONICAL: "manual@ensembl_canonical.txt"
 
   ensemblGenomes:
     database:
@@ -336,13 +336,14 @@ species:
         - conservation
         - repeats
         - gene
-        - regulation
         - protein
-        - clinical_variant
-        - missense_variation_functional_score
-        - ontology
+        - regulation
         - variation_functional_score
+        - missense_variation_functional_score
+        - clinical_variant
         - splice_score
+        - ontology
+        - pubmed
         - pharmacogenomics
     - id: mmusculus
       scientificName: Mus musculus

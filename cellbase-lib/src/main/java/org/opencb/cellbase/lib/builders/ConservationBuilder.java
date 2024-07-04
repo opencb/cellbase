@@ -34,7 +34,7 @@ import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class ConservationBuilder extends CellBaseBuilder {
+public class ConservationBuilder extends AbstractBuilder {
 
     private Path conservedRegionPath;
     private int chunkSize;

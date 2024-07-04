@@ -25,14 +25,13 @@ import java.nio.file.Path;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class GeneBuilder extends CellBaseBuilder {
+public class GeneBuilder extends AbstractBuilder {
 
     private EnsemblGeneBuilder ensemblGeneBuilder;
     private RefSeqGeneBuilder refSeqGeneBuilder;
 
     public GeneBuilder(Path downloadPath, Path buildPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                       CellBaseConfiguration configuration)
-            throws CellBaseException {
+                       CellBaseConfiguration configuration) throws CellBaseException {
         super(null);
 
         // Create Ensembl gene builder

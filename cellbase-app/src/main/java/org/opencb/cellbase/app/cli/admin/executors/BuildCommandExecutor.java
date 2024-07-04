@@ -43,25 +43,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.cellbase.core.utils.SpeciesUtils.getSpeciesShortname;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-/**
- * Created by imedina on 03/02/15.
- */
-public class BuildCommandExecutor extends CommandExecutor {
-    private AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
 
-    private Path output;
-    private Path buildFolder = null; // <output>/<species>_<assembly>/generated-json
-    private Path downloadFolder = null; // <output>/<species>_<assembly>/download
+public class BuildCommandExecutor extends CommandExecutor {
+
+    private final AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
+    private final Path outputDirectory;
+
+    private Path buildFolder = null;
+    private Path downloadFolder = null;
     private boolean normalize = true;
 
+    private SpeciesConfiguration speciesConfiguration;
     private SpeciesConfiguration.Assembly assembly;
     private String ensemblRelease;
 
     private boolean flexibleGTFParsing;
-    private SpeciesConfiguration speciesConfiguration;
 
     private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
             MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
@@ -71,7 +69,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
-        this.output = Paths.get(buildCommandOptions.outputDirectory);
+        this.outputDirectory = Paths.get(buildCommandOptions.outputDirectory);
         normalize = !buildCommandOptions.skipNormalize;
 
         this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
@@ -83,22 +81,21 @@ public class BuildCommandExecutor extends CommandExecutor {
      * @throws CellBaseException Exception
      */
     public void execute() throws CellBaseException {
-        String data = null;
         try {
-            // Check data sources
-            List<String> dataList = checkDataSources();
-
             // Output directory need to be created if it doesn't exist
-            if (!Files.exists(output)) {
-                Files.createDirectories(output);
+            if (!Files.exists(outputDirectory)) {
+                Files.createDirectories(outputDirectory);
             }
 
-            speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, buildCommandOptions.species);
+            // Get the species
+            String species = buildCommandOptions.species;
+            speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
             if (speciesConfiguration == null) {
                 throw new CellBaseException("Invalid species: '" + buildCommandOptions.species + "'");
             }
 
-            if (!StringUtils.isEmpty(buildCommandOptions.assembly)) {
+            // Get the assembly
+            if (StringUtils.isNotEmpty(buildCommandOptions.assembly)) {
                 assembly = SpeciesUtils.getAssembly(speciesConfiguration, buildCommandOptions.assembly);
                 if (assembly == null) {
                     throw new CellBaseException("Invalid assembly: '" + buildCommandOptions.assembly + "'");
@@ -110,29 +107,42 @@ public class BuildCommandExecutor extends CommandExecutor {
             String ensemblVersion = assembly.getEnsemblVersion();
             ensemblRelease = "release-" + ensemblVersion.split("_")[0];
 
-            String spShortName = getSpeciesShortname(speciesConfiguration);
+            String spShortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
             String spAssembly = assembly.getName().toLowerCase();
-            Path spFolder = output.resolve(spShortName + "_" + spAssembly);
-            // <output>/<species>_<assembly>/download
-            downloadFolder = output.resolve(spFolder + "/download");
+            Path spFolder = outputDirectory.resolve(spShortName + "_" + spAssembly);
+            downloadFolder = outputDirectory.resolve(spFolder + "/download");
             if (!Files.exists(downloadFolder)) {
                 throw new CellBaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
-            // <output>/<species>_<assembly>/generated_json
-            buildFolder = output.resolve(spFolder + "/generated_json");
+            buildFolder = outputDirectory.resolve(spFolder + "/generated_json");
             if (!buildFolder.toFile().exists()) {
-                makeDir(buildFolder);
+                if (!Files.exists(buildFolder)) {
+                    Files.createDirectories(buildFolder);
+                }
             }
 
-            CellBaseBuilder parser;
-            for (int i = 0; i < dataList.size(); i++) {
-                data = dataList.get(i);
+            // Check data sources
+            List<String> dataList = getDataList(species, speciesConfiguration);
+            AbstractBuilder parser;
+            for (String data : dataList) {
                 switch (data) {
                     case GENOME_DATA:
                         parser = buildGenomeSequence();
                         break;
+                    case CONSERVATION_DATA:
+                        parser = buildConservation();
+                        break;
+                    case REPEATS_DATA:
+                        parser = buildRepeats();
+                        break;
                     case GENE_DATA:
                         parser = buildGene();
+                        break;
+                    case PROTEIN_DATA:
+                        parser = buildProtein();
+                        break;
+                    case REGULATION_DATA:
+                        parser = buildRegulation();
                         break;
                     case VARIATION_FUNCTIONAL_SCORE_DATA:
                         parser = buildCadd();
@@ -140,26 +150,14 @@ public class BuildCommandExecutor extends CommandExecutor {
                     case MISSENSE_VARIATION_SCORE_DATA:
                         parser = buildRevel();
                         break;
-                    case REGULATION_DATA:
-                        parser = buildRegulation();
-                        break;
-                    case PROTEIN_DATA:
-                        parser = buildProtein();
-                        break;
-                    case CONSERVATION_DATA:
-                        parser = buildConservation();
-                        break;
                     case CLINICAL_VARIANT_DATA:
                         parser = buildClinicalVariants();
                         break;
-                    case REPEATS_DATA:
-                        parser = buildRepeats();
+                    case SPLICE_SCORE_DATA:
+                        parser = buildSplice();
                         break;
                     case ONTOLOGY_DATA:
                         parser = buildObo();
-                        break;
-                    case SPLICE_SCORE_DATA:
-                        parser = buildSplice();
                         break;
                     case PUBMED_DATA:
                         parser = buildPubMed();
@@ -168,26 +166,42 @@ public class BuildCommandExecutor extends CommandExecutor {
                         parser = buildPharmacogenomics();
                         break;
                     default:
-                        throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter."
-                                + " Valid values are: " + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to build"
-                                + " everything");
+                        throw new IllegalArgumentException("Data parameter '" + data + "' is not allowed for '" + species + "'. "
+                                + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ",")
+                                + ". You can use data parameter 'all' to download everything");
                 }
 
-                if (parser != null) {
-                    parser.parse();
-                    parser.disconnect();
-                }
+                parser.parse();
+                parser.disconnect();
             }
+        } catch (InterruptedException e) {
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+            throw new CellBaseException("Error executing command line 'build': " + e.getMessage(), e);
         } catch (Exception e) {
-            String msg = "Error executing the command 'build'";
-            if (StringUtils.isNotEmpty(data)) {
-                msg += ". The last data being built was '" + data + "'";
-            }
-            throw new CellBaseException(msg + ": " + e.getMessage(), e);
+            throw new CellBaseException("Error executing command line 'build': " + e.getMessage(), e);
         }
     }
 
-    private CellBaseBuilder buildRepeats() throws CellBaseException {
+    private AbstractBuilder buildGenomeSequence() throws CellBaseException {
+        // Sanity check
+        Path genomeVersionPath = downloadFolder.resolve(GENOME_DATA).resolve(getDataVersionFilename(GENOME_DATA));
+        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_DATA));
+
+        // Get FASTA path
+        Path fastaPath = getFastaReferenceGenome();
+
+        // Create serializer and return the genome builder
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_DATA), GENOME_DATA);
+        return new GenomeSequenceFastaBuilder(fastaPath, serializer);
+    }
+
+    private AbstractBuilder buildGene() throws CellBaseException {
+        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing,
+                configuration);
+    }
+
+    private AbstractBuilder buildRepeats() throws CellBaseException {
         // Sanity check
         Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_DATA);
         List<Path> versionPaths = Arrays.asList(repeatsDownloadPath.resolve(getDataVersionFilename(TRF_DATA)),
@@ -200,7 +214,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RepeatsBuilder(repeatsDownloadPath, serializer, configuration);
     }
 
-    private CellBaseBuilder buildObo() throws CellBaseException {
+    private AbstractBuilder buildObo() throws CellBaseException {
         Path oboDownloadPath = downloadFolder.resolve(ONTOLOGY_DATA);
         Path oboBuildPath = buildFolder.resolve(ONTOLOGY_DATA);
         List<Path> versionPaths = Arrays.asList(oboDownloadPath.resolve(getDataVersionFilename(HPO_OBO_DATA)),
@@ -214,39 +228,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new OntologyBuilder(oboDownloadPath, serializer);
     }
 
-    /**
-     * @deprecated (when using the new copyVersionFiles)
-     */
-    @Deprecated
-    private void copyVersionFiles(List<Path> pathList) {
-        for (Path path : pathList) {
-            try {
-                Files.copy(path, downloadFolder.resolve(path.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                logger.warn("Version file {} not found - skipping", path);
-            }
-        }
-    }
-
-    private CellBaseBuilder buildGenomeSequence() throws CellBaseException {
-        // Sanity check
-        Path genomeVersionPath = downloadFolder.resolve(GENOME_DATA).resolve(getDataVersionFilename(GENOME_DATA));
-        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_DATA));
-
-        // Get FASTA path
-        Path fastaPath = getFastaReferenceGenome();
-
-        // Create serializer and return the genome builder
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_DATA), GENOME_DATA);
-        return new GenomeSequenceFastaBuilder(fastaPath, serializer);
-    }
-
-    private CellBaseBuilder buildGene() throws CellBaseException {
-        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing,
-                configuration);
-    }
-
-    private CellBaseBuilder buildCadd() throws CellBaseException {
+    private AbstractBuilder buildCadd() throws CellBaseException {
         // Sanity check
         Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
         Path caddBuildPath = buildFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
@@ -257,7 +239,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CaddScoreBuilder(caddDownloadPath, serializer);
     }
 
-    private CellBaseBuilder buildRevel() throws CellBaseException {
+    private AbstractBuilder buildRevel() throws CellBaseException {
         // Sanity check
         Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
         Path revelBuildPath = buildFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
@@ -268,7 +250,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RevelScoreBuilder(revelDownloadPath, serializer);
     }
 
-    private CellBaseBuilder buildRegulation() throws CellBaseException {
+    private AbstractBuilder buildRegulation() throws CellBaseException {
         // Sanity check
         Path regulationDownloadPath = downloadFolder.resolve(REGULATION_DATA);
         Path regulationBuildPath = buildFolder.resolve(REGULATION_DATA);
@@ -280,7 +262,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new RegulatoryFeatureBuilder(regulationDownloadPath, serializer);
     }
 
-    private CellBaseBuilder buildProtein() throws CellBaseException {
+    private AbstractBuilder buildProtein() throws CellBaseException {
         // Sanity check
         Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_DATA);
         Path proteinBuildPath = buildFolder.resolve(PROTEIN_DATA);
@@ -292,7 +274,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ProteinBuilder(proteinDownloadPath, speciesConfiguration.getScientificName(), serializer);
     }
 
-    private CellBaseBuilder buildConservation() throws CellBaseException {
+    private AbstractBuilder buildConservation() throws CellBaseException {
         // Sanity check
         Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_DATA);
         Path conservationBuildPath = buildFolder.resolve(CONSERVATION_DATA);
@@ -305,7 +287,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationBuilder(conservationDownloadPath, conservationChunkSize, serializer);
     }
 
-    private CellBaseBuilder buildClinicalVariants() throws CellBaseException {
+    private AbstractBuilder buildClinicalVariants() throws CellBaseException {
         // Sanity check
         Path clinicalDownloadPath = downloadFolder.resolve(CLINICAL_VARIANT_DATA);
         Path clinicalBuildPath = buildFolder.resolve(CLINICAL_VARIANT_DATA);
@@ -335,7 +317,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private Path getFastaReferenceGenome() throws CellBaseException {
         // Check FASTA and unzip if necessary
         String ensemblUrl = getEnsemblUrl(configuration.getDownload().getEnsembl(), ensemblRelease, ENSEMBL_PRIMARY_FA_FILE_ID,
-                getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
+                SpeciesUtils.getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
         String fastaFilename = Paths.get(ensemblUrl).getFileName().toString();
         Path fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename);
         if (fastaPath.toFile().exists()) {
@@ -358,7 +340,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return fastaPath;
     }
 
-    private CellBaseBuilder buildSplice() throws IOException, CellBaseException {
+    private AbstractBuilder buildSplice() throws IOException, CellBaseException {
         Path spliceInputFolder = downloadFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
         Path spliceOutputFolder = buildFolder.resolve(EtlCommons.SPLICE_SCORE_DATA);
         if (!spliceOutputFolder.toFile().exists()) {
@@ -375,7 +357,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new SpliceBuilder(spliceInputFolder, serializer);
     }
 
-    private CellBaseBuilder buildPubMed() throws CellBaseException {
+    private AbstractBuilder buildPubMed() throws CellBaseException {
         // Sanity check
         Path pubMedDownloadPath = downloadFolder.resolve(PUBMED_DATA);
         Path pubMedBuildPath = buildFolder.resolve(PUBMED_DATA);
@@ -386,11 +368,11 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new PubMedBuilder(pubMedDownloadPath, serializer, configuration);
     }
 
-    private CellBaseBuilder buildPharmacogenomics() throws CellBaseException {
+    private AbstractBuilder buildPharmacogenomics() throws CellBaseException {
         // Sanity check
         Path pharmGkbDownloadPath = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
         Path pharmGkbBuildPath = buildFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        copyVersionFiles(Arrays.asList(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA))), pharmGkbBuildPath);
+        copyVersionFiles(Collections.singletonList(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA))), pharmGkbBuildPath);
 
         // Create the file serializer and the PharmGKB feature builder
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pharmGkbBuildPath);
@@ -439,34 +421,24 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private List<String> checkDataSources() {
-        if (StringUtils.isEmpty(buildCommandOptions.data)) {
-            throw new IllegalArgumentException("Missing data parameter. Valid values are: "
-                    + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to download everything");
-        }
-        List<String> dataList = Arrays.asList(buildCommandOptions.data.split(","));
-        for (String data : dataList) {
-            switch (data) {
-                case GENOME_DATA:
-                case GENE_DATA:
-                case REFSEQ_DATA:
-                case VARIATION_FUNCTIONAL_SCORE_DATA:
-                case MISSENSE_VARIATION_SCORE_DATA:
-                case REGULATION_DATA:
-                case PROTEIN_DATA:
-                case CONSERVATION_DATA:
-                case CLINICAL_VARIANT_DATA:
-                case REPEATS_DATA:
-                case ONTOLOGY_DATA:
-                case SPLICE_SCORE_DATA:
-                case PUBMED_DATA:
-                case PHARMACOGENOMICS_DATA:
-                    break;
-                default:
-                    throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
-                            + StringUtils.join(VALID_SOURCES_TO_BUILD, ",") + "; or use 'all' to build everything");
+    private List<String> getDataList(String species, SpeciesConfiguration speciesConfig) throws CellBaseException {
+        // No need to check if 'data' exists since it is declared as required in JCommander
+        List<String> dataList;
+        if ("all".equalsIgnoreCase(buildCommandOptions.data)) {
+            // Download all data sources for the species in the configuration.yml file
+            dataList = speciesConfig.getData();
+        } else {
+            // Check if the data sources requested are valid for the species
+            dataList = Arrays.asList(buildCommandOptions.data.split(","));
+            for (String data : dataList) {
+                if (!speciesConfig.getData().contains(data)) {
+                    throw new CellBaseException("Data parameter '" + data + "' does not exist or it is not allowed for '" + species + "'. "
+                            + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ",") + ". "
+                            + "You can use data parameter 'all' to build everything");
+                }
             }
         }
         return dataList;
     }
+
 }

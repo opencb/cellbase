@@ -44,7 +44,7 @@ import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class ProteinBuilder extends CellBaseBuilder {
+public class ProteinBuilder extends AbstractBuilder {
 
     private Path proteinPath;
     private String species;

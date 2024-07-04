@@ -50,8 +50,8 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_DONE_LOG_MESSAGE;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
 public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
 
@@ -72,7 +72,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
-                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile, Path tso500File, Path eglhHaemOncFile)
+                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
@@ -91,8 +91,8 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
-        indexTSO500(tso500File);
-        indexEGLHHaemOnc(eglhHaemOncFile);
+//        indexTSO500(tso500File);
+//        indexEGLHHaemOnc(eglhHaemOncFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

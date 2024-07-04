@@ -31,7 +31,6 @@ print_parameters() if $verbose;
 
 if ($outfile eq "") {
     $outfile = "/ensembl-data/genome_info.json";
-    # $outfile = "/ensembl-data/$species.json";
 }
 
 ####################################################################
@@ -44,17 +43,13 @@ use Bio::EnsEMBL::DBSQL::DBAdaptor;
 # Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
 if($phylo eq "" || $phylo eq "vertebrate") {
     print ("In vertebrates section\n");
-    if ($species eq "Homo sapiens" && $assembly eq "GRCh38") {
-        print ("Human selected, assembly ".$assembly." selected, connecting to port ".$ENSEMBL_PORT."\n");
-        Bio::EnsEMBL::Registry->load_registry_from_db(
-            -host     => $ENSEMBL_HOST,
-            -user     => $ENSEMBL_USER,
-            -port     => $ENSEMBL_PORT,
-            -verbose  => $verbose
-        );
-    } else {
-        print ("Human selected, assembly ".$assembly." no supported\n");
-    }
+    print ("Species: ".$species.", assembly ".$assembly.", connecting to: ".$ENSEMBL_HOST.":".$ENSEMBL_PORT."\n");
+    Bio::EnsEMBL::Registry->load_registry_from_db(
+        -host     => $ENSEMBL_HOST,
+        -user     => $ENSEMBL_USER,
+        -port     => $ENSEMBL_PORT,
+        -verbose  => $verbose
+    );
 } else {
     print ("In no-vertebrates section\n");
     Bio::EnsEMBL::Registry->load_registry_from_db(
@@ -66,7 +61,6 @@ if($phylo eq "" || $phylo eq "vertebrate") {
 
 my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Slice");
 my $karyotype_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "KaryotypeBand");
-# my $gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene");
 ####################################################################
 
 my %info_stats = ();
@@ -83,12 +77,10 @@ foreach my $chrom(@all_chroms) {
 	$chromosome{'start'} = int($chrom->start());
 	$chromosome{'end'} = int($chrom->end());
 	$chromosome{'size'} = int($chrom->seq_region_length());
-#	$chromosome{'numberGenes'} = scalar @{$chrom->get_all_Genes()};
 	$chromosome{'isCircular'} = $chrom->is_circular();
 
 	my @cytobands = ();
 	foreach my $cyto(@{$karyotype_adaptor->fetch_all_by_chr_name($chrom->seq_region_name)}) {
-#		print $cytoband->name."\n";
         my %cytoband = ();
         $cytoband{'name'} = $cyto->name();
         $cytoband{'start'} = int($cyto->start());
@@ -98,7 +90,7 @@ foreach my $chrom(@all_chroms) {
 		push(@cytobands, \%cytoband);
 	}
 	
-	## check if any cytoband has been added
+	## Check if any cytoband has been added
 	## If not a unique cytoband covering all chromosome is added.
 	if(@cytobands == 0) {
 		my %cytoband = ();
@@ -112,7 +104,6 @@ foreach my $chrom(@all_chroms) {
 	$chromosome{'cytobands'} = \@cytobands;
 	
 	push(@chromosomes, \%chromosome);
-#    push(@chrom_ids, $chrom->seq_region_name);
 }
 $info_stats{'chromosomes'} = \@chromosomes;
 
@@ -126,7 +117,6 @@ foreach my $supercon(@all_supercontigs) {
         $supercontig{'start'} = int($supercon->start());
         $supercontig{'end'} = int($supercon->end());
         $supercontig{'size'} = int($supercon->seq_region_length());
-#        $supercontig{'numberGenes'} = scalar @{$supercon->get_all_Genes()};
         $supercontig{'isCircular'} = $supercon->is_circular();
 
         ## Adding an unique cytoband covering all chromosome is added.

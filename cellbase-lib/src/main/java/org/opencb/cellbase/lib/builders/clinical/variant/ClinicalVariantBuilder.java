@@ -22,7 +22,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.cellbase.lib.builders.AbstractBuilder;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -39,7 +39,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 /**
  * Created by fjlopez on 26/09/16.
  */
-public class ClinicalVariantBuilder extends CellBaseBuilder {
+public class ClinicalVariantBuilder extends AbstractBuilder {
 
     private final Path clinicalVariantPath;
     private final String assembly;

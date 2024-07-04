@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class RefSeqGeneBuilder extends CellBaseBuilder {
+public class RefSeqGeneBuilder extends AbstractBuilder {
 
     private Path downloadPath;
     private CellBaseConfiguration configuration;
@@ -59,8 +59,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
     private Path miRTarBaseFile;
     private Path cancerGeneCensusFile;
     private Path cancerHotspot;
-    private Path tso500File;
-    private Path eglhHaemOncFile;
+//    private Path tso500File;
+//    private Path eglhHaemOncFile;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private static final String KNOWN_STATUS = "KNOWN";
@@ -134,8 +134,8 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         // Check common files
         props = configuration.getDownload().getEnsembl().getUrl();
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
-            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+//            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
+//            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
             maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
             lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
             cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
@@ -186,7 +186,7 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
-                cancerGeneCensusFile, cancerHotspot, tso500File, eglhHaemOncFile);
+                cancerGeneCensusFile, cancerHotspot);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);
@@ -660,14 +660,14 @@ public class RefSeqGeneBuilder extends CellBaseBuilder {
             transcript.getFlags().add("LRG");
         }
         // 3. TSO500 and EGLH HaemOnc
-        String tso500Flag = indexer.getTSO500(transcriptId.split("\\.")[0]);
-        if (StringUtils.isNotEmpty(tso500Flag)) {
-            transcript.getFlags().add(tso500Flag);
-        }
-        String eglhHaemOncFlag = indexer.getEGLHHaemOnc(transcriptId.split("\\.")[0]);
-        if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-            transcript.getFlags().add(eglhHaemOncFlag);
-        }
+//        String tso500Flag = indexer.getTSO500(transcriptId.split("\\.")[0]);
+//        if (StringUtils.isNotEmpty(tso500Flag)) {
+//            transcript.getFlags().add(tso500Flag);
+//        }
+//        String eglhHaemOncFlag = indexer.getEGLHHaemOnc(transcriptId.split("\\.")[0]);
+//        if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+//            transcript.getFlags().add(eglhHaemOncFlag);
+//        }
 
         gene.getTranscripts().add(transcript);
 

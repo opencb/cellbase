@@ -16,10 +16,12 @@
 
 package org.opencb.cellbase.lib.download;
 
+import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.commons.utils.DockerUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -106,6 +108,8 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     }
 
     private List<DownloadFile> downloadEnsemblData(Path ensemblDownloadPath) throws IOException, InterruptedException, CellBaseException {
+        downloadEnsemblCanonical();
+
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Check if the species is supported
@@ -131,6 +135,32 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         }
 
         return downloadFiles;
+    }
+
+    public void downloadEnsemblCanonical() throws IOException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
+        Path sequenceFolder = downloadFolder.resolve(GENOME_DATA);
+        Files.createDirectories(sequenceFolder);
+
+        String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
+        try {
+            // Build command line to run Perl script via docker image
+            // Output binding
+            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
+                    sequenceFolder.toAbsolutePath().toString(), "/tmp");
+
+            // Params
+            String params = "/opt/cellbase/scripts/ensembl-scripts/ensembl_canonical.pl"
+                    + " --species \"" + speciesConfiguration.getId() + "\""
+                    + " --outdir \"" + outputBinding.getValue() + "\"";
+
+            // Execute perl script in docker
+            DockerUtils.run(dockerImage, null, outputBinding, params, null);
+        } catch (Exception e) {
+            throw new CellBaseException("Error executing Perl script from Docker " + dockerImage, e);
+        }
+
+        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
     }
 
     private List<DownloadFile> downloadRefSeq(Path refSeqDownloadPath) throws IOException, InterruptedException, CellBaseException {

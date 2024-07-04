@@ -24,7 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
+public class GenomeSequenceFastaBuilder extends AbstractBuilder {
 
     private Path genomeReferenceFastaFile;
 

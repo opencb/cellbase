@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
 
-public abstract class CellBaseBuilder {
+public abstract class AbstractBuilder {
 
     protected CellBaseSerializer serializer;
     protected ObjectReader dataSourceReader = new ObjectMapper().readerFor(DataSource.class);
@@ -61,7 +61,7 @@ public abstract class CellBaseBuilder {
     public static final String PARSING_LOG_MESSAGE = "Parsing {} ...";
     public static final String PARSING_DONE_LOG_MESSAGE = "Parsing done.";
 
-    public CellBaseBuilder(CellBaseSerializer serializer) {
+    public AbstractBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
         this.serializer = serializer;

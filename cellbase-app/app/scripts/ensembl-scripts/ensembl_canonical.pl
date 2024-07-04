@@ -1,8 +1,11 @@
 #!/usr/bin/env perl
 
-# An example script demonstrating the use of BioMart API.
-# This perl API representation is only available for configuration versions >=  0.5
 use strict;
+use Getopt::Long;
+use Data::Dumper;
+use JSON;
+use DB_CONFIG;
+
 use BioMart::Initializer;
 use BioMart::Query;
 use BioMart::QueryRunner;

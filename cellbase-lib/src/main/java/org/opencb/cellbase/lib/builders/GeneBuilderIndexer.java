@@ -44,8 +44,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_DONE_LOG_MESSAGE;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
 public class GeneBuilderIndexer {
 
@@ -67,8 +67,8 @@ public class GeneBuilderIndexer {
     protected final String DRUGS_SUFFIX = "_drug";
     protected final String DISEASE_SUFFIX = "_disease";
     protected final String MIRTARBASE_SUFFIX = "_mirtarbase";
-    protected final String TSO500_SUFFIX = "_tso500";
-    protected final String EGLH_HAEMONC_SUFFIX = "_eglh_haemonc";
+//    protected final String TSO500_SUFFIX = "_tso500";
+//    protected final String EGLH_HAEMONC_SUFFIX = "_eglh_haemonc";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -414,65 +414,65 @@ public class GeneBuilderIndexer {
         return rocksDbManager.getCancerHotspot(rocksdb, key);
     }
 
-    protected void indexTSO500(Path tso500Path) throws IOException, RocksDBException {
-        logger.info(PARSING_LOG_MESSAGE, tso500Path);
+//    protected void indexTSO500(Path tso500Path) throws IOException, RocksDBException {
+//        logger.info(PARSING_LOG_MESSAGE, tso500Path);
+//
+//        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(tso500Path)) {
+//            String line = bufferedReader.readLine();
+//            // Gene Ref Seq
+//            // FAS  NM_000043
+//            // AR   NM_000044
+//            while (StringUtils.isNotEmpty(line)) {
+//                if (!line.startsWith("#")) {
+//                    String[] fields = line.split("\t", -1);
+//                    if (fields.length == 2) {
+//                        rocksDbManager.update(rocksdb, fields[1] + TSO500_SUFFIX, "TSO500");
+//                    }
+//                }
+//                line = bufferedReader.readLine();
+//            }
+//        }
+//        logger.info(PARSING_DONE_LOG_MESSAGE, tso500Path);
+//    }
+//
+//    public String getTSO500(String transcriptId) throws RocksDBException {
+//        String key = transcriptId + TSO500_SUFFIX;
+//        byte[] bytes = rocksdb.get(key.getBytes());
+//        if (bytes == null) {
+//            return null;
+//        }
+//        return new String(bytes);
+//    }
 
-        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(tso500Path)) {
-            String line = bufferedReader.readLine();
-            // Gene Ref Seq
-            // FAS  NM_000043
-            // AR   NM_000044
-            while (StringUtils.isNotEmpty(line)) {
-                if (!line.startsWith("#")) {
-                    String[] fields = line.split("\t", -1);
-                    if (fields.length == 2) {
-                        rocksDbManager.update(rocksdb, fields[1] + TSO500_SUFFIX, "TSO500");
-                    }
-                }
-                line = bufferedReader.readLine();
-            }
-        }
-        logger.info(PARSING_DONE_LOG_MESSAGE, tso500Path);
-    }
-
-    public String getTSO500(String transcriptId) throws RocksDBException {
-        String key = transcriptId + TSO500_SUFFIX;
-        byte[] bytes = rocksdb.get(key.getBytes());
-        if (bytes == null) {
-            return null;
-        }
-        return new String(bytes);
-    }
-
-    protected void indexEGLHHaemOnc(Path eglhHaemOncPath) throws IOException, RocksDBException {
-        logger.info(PARSING_LOG_MESSAGE, eglhHaemOncPath);
-
-        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(eglhHaemOncPath)) {
-            String line = bufferedReader.readLine();
-            // Gene Ref Seq
-            // GNB1   NM_002074.4
-            // CSF3R  NM_000760.3
-            while (StringUtils.isNotEmpty(line)) {
-                if (!line.startsWith("#")) {
-                    String[] fields = line.split("\t", -1);
-                    if (fields.length == 2) {
-                        rocksDbManager.update(rocksdb, fields[1].split("\\.")[0] + EGLH_HAEMONC_SUFFIX, "EGLH_HaemOnc");
-                    }
-                }
-                line = bufferedReader.readLine();
-            }
-        }
-        logger.info(PARSING_DONE_LOG_MESSAGE, eglhHaemOncPath);
-    }
-
-    public String getEGLHHaemOnc(String transcriptId) throws RocksDBException {
-        String key = transcriptId + EGLH_HAEMONC_SUFFIX;
-        byte[] bytes = rocksdb.get(key.getBytes());
-        if (bytes == null) {
-            return null;
-        }
-        return new String(bytes);
-    }
+//    protected void indexEGLHHaemOnc(Path eglhHaemOncPath) throws IOException, RocksDBException {
+//        logger.info(PARSING_LOG_MESSAGE, eglhHaemOncPath);
+//
+//        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(eglhHaemOncPath)) {
+//            String line = bufferedReader.readLine();
+//            // Gene Ref Seq
+//            // GNB1   NM_002074.4
+//            // CSF3R  NM_000760.3
+//            while (StringUtils.isNotEmpty(line)) {
+//                if (!line.startsWith("#")) {
+//                    String[] fields = line.split("\t", -1);
+//                    if (fields.length == 2) {
+//                        rocksDbManager.update(rocksdb, fields[1].split("\\.")[0] + EGLH_HAEMONC_SUFFIX, "EGLH_HaemOnc");
+//                    }
+//                }
+//                line = bufferedReader.readLine();
+//            }
+//        }
+//        logger.info(PARSING_DONE_LOG_MESSAGE, eglhHaemOncPath);
+//    }
+//
+//    public String getEGLHHaemOnc(String transcriptId) throws RocksDBException {
+//        String key = transcriptId + EGLH_HAEMONC_SUFFIX;
+//        byte[] bytes = rocksdb.get(key.getBytes());
+//        if (bytes == null) {
+//            return null;
+//        }
+//        return new String(bytes);
+//    }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
         return getIndexEntry(id, suffix, "");

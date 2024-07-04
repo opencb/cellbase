@@ -31,7 +31,7 @@ import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class OntologyBuilder extends CellBaseBuilder {
+public class OntologyBuilder extends AbstractBuilder {
 
     private Path oboDownloadPath;
 

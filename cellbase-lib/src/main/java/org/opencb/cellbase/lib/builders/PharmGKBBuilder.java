@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class PharmGKBBuilder extends CellBaseBuilder {
+public class PharmGKBBuilder extends AbstractBuilder {
 
     private final Path pharmGkbDownloadPath;
 

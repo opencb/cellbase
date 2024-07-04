@@ -36,7 +36,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 /**
  * Created by fjlopez on 05/05/17.
  */
-public class RepeatsBuilder extends CellBaseBuilder {
+public class RepeatsBuilder extends AbstractBuilder {
 
     private CellBaseConfiguration configuration;
 
