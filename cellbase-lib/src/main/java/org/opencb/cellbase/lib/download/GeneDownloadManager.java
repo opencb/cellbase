@@ -87,6 +87,8 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadGO(geneDownloadPath));
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_ANNOTATION_DATA));
 
+        downloadEnsemblCanonical();
+
         // Save data sources manually downloaded
         // HPO
         saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
@@ -108,8 +110,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     }
 
     private List<DownloadFile> downloadEnsemblData(Path ensemblDownloadPath) throws IOException, InterruptedException, CellBaseException {
-        downloadEnsemblCanonical();
-
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Check if the species is supported
@@ -133,7 +133,32 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
             logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ENSEMBL_DATA), getDataCategory(ENSEMBL_DATA));
         }
+        return downloadFiles;
+    }
 
+    private List<DownloadFile> downloadRefSeq(Path refSeqDownloadPath) throws IOException, InterruptedException, CellBaseException {
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+
+        // Check if the species is supported
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), GENE_DATA)) {
+            // GTF, DNA, RNA, Protein
+            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+            if (configuration.getDownload().getGenomicSuperDups().getFiles().containsKey(prefixId + REFSEQ_GENOMIC_GTF_FILE_ID)) {
+                logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataName(REFSEQ_DATA), getDataCategory(REFSEQ_DATA));
+
+                DownloadProperties.URLProperties refSeqConfig = configuration.getDownload().getRefSeq();
+                downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_GENOMIC_GTF_FILE_ID, refSeqDownloadPath));
+                downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_GENOMIC_FNA_FILE_ID, refSeqDownloadPath));
+                downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_RNA_FNA_FILE_ID, refSeqDownloadPath));
+                downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_PROTEIN_FAA_FILE_ID, refSeqDownloadPath));
+
+                // Save data source (i.e., metadata)
+                saveDataSource(REFSEQ_DATA, refSeqConfig.getVersion(), getTimeStamp(), getUrls(downloadFiles),
+                        refSeqDownloadPath.resolve(getDataVersionFilename(REFSEQ_DATA)));
+
+                logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REFSEQ_DATA), getDataCategory(REFSEQ_DATA));
+            }
+        }
         return downloadFiles;
     }
 
@@ -161,30 +186,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         }
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
-    }
-
-    private List<DownloadFile> downloadRefSeq(Path refSeqDownloadPath) throws IOException, InterruptedException, CellBaseException {
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-
-        // Check if the species is supported
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), GENE_DATA)) {
-            logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataName(REFSEQ_DATA), getDataCategory(REFSEQ_DATA));
-
-            // GTF, DNA, RNA, Protein
-            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
-            DownloadProperties.URLProperties refSeqConfig = configuration.getDownload().getRefSeq();
-            downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_GENOMIC_GTF_FILE_ID, refSeqDownloadPath));
-            downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_GENOMIC_FNA_FILE_ID, refSeqDownloadPath));
-            downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_RNA_FNA_FILE_ID, refSeqDownloadPath));
-            downloadFiles.add(downloadDataSource(refSeqConfig, prefixId + REFSEQ_PROTEIN_FAA_FILE_ID, refSeqDownloadPath));
-
-            // Save data source (i.e., metadata)
-            saveDataSource(REFSEQ_DATA, refSeqConfig.getVersion(), getTimeStamp(), getUrls(downloadFiles),
-                    refSeqDownloadPath.resolve(getDataVersionFilename(REFSEQ_DATA)));
-
-            logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REFSEQ_DATA), getDataCategory(REFSEQ_DATA));
-        }
-        return downloadFiles;
     }
 
     private DownloadFile downloadMane(Path geneDownloadPath) throws IOException, InterruptedException, CellBaseException {
@@ -329,7 +330,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
 
         // Check if the species is supported
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
-                || speciesConfiguration.getScientificName().equals("Mus musculus")) {
+                || speciesConfiguration.getScientificName().equals(MUS_MUSCULUS_NAME)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GO_ANNOTATION_DATA));
 
             String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
