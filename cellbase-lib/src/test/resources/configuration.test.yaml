@@ -156,8 +156,6 @@ download:
     host: https://mirtarbase.cuhk.edu.cn/
     version: "9.0"
     files:
-      # This file contains errors and has to be fixed before building
-      # check the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbol.sh
       MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/hsa_MTI.xlsx
       MMUSCULUS_MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/mmu_MTI.xlsx
       RNORVEGICUS_MIRTARBASE: ~miRTarBase/miRTarBase_2022/cache/download/9.0/rno_MTI.xlsx

@@ -40,7 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -167,27 +166,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         miRBaseFile = checkFiles(MIRBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 1).get(0).toPath();
 
         // mirtarbase
-        // The downloaded .xlsx file contains errors and it has to be fixed manually
-        logger.info("Checking {} folder and files", getDataName(MIRTARBASE_DATA));
-        Path downloadRegulationPath = downloadPath.getParent().getParent().resolve(REGULATION_DATA);
-        List<String> mirTarBaseFiles = ((DataSource) dataSourceReader.readValue(downloadRegulationPath.resolve(
-                getDataVersionFilename(MIRTARBASE_DATA)).toFile())).getUrls().stream().map(u -> Paths.get(u).getFileName().toString())
-                .collect(Collectors.toList());
-        if (mirTarBaseFiles.size() != 1) {
-            throw new CellBaseException("One " + getDataName(MIRTARBASE_DATA) + " file is expected at " + downloadRegulationPath
-                    + ", but currently there are " + mirTarBaseFiles.size() + " files");
-        }
-        // The hsa_MIT.xlsx is fixed and converted to hsa_MIT.csv manually
-        if (!mirTarBaseFiles.get(0).endsWith(XLSX_EXTENSION)) {
-            throw new CellBaseException("A " + XLSX_EXTENSION + " " + getDataName(MIRTARBASE_DATA) + " file is expected at "
-                    + downloadRegulationPath + ", but currently it is named " + mirTarBaseFiles.get(0));
-        }
-        miRTarBaseFile = downloadRegulationPath.resolve(mirTarBaseFiles.get(0).replace(XLSX_EXTENSION, CSV_EXTENSION));
-        if (!Files.exists(miRTarBaseFile)) {
-            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist. You"
-                    + " have to export the file " + mirTarBaseFiles.get(0) + " to " + miRTarBaseFile.getFileName() + " format separated by"
-                    + " tabs and then execute the script cellbase-app/app/scripts/mirtarbase/fix-gene-symbols.sh");
-        }
+        miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 1).get(0).toPath();
 
         // Check genome FASTA file
         Path genomeDownloadPath = downloadPath.getParent().getParent().resolve(GENOME_DATA);
