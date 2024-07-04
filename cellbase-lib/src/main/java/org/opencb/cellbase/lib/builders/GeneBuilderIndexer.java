@@ -24,10 +24,12 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
-import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.CancerHotspot;
+import org.opencb.biodata.models.core.CancerHotspotVariant;
+import org.opencb.biodata.models.core.GeneCancerAssociation;
+import org.opencb.biodata.models.core.MirnaTarget;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -38,12 +40,12 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.EtlCommons.DISGENET_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
@@ -608,84 +610,15 @@ public class GeneBuilderIndexer {
         }
     }
 
-    protected void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException, CellBaseException {
-        logger.info(PARSING_LOG_MESSAGE, miRTarBaseFile);
-
-        try (BufferedReader reader = Files.newBufferedReader(miRTarBaseFile)) {
-            String line;
-            // Skip header line
-            reader.readLine();
-
-            String currentMiRTarBaseId = null;
-            String currentMiRNA = null;
-            String currentGene = null;
-            List<TargetGene> targetGenes = new ArrayList<>();
-            Map<String, List<MirnaTarget>> geneToMirna = new HashMap<>();
-
-            while ((line = reader.readLine()) != null) {
-                String[] field = line.split("\t", -1);
-                if (field.length != 9) {
-                    throw new CellBaseException("Invalid number of columns " + field.length + " (expected 9 columns) parsing file "
-                            + miRTarBaseFile + ". Line: " + line);
-                }
-
-                // #0: miRTarBase ID
-                String miRTarBaseId = field[0];
-                if (currentMiRTarBaseId == null) {
-                    currentMiRTarBaseId = miRTarBaseId;
-                }
-
-                // #1: miRNA
-                String miRNA = field[1];
-                if (currentMiRNA == null) {
-                    currentMiRNA = miRNA;
-                }
-
-                // #2: Species (miRNA)
-
-                // #3: Target Gene
-                String geneName = field[3];
-                if (currentGene == null) {
-                    currentGene = geneName;
-                }
-
-                // #4: Target Gene (Entrez ID)
-                // #5: Species (Target Gene)
-
-                if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
-                    // new entry, store current one
-                    MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA, targetGenes);
-                    addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
-                    targetGenes = new ArrayList<>();
-                    currentGene = geneName;
-                    currentMiRTarBaseId = miRTarBaseId;
-                    currentMiRNA = miRNA;
-                }
-
-                // #6: Experiments
-                String experiment = field[6];
-
-                // #7: Support Type
-                String supportType = field[7];
-
-                // #8: pubmed
-                String pubmed = field[8];
-
-                targetGenes.add(new TargetGene(experiment, supportType, pubmed));
-            }
-
-            // parse last entry
-            MirnaTarget miRnaTarget = new MirnaTarget(currentMiRTarBaseId, MIRTARBASE_DATA, currentMiRNA, targetGenes);
-            addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
-
-            for (Map.Entry<String, List<MirnaTarget>> entry : geneToMirna.entrySet()) {
-                rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
-            }
+    protected void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException {
+        MiRTarBaseIndexer miRTarBaseIndexer = new MiRTarBaseIndexer();
+        Map<String, List<MirnaTarget>> result = miRTarBaseIndexer.index(miRTarBaseFile);
+        for (Map.Entry<String, List<MirnaTarget>> entry : result.entrySet()) {
+            rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
         }
-        logger.info(PARSING_DONE_LOG_MESSAGE, miRTarBaseFile);
     }
 
-    protected static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
+    public static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
         if (map.containsKey(key)) {
             map.get(key).add(value);
         } else {
