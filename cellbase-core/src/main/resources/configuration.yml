@@ -336,6 +336,7 @@ species:
         - gene
         - protein
         - regulation
+        - variation
         - variation_functional_score
         - missense_variation_functional_score
         - clinical_variant
@@ -355,7 +356,7 @@ species:
         - gene
         - regulation
         - protein
-#        - variation
+        - variation
     - id: rnorvegicus
       scientificName: Rattus norvegicus
       assemblies:

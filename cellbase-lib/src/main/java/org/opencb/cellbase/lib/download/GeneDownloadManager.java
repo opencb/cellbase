@@ -70,6 +70,9 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         // Ensembl
         downloadFiles.addAll(downloadEnsemblData(ensemblDownloadPath));
 
+        // Ensembl canonical
+        downloadEnsemblCanonical();
+
         // RefSeq
         downloadFiles.addAll(downloadRefSeq(refSeqDownloadPath));
 
@@ -87,25 +90,24 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadGO(geneDownloadPath));
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_ANNOTATION_DATA));
 
-        downloadEnsemblCanonical();
-
         // Save data sources manually downloaded
-        // HPO
-        saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
-                Collections.singletonList(getManualUrl(configuration.getDownload().getHpo(), HPO_FILE_ID)),
-                geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)));
-        logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(HPO_DISEASE_DATA),
-                getDataVersionFilename(HPO_DISEASE_DATA), geneDownloadPath);
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            // HPO
+            saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
+                    Collections.singletonList(getManualUrl(configuration.getDownload().getHpo(), HPO_FILE_ID)),
+                    geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)));
+            logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(HPO_DISEASE_DATA),
+                    getDataVersionFilename(HPO_DISEASE_DATA), geneDownloadPath);
 
-        // Cancer gene census
-        saveDataSource(CANCER_GENE_CENSUS_DATA, configuration.getDownload().getCancerGeneCensus().getVersion(), getTimeStamp(),
-                Collections.singletonList(getManualUrl(configuration.getDownload().getCancerGeneCensus(), CANCER_GENE_CENSUS_FILE_ID)),
-                geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)));
-        logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
-                getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
+            // Cancer gene census
+            saveDataSource(CANCER_GENE_CENSUS_DATA, configuration.getDownload().getCancerGeneCensus().getVersion(), getTimeStamp(),
+                    Collections.singletonList(getManualUrl(configuration.getDownload().getCancerGeneCensus(), CANCER_GENE_CENSUS_FILE_ID)),
+                    geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)));
+            logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
+                    getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
+        }
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_DATA));
-
         return downloadFiles;
     }
 
@@ -210,8 +212,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(LRG_DATA));
 
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getLrg(), LRG_FILE_ID, LRG_DATA,
-                    geneDownloadPath);
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getLrg(), LRG_FILE_ID, LRG_DATA, geneDownloadPath);
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(LRG_DATA));
         }
@@ -225,8 +226,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(HGNC_DATA));
 
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getHgnc(), HGNC_FILE_ID, HGNC_DATA,
-                    geneDownloadPath);
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getHgnc(), HGNC_FILE_ID, HGNC_DATA, geneDownloadPath);
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(HGNC_DATA));
         }
@@ -255,8 +255,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(DGIDB_DATA));
 
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDgidb(), DGIDB_FILE_ID, DGIDB_DATA,
-                    geneDownloadPath);
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getDgidb(), DGIDB_FILE_ID, DGIDB_DATA, geneDownloadPath);
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(DGIDB_DATA));
         }
@@ -267,10 +266,10 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (GENE_UNIPROT_XREF_FILES.containsKey(speciesConfiguration.getScientificName())) {
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        if (configuration.getDownload().getGeneUniprotXref().getFiles().containsKey(prefixId + UNIPROT_XREF_FILE_ID)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA));
 
-            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
             downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGeneUniprotXref(),
                     prefixId + UNIPROT_XREF_FILE_ID, UNIPROT_XREF_DATA, geneDownloadPath);
 
@@ -329,11 +328,10 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
-                || speciesConfiguration.getScientificName().equals(MUS_MUSCULUS_NAME)) {
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        if (configuration.getDownload().getGoAnnotation().getFiles().containsKey(prefixId + GO_ANNOTATION_FILE_ID)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GO_ANNOTATION_DATA));
 
-            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
             downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGoAnnotation(),
                     prefixId + GO_ANNOTATION_FILE_ID, GO_ANNOTATION_DATA, geneDownloadPath);
 
