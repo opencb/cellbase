@@ -86,6 +86,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case REGULATION_DATA:
                         downloader = new RegulationDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
+                    case VARIATION_DATA:
+                        downloader = new VariationDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
                     case VARIATION_FUNCTIONAL_SCORE_DATA:
                         downloader = new CaddDownloadManager(species, assembly, outputDirectory, configuration);
                         break;

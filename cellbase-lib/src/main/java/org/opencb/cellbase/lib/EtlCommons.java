@@ -405,6 +405,7 @@ public final class EtlCommons {
         dataNamesMap.put(SPLICE_SCORE_DATA, "Splice Score");
         dataNamesMap.put(MMSPLICE_DATA, "MMSplice");
         dataNamesMap.put(SPLICEAI_DATA, "SpliceAI");
+        dataNamesMap.put(VARIATION_DATA, "Variation");
 
 
         // Populate data categories map
