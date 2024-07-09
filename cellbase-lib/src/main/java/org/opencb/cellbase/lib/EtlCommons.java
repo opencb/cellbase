@@ -451,6 +451,7 @@ public final class EtlCommons {
         dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(MMSPLICE_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
         dataCategoriesMap.put(SPLICEAI_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
+        dataCategoriesMap.put(VARIATION_DATA, dataNamesMap.get(VARIATION_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -495,6 +496,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(MMSPLICE_DATA, "mmSplice" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(VARIATION_DATA, "variation" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
