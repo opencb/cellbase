@@ -1679,7 +1679,7 @@ public class VariantAnnotationCalculator {
             long startTime = System.currentTimeMillis();
             logger.debug("Query variant functional score");
             List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResultList =
-                    variantManager.getFunctionalScoreVariant(variantList, queryOptions, dataRelease);
+                    variantManager.getFunctionalScoreVariant(variantList, queryOptions, apiKey, dataRelease);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
                     System.currentTimeMillis() - startTime, variantList.size());
             return variantFunctionalScoreCellBaseDataResultList;

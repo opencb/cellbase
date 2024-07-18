@@ -35,6 +35,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
@@ -43,6 +44,7 @@ import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
+import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -288,17 +290,24 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return queryResults;
     }
 
-    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions, int dataRelease)
+    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions, String apiKey, int dataRelease)
             throws CellBaseException {
-        return variantDBAdaptor.getFunctionalScoreVariant(variant, queryOptions, dataRelease);
+        Set<String> validSources = apiKeyManager.getValidSources(apiKey, null);
+        if (validSources.contains(EtlCommons.CADD_DATA)) {
+            return variantDBAdaptor.getFunctionalScoreVariant(variant, queryOptions, dataRelease);
+        } else {
+            return new CellBaseDataResult<>(variant.toStringSimple(), 0, Collections.singletonList(new Event(Event.Type.WARNING,
+                    "Your current API key does not grant access to CADD data")), 0);
+        }
     }
 
-    public List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options, int dataRelease)
+    public List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options, String apiKey,
+                                                                     int dataRelease)
             throws CellBaseException {
         List<CellBaseDataResult<Score>> cellBaseDataResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             if (variant.getType() == VariantType.SNV) {
-                cellBaseDataResults.add(getFunctionalScoreVariant(variant, options, dataRelease));
+                cellBaseDataResults.add(getFunctionalScoreVariant(variant, options, apiKey, dataRelease));
             } else {
                 cellBaseDataResults.add(new CellBaseDataResult<>(variant.toString(), 0, Collections.emptyList(), 0));
             }
@@ -344,13 +353,19 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     }
 
     public CellBaseDataResult<GenomicScoreRegion> getFunctionalScoreRegion(List<Region> regions, CellBaseQueryOptions options,
-                                                                           int dataRelease)
+                                                                           String apiKey, int dataRelease)
             throws CellBaseException {
         Set<String> chunkIdSet = new HashSet<>();
-        for (Region region : regions) {
-            chunkIdSet.addAll(variantDBAdaptor.getFunctionalScoreChunkIds(region));
-        }
 
-        return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
+        Set<String> validSources = apiKeyManager.getValidSources(apiKey, null);
+        if (validSources.contains(EtlCommons.CADD_DATA)) {
+            for (Region region : regions) {
+                chunkIdSet.addAll(variantDBAdaptor.getFunctionalScoreChunkIds(region));
+            }
+            return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
+        } else {
+            return new CellBaseDataResult<>("", 0, Collections.singletonList(new Event(Event.Type.WARNING, "Your current API key does not"
+                    + " grant access to CADD data.")), 0);
+        }
     }
 }
