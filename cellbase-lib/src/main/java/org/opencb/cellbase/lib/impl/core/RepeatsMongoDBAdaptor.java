@@ -38,23 +38,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.REPEATS_DATA;
+
 /**
  * Created by fjlopez on 10/05/17.
  */
 public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<RepeatsQuery, Repeat> {
 
-    private static final String REPEAT_COLLECTION = "repeats";
-
     public RepeatsMongoDBAdaptor(MongoDataStore mongoDatastore) {
         super(mongoDatastore);
-
-        init();
-    }
-
-    private void init() {
-        logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap(REPEAT_COLLECTION);
     }
 
     public Bson parseQuery(RepeatsQuery query) {
@@ -95,7 +87,7 @@ public class RepeatsMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Repeat> converter = new GenericDocumentComplexConverter<>(Repeat.class);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(REPEATS_DATA, query.getDataRelease());
         MongoDBIterator<Repeat> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }

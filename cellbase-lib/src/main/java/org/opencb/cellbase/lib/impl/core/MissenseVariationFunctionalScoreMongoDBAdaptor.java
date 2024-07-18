@@ -33,19 +33,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.MISSENSE_VARIATION_SCORE_DATA;
+
 public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
 
     public MissenseVariationFunctionalScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        init();
-    }
-
-    private void init() {
-        logger.debug("MissenseVariationFunctionalScoreMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("missense_variation_functional_score");
     }
 
     public CellBaseDataResult<MissenseVariantFunctionalScore> query(String chromosome, int position, String reference, int dataRelease)
@@ -56,7 +50,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
         andBsonList.add(Filters.eq("reference", reference));
         Bson query = Filters.and(andBsonList);
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(MISSENSE_VARIATION_SCORE_DATA, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(query, null, MissenseVariantFunctionalScore.class, new QueryOptions()));
 
     }
@@ -73,7 +67,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
 
         final String id = chromosome + ":" + position + ":" + reference + ":" + alternate;
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(MISSENSE_VARIATION_SCORE_DATA, dataRelease);
         DataResult<MissenseVariantFunctionalScore> missenseVariantFunctionalScoreDataResult =
                 mongoDBCollection.find(query, null, MissenseVariantFunctionalScore.class, new QueryOptions());
 
@@ -97,7 +91,7 @@ public class MissenseVariationFunctionalScoreMongoDBAdaptor extends CellBaseDBAd
     public CellBaseDataResult<MissenseVariantFunctionalScore> getScores(String chromosome, List<Integer> positions,
                                                                         CellBaseQueryOptions options, int dataRelease)
             throws CellBaseException {
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(MISSENSE_VARIATION_SCORE_DATA, dataRelease);
 
         Bson projection = getProjection(options);
 
