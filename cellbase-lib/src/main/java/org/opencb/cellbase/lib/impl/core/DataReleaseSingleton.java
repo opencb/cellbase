@@ -128,13 +128,14 @@ public final class DataReleaseSingleton {
                 // Check after loading
                 if (!cachedData.get(dbname).containsKey(release)) {
                     // If the release is invalid, throw an exception
-                    String msg = INVALID_RELEASE_MSG_PREFIX + release + ". The available data releases are: " + cachedData.get(dbname).keySet();
+                    String msg = INVALID_RELEASE_MSG_PREFIX + release + ". The available data releases are: "
+                            + cachedData.get(dbname).keySet();
                     throw new CellBaseException(msg);
                 }
                 if (StringUtils.isNotEmpty(data) && !cachedData.get(dbname).get(release).containsKey(data)) {
                     // If the data is invalid, throw an exception
-                    String msg = INVALID_DATA_MSG_PREFIX + " '" + data + "', it's not present in release " + release + ". The available data are: "
-                            + cachedData.get(dbname).get(release).keySet();
+                    String msg = INVALID_DATA_MSG_PREFIX + " '" + data + "', it's not present in release " + release
+                            + ". The available data are: " + cachedData.get(dbname).get(release).keySet();
                     throw new CellBaseException(msg);
                 }
             }
