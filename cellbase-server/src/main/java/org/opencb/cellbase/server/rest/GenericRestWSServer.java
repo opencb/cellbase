@@ -36,6 +36,7 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.cellbase.lib.impl.core.DataReleaseSingleton;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
@@ -224,6 +225,7 @@ public class GenericRestWSServer implements IWSServer {
                 if (dataRelease == 0) {
                     logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease.getRelease()
                             + "' for CellBase version '" + version + "'");
+                    DataReleaseSingleton.getInstance().checkDataRelease(species, assembly, version, dataRelease);
                     return defaultDataRelease.getRelease();
                 } else {
                     return dataRelease;

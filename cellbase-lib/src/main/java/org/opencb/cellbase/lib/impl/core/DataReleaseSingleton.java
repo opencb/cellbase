@@ -103,6 +103,10 @@ public final class DataReleaseSingleton {
         }
     }
 
+    public void checkDataRelease(String species, String assembly, String version, int release) throws CellBaseException {
+        checkDataRelease(MongoDBManager.getDatabaseName(species, assembly, version), release);
+    }
+
     public void checkDataRelease(String dbname, int release) throws CellBaseException {
         checkDataRelease(dbname, release, null);
     }
