@@ -225,9 +225,9 @@ public class GenericRestWSServer implements IWSServer {
                 if (dataRelease == 0) {
                     logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease.getRelease()
                             + "' for CellBase version '" + version + "'");
-                    DataReleaseSingleton.getInstance().checkDataRelease(species, assembly, version, dataRelease);
                     return defaultDataRelease.getRelease();
                 } else {
+                    DataReleaseSingleton.getInstance().checkDataRelease(species, assembly, version, dataRelease);
                     return dataRelease;
                 }
             } catch (NumberFormatException e) {
