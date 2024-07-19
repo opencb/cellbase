@@ -120,25 +120,26 @@ public final class DataReleaseSingleton {
         }
         rwLockMap.get(dbname).writeLock().lock();
         try {
-            if (!cachedData.containsKey(dbname) || !cachedData.containsKey(release)
-                    || (StringUtils.isNotEmpty(data) && !cachedData.get(release).containsKey(data))) {
+            if (!cachedData.get(dbname).containsKey(release)
+                    || (StringUtils.isNotEmpty(data) && !cachedData.get(dbname).get(release).containsKey(data))) {
+                // Load the data releases from the MongoDB collection for that database name
                 loadData(dbname);
+
+                // Check after loading
+                if (!cachedData.get(dbname).containsKey(release)) {
+                    // If the release is invalid, throw an exception
+                    String msg = INVALID_RELEASE_MSG_PREFIX + release + ". The available data releases are: " + cachedData.get(dbname).keySet();
+                    throw new CellBaseException(msg);
+                }
+                if (StringUtils.isNotEmpty(data) && !cachedData.get(dbname).get(release).containsKey(data)) {
+                    // If the data is invalid, throw an exception
+                    String msg = INVALID_DATA_MSG_PREFIX + " '" + data + "', it's not present in release " + release + ". The available data are: "
+                            + cachedData.get(dbname).get(release).keySet();
+                    throw new CellBaseException(msg);
+                }
             }
         } finally {
             rwLockMap.get(dbname).writeLock().unlock();
-        }
-
-        // Check after loading
-        if (!cachedData.get(dbname).containsKey(release)) {
-            // If the data release is invalid, throw an exception
-            String msg = INVALID_RELEASE_MSG_PREFIX + release + ". The available data releases are: " + cachedData.get(dbname).keySet();
-            throw new CellBaseException(msg);
-        }
-        if (StringUtils.isNotEmpty(data) && !cachedData.get(dbname).get(release).containsKey(data)) {
-            // If the data release is invalid, throw an exception
-            String msg = INVALID_DATA_MSG_PREFIX + " '" + data + "', it's not present in release " + release + ". The available data are: "
-                    + cachedData.get(dbname).get(release).keySet();
-            throw new CellBaseException(msg);
         }
     }
 
