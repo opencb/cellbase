@@ -16,8 +16,14 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.client.model.changestream.FullDocument;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -25,6 +31,8 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,12 +55,14 @@ public final class DataReleaseSingleton {
 
     private static DataReleaseSingleton instance;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataReleaseSingleton.class);
+
     public static final String UNKOWN_DATABASE_MSG_PREFIX = "Unknown database ";
     public static final String INVALID_RELEASE_MSG_PREFIX = "Invalid release ";
     public static final String INVALID_DATA_MSG_PREFIX = "Invalid data ";
 
     // Private constructor to prevent instantiation
-    private DataReleaseSingleton(CellBaseManagerFactory managerFactory) {
+    private DataReleaseSingleton(CellBaseManagerFactory managerFactory) throws CellBaseException {
         this.managerFactory = managerFactory;
 
         // Support multi species and assemblies
@@ -66,12 +76,29 @@ public final class DataReleaseSingleton {
                 assemblyMap.put(databaseName, assembly.getName());
                 rwLockMap.put(databaseName, new ReentrantReadWriteLock());
                 cachedData.put(databaseName, new HashMap<>());
+
+                MongoClient mongoClient = managerFactory.getDataReleaseManager(vertebrate.getId(), assembly.getName()).getMongoDatastore()
+                        .getMongoClient();
+                MongoDatabase database = mongoClient.getDatabase(databaseName);
+                MongoCollection<Document> collection = database.getCollection(ReleaseMongoDBAdaptor.DATA_RELEASE_COLLECTION_NAME);
+                LOGGER.info("Setting listener for database {} and collection {}", database.getName(), collection.getNamespace()
+                        .getCollectionName());
+                // Set up the change stream for the collection
+                new Thread(() -> {
+                    collection.watch().fullDocument(FullDocument.UPDATE_LOOKUP).forEach(changeStreamDocument -> {
+                        try {
+                            handleDocumentChange(changeStreamDocument);
+                        } catch (CellBaseException e) {
+                            LOGGER.warn("Exception from handle document change function: {}", e.getStackTrace());
+                        }
+                    });
+                }).start();
             }
         }
     }
 
     // Initialization method to set up the instance with parameters
-    public static synchronized void initialize(CellBaseManagerFactory managerFactory) {
+    public static synchronized void initialize(CellBaseManagerFactory managerFactory) throws CellBaseException {
         if (instance == null) {
             instance = new DataReleaseSingleton(managerFactory);
         }
@@ -148,5 +175,25 @@ public final class DataReleaseSingleton {
     public MongoDBCollection getMongoDBCollection(String dbname, String data, int release) throws CellBaseException {
         checkDataRelease(dbname, release, data);
         return cachedData.get(dbname).get(release).get(data);
+    }
+
+    private void handleDocumentChange(ChangeStreamDocument<Document> changeStreamDocument) throws CellBaseException {
+        // Get database name
+        String dbname = changeStreamDocument.getNamespace().getDatabaseName();
+        String collectionName = changeStreamDocument.getNamespace().getCollectionName();
+        LOGGER.info("Collection {} of database {} has been updated", collectionName, dbname);
+
+        // Handle the change event
+        if (!cachedData.containsKey(dbname)) {
+            // If the data release is invalid, throw an exception
+            String msg = UNKOWN_DATABASE_MSG_PREFIX + dbname;
+            throw new CellBaseException(msg);
+        }
+        rwLockMap.get(dbname).writeLock().lock();
+        try {
+            loadData(dbname);
+        } finally {
+            rwLockMap.get(dbname).writeLock().unlock();
+        }
     }
 }

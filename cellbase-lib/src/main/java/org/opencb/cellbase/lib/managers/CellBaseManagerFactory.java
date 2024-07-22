@@ -51,7 +51,7 @@ public class CellBaseManagerFactory {
 
     private Logger logger;
 
-    public CellBaseManagerFactory(CellBaseConfiguration configuration) {
+    public CellBaseManagerFactory(CellBaseConfiguration configuration) throws CellBaseException {
         this.configuration = configuration;
         logger = LoggerFactory.getLogger(this.getClass());
 
@@ -326,7 +326,7 @@ public class CellBaseManagerFactory {
         return ontologyManagers.get(multiKey);
     }
 
-    public DataReleaseManager getDataRelesaseManager(String species) throws CellBaseException {
+    public DataReleaseManager getDataReleaseManager(String species) throws CellBaseException {
         if (species == null) {
             throw new CellBaseException("Species is required.");
         }
