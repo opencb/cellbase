@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,9 +33,13 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GenomeDownloadManager extends AbstractDownloadManager {
 
+    private Path sequenceFolder;
+
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
+
+        this.sequenceFolder = downloadFolder.resolve(GENOME_DATA);
     }
 
     @Override
@@ -44,8 +49,14 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException, CellBaseException {
+        Path genomeVersionFilePath = sequenceFolder.resolve(getDataVersionFilename(GENOME_DATA));
+
+        if (Files.exists(genomeVersionFilePath)) {
+            logger.info(DATA_ALREADY_DOWNLOADED, genomeVersionFilePath.getFileName(), getDataName(GENOME_DATA));
+            return new ArrayList<>();
+        }
+
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_DATA));
-        Path sequenceFolder = downloadFolder.resolve(GENOME_DATA);
         Files.createDirectories(sequenceFolder);
 
         // Reference genome sequences are downloaded from Ensembl
@@ -55,7 +66,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
         // Save data source
         saveDataSource(GENOME_DATA, ensemblVersion, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                sequenceFolder.resolve(getDataVersionFilename(GENOME_DATA)));
+                genomeVersionFilePath);
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_DATA));
 
@@ -63,8 +74,14 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     }
 
     public void downloadGenomeInfo() throws IOException, CellBaseException {
+        String genomeInfoFilename = "genome_info.json";
+
+        if (Files.exists(sequenceFolder.resolve(genomeInfoFilename))) {
+            logger.info(DATA_ALREADY_DOWNLOADED, genomeInfoFilename, getDataName(GENOME_INFO_DATA));
+            return;
+        }
+
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
-        Path sequenceFolder = downloadFolder.resolve(GENOME_DATA);
         Files.createDirectories(sequenceFolder);
 
         String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
@@ -77,7 +94,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             // Params
             String params = "/opt/cellbase/scripts/ensembl-scripts/genome_info.pl"
                     + " --species \"" + speciesConfiguration.getScientificName() + "\""
-                    + " --outfile \"" + outputBinding.getValue() + "/genome_info.json\"";
+                    + " --outfile \"" + outputBinding.getValue() + "/" + genomeInfoFilename + "\"";
 
             // Execute perl script in docker
             DockerUtils.run(dockerImage, null, outputBinding, params, null);

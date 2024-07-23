@@ -56,6 +56,8 @@ public abstract class AbstractDownloadManager {
     protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
     protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {}/{} done.";
     protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
+    protected static final String DATA_ALREADY_DOWNLOADED = "The file {} already exists, indicating that the data {} has already been"
+        + " downloaded.";
 
     protected String species;
     protected String assembly;
