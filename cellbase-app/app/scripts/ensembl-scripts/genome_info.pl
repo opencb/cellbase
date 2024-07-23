@@ -17,9 +17,9 @@ my $help = '0';
 ####################################################################
 ## Parsing command line options ####################################
 ####################################################################
-##docker run -it --mount type=bind,source=/tmp,target=/tmp opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/genome_info.pl --species "Mus musculus" --outfile /tmp
+##docker run -it --mount type=bind,source=/tmp,target=/tmp opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/genome_info.pl --species "Mus musculus" --assembly GRCm39 --outfile /tmp
 
-# USAGE: ./genome_info.pl --species "Homo sapiens" --outfile ../../appl_db/ird_v1/hsa ...
+# USAGE: ./genome_info.pl --species "Homo sapiens" --assembly GRCh38 --outfile ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'o|outfile=s' => \$outfile, 'phylo=s' => \$phylo,
