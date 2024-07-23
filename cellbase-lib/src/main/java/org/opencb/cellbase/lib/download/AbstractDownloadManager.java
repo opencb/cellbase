@@ -225,7 +225,7 @@ public abstract class AbstractDownloadManager {
             throws IOException, CellBaseException {
         String name = getDataName(data);
         String category = getDataCategory(data);
-        DataSource dataSource = new DataSource(name, category, version, date, urls);
+        DataSource dataSource = new DataSource(data, name, category, version, date, urls);
 
         if (StringUtils.isEmpty(version)) {
             logger.warn("Version missing for data source {}/{}, using the date as version: {}", category, name, date);
