@@ -109,10 +109,10 @@ download:
     files:
       CANCER_HOTSPOT: files/hotspots_v2.xls
   dgidb:
-    host: https://old.dgidb.org/
-    version: "2022-02-01"
+    host: https://dgidb.org/
+    version: "DGIdb v.5.0.7 (07/06/2024)"
     files:
-      DGIDB: data/monthly_tsvs/2022-Feb/interactions.tsv
+      DGIDB: data/latest/interactions.tsv
   geneUniprotXref:
     host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
     version: "2024-03-27"
