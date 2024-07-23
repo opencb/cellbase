@@ -32,19 +32,6 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class GeneDownloadManager extends AbstractDownloadManager {
 
-    private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
-
-    static {
-        GENE_UNIPROT_XREF_FILES = new HashMap<>();
-        GENE_UNIPROT_XREF_FILES.put(HOMO_SAPIENS_NAME, "HUMAN_9606_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put(MUS_MUSCULUS_NAME, "MOUSE_10090_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put(RATTUS_NORVEGICUS_NAME, "RAT_10116_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put(DANIO_RERIO_NAME, "DANRE_7955_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put("Drosophila melanogaster", "DROME_7227_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
-        GENE_UNIPROT_XREF_FILES.put("Caenorhabditis elegans", "CAEEL_6239_idmapping_selected.tab.gz");
-    }
-
     public GeneDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
