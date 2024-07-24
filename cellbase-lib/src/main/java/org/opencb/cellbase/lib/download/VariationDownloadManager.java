@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -45,34 +44,41 @@ public class VariationDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Check if species is supported
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(VARIATION_DATA));
-
+        // and we do not need to download human variation data from Ensembl. It is already included in the CellBase.
+        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)
+                && !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
             Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variationFolder);
 
-            // We do not need to download human variation data from Ensembl. It is already included in the CellBase.
-            if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, speciesShortName + ".vcf.gz");
-                String fileName = variationFolder.resolve(speciesShortName + ".gtf.gz").toString();
-                String url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
-                        + speciesShortName + ".vcf.gz";
-                downloadFiles.add(downloadFile(url, fileName));
-                logger.info(OK_LOG_MESSAGE);
-                saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), Collections.singletonList(url),
-                        variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)));
-
-                fileName = variationFolder.resolve(speciesShortName + "_structural_variations.gtf.gz").toString();
-                url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
-                        + speciesShortName + "_structural_variations.vcf.gz";
-                downloadFiles.add(downloadFile(url, fileName));
-                logger.info(OK_LOG_MESSAGE);
-                saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), Collections.singletonList(url),
-                        variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)));
+            if (isAlreadyDownloaded(downloadFolder.resolve(getDataVersionFilename(VARIATION_DATA)), getDataName(VARIATION_DATA))) {
+                return new ArrayList<>();
             }
+
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(VARIATION_DATA));
+
+            List<String> urls = new ArrayList<>();
+
+            String fileName = variationFolder.resolve(speciesShortName + ".gtf.gz").toString();
+            String url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
+                    + speciesShortName + ".vcf.gz";
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, fileName);
+            downloadFiles.add(downloadFile(url, fileName));
+            urls.add(url);
+            logger.info(OK_LOG_MESSAGE);
+
+            fileName = variationFolder.resolve(speciesShortName + "_structural_variations.gtf.gz").toString();
+            url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
+                    + speciesShortName + "_structural_variations.vcf.gz";
+            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, fileName);
+            downloadFiles.add(downloadFile(url, fileName));
+            urls.add(url);
+            logger.info(OK_LOG_MESSAGE);
+
+            saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), urls, variationFolder.resolve(
+                    getDataVersionFilename(VARIATION_DATA)));
+
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(VARIATION_DATA));
         }
-
         return downloadFiles;
     }
 }
