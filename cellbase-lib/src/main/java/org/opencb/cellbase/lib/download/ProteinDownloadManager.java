@@ -48,26 +48,49 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
 
         // Check if the species is supported
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PROTEIN_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
             Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
             Files.createDirectories(proteinFolder);
+
+            Path uniProtFolder = Files.createDirectories(proteinFolder.resolve(UNIPROT_DATA));
+            Path interProFolder = Files.createDirectories(proteinFolder.resolve(INTERPRO_DATA));
+            Path intactFolder = Files.createDirectories(proteinFolder.resolve(INTACT_DATA));
+
+            // Already downloaded ?
+            boolean downloadUniProt = !isAlreadyDownloaded(uniProtFolder.resolve(getDataVersionFilename(UNIPROT_DATA)),
+                    getDataName(UNIPROT_DATA));
+            boolean downloadInterPro = !isAlreadyDownloaded(interProFolder.resolve(getDataVersionFilename(INTERPRO_DATA)),
+                    getDataName(INTERPRO_DATA));
+            boolean downloadIntact = !isAlreadyDownloaded(intactFolder.resolve(getDataVersionFilename(INTACT_DATA)),
+                    getDataName(INTACT_DATA));
+
+            if (!downloadUniProt && !downloadInterPro && !downloadIntact) {
+                return new ArrayList<>();
+            }
+
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
 
             DownloadFile downloadFile;
 
             // Uniprot
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(),
-                    UNIPROT_FILE_ID, UNIPROT_DATA, proteinFolder);
-            downloadFiles.add(downloadFile);
+            if (downloadUniProt) {
+                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_DATA,
+                        uniProtFolder);
+                downloadFiles.add(downloadFile);
+            }
 
             // InterPro
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(),
-                    INTERPRO_FILE_ID, INTERPRO_DATA, proteinFolder);
-            downloadFiles.add(downloadFile);
+            if (downloadInterPro) {
+                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_DATA,
+                        interProFolder);
+                downloadFiles.add(downloadFile);
+            }
 
             // Intact
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(),
-                    INTACT_FILE_ID, INTACT_DATA, proteinFolder);
-            downloadFiles.add(downloadFile);
+            if (downloadIntact) {
+                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_DATA,
+                        intactFolder);
+                downloadFiles.add(downloadFile);
+            }
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
         }
