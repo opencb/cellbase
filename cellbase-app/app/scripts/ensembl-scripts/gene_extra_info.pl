@@ -18,7 +18,7 @@ my $help = '0';
 ####################################################################
 ##docker run -it --mount type=bind,source=/tmp,target=/tmp opencb/cellbase-builder:6.2.0-SNAPSHOT /opt/cellbase/scripts/ensembl-scripts/gene_extra_info.pl -s "Mus musculus" -o /tmp
 
-# USAGE: ./gene_extra_info.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
+# USAGE: ./gene_extra_info.pl --species "Homo sapiens" --assembly "GRCh38" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'outdir=s' => \$outdir, 'phylo=s' => \$phylo,
