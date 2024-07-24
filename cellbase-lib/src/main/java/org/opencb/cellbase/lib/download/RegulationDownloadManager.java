@@ -32,6 +32,10 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public class RegulationDownloadManager extends AbstractDownloadManager {
 
     private Path regulationFolder;
+    private Path regulatoryBuildFolder;
+    private Path motifFeaturesFolder;
+    private Path mirTarBaseFolder;
+    private Path mirBaseFolder;
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
@@ -44,13 +48,46 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
         // Check if species is supported
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), REGULATION_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
             regulationFolder = downloadFolder.resolve(REGULATION_DATA);
             Files.createDirectories(regulationFolder);
+            regulatoryBuildFolder = Files.createDirectories(regulationFolder.resolve(REGULATORY_BUILD_DATA));
+            motifFeaturesFolder = Files.createDirectories(regulationFolder.resolve(MOTIF_FEATURES_DATA));
+            mirTarBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRTARBASE_DATA));
+            mirBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRBASE_DATA));
 
-            downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
-            downloadFiles.add(downloadMiRTarBase());
-            downloadFiles.add(downloadMirna());
+            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+
+            // Already downloaded ?
+            boolean downloadRegulatoryBuild = !isAlreadyDownloaded(regulatoryBuildFolder.resolve(getDataVersionFilename(
+                    REGULATORY_BUILD_DATA)), getDataName(REGULATORY_BUILD_DATA));
+            boolean downloadMotifFeatures = !isAlreadyDownloaded(motifFeaturesFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)),
+                    getDataName(MOTIF_FEATURES_DATA));
+            boolean downloadMirTarBase = !isAlreadyDownloaded(mirTarBaseFolder.resolve(getDataVersionFilename(MIRTARBASE_DATA)),
+                    getDataName(MIRTARBASE_DATA)) && configuration.getDownload().getMiRTarBase().getFiles().containsKey(prefixId
+                    + MIRTARBASE_FILE_ID);
+            boolean downloadMirBase = !isAlreadyDownloaded(mirBaseFolder.resolve(getDataVersionFilename(MIRBASE_DATA)),
+                    getDataName(MIRBASE_DATA));
+
+            if (!downloadRegulatoryBuild && !downloadMotifFeatures && !downloadMirTarBase && !downloadMirBase) {
+                return new ArrayList<>();
+            }
+
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
+
+            if (downloadRegulatoryBuild) {
+                downloadFiles.addAll(downloadRegulatoryaBuild());
+            }
+
+            if (downloadMotifFeatures) {
+                downloadFiles.addAll(downloadMotifFeatures());
+            }
+
+            if (downloadMirTarBase) {
+                downloadFiles.add(downloadMiRTarBase());
+            }
+            if (downloadMirBase) {
+                downloadFiles.add(downloadMirna());
+            }
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
         }
@@ -59,18 +96,34 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     }
 
     /**
-     * Downloads Ensembl regulatory build and motif feature files.
+     * Downloads Ensembl regulatory build.
      * @throws IOException Any issue when writing files
      * @throws InterruptedException Any issue downloading files
      */
-    private List<DownloadFile> downloadRegulatoryaAndMotifFeatures() throws IOException, InterruptedException, CellBaseException {
+    private List<DownloadFile> downloadRegulatoryaBuild() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATORY_BUILD_DATA));
+
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Regulatory build
         downloadFile = downloadAndSaveEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_REGULATORY_BUILD_FILE_ID,
-                REGULATORY_BUILD_DATA, regulationFolder);
+                REGULATORY_BUILD_DATA, regulatoryBuildFolder);
         downloadFiles.add(downloadFile);
+
+        return downloadFiles;
+    }
+
+    /**
+     * Downloads Ensembl motif feature files.
+     * @throws IOException Any issue when writing files
+     * @throws InterruptedException Any issue downloading files
+     */
+    private List<DownloadFile> downloadMotifFeatures() throws IOException, InterruptedException, CellBaseException {
+        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MOTIF_FEATURES_DATA));
+
+        DownloadFile downloadFile;
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Motifs features
         List<String> urls = new ArrayList<>();
@@ -87,7 +140,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
         // Save data source (name, category, version,...)
         saveDataSource(MOTIF_FEATURES_DATA, "(" + getDataName(ENSEMBL_DATA) + " " + ensemblVersion + ")", getTimeStamp(), urls,
-                regulationFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)));
+                motifFeaturesFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)));
 
         return downloadFiles;
     }
@@ -95,11 +148,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private DownloadFile downloadMirna() throws IOException, InterruptedException, CellBaseException {
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRBASE_DATA));
 
-        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMirbase(), MIRBASE_FILE_ID, MIRBASE_DATA,
-                regulationFolder);
-
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRBASE_DATA));
-        return downloadFile;
+        return downloadAndSaveDataSource(configuration.getDownload().getMirbase(), MIRBASE_FILE_ID, MIRBASE_DATA, mirBaseFolder);
     }
 
     private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException, CellBaseException {
@@ -108,10 +157,8 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         if (configuration.getDownload().getMiRTarBase().getFiles().containsKey(prefixId + MIRTARBASE_FILE_ID)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
 
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(),
-                    prefixId + MIRTARBASE_FILE_ID, MIRTARBASE_DATA, regulationFolder);
-
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(), prefixId + MIRTARBASE_FILE_ID,
+                    MIRTARBASE_DATA, mirTarBaseFolder);
         }
         return downloadFile;
     }
