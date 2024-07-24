@@ -191,7 +191,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             // Params
             String params = "/opt/cellbase/scripts/ensembl-scripts/" + ensemblCanonicalScript
                     + " --species \"" + speciesConfiguration.getId() + "\""
-                    + " --assembly \"" + assemblyConfiguration.getName() + "\""
                     + " --outdir \"" + outputBinding.getValue() + "\"";
 
             // Execute perl script in docker
