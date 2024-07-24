@@ -51,8 +51,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException, CellBaseException {
         Path genomeVersionFilePath = sequenceFolder.resolve(getDataVersionFilename(GENOME_DATA));
 
-        if (Files.exists(genomeVersionFilePath)) {
-            logger.info(DATA_ALREADY_DOWNLOADED, genomeVersionFilePath.getFileName(), getDataName(GENOME_DATA));
+        // Already downloaded
+        if (isAlreadyDownloaded(genomeVersionFilePath, getDataName(GENOME_DATA))) {
             return new ArrayList<>();
         }
 
@@ -76,8 +76,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     public void downloadGenomeInfo() throws IOException, CellBaseException {
         String genomeInfoFilename = "genome_info.json";
 
-        if (Files.exists(sequenceFolder.resolve(genomeInfoFilename))) {
-            logger.info(DATA_ALREADY_DOWNLOADED, genomeInfoFilename, getDataName(GENOME_INFO_DATA));
+        // Already downloaded
+        if (isAlreadyDownloaded(sequenceFolder.resolve(genomeInfoFilename), getDataName(GENOME_INFO_DATA))) {
             return;
         }
 
@@ -105,5 +105,4 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
     }
-
 }

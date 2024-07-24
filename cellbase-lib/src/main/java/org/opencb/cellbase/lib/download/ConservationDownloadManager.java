@@ -54,14 +54,26 @@ public class ConservationDownloadManager extends AbstractDownloadManager {
 
         // Check if the species is supported
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), CONSERVATION_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
 
             // Create folders
             Path conservationFolder = downloadFolder.resolve(CONSERVATION_DATA);
             Files.createDirectories(conservationFolder);
-            Files.createDirectories(conservationFolder.resolve(GERP_DATA));
-            Files.createDirectories(conservationFolder.resolve(PHASTCONS_DATA));
-            Files.createDirectories(conservationFolder.resolve(PHYLOP_DATA));
+            Path gerpFolder = Files.createDirectories(conservationFolder.resolve(GERP_DATA));
+            Path phastConsFolder = Files.createDirectories(conservationFolder.resolve(PHASTCONS_DATA));
+            Path phyloPFolder = Files.createDirectories(conservationFolder.resolve(PHYLOP_DATA));
+
+            // Already downloaded ?
+            boolean downloadGerp = !isAlreadyDownloaded(gerpFolder.resolve(getDataVersionFilename(GERP_DATA)), getDataName(GERP_DATA));
+            boolean downloadPhastCons = !isAlreadyDownloaded(phastConsFolder.resolve(getDataVersionFilename(PHASTCONS_DATA)),
+                    getDataName(PHASTCONS_DATA));
+            boolean downloadPhyloP = !isAlreadyDownloaded(phyloPFolder.resolve(getDataVersionFilename(PHYLOP_DATA)),
+                    getDataName(PHYLOP_DATA));
+
+            if (!downloadGerp && !downloadPhastCons && !downloadPhyloP) {
+                return new ArrayList<>();
+            }
+
+            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
 
             // Download data
             String filename;
@@ -80,30 +92,39 @@ public class ConservationDownloadManager extends AbstractDownloadManager {
                 String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                         "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M"};
                 for (String chromosome : chromosomes) {
-                    logger.info(DOWNLOADING_LOG_MESSAGE, "phastConst " + chromosome);
-                    String phastConsUrl = phastconsHost + configuration.getDownload().getPhastCons().getFiles().get(PHASTCONS_FILE_ID)
-                            + "chr" + chromosome + ".phastCons470way.wigFix.gz";
-                    filename = Paths.get(phastConsUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
-                    downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
-                    phastconsUrls.add(phastConsUrl);
+                    if (downloadPhastCons) {
+                        logger.info(DOWNLOADING_LOG_MESSAGE, getChromDownloadMessage(getDataName(PHASTCONS_DATA), chromosome));
+                        String phastConsUrl = phastconsHost + configuration.getDownload().getPhastCons().getFiles().get(PHASTCONS_FILE_ID)
+                                + "chr" + chromosome + ".phastCons470way.wigFix.gz";
+                        filename = Paths.get(phastConsUrl).getFileName().toString();
+                        outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
+                        downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
+                        phastconsUrls.add(phastConsUrl);
+                        logger.info(OK_LOG_MESSAGE);
+                    }
 
-                    logger.info(DOWNLOADING_LOG_MESSAGE, "phyloP " + chromosome);
-                    String phyloPUrl = phylopHost + configuration.getDownload().getPhylop().getFiles().get(PHYLOP_FILE_ID)
-                            + "chr" + chromosome + ".phyloP470way.wigFix.gz";
-                    filename = Paths.get(phyloPUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
-                    downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
-                    phyloPUrls.add(phyloPUrl);
+                    if (downloadPhyloP) {
+                        logger.info(DOWNLOADING_LOG_MESSAGE, getChromDownloadMessage(getDataName(PHYLOP_DATA), chromosome));
+                        String phyloPUrl = phylopHost + configuration.getDownload().getPhylop().getFiles().get(PHYLOP_FILE_ID)
+                                + "chr" + chromosome + ".phyloP470way.wigFix.gz";
+                        filename = Paths.get(phyloPUrl).getFileName().toString();
+                        outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
+                        downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
+                        phyloPUrls.add(phyloPUrl);
+                        logger.info(OK_LOG_MESSAGE);
+                    }
                 }
 
                 // 2. Gerp
-                logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GERP_DATA));
-                gerpUrl = configuration.getDownload().getGerp().getHost()
-                        + configuration.getDownload().getGerp().getFiles().get(GERP_FILE_ID);
-                filename = Paths.get(gerpUrl).getFileName().toString();
-                outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
-                downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+                if (downloadGerp) {
+                    logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GERP_DATA));
+                    gerpUrl = configuration.getDownload().getGerp().getHost()
+                            + configuration.getDownload().getGerp().getFiles().get(GERP_FILE_ID);
+                    filename = Paths.get(gerpUrl).getFileName().toString();
+                    outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
+                    downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+                    logger.info(OK_LOG_MESSAGE);
+                }
             }
 
             // Mouse
@@ -114,43 +135,63 @@ public class ConservationDownloadManager extends AbstractDownloadManager {
                 String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                         "15", "16", "17", "18", "19", "X", "Y", "M"};
                 for (String chromosome : chromosomes) {
-                    logger.info(DOWNLOADING_LOG_MESSAGE, "phastConst " + chromosome);
-                    String phastConsUrl = phastconsHost
-                            + configuration.getDownload().getPhastCons().getFiles().get(prefixId + PHASTCONS_FILE_ID)
-                            + "chr" + chromosome + ".phastCons35way.wigFix.gz";
-                    filename = Paths.get(phastConsUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
-                    downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
-                    phastconsUrls.add(phastConsUrl);
+                    if (downloadPhastCons) {
+                        logger.info(DOWNLOADING_LOG_MESSAGE, getChromDownloadMessage(getDataName(PHASTCONS_DATA), chromosome));
+                        String phastConsUrl = phastconsHost
+                                + configuration.getDownload().getPhastCons().getFiles().get(prefixId + PHASTCONS_FILE_ID)
+                                + "chr" + chromosome + ".phastCons35way.wigFix.gz";
+                        filename = Paths.get(phastConsUrl).getFileName().toString();
+                        outputPath = conservationFolder.resolve(PHASTCONS_DATA).resolve(filename);
+                        downloadFiles.add(downloadFile(phastConsUrl, outputPath.toString()));
+                        phastconsUrls.add(phastConsUrl);
+                        logger.info(OK_LOG_MESSAGE);
+                    }
 
-                    logger.info(DOWNLOADING_LOG_MESSAGE, "phyloP " + chromosome);
-                    String phyloPUrl = phylopHost + configuration.getDownload().getPhylop().getFiles().get(prefixId + PHYLOP_FILE_ID)
-                            + "chr" + chromosome + ".phyloP35way.wigFix.gz";
-                    filename = Paths.get(phyloPUrl).getFileName().toString();
-                    outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
-                    downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
-                    phyloPUrls.add(phyloPUrl);
+                    if (downloadPhyloP) {
+                        logger.info(DOWNLOADING_LOG_MESSAGE, getChromDownloadMessage(getDataName(PHYLOP_DATA), chromosome));
+                        String phyloPUrl = phylopHost + configuration.getDownload().getPhylop().getFiles().get(prefixId + PHYLOP_FILE_ID)
+                                + "chr" + chromosome + ".phyloP35way.wigFix.gz";
+                        filename = Paths.get(phyloPUrl).getFileName().toString();
+                        outputPath = conservationFolder.resolve(PHYLOP_DATA).resolve(filename);
+                        downloadFiles.add(downloadFile(phyloPUrl, outputPath.toString()));
+                        phyloPUrls.add(phyloPUrl);
+                        logger.info(OK_LOG_MESSAGE);
+                    }
                 }
 
                 // 2. Gerp
-                logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GERP_DATA));
-                gerpUrl = configuration.getDownload().getGerp().getHost()
-                        + configuration.getDownload().getGerp().getFiles().get(prefixId + GERP_FILE_ID);
-                filename = Paths.get(gerpUrl).getFileName().toString();
-                outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
-                downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+                if (downloadGerp) {
+                    logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GERP_DATA));
+                    gerpUrl = configuration.getDownload().getGerp().getHost()
+                            + configuration.getDownload().getGerp().getFiles().get(prefixId + GERP_FILE_ID);
+                    filename = Paths.get(gerpUrl).getFileName().toString();
+                    outputPath = conservationFolder.resolve(GERP_DATA).resolve(filename);
+                    downloadFiles.add(downloadFile(gerpUrl, outputPath.toString()));
+                    logger.info(OK_LOG_MESSAGE);
+                }
             }
 
             // Save data version
-            saveDataSource(PHASTCONS_DATA, configuration.getDownload().getPhastCons().getVersion(), getTimeStamp(), phastconsUrls,
-                    conservationFolder.resolve(getDataVersionFilename(PHASTCONS_DATA)));
-            saveDataSource(PHYLOP_DATA, configuration.getDownload().getPhylop().getVersion(), getTimeStamp(), phyloPUrls,
-                    conservationFolder.resolve(getDataVersionFilename(PHYLOP_DATA)));
-            saveDataSource(GERP_DATA, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
-                    Collections.singletonList(gerpUrl), conservationFolder.resolve(getDataVersionFilename(GERP_DATA)));
+            if (downloadPhastCons) {
+                saveDataSource(PHASTCONS_DATA, configuration.getDownload().getPhastCons().getVersion(), getTimeStamp(), phastconsUrls,
+                        phastConsFolder.resolve(getDataVersionFilename(PHASTCONS_DATA)));
+            }
+            if (downloadPhyloP) {
+                saveDataSource(PHYLOP_DATA, configuration.getDownload().getPhylop().getVersion(), getTimeStamp(), phyloPUrls,
+                        phyloPFolder.resolve(getDataVersionFilename(PHYLOP_DATA)));
+            }
+            if (downloadGerp) {
+                saveDataSource(GERP_DATA, configuration.getDownload().getGerp().getVersion(), getTimeStamp(),
+                        Collections.singletonList(gerpUrl), gerpFolder.resolve(getDataVersionFilename(GERP_DATA)));
+            }
+
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
         }
         return downloadFiles;
+    }
+
+    private String getChromDownloadMessage(String dataName, String chromosome) {
+        return dataName + ", chrom. " + chromosome;
     }
 
 }

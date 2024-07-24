@@ -334,6 +334,14 @@ public abstract class AbstractDownloadManager {
         writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);
     }
 
+    public boolean isAlreadyDownloaded(Path path, String dataName) {
+        if (Files.exists(path)) {
+            logger.info(DATA_ALREADY_DOWNLOADED, path.getFileName(), dataName);
+            return true;
+        }
+        return false;
+    }
+
     private boolean validateDownloadFile(DownloadFile downloadFile, String outputFileName, String outputFileLog) {
         long expectedFileSize = getExpectedFileSize(outputFileLog);
         long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
