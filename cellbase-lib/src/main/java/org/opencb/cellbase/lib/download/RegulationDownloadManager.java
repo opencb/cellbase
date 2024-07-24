@@ -128,13 +128,13 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         // Motifs features
         List<String> urls = new ArrayList<>();
         downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_MOTIF_FEATURES_FILE_ID, null,
-                regulationFolder);
+                motifFeaturesFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
 
         // And now the index file
         downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID, null,
-                regulationFolder);
+                motifFeaturesFolder);
         downloadFiles.add(downloadFile);
         urls.add(downloadFile.getUrl());
 
