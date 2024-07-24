@@ -31,7 +31,6 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class RegulationDownloadManager extends AbstractDownloadManager {
 
-    private Path regulationFolder;
     private Path regulatoryBuildFolder;
     private Path motifFeaturesFolder;
     private Path mirTarBaseFolder;
@@ -48,7 +47,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
         // Check if species is supported
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), REGULATION_DATA)) {
-            regulationFolder = downloadFolder.resolve(REGULATION_DATA);
+            Path regulationFolder = downloadFolder.resolve(REGULATION_DATA);
             Files.createDirectories(regulationFolder);
             regulatoryBuildFolder = Files.createDirectories(regulationFolder.resolve(REGULATORY_BUILD_DATA));
             motifFeaturesFolder = Files.createDirectories(regulationFolder.resolve(MOTIF_FEATURES_DATA));
