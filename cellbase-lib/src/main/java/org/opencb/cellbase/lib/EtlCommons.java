@@ -110,6 +110,8 @@ public final class EtlCommons {
     public static final String REFSEQ_RNA_FNA_FILE_ID = "RNA_FNA";
 
     // Gene annotation
+    public static final String ENSEMBL_CANONICAL_DATA = "ensembl_canonical";
+    public static final String GENE_EXTRA_INFO_DATA = "gene_extra_info";
     //   - MANE Select
     public static final String MANE_SELECT_DATA = "MANE Select";
     // Must match the configuration file
@@ -354,6 +356,8 @@ public final class EtlCommons {
         dataNamesMap.put(GENOME_DATA, "Genome");
         dataNamesMap.put(GENOME_INFO_DATA, "Genome Info");
         dataNamesMap.put(GENE_DATA, "Gene");
+        dataNamesMap.put(ENSEMBL_CANONICAL_DATA, "Ensembl canonical");
+        dataNamesMap.put(GENE_EXTRA_INFO_DATA, "Gene extra info");
         dataNamesMap.put(GENE_ANNOTATION_DATA, "Gene Annotation");
         dataNamesMap.put(MANE_SELECT_DATA, "MANE Select");
         dataNamesMap.put(LRG_DATA, "LRG");

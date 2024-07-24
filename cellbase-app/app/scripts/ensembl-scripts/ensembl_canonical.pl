@@ -36,7 +36,12 @@ $query->addAttribute("transcript_is_canonical");
 
 $query->formatter("TSV");
 
-open (ENSEMBL_CANONICAL, ">$outdir/ensembl_canonical.txt") || die "Cannot open ensembl_canonical.txt file";
+# Open the file for writing
+open(my $fh, '>', "$outdir/ensembl_canonical.txt") or die "Cannot open ensembl_canonical.txt file: $!";
+
+# Save the original stdout
+my $original_stdout = *STDOUT;
+open(STDOUT, '>&', $fh) or die "Can't redirect STDOUT: $!";
 
 my $query_runner = BioMart::QueryRunner->new();
 
@@ -44,5 +49,13 @@ my $query_runner = BioMart::QueryRunner->new();
 $query_runner->uniqueRowsOnly(1);
 $query_runner->execute($query);
 #$query_runner->printHeader();
-print ENSEMBL_CANONICAL $query_runner->printResults();
+#print ENSEMBL_CANONICAL $query_runner->printResults();
+# Call printResults which prints to STDOUT (now redirected to the file)
+$query_runner->printResults();
 #$query_runner->printFooter();
+
+# Restore the original stdout
+open(STDOUT, '>&', $original_stdout) or die "Can't restore STDOUT: $!";
+
+# Close the filehandle
+close($fh) or die "Failed to close file: $!";

@@ -143,7 +143,7 @@ print "Wrote $outfile\n";
 
 sub print_parameters {
     print "Parameters: ";
-    print "species: $species, outfile: $outfile, ";
+    print "species: $species, assembly: $assembly, outfile: $outfile, ";
     print "ensembl-registry: $ENSEMBL_REGISTRY, ";
     print "ensembl-host: $ENSEMBL_HOST, ensembl-port: $ENSEMBL_PORT, ";
     print "ensembl-user: $ENSEMBL_USER, verbose: $verbose, help: $help";
