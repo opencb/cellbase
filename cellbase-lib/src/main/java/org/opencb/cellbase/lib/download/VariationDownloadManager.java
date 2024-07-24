@@ -50,7 +50,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
             Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variationFolder);
 
-            if (isAlreadyDownloaded(downloadFolder.resolve(getDataVersionFilename(VARIATION_DATA)), getDataName(VARIATION_DATA))) {
+            if (isAlreadyDownloaded(variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)), getDataName(VARIATION_DATA))) {
                 return new ArrayList<>();
             }
 
