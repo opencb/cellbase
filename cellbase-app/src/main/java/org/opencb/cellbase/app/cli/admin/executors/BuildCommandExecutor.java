@@ -350,22 +350,22 @@ public class BuildCommandExecutor extends CommandExecutor {
         String ensemblUrl = getEnsemblUrl(configuration.getDownload().getEnsembl(), ensemblRelease, ENSEMBL_PRIMARY_FA_FILE_ID,
                 SpeciesUtils.getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
         String fastaFilename = Paths.get(ensemblUrl).getFileName().toString();
-        Path fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename);
-        if (fastaPath.toFile().exists()) {
+        Path gzFastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename);
+        Path fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(GZ_EXTENSION, ""));
+        if (!fastaPath.toFile().exists()) {
             // Gunzip
-            logger.info("Gunzip file: {}", fastaPath);
+            logger.info("Gunzip file: {}", gzFastaPath);
             try {
-                List<String> params = Arrays.asList("--keep", fastaPath.toString());
+                List<String> params = Arrays.asList("--keep", gzFastaPath.toString());
                 EtlCommons.runCommandLineProcess(null, "gunzip", params, null);
             } catch (IOException e) {
-                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
             } catch (InterruptedException e) {
                 // Restore interrupted state...
                 Thread.currentThread().interrupt();
-                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
             }
         }
-        fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(GZ_EXTENSION, ""));
         if (!fastaPath.toFile().exists()) {
             throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
         }

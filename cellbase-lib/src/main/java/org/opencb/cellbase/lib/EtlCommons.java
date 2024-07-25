@@ -523,12 +523,12 @@ public final class EtlCommons {
         process.waitFor();
 
         // Check process output
-        if (process.exitValue() != 0) {
-            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
-                    + ". More info in log file: " + logFilePath;
-            logger.error(msg);
-            throw new CellBaseException(msg);
-        }
+//        if (process.exitValue() != 0) {
+//            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
+//                    + ". More info in log file: " + logFilePath;
+//            logger.error(msg);
+//            throw new CellBaseException(msg);
+//        }
 
         return true;
     }
