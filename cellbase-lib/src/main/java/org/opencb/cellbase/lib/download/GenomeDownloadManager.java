@@ -35,6 +35,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
     private Path sequenceFolder;
 
+    public static final String GENOME_INFO_FILENAME = "genome_info.json";
+
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
@@ -79,10 +81,8 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     }
 
     public void downloadGenomeInfo() throws IOException, CellBaseException {
-        String genomeInfoFilename = "genome_info.json";
-
         // Already downloaded
-        if (isAlreadyDownloaded(sequenceFolder.resolve(genomeInfoFilename), getDataName(GENOME_INFO_DATA))) {
+        if (isAlreadyDownloaded(sequenceFolder.resolve(GENOME_INFO_FILENAME), getDataName(GENOME_INFO_DATA))) {
             return;
         }
 
@@ -100,7 +100,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             String params = "/opt/cellbase/scripts/ensembl-scripts/genome_info.pl"
                     + " --species \"" + speciesConfiguration.getScientificName() + "\""
                     + " --assembly \"" + assemblyConfiguration.getName() + "\""
-                    + " --outfile \"" + outputBinding.getValue() + "/" + genomeInfoFilename + "\"";
+                    + " --outfile \"" + outputBinding.getValue() + "/" + GENOME_INFO_FILENAME + "\"";
 
             // Execute perl script in docker
             DockerUtils.run(dockerImage, null, outputBinding, params, null);

@@ -44,6 +44,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
 
 public class BuildCommandExecutor extends CommandExecutor {
@@ -60,10 +64,6 @@ public class BuildCommandExecutor extends CommandExecutor {
     private String ensemblRelease;
 
     private boolean flexibleGTFParsing;
-
-    private static final List<String> VALID_SOURCES_TO_BUILD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
-            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
-            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA);
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
@@ -115,10 +115,8 @@ public class BuildCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
             buildFolder = outputDirectory.resolve(spFolder + "/generated_json");
-            if (!buildFolder.toFile().exists()) {
-                if (!Files.exists(buildFolder)) {
-                    Files.createDirectories(buildFolder);
-                }
+            if (!Files.exists(buildFolder)) {
+                Files.createDirectories(buildFolder);
             }
 
             // Check data sources
@@ -170,9 +168,11 @@ public class BuildCommandExecutor extends CommandExecutor {
                                 + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ",")
                                 + ". You can use data parameter 'all' to download everything");
                 }
-
-                parser.parse();
-                parser.disconnect();
+                if (parser != null) {
+                    parser.parse();
+                    parser.disconnect();
+                    logger.info(BUILDING_DONE_LOG_MESSAGE);
+                }
             }
         } catch (InterruptedException e) {
             // Restore interrupted state...
@@ -184,16 +184,47 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildGenomeSequence() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(GENOME_DATA));
+
+        Path genomeDownloadFolder = downloadFolder.resolve(GENOME_DATA);
+        Path genomeBuildFolder = buildFolder.resolve(GENOME_DATA);
+
+        if (Files.exists(genomeBuildFolder.resolve(GENOME_OUTPUT_FILENAME))
+                && Files.exists(genomeBuildFolder.resolve(GENOME_INFO_FILENAME))
+                && Files.exists(genomeBuildFolder.resolve(getDataVersionFilename(GENOME_DATA)))) {
+            logger.warn("{} data has been already built", getDataName(GENOME_DATA));
+            return null;
+        }
+
         // Sanity check
-        Path genomeVersionPath = downloadFolder.resolve(GENOME_DATA).resolve(getDataVersionFilename(GENOME_DATA));
-        copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_DATA));
+        if (!Files.exists(genomeDownloadFolder.resolve(GENOME_INFO_FILENAME))) {
+            throw new CellBaseException("Genome info file " + GENOME_INFO_FILENAME + " does not exist at " + genomeDownloadFolder);
+        }
 
-        // Get FASTA path
-        Path fastaPath = getFastaReferenceGenome();
+        // Copy files if necessary
+        if (!Files.exists(genomeBuildFolder.resolve(getDataVersionFilename(GENOME_DATA)))) {
+            Path genomeVersionPath = genomeDownloadFolder.resolve(getDataVersionFilename(GENOME_DATA));
+            copyVersionFiles(Collections.singletonList(genomeVersionPath), buildFolder.resolve(GENOME_DATA));
+        }
 
-        // Create serializer and return the genome builder
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(GENOME_DATA), GENOME_DATA);
-        return new GenomeSequenceFastaBuilder(fastaPath, serializer);
+        if (!Files.exists(genomeBuildFolder.resolve(GENOME_INFO_FILENAME))) {
+            try {
+                Files.copy(genomeDownloadFolder.resolve(GENOME_INFO_FILENAME), genomeBuildFolder.resolve(GENOME_INFO_FILENAME));
+            } catch (IOException e) {
+                throw new CellBaseException("Error copying file " + GENOME_INFO_FILENAME, e);
+            }
+        }
+
+        // Parse file
+        if (!Files.exists(genomeBuildFolder.resolve(GENOME_OUTPUT_FILENAME))) {
+            // Get FASTA path
+            Path fastaPath = getFastaReferenceGenome();
+
+            // Create serializer and return the genome builder
+            CellBaseSerializer serializer = new CellBaseJsonFileSerializer(genomeBuildFolder, GENOME_DATA);
+            return new GenomeSequenceFastaBuilder(fastaPath, serializer);
+        }
+        return null;
     }
 
     private AbstractBuilder buildGene() throws CellBaseException {
@@ -279,8 +310,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_DATA);
         Path conservationBuildPath = buildFolder.resolve(CONSERVATION_DATA);
         copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(getDataVersionFilename(GERP_DATA)),
-                        conservationDownloadPath.resolve(getDataVersionFilename(PHASTCONS_DATA)),
-                        conservationDownloadPath.resolve(getDataVersionFilename(PHYLOP_DATA))), conservationBuildPath);
+                conservationDownloadPath.resolve(getDataVersionFilename(PHASTCONS_DATA)),
+                conservationDownloadPath.resolve(getDataVersionFilename(PHYLOP_DATA))), conservationBuildPath);
 
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(conservationBuildPath);
@@ -324,7 +355,8 @@ public class BuildCommandExecutor extends CommandExecutor {
             // Gunzip
             logger.info("Gunzip file: {}", fastaPath);
             try {
-                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(fastaPath.toString()), null);
+                List<String> params = Arrays.asList("--keep", fastaPath.toString());
+                EtlCommons.runCommandLineProcess(null, "gunzip", params, null);
             } catch (IOException e) {
                 throw new CellBaseException("Error executing gunzip in FASTA file " + fastaPath, e);
             } catch (InterruptedException e) {
@@ -387,7 +419,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             }
             try {
                 DataSource dataSource = dataSourceReader.readValue(versionPath.toFile());
-                if (org.apache.commons.lang3.StringUtils.isEmpty(dataSource.getVersion())) {
+                if (StringUtils.isEmpty(dataSource.getVersion())) {
                     throw new CellBaseException("Version missing version in file " +  versionPath + ": a version must be specified in the"
                             + " file");
                 }

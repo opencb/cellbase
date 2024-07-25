@@ -52,7 +52,7 @@ public abstract class AbstractBuilder {
     public static final String CHECKING_BEFORE_BUILDING_LOG_MESSAGE = "Checking files before building {} ...";
     public static final String CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE = "Checking {} done!";
 
-    public static final String BUILDING_LOG_MESSAGE = "Building {} ...";
+    public static final String BUILDING_LOG_MESSAGE = "Building {} data ...";
     public static final String BUILDING_DONE_LOG_MESSAGE = "Building done.";
 
     public static final String CATEGORY_BUILDING_LOG_MESSAGE = "Building {}/{} ...";
