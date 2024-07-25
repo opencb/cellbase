@@ -132,8 +132,10 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             // Save data source (i.e., metadata)
             List<String> urls = getUrls(downloadFiles);
 
-            // Add manually downloaded files
-            urls.addAll(getManualUrls(ensemblConfig.getUrl()));
+            // Add files created by scripts
+            urls.add(getManualUrl(configuration.getDownload().getEnsembl().getUrl(), ENSEMBL_DESCRIPTION_FILE_ID));
+            urls.add(getManualUrl(configuration.getDownload().getEnsembl().getUrl(), ENSEMBL_XREFS_FILE_ID));
+            urls.add(getManualUrl(configuration.getDownload().getEnsembl().getUrl(), ENSEMBL_CANONICAL_FILE_ID));
 
             saveDataSource(ENSEMBL_DATA, ensemblVersion, getTimeStamp(), urls,
                     ensemblDownloadPath.resolve(getDataVersionFilename(ENSEMBL_DATA)));
@@ -182,22 +184,22 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ENSEMBL_CANONICAL_DATA));
 
         String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
+
+        // Build command line to run Perl script via docker image
+        // Output binding
+        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
+                geneDownloadPath.toAbsolutePath().toString(), "/tmp");
+
+        // Params
+        String params = "/opt/cellbase/scripts/ensembl-scripts/" + ensemblCanonicalScript
+                + " --species \"" + speciesConfiguration.getId() + "\""
+                + " --outdir \"" + outputBinding.getValue() + "\"";
+
         try {
-            // Build command line to run Perl script via docker image
-            // Output binding
-            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
-                    geneDownloadPath.toAbsolutePath().toString(), "/tmp");
-
-            // Params
-            String params = "/opt/cellbase/scripts/ensembl-scripts/" + ensemblCanonicalScript
-                    + " --species \"" + speciesConfiguration.getId() + "\""
-                    + " --outdir \"" + outputBinding.getValue() + "\"";
-
             // Execute perl script in docker
             DockerUtils.run(dockerImage, null, outputBinding, params, null);
         } catch (Exception e) {
-            logger.error("{}", e.getStackTrace());
-//            throw new CellBaseException("Error executing Perl script from Docker " + dockerImage, e);
+            logger.error("Error executing script {}: {}", params, e.getStackTrace());
         }
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ENSEMBL_CANONICAL_DATA));
@@ -217,23 +219,23 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENE_EXTRA_INFO_DATA));
 
         String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
+
+        // Build command line to run Perl script via docker image
+        // Output binding
+        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
+                geneDownloadPath.toAbsolutePath().toString(), "/tmp");
+
+        // Params
+        String params = "/opt/cellbase/scripts/ensembl-scripts/" + geneExtraInfoScript
+                + " --species \"" + speciesConfiguration.getScientificName() + "\""
+                + " --assembly \"" + assemblyConfiguration.getName() + "\""
+                + " --outdir \"" + outputBinding.getValue() + "\"";
+
         try {
-            // Build command line to run Perl script via docker image
-            // Output binding
-            AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry<>(
-                    geneDownloadPath.toAbsolutePath().toString(), "/tmp");
-
-            // Params
-            String params = "/opt/cellbase/scripts/ensembl-scripts/" + geneExtraInfoScript
-                    + " --species \"" + speciesConfiguration.getScientificName() + "\""
-                    + " --assembly \"" + assemblyConfiguration.getName() + "\""
-                    + " --outdir \"" + outputBinding.getValue() + "\"";
-
             // Execute perl script in docker
             DockerUtils.run(dockerImage, null, outputBinding, params, null);
         } catch (Exception e) {
-            logger.error("{}", e.getStackTrace());
-//            throw new CellBaseException("Error executing Perl script from Docker " + dockerImage, e);
+            logger.error("Error executing script {}: {}", params, e.getStackTrace());
         }
 
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_EXTRA_INFO_DATA));

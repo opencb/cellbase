@@ -235,8 +235,7 @@ public abstract class AbstractDownloadManager {
         }
 
         dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
-        logger.info("Created the " + getDataName(data) + " version file " + versionFilePath.getFileName() + " at "
-                + versionFilePath.getParent());
+        logger.info("Created the {} version file {} at {}", getDataName(data), versionFilePath.getFileName(), versionFilePath.getParent());
     }
 
     protected String getTimeStamp() {
@@ -323,8 +322,6 @@ public abstract class AbstractDownloadManager {
         } else {
             downloadFile.setMessage("See full error message in " + outputLog);
             downloadFile.setStatus(DownloadFile.Status.ERROR);
-            // because we use the -O flag, a file will be written, even on error. See #467
-//            Files.deleteIfExists((new File(outputFileName)).toPath());
         }
     }
 

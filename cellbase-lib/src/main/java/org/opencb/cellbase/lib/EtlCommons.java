@@ -58,6 +58,7 @@ public final class EtlCommons {
     public static final String HG19_NAME = "hg19";
 
     public static final String MANUAL_PREFIX = "manual@";
+    public static final String SCRIPT_PREFIX = "script:";
 
     public static final String SUFFIX_VERSION_FILENAME = "Version.json";
 
@@ -86,9 +87,8 @@ public final class EtlCommons {
     public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
     public static final String ENSEMBL_DESCRIPTION_FILE_ID = "DESCRIPTION";
     public static final String ENSEMBL_XREFS_FILE_ID = "XREFS";
-    public static final String ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID = "HAEM_ONC_TRANSCRIPTS";
-    public static final String ENSEMBL_TSO500_FILE_ID = "TSO500";
     public static final String ENSEMBL_CANONICAL_FILE_ID = "CANONICAL";
+    public static final String GENOME_INFO_FILE_ID = "GENOME_INFO";
 
     // Genome
     public static final String GENOME_DATA = "genome";
@@ -702,17 +702,6 @@ public final class EtlCommons {
 
     public static List<String> getUrls(List<DownloadFile> downloadFiles) {
         return downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList());
-    }
-
-    public static List<String> getManualUrls(DownloadProperties.URLProperties props) {
-        List<String> urls = new ArrayList<>();
-        for (String value : props.getFiles().values()) {
-            String url = getManualUrl(props.getHost(), value);
-            if (StringUtils.isNotEmpty(url)) {
-                urls.add(url);
-            }
-        }
-        return urls;
     }
 
     public static String getManualUrl(DownloadProperties.URLProperties props, String fileId) {
