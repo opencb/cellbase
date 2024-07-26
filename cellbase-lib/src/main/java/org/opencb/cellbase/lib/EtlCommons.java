@@ -263,8 +263,6 @@ public final class EtlCommons {
 
     // Regulation
     public static final String REGULATION_DATA = "regulation";
-    public static final String REGULATORY_PFM_BASENAME = "regulatory_pfm";
-    public static final String REGULATORY_REGION_BASENAME = "regulatory_region";
     // Regulatory build and motif features (see Ensembl files: regulatory build and motif features files)
     public static final String REGULATORY_BUILD_DATA = "regulatory_build";
     // Motif features (see Ensembl files)

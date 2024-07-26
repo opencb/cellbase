@@ -61,7 +61,7 @@ public abstract class AbstractBuilder {
     public static final String PARSING_LOG_MESSAGE = "Parsing {} ...";
     public static final String PARSING_DONE_LOG_MESSAGE = "Parsing done.";
 
-    public AbstractBuilder(CellBaseSerializer serializer) {
+    protected AbstractBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
         this.serializer = serializer;
@@ -75,7 +75,7 @@ public abstract class AbstractBuilder {
             try {
                 serializer.close();
             } catch (Exception e) {
-                logger.error("Error closing serializer:\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                logger.error("Error closing serializer. Stack trace: {}", e.getStackTrace());
             }
         }
     }

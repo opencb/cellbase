@@ -48,6 +48,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
@@ -66,6 +67,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private String ensemblRelease;
 
     private boolean flexibleGTFParsing;
+
+    private static final String DATA_ALREADY_BUILT = "{} data has already been built.";
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
@@ -194,7 +197,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         if (Files.exists(genomeBuildFolder.resolve(GENOME_OUTPUT_FILENAME))
                 && Files.exists(genomeBuildFolder.resolve(GENOME_INFO_FILENAME))
                 && Files.exists(genomeBuildFolder.resolve(getDataVersionFilename(GENOME_DATA)))) {
-            logger.warn("{} data has been already built", getDataName(GENOME_DATA));
+            logger.warn(DATA_ALREADY_BUILT, getDataName(GENOME_DATA));
             return null;
         }
 
@@ -241,13 +244,12 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_DATA);
         Path repeatsBuildPath = buildFolder.resolve(REPEATS_DATA);
         List<String> dataList = EtlCommons.getDataList(REPEATS_DATA, configuration, speciesConfiguration);
-        List<Path> filesToCheck = new ArrayList<>();
-        filesToCheck.add(repeatsBuildPath.resolve(REPEATS_OUTPUT_FILENAME));
+        List<Path> filesToCheck = new ArrayList<>(Arrays.asList(repeatsBuildPath.resolve(REPEATS_OUTPUT_FILENAME)));
         for (String data : dataList) {
             filesToCheck.add(repeatsBuildPath.resolve(getDataVersionFilename(data)));
         }
         if (AbstractBuilder.existFiles(filesToCheck)) {
-            logger.warn("{} data has been already built", getDataName(REPEATS_DATA));
+            logger.warn(DATA_ALREADY_BUILT, getDataName(REPEATS_DATA));
             return null;
         }
         for (String data : dataList) {
@@ -300,11 +302,23 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildRegulation() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(REGULATION_DATA));
+
         // Sanity check
         Path regulationDownloadPath = downloadFolder.resolve(REGULATION_DATA);
         Path regulationBuildPath = buildFolder.resolve(REGULATION_DATA);
-        copyVersionFiles(Arrays.asList(regulationDownloadPath.resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)),
-                regulationDownloadPath.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA))), regulationBuildPath);
+        List<Path> filesToCheck = Arrays.asList(regulationBuildPath.resolve(REGULATORY_REGION_OUTPUT_FILENAME),
+                regulationBuildPath.resolve(REGULATORY_PFM_OUTPUT_FILENAME),
+                regulationBuildPath.resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)),
+                regulationBuildPath.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)));
+        if (AbstractBuilder.existFiles(filesToCheck)) {
+            logger.warn(DATA_ALREADY_BUILT, getDataName(REGULATION_DATA));
+            return null;
+        }
+
+        copyVersionFiles(Arrays.asList(regulationDownloadPath.resolve(REGULATORY_BUILD_DATA).resolve(getDataVersionFilename(
+                REGULATORY_BUILD_DATA)), regulationDownloadPath.resolve(MOTIF_FEATURES_DATA).resolve(getDataVersionFilename(
+                MOTIF_FEATURES_DATA))), regulationBuildPath);
 
         // Create the file serializer and the regulatory feature builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(regulationBuildPath, REGULATORY_REGION_BASENAME);
