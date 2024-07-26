@@ -17,8 +17,6 @@
 package org.opencb.cellbase.lib;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.download.DownloadFile;
@@ -348,6 +346,8 @@ public final class EtlCommons {
     private static Map<String, String> dataCategoriesMap = new HashMap<>();
     private static Map<String, String> dataVersionFilenamesMap = new HashMap<>();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EtlCommons.class);
+
     static {
 
         // Populate data names map
@@ -510,15 +510,9 @@ public final class EtlCommons {
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException, CellBaseException {
 
-        Configurator.setRootLevel(Level.INFO);
-
-        Logger logger = LoggerFactory.getLogger("EtlCommons");
-
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
-        }
+        LOGGER.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
 

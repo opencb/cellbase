@@ -56,8 +56,6 @@ public class ConservationBuilder extends AbstractBuilder {
 
     @Override
     public void parse() throws IOException, CellBaseException {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
-
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory " + conservedRegionPath + " does not exist or it is not a directory or it cannot"
                     + " be read");
@@ -65,17 +63,17 @@ public class ConservationBuilder extends AbstractBuilder {
 
         // Check GERP folder and files
         Path gerpPath = conservedRegionPath.resolve(GERP_DATA);
-        DataSource dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(GERP_DATA)).toFile());
+        DataSource dataSource = dataSourceReader.readValue(gerpPath.resolve(getDataVersionFilename(GERP_DATA)).toFile());
         List<File> gerpFiles = checkFiles(dataSource, gerpPath, getDataName(GERP_DATA));
 
         // Check PhastCons folder and files
         Path phastConsPath = conservedRegionPath.resolve(PHASTCONS_DATA);
-        dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(PHASTCONS_DATA)).toFile());
+        dataSource = dataSourceReader.readValue(phastConsPath.resolve(getDataVersionFilename(PHASTCONS_DATA)).toFile());
         List<File> phastConsFiles = checkFiles(dataSource, phastConsPath, getDataName(PHASTCONS_DATA));
 
         // Check PhyloP folder and files
         Path phylopPath = conservedRegionPath.resolve(PHYLOP_DATA);
-        dataSource = dataSourceReader.readValue(conservedRegionPath.resolve(getDataVersionFilename(PHYLOP_DATA)).toFile());
+        dataSource = dataSourceReader.readValue(phylopPath.resolve(getDataVersionFilename(PHYLOP_DATA)).toFile());
         List<File> phylopFiles = checkFiles(dataSource, phylopPath, getDataName(PHYLOP_DATA));
 
         // GERP is downloaded from Ensembl as a bigwig file. The library we have doesn't seem to parse
@@ -137,8 +135,6 @@ public class ConservationBuilder extends AbstractBuilder {
             logger.debug("Processing chromosome '{}', file '{}'", chr, files.get(chr + PHYLOP_DATA));
             processWigFixFile(files.get(chr + PHYLOP_DATA), PHYLOP_DATA);
         }
-
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
     }
 
     private void gerpParser(Path gerpProcessFilePath) throws IOException, CellBaseException {
@@ -271,11 +267,10 @@ public class ConservationBuilder extends AbstractBuilder {
         conservationScores.clear();
     }
 
-    private void processWigFixFile(Path inGzPath, String conservationSource) throws IOException {
+    private void processWigFixFile(Path inGzPath, String conservationSource) {
         logger.info(PARSING_LOG_MESSAGE, inGzPath);
+        String line = null;
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(inGzPath)) {
-
-            String line;
             String chromosome = "";
             int start = 0;
             float value;
@@ -322,7 +317,12 @@ public class ConservationBuilder extends AbstractBuilder {
                         values.clear();
                     }
 
-                    value = Float.parseFloat(line.trim());
+                    try {
+                        value = Float.parseFloat(line.trim());
+                    } catch (NumberFormatException e) {
+                        value = 0;
+                        logger.warn("Invalid value: {}. Stack trace: {}", line, e.getStackTrace());
+                    }
                     values.add(value);
                 }
             }
@@ -330,6 +330,8 @@ public class ConservationBuilder extends AbstractBuilder {
             // Write last
             conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1, conservationSource, values);
             fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
+        } catch (Exception e) {
+            logger.error("ERROR parsing {}. Line: {}. Stack trace: {}", inGzPath, line, e.getStackTrace());
         }
         logger.info(PARSING_DONE_LOG_MESSAGE, inGzPath);
     }
@@ -339,8 +341,11 @@ public class ConservationBuilder extends AbstractBuilder {
         if (chromosome.equals("M")) {
             chromosome = "MT";
         }
-        String outputFileName = outputFileNames.get(chromosome);
-        if (outputFileName == null) {
+
+        String outputFileName;
+        if (outputFileNames.containsKey(chromosome)) {
+            outputFileName = outputFileNames.get(chromosome);
+        } else {
             outputFileName = getFilename(CONSERVATION_DATA, chromosome);
             outputFileNames.put(chromosome, outputFileName);
         }

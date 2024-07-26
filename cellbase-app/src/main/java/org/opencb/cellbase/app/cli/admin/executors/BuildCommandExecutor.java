@@ -306,12 +306,20 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildConservation() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
+
         // Sanity check
         Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_DATA);
         Path conservationBuildPath = buildFolder.resolve(CONSERVATION_DATA);
-        copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(getDataVersionFilename(GERP_DATA)),
-                conservationDownloadPath.resolve(getDataVersionFilename(PHASTCONS_DATA)),
-                conservationDownloadPath.resolve(getDataVersionFilename(PHYLOP_DATA))), conservationBuildPath);
+
+        // Check and copy version files
+        List<String> dataList = Arrays.asList(GERP_DATA, PHASTCONS_DATA, PHYLOP_DATA);
+        for (String data : dataList) {
+            checkVersionFiles(Collections.singletonList(conservationDownloadPath.resolve(data).resolve(getDataVersionFilename(data))));
+        }
+        copyVersionFiles(Arrays.asList(conservationDownloadPath.resolve(GERP_DATA).resolve(getDataVersionFilename(GERP_DATA)),
+                conservationDownloadPath.resolve(PHASTCONS_DATA).resolve(getDataVersionFilename(PHASTCONS_DATA)),
+                conservationDownloadPath.resolve(PHYLOP_DATA).resolve(getDataVersionFilename(PHYLOP_DATA))), conservationBuildPath);
 
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(conservationBuildPath);
