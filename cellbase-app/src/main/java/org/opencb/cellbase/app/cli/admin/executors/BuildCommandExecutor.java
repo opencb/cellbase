@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
 
@@ -233,16 +235,32 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildRepeats() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(REPEATS_DATA));
+
         // Sanity check
         Path repeatsDownloadPath = downloadFolder.resolve(REPEATS_DATA);
-        List<Path> versionPaths = Arrays.asList(repeatsDownloadPath.resolve(getDataVersionFilename(TRF_DATA)),
-                repeatsDownloadPath.resolve(getDataVersionFilename(GSD_DATA)),
-                repeatsDownloadPath.resolve(getDataVersionFilename(WM_DATA)));
-        copyVersionFiles(versionPaths, buildFolder.resolve(REPEATS_DATA));
+        Path repeatsBuildPath = buildFolder.resolve(REPEATS_DATA);
+        List<String> dataList = EtlCommons.getDataList(REPEATS_DATA, configuration, speciesConfiguration);
+        List<Path> filesToCheck = new ArrayList<>();
+        filesToCheck.add(repeatsBuildPath.resolve(REPEATS_OUTPUT_FILENAME));
+        for (String data : dataList) {
+            filesToCheck.add(repeatsBuildPath.resolve(getDataVersionFilename(data)));
+        }
+        if (AbstractBuilder.existFiles(filesToCheck)) {
+            logger.warn("{} data has been already built", getDataName(REPEATS_DATA));
+            return null;
+        }
+        for (String data : dataList) {
+            checkVersionFiles(Collections.singletonList(repeatsDownloadPath.resolve(data).resolve(getDataVersionFilename(data))));
+        }
+        for (String data : dataList) {
+            copyVersionFiles(Collections.singletonList(repeatsDownloadPath.resolve(data).resolve(getDataVersionFilename(data))),
+                    repeatsBuildPath);
+        }
 
         // Create serializer and return the repeats builder
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_DATA), REPEATS_BASENAME);
-        return new RepeatsBuilder(repeatsDownloadPath, serializer, configuration);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder.resolve(REPEATS_DATA), REPEATS_DATA);
+        return new RepeatsBuilder(dataList, repeatsDownloadPath, serializer, configuration);
     }
 
     private AbstractBuilder buildObo() throws CellBaseException {
@@ -311,8 +329,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         // Sanity check
         Path conservationDownloadPath = downloadFolder.resolve(CONSERVATION_DATA);
         Path conservationBuildPath = buildFolder.resolve(CONSERVATION_DATA);
-
-        // Check and copy version files
         List<String> dataList = Arrays.asList(GERP_DATA, PHASTCONS_DATA, PHYLOP_DATA);
         for (String data : dataList) {
             checkVersionFiles(Collections.singletonList(conservationDownloadPath.resolve(data).resolve(getDataVersionFilename(data))));

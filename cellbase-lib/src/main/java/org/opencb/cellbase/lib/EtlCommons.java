@@ -17,7 +17,9 @@
 package org.opencb.cellbase.lib;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.download.DownloadFile;
 import org.opencb.commons.utils.FileUtils;
@@ -31,10 +33,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -212,7 +211,6 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
-    public static final String REPEATS_BASENAME = "repeats";
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
      */
@@ -708,4 +706,45 @@ public final class EtlCommons {
         }
         return null;
     }
+
+    public static List<String> getDataList(String data, CellBaseConfiguration configuration, SpeciesConfiguration speciesConfiguration)
+            throws CellBaseException {
+        switch (data) {
+            case REPEATS_DATA: {
+                return getRepeatsDataList(configuration, speciesConfiguration);
+            }
+            default: {
+                throw new CellBaseException("Unknown data " + data);
+            }
+        }
+    }
+
+    private static List<String> getRepeatsDataList(CellBaseConfiguration configuration, SpeciesConfiguration speciesConfiguration) {
+        List<String> dataList = new ArrayList<>();
+        String speciesId = speciesConfiguration.getId().toUpperCase(Locale.ROOT);
+        if (speciesId.equalsIgnoreCase(HSAPIENS_NAME)) {
+            return Arrays.asList(TRF_DATA, WM_DATA, GSD_DATA);
+        }
+
+        if (isDataSupported(configuration.getDownload().getSimpleRepeats(), speciesId)) {
+            dataList.add(TRF_DATA);
+        }
+        if (isDataSupported(configuration.getDownload().getWindowMasker(), speciesId)) {
+            dataList.add(WM_DATA);
+        }
+        if (isDataSupported(configuration.getDownload().getGenomicSuperDups(), speciesId)) {
+            dataList.add(GSD_DATA);
+        }
+        return dataList;
+    }
+
+    private static boolean isDataSupported(DownloadProperties.URLProperties props, String prefix) {
+        for (String key : props.getFiles().keySet()) {
+            if (key.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

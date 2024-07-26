@@ -195,4 +195,13 @@ public abstract class AbstractBuilder {
         }
         return indexFastaPath;
     }
+
+    public static boolean existFiles(List<Path> paths) {
+        for (Path path : paths) {
+            if (!Files.exists(path)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

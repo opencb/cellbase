@@ -16,8 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -26,13 +26,15 @@ import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 
 /**
@@ -51,7 +53,7 @@ public class RepeatsBuilderTest extends GenericBuilderTest<Repeat> {
         CellBaseConfiguration configuration = CellBaseConfiguration.load(getClass().getClassLoader().getResourceAsStream("configuration.test.yaml"));
         Path repeatsFilesDir = Paths.get(getClass().getResource("/repeats").getPath());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "repeats.test");
-        (new RepeatsBuilder(repeatsFilesDir, serializer, configuration)).parse();
+        (new RepeatsBuilder(Arrays.asList(WM_DATA, GSD_DATA, TRF_DATA), repeatsFilesDir, serializer, configuration)).parse();
         serializer.close();
         Set<Repeat> expected = loadRepeatSet(Paths.get(getClass().getClassLoader().getResource("repeats/repeats.test.json.gz").getPath()));
         Set<Repeat> current = loadRepeatSet(Paths.get("/tmp/repeats.test.json.gz"));

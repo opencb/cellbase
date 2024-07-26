@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -40,10 +41,14 @@ public class RepeatsBuilder extends AbstractBuilder {
 
     private CellBaseConfiguration configuration;
 
+    private List<String> dataList;
     private final Path filesDir;
 
-    public RepeatsBuilder(Path filesDir, CellBaseFileSerializer serializer, CellBaseConfiguration configuration) {
+    public static final String REPEATS_OUTPUT_FILENAME = EtlCommons.REPEATS_DATA + ".json.gz";
+
+    public RepeatsBuilder(List<String> dataList, Path filesDir, CellBaseFileSerializer serializer, CellBaseConfiguration configuration) {
         super(serializer);
+        this.dataList = dataList;
         this.filesDir = filesDir;
         this.configuration = configuration;
     }
@@ -51,51 +56,60 @@ public class RepeatsBuilder extends AbstractBuilder {
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(REPEATS_DATA));
-
         // Sanity check
         checkDirectory(filesDir, getDataName(REPEATS_DATA));
 
         // Check Simple Repeats (TRF) filename
-        String trfFilename = Paths.get(configuration.getDownload().getSimpleRepeats().getFiles().get(SIMPLE_REPEATS_FILE_ID)).getFileName()
-                .toString();
-        if (!Files.exists(filesDir.resolve(trfFilename))) {
-            throw new CellBaseException(getMessageMissingFile(TRF_DATA, trfFilename, filesDir));
+        String trfFilename = null;
+        if (dataList.contains(TRF_DATA)) {
+            trfFilename = Paths.get(configuration.getDownload().getSimpleRepeats().getFiles().get(SIMPLE_REPEATS_FILE_ID)).getFileName()
+                    .toString();
+            if (!Files.exists(filesDir.resolve(trfFilename))) {
+                throw new CellBaseException(getMessageMissingFile(TRF_DATA, trfFilename, filesDir));
+            }
         }
 
         // Check Genomic Super Duplications (GSD) file
-        String gsdFilename = Paths.get(configuration.getDownload().getGenomicSuperDups().getFiles().get(GENOMIC_SUPER_DUPS_FILE_ID))
-                .getFileName().toString();
-        if (!Files.exists(filesDir.resolve(gsdFilename))) {
-            throw new CellBaseException(getMessageMissingFile(GSD_DATA, gsdFilename, filesDir));
+        String gsdFilename = null;
+        if (dataList.contains(GSD_DATA)) {
+            gsdFilename = Paths.get(configuration.getDownload().getGenomicSuperDups().getFiles().get(GENOMIC_SUPER_DUPS_FILE_ID))
+                    .getFileName().toString();
+            if (!Files.exists(filesDir.resolve(gsdFilename))) {
+                throw new CellBaseException(getMessageMissingFile(GSD_DATA, gsdFilename, filesDir));
+            }
         }
 
         // Check Window Masker (WM) file
-        String wmFilename = Paths.get(configuration.getDownload().getWindowMasker().getFiles().get(WINDOW_MASKER_FILE_ID)).getFileName()
-                .toString();
-        if (!Files.exists(filesDir.resolve(wmFilename))) {
-            throw new CellBaseException(getMessageMissingFile(WM_DATA, wmFilename, filesDir));
+        String wmFilename = null;
+        if (dataList.contains(WM_DATA)) {
+            wmFilename = Paths.get(configuration.getDownload().getWindowMasker().getFiles().get(WINDOW_MASKER_FILE_ID)).getFileName()
+                    .toString();
+            if (!Files.exists(filesDir.resolve(wmFilename))) {
+                throw new CellBaseException(getMessageMissingFile(WM_DATA, wmFilename, filesDir));
+            }
         }
 
         // Parse TRF file
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(TRF_DATA));
-        parseTrfFile(filesDir.resolve(trfFilename));
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(TRF_DATA));
+        if (dataList.contains(TRF_DATA)) {
+            logger.info(PARSING_LOG_MESSAGE, getDataName(TRF_DATA));
+            parseTrfFile(filesDir.resolve(trfFilename));
+        }
 
         // Parse GSD file
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(GSD_DATA));
-        parseGsdFile(filesDir.resolve(gsdFilename));
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(GSD_DATA));
+        if (dataList.contains(GSD_DATA)) {
+            logger.info(PARSING_LOG_MESSAGE, getDataName(GSD_DATA));
+            parseGsdFile(filesDir.resolve(gsdFilename));
+        }
 
         // Parse WM file
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(WM_DATA));
-        parseWmFile(filesDir.resolve(wmFilename));
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(WM_DATA));
-
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(REPEATS_DATA));
+        if (dataList.contains(WM_DATA)) {
+            logger.info(PARSING_LOG_MESSAGE, getDataName(WM_DATA));
+            parseWmFile(filesDir.resolve(wmFilename));
+        }
     }
 
     private void parseTrfFile(Path filePath) throws IOException, CellBaseException {
+        logger.info(PARSING_LOG_MESSAGE, filePath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
@@ -107,6 +121,7 @@ public class RepeatsBuilder extends AbstractBuilder {
                 progressLogger.increment(1);
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     private Repeat parseTrfLine(String line) {
@@ -118,6 +133,7 @@ public class RepeatsBuilder extends AbstractBuilder {
     }
 
     private void parseGsdFile(Path filePath) throws IOException, CellBaseException {
+        logger.info(PARSING_LOG_MESSAGE, filePath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
@@ -129,6 +145,7 @@ public class RepeatsBuilder extends AbstractBuilder {
                 progressLogger.increment(1);
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     private Repeat parseGSDLine(String line) {
@@ -141,6 +158,7 @@ public class RepeatsBuilder extends AbstractBuilder {
     }
 
     private void parseWmFile(Path filePath) throws IOException, CellBaseException {
+        logger.info(PARSING_LOG_MESSAGE, filePath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
@@ -152,6 +170,7 @@ public class RepeatsBuilder extends AbstractBuilder {
                 progressLogger.increment(1);
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     private Repeat parseWmLine(String line) {
@@ -168,6 +187,5 @@ public class RepeatsBuilder extends AbstractBuilder {
     private String getMessageParsedLines(String data) throws CellBaseException {
         return "Parsed " + getDataName(data) + " lines:";
     }
-
 }
 
