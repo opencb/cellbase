@@ -48,6 +48,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.ProteinBuilder.OUTPUT_PROTEIN_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
@@ -326,11 +327,24 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildProtein() throws CellBaseException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
+
         // Sanity check
         Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_DATA);
         Path proteinBuildPath = buildFolder.resolve(PROTEIN_DATA);
-        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(getDataVersionFilename(UNIPROT_DATA)),
-                proteinDownloadPath.resolve(getDataVersionFilename(INTERPRO_DATA))), proteinBuildPath);
+        List<Path> filesToCheck = Arrays.asList(proteinBuildPath.resolve(OUTPUT_PROTEIN_OUTPUT_FILENAME),
+                proteinBuildPath.resolve(getDataVersionFilename(INTERPRO_DATA)),
+                proteinBuildPath.resolve(getDataVersionFilename(INTACT_DATA)),
+                proteinBuildPath.resolve(getDataVersionFilename(UNIPROT_DATA)));
+        if (AbstractBuilder.existFiles(filesToCheck)) {
+            logger.warn(DATA_ALREADY_BUILT, getDataName(PROTEIN_DATA));
+            return null;
+        }
+
+        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(
+                INTERPRO_DATA)), proteinDownloadPath.resolve(INTACT_DATA).resolve(getDataVersionFilename(
+                INTACT_DATA)), proteinDownloadPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(
+                UNIPROT_DATA))), proteinBuildPath);
 
         // Create the file serializer and the protein builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);
