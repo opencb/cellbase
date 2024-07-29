@@ -152,7 +152,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), GENE_DATA)) {
             // GTF, DNA, RNA, Protein
             String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
-            if (configuration.getDownload().getGenomicSuperDups().getFiles().containsKey(prefixId + REFSEQ_GENOMIC_GTF_FILE_ID)
+            if (configuration.getDownload().getRefSeq().getFiles().containsKey(prefixId + REFSEQ_GENOMIC_GTF_FILE_ID)
                     && !isAlreadyDownloaded(refSeqDownloadPath.resolve(getDataVersionFilename(REFSEQ_DATA)), getDataName(REFSEQ_DATA))) {
                 logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataName(REFSEQ_DATA), getDataCategory(REFSEQ_DATA));
 
