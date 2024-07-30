@@ -64,8 +64,8 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
-        downloadFiles.add(downloadMirna());
         downloadFiles.add(downloadMiRTarBase());
+        downloadFiles.add(downloadMirna());
 
         return downloadFiles;
     }
