@@ -86,6 +86,8 @@ public final class EtlCommons {
     public static final String ENSEMBL_XREFS_FILE_ID = "XREFS";
     public static final String ENSEMBL_CANONICAL_FILE_ID = "CANONICAL";
     public static final String GENOME_INFO_FILE_ID = "GENOME_INFO";
+    public static final String VARIATION_FILE_ID = "VARIATION";
+    public static final String STRUCTURAL_VARIATIONS_FILE_ID = "STRUCTURAL_VARIATIONS";
 
     // Genome
     public static final String GENOME_DATA = "genome";

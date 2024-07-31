@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -56,26 +57,20 @@ public class VariationDownloadManager extends AbstractDownloadManager {
 
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(VARIATION_DATA));
 
+            DownloadFile downloadFile;
+            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+
+            // Variation and structural variations
+            List<String> fileIds = Arrays.asList(prefixId + VARIATION_FILE_ID, prefixId + STRUCTURAL_VARIATIONS_FILE_ID);
             List<String> urls = new ArrayList<>();
+            for (String fileId : fileIds) {
+                downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), fileId, null, variationFolder);
+                downloadFiles.add(downloadFile);
+                urls.add(downloadFile.getUrl());
+            }
 
-            String fileName = variationFolder.resolve(speciesShortName + ".gtf.gz").toString();
-            String url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
-                    + speciesShortName + ".vcf.gz";
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, fileName);
-            downloadFiles.add(downloadFile(url, fileName));
-            urls.add(url);
-            logger.info(OK_LOG_MESSAGE);
-
-            fileName = variationFolder.resolve(speciesShortName + "_structural_variations.gtf.gz").toString();
-            url = ensemblHostUrl + "/" + ensemblRelease + "/variation/vcf/" + speciesShortName + "/"
-                    + speciesShortName + "_structural_variations.vcf.gz";
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, fileName);
-            downloadFiles.add(downloadFile(url, fileName));
-            urls.add(url);
-            logger.info(OK_LOG_MESSAGE);
-
-            saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), urls, variationFolder.resolve(
-                    getDataVersionFilename(VARIATION_DATA)));
+            saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), urls,
+                    variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)));
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(VARIATION_DATA));
         }

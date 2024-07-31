@@ -53,6 +53,8 @@ download:
         XREFS: "script:gene_extra_info.pl@xrefs.txt"
         CANONICAL: "script:ensembl_canonical.pl@ensembl_canonical.txt"
         GENOME_INFO: "script:genome_info.pl@genome_info.json"
+        MMUSCULUS_VARIATION: "release-put_release_here/variation/vcf/put_species_here/put_species_here.vcf.gz"
+        MMUSCULUS_STRUCTURAL_VARIATIONS: "release-put_release_here/variation/vcf/put_species_here/put_species_here_structural_variations.vcf.gz"
 
   ensemblGenomes:
     database:
