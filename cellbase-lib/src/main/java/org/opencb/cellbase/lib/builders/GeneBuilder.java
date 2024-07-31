@@ -18,7 +18,6 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 
 import java.nio.file.Files;
@@ -38,7 +37,7 @@ public class GeneBuilder extends AbstractBuilder {
     private RefSeqGeneBuilder refSeqGeneBuilder;
 
     public GeneBuilder(Path downloadPath, Path buildPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                       CellBaseConfiguration configuration) throws CellBaseException {
+                       CellBaseConfiguration configuration) {
         super(null);
 
         this.downloadPath = downloadPath;

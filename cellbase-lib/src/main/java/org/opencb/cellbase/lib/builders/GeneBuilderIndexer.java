@@ -59,16 +59,16 @@ public class GeneBuilderIndexer {
     protected String dbLocation;
     protected Options dbOption;
 
-    protected final String HGNC_ID_SUFFIX = "_hgncid";
-    protected final String MANE_SUFFIX = "_mane";
-    protected final String LRG_SUFFIX = "_lrg";
-    protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
-    protected final String CANCER_HOTSPOT_SUFFIX = "_chs";
-    protected final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
-    protected final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
-    protected final String DRUGS_SUFFIX = "_drug";
-    protected final String DISEASE_SUFFIX = "_disease";
-    protected final String MIRTARBASE_SUFFIX = "_mirtarbase";
+    protected static final String HGNC_ID_SUFFIX = "_hgncid";
+    protected static final String MANE_SUFFIX = "_mane";
+    protected static final String LRG_SUFFIX = "_lrg";
+    protected static final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
+    protected static final String CANCER_HOTSPOT_SUFFIX = "_chs";
+    protected static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
+    protected static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
+    protected static final String DRUGS_SUFFIX = "_drug";
+    protected static final String DISEASE_SUFFIX = "_disease";
+    protected static final String MIRTARBASE_SUFFIX = "_mirtarbase";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -85,12 +85,12 @@ public class GeneBuilderIndexer {
 
     protected void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
         logger.info(PARSING_LOG_MESSAGE, cDnaFastaFile);
-        FastaReader fastaReader = new FastaReader(cDnaFastaFile);
-        Fasta fasta;
-        while ((fasta = fastaReader.read()) != null) {
-            rocksDbManager.update(rocksdb, fasta.getId() + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
+        try (FastaReader fastaReader = new FastaReader(cDnaFastaFile)) {
+            Fasta fasta;
+            while ((fasta = fastaReader.read()) != null) {
+                rocksDbManager.update(rocksdb, fasta.getId() + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
+            }
         }
-        fastaReader.close();
         logger.info(PARSING_DONE_LOG_MESSAGE, cDnaFastaFile);
     }
 
@@ -104,12 +104,12 @@ public class GeneBuilderIndexer {
         }
 
         logger.info(PARSING_LOG_MESSAGE, proteinFastaFile);
-        FastaReader fastaReader = new FastaReader(proteinFastaFile);
-        Fasta fasta;
-        while ((fasta = fastaReader.read()) != null) {
-            rocksDbManager.update(rocksdb, fasta.getId() + PROTEIN_SEQUENCE_SUFFIX, fasta.getSeq());
+        try (FastaReader fastaReader = new FastaReader(proteinFastaFile)) {
+            Fasta fasta;
+            while ((fasta = fastaReader.read()) != null) {
+                rocksDbManager.update(rocksdb, fasta.getId() + PROTEIN_SEQUENCE_SUFFIX, fasta.getSeq());
+            }
         }
-        fastaReader.close();
         logger.info(PARSING_DONE_LOG_MESSAGE, proteinFastaFile);
     }
 
@@ -236,17 +236,17 @@ public class GeneBuilderIndexer {
 
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(cgcFile)) {
             // Skip the first header line
-            bufferedReader.readLine();
+            String line = bufferedReader.readLine();
 
             GeneCancerAssociation cancerGeneAssociation;
-            String line;
+
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t", -1);
                 // Find Ensembl Gene Id in the last comma-separated column
                 List<String> synonyms = StringUtils.isNotEmpty(fields[19])
                         ? Arrays.stream(fields[19]
-                                .replaceAll("\"", "")
-                                .replaceAll(" ", "")
+                                .replace("\"", "")
+                                .replace(" ", "")
                                 .split(","))
                         .collect(Collectors.toList())
                         : Collections.emptyList();
@@ -262,53 +262,54 @@ public class GeneBuilderIndexer {
                     boolean somatic = StringUtils.isNotEmpty(fields[7]) && fields[7].equalsIgnoreCase("yes");
                     boolean germline = StringUtils.isNotEmpty(fields[8]) && fields[8].equalsIgnoreCase("yes");
                     List<String> somaticTumourTypes = StringUtils.isNotEmpty(fields[9])
-                            ? Arrays.asList(fields[9].replaceAll("\"", "").split(", "))
+                            ? Arrays.asList(fields[9].replace("\"", "").split(", "))
                             : new ArrayList<>();
                     List<String> germlineTumourTypes = StringUtils.isNotEmpty(fields[10])
-                            ? Arrays.asList(fields[10].replaceAll("\"", "").split(", "))
+                            ? Arrays.asList(fields[10].replace("\"", "").split(", "))
                             : Collections.emptyList();
                     List<String> syndromes = StringUtils.isNotEmpty(fields[11])
-                            ? Arrays.asList(fields[11].replaceAll("\"", "").split("; "))
+                            ? Arrays.asList(fields[11].replace("\"", "").split("; "))
                             : Collections.emptyList();
                     List<String> tissues = StringUtils.isNotEmpty(fields[12])
                             ? Arrays.stream(fields[12]
-                                    .replaceAll("\"", "")
-                                    .replaceAll(" ", "")
+                                    .replace("\"", "")
+                                    .replace(" ", "")
                                     .split(","))
                             .map(tissuesMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
-                    List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = StringUtils.isNotEmpty(fields[13])
-                            ? fields[13].equalsIgnoreCase("Dom/Rec")
-                            ? Arrays.asList(moiMap.get("Dom"), moiMap.get("Rec"))
-                            : Collections.singletonList(moiMap.get(fields[13]))
-                            : Collections.emptyList();
+                    List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = Collections.emptyList();
+                    if (StringUtils.isNotEmpty(fields[13])) {
+                        modeOfInheritance = fields[13].equalsIgnoreCase("Dom/Rec")
+                                ? Arrays.asList(moiMap.get("Dom"), moiMap.get("Rec"))
+                                : Collections.singletonList(moiMap.get(fields[13]));
+                    }
                     List<ClinicalProperty.RoleInCancer> roleInCancer = StringUtils.isNotEmpty(fields[14])
                             ? Arrays.stream(fields[14]
-                                    .replaceAll("\"", "")
-                                    .replaceAll(" ", "")
+                                    .replace("\"", "")
+                                    .replace(" ", "")
                                     .split(","))
                             .map(roleInCancerMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> mutationTypes = StringUtils.isNotEmpty(fields[15])
                             ? Arrays.stream(fields[15]
-                                    .replaceAll("\"", "")
-                                    .replaceAll(" ", "")
+                                    .replace("\"", "")
+                                    .replace(" ", "")
                                     .split(","))
                             .map(mutationTypesMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> translocationPartners = StringUtils.isNotEmpty(fields[16])
                             ? Arrays.stream(fields[16]
-                                    .replaceAll("\"", "")
-                                    .replaceAll(" ", "")
+                                    .replace("\"", "")
+                                    .replace(" ", "")
                                     .split(","))
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> otherSyndromes = StringUtils.isNotEmpty(fields[18])
                             ? Arrays.stream(fields[18]
-                                    .replaceAll("\"", "")
+                                    .replace("\"", "")
                                     .split("; "))
                             .collect(Collectors.toList())
                             : Collections.emptyList();
@@ -426,8 +427,8 @@ public class GeneBuilderIndexer {
             }
         }
 
-        for (String geneName : visited.keySet()) {
-            rocksDbManager.update(rocksdb, geneName + CANCER_HOTSPOT_SUFFIX, visited.get(geneName));
+        for (Map.Entry<String, List<CancerHotspot>> entry : visited.entrySet()) {
+            rocksDbManager.update(rocksdb, entry.getKey() + CANCER_HOTSPOT_SUFFIX, entry.getValue());
         }
 
         logger.info(PARSING_DONE_LOG_MESSAGE, cancerHotspot);
@@ -437,66 +438,6 @@ public class GeneBuilderIndexer {
         String key = geneName + CANCER_HOTSPOT_SUFFIX;
         return rocksDbManager.getCancerHotspot(rocksdb, key);
     }
-
-//    protected void indexTSO500(Path tso500Path) throws IOException, RocksDBException {
-//        logger.info(PARSING_LOG_MESSAGE, tso500Path);
-//
-//        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(tso500Path)) {
-//            String line = bufferedReader.readLine();
-//            // Gene Ref Seq
-//            // FAS  NM_000043
-//            // AR   NM_000044
-//            while (StringUtils.isNotEmpty(line)) {
-//                if (!line.startsWith("#")) {
-//                    String[] fields = line.split("\t", -1);
-//                    if (fields.length == 2) {
-//                        rocksDbManager.update(rocksdb, fields[1] + TSO500_SUFFIX, "TSO500");
-//                    }
-//                }
-//                line = bufferedReader.readLine();
-//            }
-//        }
-//        logger.info(PARSING_DONE_LOG_MESSAGE, tso500Path);
-//    }
-//
-//    public String getTSO500(String transcriptId) throws RocksDBException {
-//        String key = transcriptId + TSO500_SUFFIX;
-//        byte[] bytes = rocksdb.get(key.getBytes());
-//        if (bytes == null) {
-//            return null;
-//        }
-//        return new String(bytes);
-//    }
-
-//    protected void indexEGLHHaemOnc(Path eglhHaemOncPath) throws IOException, RocksDBException {
-//        logger.info(PARSING_LOG_MESSAGE, eglhHaemOncPath);
-//
-//        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(eglhHaemOncPath)) {
-//            String line = bufferedReader.readLine();
-//            // Gene Ref Seq
-//            // GNB1   NM_002074.4
-//            // CSF3R  NM_000760.3
-//            while (StringUtils.isNotEmpty(line)) {
-//                if (!line.startsWith("#")) {
-//                    String[] fields = line.split("\t", -1);
-//                    if (fields.length == 2) {
-//                        rocksDbManager.update(rocksdb, fields[1].split("\\.")[0] + EGLH_HAEMONC_SUFFIX, "EGLH_HaemOnc");
-//                    }
-//                }
-//                line = bufferedReader.readLine();
-//            }
-//        }
-//        logger.info(PARSING_DONE_LOG_MESSAGE, eglhHaemOncPath);
-//    }
-//
-//    public String getEGLHHaemOnc(String transcriptId) throws RocksDBException {
-//        String key = transcriptId + EGLH_HAEMONC_SUFFIX;
-//        byte[] bytes = rocksdb.get(key.getBytes());
-//        if (bytes == null) {
-//            return null;
-//        }
-//        return new String(bytes);
-//    }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
         return getIndexEntry(id, suffix, "");
@@ -530,10 +471,8 @@ public class GeneBuilderIndexer {
 
         try (BufferedReader br = FileUtils.newBufferedReader(geneDrugFile)) {
             // Skip header
-            br.readLine();
+            String line = br.readLine();
 
-            int lineCounter = 1;
-            String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 String geneName = parts[0];
@@ -578,7 +517,6 @@ public class GeneBuilderIndexer {
                 GeneDrugInteraction drug = new GeneDrugInteraction(
                         geneName, drugName, source, null, null, interactionType, chemblId, publications);
                 drugs.add(drug);
-                lineCounter++;
             }
         }
         // update last gene
@@ -600,7 +538,7 @@ public class GeneBuilderIndexer {
         logger.info(PARSING_LOG_MESSAGE, hpoFilePath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
             // Skip first header line
-            bufferedReader.readLine();
+            line = bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t");
                 String omimId = fields[6];
