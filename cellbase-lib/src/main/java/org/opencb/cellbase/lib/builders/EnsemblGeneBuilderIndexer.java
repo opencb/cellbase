@@ -71,8 +71,8 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
 
     public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
-                      Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
-                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile)
+                      Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneGensusFile,
+                      Path cancerHostpotFile, Path canonicalFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
@@ -83,7 +83,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexCdnaSequences(cDnaFastaFile);
         indexExpression(species, geneExpressionFile);
         indexDrugs(geneDrugFile);
-        indexDiseases(hpoFile, disgenetFile);
+        indexDiseases(hpoFile);
         indexConstraints(gnomadFile);
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(species, miRBaseFile);
@@ -91,8 +91,6 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
-//        indexTSO500(tso500File);
-//        indexEGLHHaemOnc(eglhHaemOncFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
@@ -202,6 +200,10 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexExpression(String species, Path geneExpressionFile) throws IOException, RocksDBException {
+        if (geneExpressionFile == null) {
+            return;
+        }
+
         Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
         if (geneExpressionFile != null && Files.exists(geneExpressionFile) && Files.size(geneExpressionFile) > 0
                 && species != null) {
@@ -253,7 +255,11 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexConstraints(Path gnomadFile) throws IOException, RocksDBException {
-        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+        if (gnomadFile == null) {
+            return;
+        }
+
+        if (Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
             logger.info("Loading OE scores from '{}'", gnomadFile);
             InputStream inputStream = Files.newInputStream(gnomadFile);
             BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
@@ -309,6 +315,10 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexOntologyAnnotations(Path goaFile) throws IOException, RocksDBException {
+        if (goaFile == null) {
+            return;
+        }
+
         Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
         if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
             logger.info("Loading GO annotation from '{}'", goaFile);
@@ -329,6 +339,10 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexMiRBase(String species, Path miRBaseFile) throws IOException {
+        if (miRBaseFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, miRBaseFile);
 
         MirBaseCallback callback = new MirBaseCallback(rocksdb, rocksDbManager);

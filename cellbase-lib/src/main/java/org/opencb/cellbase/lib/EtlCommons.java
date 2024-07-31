@@ -93,13 +93,11 @@ public final class EtlCommons {
 
     // Gene
     public static final String GENE_DATA = "gene";
-    public static final String ENSEMBL_GENE_BASENAME = "ensemblGene";
     public static final String GENE_ANNOTATION_DATA = "gene_annotation";
     public static final String GENE_DISEASE_ANNOTATION_DATA = "gene_disease_annotation";
 
     // RefSeq
     public static final String REFSEQ_DATA = "refseq";
-    public static final String REFSEQ_GENE_BASENAME = "refSeqGene";
     // Must match the configuration file
     public static final String REFSEQ_GENOMIC_GTF_FILE_ID = "GENOMIC_GTF";
     public static final String REFSEQ_GENOMIC_FNA_FILE_ID = "GENOMIC_FNA";
@@ -508,7 +506,7 @@ public final class EtlCommons {
 
         ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
 
-        LOGGER.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
+        LOGGER.info("Executing command: {}", StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
 
@@ -539,6 +537,34 @@ public final class EtlCommons {
         }
 
         return builder;
+    }
+
+    public static Path getFastaPath(Path gzFastaPath) throws CellBaseException {
+        // Sanity check
+        if (!Files.exists(gzFastaPath)) {
+            throw new CellBaseException("Gzipped FASTA file " + gzFastaPath + " does not exist");
+        }
+
+        // Check FASTA and unzip if necessary
+        Path fastaPath = gzFastaPath.getParent().resolve(gzFastaPath.getFileName().toString().replace(GZ_EXTENSION, ""));
+        if (!fastaPath.toFile().exists()) {
+            // Gunzip
+            LOGGER.info("Gunzip file {}", gzFastaPath);
+            try {
+                List<String> params = Arrays.asList("--keep", gzFastaPath.toString());
+                EtlCommons.runCommandLineProcess(null, "gunzip", params, null);
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
+            }
+        }
+        if (!fastaPath.toFile().exists()) {
+            throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
+        }
+        return fastaPath;
     }
 
     public static boolean isMissing(String string) {
@@ -736,7 +762,7 @@ public final class EtlCommons {
         return dataList;
     }
 
-    private static boolean isDataSupported(DownloadProperties.URLProperties props, String prefix) {
+    public static boolean isDataSupported(DownloadProperties.URLProperties props, String prefix) {
         for (String key : props.getFiles().keySet()) {
             if (key.startsWith(prefix)) {
                 return true;

@@ -47,8 +47,10 @@ import java.util.List;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.ProteinBuilder.OUTPUT_PROTEIN_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
@@ -68,8 +70,6 @@ public class BuildCommandExecutor extends CommandExecutor {
     private String ensemblRelease;
 
     private boolean flexibleGTFParsing;
-
-    private static final String DATA_ALREADY_BUILT = "{} data has already been built.";
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
@@ -234,8 +234,49 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildGene() throws CellBaseException {
-        return new GeneBuilder(downloadFolder.resolve(GENE_DATA), buildFolder.resolve(GENE_DATA), speciesConfiguration, flexibleGTFParsing,
-                configuration);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(GENE_DATA));
+
+        // Sanity check
+        Path geneDownloadPath = downloadFolder.resolve(GENE_DATA);
+        Path geneBuildPath = buildFolder.resolve(GENE_DATA);
+
+        List<Path> versionFiles = new ArrayList<>(Arrays.asList(
+                geneDownloadPath.resolve(ENSEMBL_DATA).resolve(getDataVersionFilename(ENSEMBL_DATA)),
+                geneDownloadPath.resolve(REFSEQ_DATA).resolve(getDataVersionFilename(REFSEQ_DATA))));
+        List<String> dataList = GeneBuilder.getCommonDataSources(speciesConfiguration, configuration);
+        for (String data : dataList) {
+            Path versionFile;
+            switch (data) {
+                case MIRTARBASE_DATA:
+                    versionFile = downloadFolder.resolve(REGULATION_DATA).resolve(MIRTARBASE_DATA).resolve(getDataVersionFilename(data));
+                    break;
+                case MIRBASE_DATA:
+                    versionFile = downloadFolder.resolve(REGULATION_DATA).resolve(MIRBASE_DATA).resolve(getDataVersionFilename(data));
+                    break;
+                default:
+                    versionFile = downloadFolder.resolve(GERP_DATA).resolve(getDataVersionFilename(data));
+                    break;
+            }
+            versionFiles.add(versionFile);
+        }
+
+        List<Path> filesToCheck = new ArrayList<>(Arrays.asList(geneBuildPath.resolve(ENSEMBL_GENE_OUTPUT_FILENAME),
+                geneBuildPath.resolve(REFSEQ_GENE_OUTPUT_FILENAME)));
+        for (Path versionFile : versionFiles) {
+            filesToCheck.add(geneBuildPath.resolve(versionFile.getFileName()));
+        }
+        filesToCheck.addAll(versionFiles);
+
+        if (AbstractBuilder.existFiles(filesToCheck)) {
+            logger.warn(DATA_ALREADY_BUILT, getDataName(ENSEMBL_DATA) + " and " + getDataName(REFSEQ_DATA) + " genes");
+            return null;
+        }
+
+        System.exit(-1);
+
+        copyVersionFiles(versionFiles, geneBuildPath);
+
+        return new GeneBuilder(geneDownloadPath, geneBuildPath, speciesConfiguration, flexibleGTFParsing, configuration);
     }
 
     private AbstractBuilder buildRepeats() throws CellBaseException {
@@ -403,25 +444,8 @@ public class BuildCommandExecutor extends CommandExecutor {
                 SpeciesUtils.getSpeciesShortname(speciesConfiguration), assembly.getName(), null);
         String fastaFilename = Paths.get(ensemblUrl).getFileName().toString();
         Path gzFastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename);
-        Path fastaPath = downloadFolder.resolve(GENOME_DATA).resolve(fastaFilename.replace(GZ_EXTENSION, ""));
-        if (!fastaPath.toFile().exists()) {
-            // Gunzip
-            logger.info("Gunzip file: {}", gzFastaPath);
-            try {
-                List<String> params = Arrays.asList("--keep", gzFastaPath.toString());
-                EtlCommons.runCommandLineProcess(null, "gunzip", params, null);
-            } catch (IOException e) {
-                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
-            } catch (InterruptedException e) {
-                // Restore interrupted state...
-                Thread.currentThread().interrupt();
-                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
-            }
-        }
-        if (!fastaPath.toFile().exists()) {
-            throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
-        }
-        return fastaPath;
+
+        return EtlCommons.getFastaPath(gzFastaPath);
     }
 
     private AbstractBuilder buildSplice() throws IOException, CellBaseException {
@@ -484,7 +508,11 @@ public class BuildCommandExecutor extends CommandExecutor {
     private void copyVersionFiles(List<Path> versionPaths, Path targetPath) throws CellBaseException {
         // Check version files before copying them
         checkVersionFiles(versionPaths);
-        if (!targetPath.toFile().exists()) {
+        copyFiles(versionPaths, targetPath);
+    }
+
+    private void copyFiles(List<Path> versionPaths, Path targetPath) throws CellBaseException {
+        if (!Files.exists(targetPath)) {
             try {
                 Files.createDirectories(targetPath);
             } catch (IOException e) {

@@ -61,6 +61,9 @@ public abstract class AbstractBuilder {
     public static final String PARSING_LOG_MESSAGE = "Parsing {} ...";
     public static final String PARSING_DONE_LOG_MESSAGE = "Parsing done.";
 
+    public static final String SKIPPING_INDEX_DATA_LOG_MESSAGE = "Skipping index for data '{}': it is not supported for species '{}'.";
+    public static final String DATA_ALREADY_BUILT = "'{}' data has already been built.";
+
     protected AbstractBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
@@ -80,7 +83,7 @@ public abstract class AbstractBuilder {
         }
     }
 
-    protected String getConfigurationFileIdPrefix(String scientificSpecies) {
+    protected static String getConfigurationFileIdPrefix(String scientificSpecies) {
         String prefix = "";
         if (StringUtils.isNotEmpty(scientificSpecies) && !scientificSpecies.equals("Homo sapiens") && scientificSpecies.contains(" ")) {
             char c = scientificSpecies.charAt(0);
@@ -94,6 +97,8 @@ public abstract class AbstractBuilder {
         String filename = Paths.get(props.getFiles().get(fileId)).getFileName().toString();
         if (filename.contains(MANUAL_PREFIX)) {
             filename = filename.replace(MANUAL_PREFIX, "");
+        } else if (filename.contains(SCRIPT_PREFIX)) {
+            filename = filename.split("@")[1];
         }
         Path filePath = targetPath.resolve(filename);
         if (!Files.exists(filePath)) {

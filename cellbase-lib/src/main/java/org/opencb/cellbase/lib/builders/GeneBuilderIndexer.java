@@ -44,8 +44,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.DISGENET_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.HPO_DISEASE_DATA;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
@@ -69,8 +69,6 @@ public class GeneBuilderIndexer {
     protected final String DRUGS_SUFFIX = "_drug";
     protected final String DISEASE_SUFFIX = "_disease";
     protected final String MIRTARBASE_SUFFIX = "_mirtarbase";
-//    protected final String TSO500_SUFFIX = "_tso500";
-//    protected final String EGLH_HAEMONC_SUFFIX = "_eglh_haemonc";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -101,6 +99,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexProteinSequences(Path proteinFastaFile) throws IOException, FileFormatException, RocksDBException {
+        if (proteinFastaFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, proteinFastaFile);
         FastaReader fastaReader = new FastaReader(proteinFastaFile);
         Fasta fasta;
@@ -116,6 +118,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexHgncIdMapping(Path hgncMappingFile) throws IOException, RocksDBException {
+        if (hgncMappingFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, hgncMappingFile);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hgncMappingFile)) {
             String line = bufferedReader.readLine();
@@ -135,6 +141,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexManeMapping(Path maneMappingFile, String referenceId) throws IOException, RocksDBException {
+        if (maneMappingFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, maneMappingFile);
         int idColumn = referenceId.equalsIgnoreCase(ENSEMBL_DATA) ? 7 : 5;
 
@@ -161,6 +171,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexLrgMapping(Path lrgMappingFile, String referenceId) throws IOException, RocksDBException {
+        if (lrgMappingFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, lrgMappingFile);
 
         // # Last modified: 30-03-2021@22:00:06
@@ -189,6 +203,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexCancerGeneCensus(Path cgcFile) throws IOException, RocksDBException {
+        if (cgcFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, cgcFile);
 
         Map<String, String> tissuesMap = new HashMap<>();
@@ -313,6 +331,10 @@ public class GeneBuilderIndexer {
     }
 
     public void indexCancerHotspot(Path cancerHotspot) throws IOException, RocksDBException {
+        if (cancerHotspot == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, cancerHotspot);
 
         // Store all cancer hotspot (different gene and aminoacid position) for each gene in the same key
@@ -497,6 +519,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexDrugs(Path geneDrugFile) throws IOException, RocksDBException {
+        if (geneDrugFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, geneDrugFile);
 
         String currentGene = "";
@@ -561,49 +587,32 @@ public class GeneBuilderIndexer {
         logger.info(PARSING_DONE_LOG_MESSAGE, geneDrugFile);
     }
 
-    protected void indexDiseases(Path hpoFilePath, Path disgenetFilePath) throws IOException, RocksDBException {
+    protected void indexDiseases(Path hpoFilePath) throws IOException, RocksDBException {
+        if (hpoFilePath == null) {
+            return;
+        }
 
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
 
         String line;
 
         // HPO
-//        logger.info(PARSING_LOG_MESSAGE, hpoFilePath);
-//        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
-//            // Skip first header line
-//            bufferedReader.readLine();
-//            while ((line = bufferedReader.readLine()) != null) {
-//                String[] fields = line.split("\t");
-//                String omimId = fields[6];
-//                String geneSymbol = fields[3];
-//                String hpoId = fields[0];
-//                String diseaseName = fields[1];
-//                GeneTraitAssociation disease =
-//                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), HPO_DATA);
-//                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
-//            }
-//        }
-//        logger.info(PARSING_DONE_LOG_MESSAGE, hpoFilePath);
-
-        // DisGeNet
-        logger.info(PARSING_LOG_MESSAGE, disgenetFilePath);
-        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath)) {
+        logger.info(PARSING_LOG_MESSAGE, hpoFilePath);
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
             // Skip first header line
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t");
-                String diseaseId = fields[4];
-                String diseaseName = fields[5];
-                String score = fields[9];
-                String numberOfPubmeds = fields[13].trim();
-                String numberOfSNPs = fields[14];
-                String source = fields[15];
-                GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
-                        Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), DISGENET_DATA);
-                addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
+                String omimId = fields[6];
+                String geneSymbol = fields[3];
+                String hpoId = fields[0];
+                String diseaseName = fields[1];
+                GeneTraitAssociation disease =
+                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), HPO_DISEASE_DATA);
+                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
             }
         }
-        logger.info(PARSING_DONE_LOG_MESSAGE, disgenetFilePath);
+        logger.info(PARSING_DONE_LOG_MESSAGE);
 
         for (Map.Entry<String, List<GeneTraitAssociation>> entry : geneDiseaseAssociationMap.entrySet()) {
             rocksDbManager.update(rocksdb, entry.getKey() + DISEASE_SUFFIX, entry.getValue());
@@ -611,6 +620,10 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException {
+        if (miRTarBaseFile == null) {
+            return;
+        }
+
         MiRTarBaseIndexer miRTarBaseIndexer = new MiRTarBaseIndexer();
         Map<String, List<MirnaTarget>> result = miRTarBaseIndexer.index(miRTarBaseFile);
         for (Map.Entry<String, List<MirnaTarget>> entry : result.entrySet()) {

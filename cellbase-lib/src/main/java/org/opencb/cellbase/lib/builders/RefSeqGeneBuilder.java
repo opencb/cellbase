@@ -45,20 +45,17 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
     private Map<String, Transcript> transcriptDict;
     private Map<String, Exon> exonDict;
-    private Path gtfFile;
-    private Path fastaFile;
-    private Path proteinFastaFile;
-    private Path cdnaFastaFile;
-    private Path maneFile;
-    private Path lrgFile;
-    private Path disgenetFile;
-    private Path hpoFile;
-    private Path geneDrugFile;
-    private Path miRTarBaseFile;
-    private Path cancerGeneCensusFile;
-    private Path cancerHotspot;
-//    private Path tso500File;
-//    private Path eglhHaemOncFile;
+    private Path gtfFile = null;
+    private Path fastaFile = null;
+    private Path proteinFastaFile = null;
+    private Path cdnaFastaFile = null;
+    private Path maneFile = null;
+    private Path lrgFile = null;
+    private Path hpoFile = null;
+    private Path geneDrugFile = null;
+    private Path miRTarBaseFile = null;
+    private Path cancerGeneCensusFile = null;
+    private Path cancerHotspot = null;
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private static final String KNOWN_STATUS = "KNOWN";
@@ -70,6 +67,15 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     // sometimes there are two stop codons (eg NM_018159.4). Only parse the first one, skip the second
     private boolean seenStopCodon = false;
 
+    private boolean isHSapiens = false;
+
+    private static final String ENSEMBL = "ensembl";
+    private static final String TRANSCRIPT_ID = "transcript_id";
+    private static final String EXON_NUMBER = "exon_number";
+
+    public static final String REFSEQ_GENE_BASENAME = "refSeqGene";
+    public static final String REFSEQ_GENE_OUTPUT_FILENAME = REFSEQ_GENE_BASENAME + ".json.gz";
+
     public RefSeqGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, CellBaseConfiguration configuration,
                              CellBaseSerializer serializer) {
         super(serializer);
@@ -80,6 +86,10 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
+
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            isHSapiens = true;
+        }
     }
 
     public void check() throws Exception {
@@ -109,43 +119,49 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
         // Check genome FASTA file
         String genomeGzFilename = Paths.get(props.getFiles().get(prefixId + REFSEQ_GENOMIC_FNA_FILE_ID)).getFileName().toString();
-        fastaFile = downloadPath.resolve(genomeGzFilename);
-        if (Files.exists(fastaFile)) {
-            // Need to be gunzip-ed
-            logger.info("Gunzip file: {}", fastaFile);
-            try {
-                EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(fastaFile.toString()), null);
-            } catch (IOException e) {
-                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaFile, e);
-            } catch (InterruptedException e) {
-                // Restore interrupted state...
-                Thread.currentThread().interrupt();
-                throw new CellBaseException("Error executing gunzip in FASTA file " + fastaFile, e);
-            }
-        }
-        String genomeFilename = genomeGzFilename.replace(GZ_EXTENSION, "");
-        fastaFile = downloadPath.resolve(genomeFilename);
-        if (!Files.exists(fastaFile)) {
-            throw new CellBaseException("Genome FASTA file " + fastaFile.getFileName() + " does not exist at " + fastaFile.getParent());
-        }
+        Path fastaGzFile = downloadPath.resolve(genomeGzFilename);
+        fastaFile = EtlCommons.getFastaPath(fastaGzFile);
 
         // Check common files
-        props = configuration.getDownload().getEnsembl().getUrl();
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-//            tso500File = checkFile(props, ENSEMBL_TSO500_FILE_ID, downloadPath.getParent(), "Ensembl TSO 500").toPath();
-//            eglhHaemOncFile = checkFile(props, ENSEMBL_HAEM_ONC_TRANSCRIPTS_FILE_ID, downloadPath.getParent(), "EGLH Haem Onc").toPath();
+        if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
             maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, MANE_SELECT_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
             lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, LRG_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
             cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_HOTSPOT_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
             geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, DGIDB_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
             hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
-            disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, HPO_DISEASE_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
             cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_GENE_CENSUS_DATA, speciesConfiguration.getScientificName());
         }
 
         // Check regulation files
         // mirtarbase
-        miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 1).get(0).toPath();
+        if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
+            miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                    .resolve(MIRTARBASE_DATA), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, MIRTARBASE_DATA, speciesConfiguration.getScientificName());
+        }
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, refSeqGeneLabel);
         checked = true;
@@ -163,41 +179,41 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         // Index protein sequences for later
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
-        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, disgenetFile, miRTarBaseFile,
-                cancerGeneCensusFile, cancerHotspot);
+        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, miRTarBaseFile, cancerGeneCensusFile,
+                cancerHotspot);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);
-        GtfReader gtfReader = new GtfReader(gtfFile);
-
-        Gtf gtf;
-        while ((gtf = gtfReader.read()) != null) {
-            String chromosome = getSequenceName(gtf.getSequenceName());
-            switch (gtf.getFeature()) {
-                case "gene":
-                    // we've finished the previous transcript, store xrefs
-                    addXrefs(transcript, geneDbxrefs, exonDbxrefs);
-                    parseGene(gtf, chromosome, indexer);
-                    break;
-                case "transcript":
-                    break;
-                case "exon":
-                    parseExon(gtf, chromosome, fastaIndex, indexer);
-                    break;
-                case "CDS":
-                    parseCDS(gtf, indexer);
-                    break;
-                case "start_codon":
-                    seenStopCodon = false;
-                    break;
-                case "stop_codon":
-                    if (!seenStopCodon) {
-                        parseStopCodon(gtf);
-                        seenStopCodon = true;
-                    }
-                    break;
-                default:
-                    throw new RuntimeException("Unexpected feature type: " + gtf.getFeature());
+        try (GtfReader gtfReader = new GtfReader(gtfFile)) {
+            Gtf gtf;
+            while ((gtf = gtfReader.read()) != null) {
+                String chromosome = getSequenceName(gtf.getSequenceName());
+                switch (gtf.getFeature()) {
+                    case "gene":
+                        // we've finished the previous transcript, store xrefs
+                        addXrefs(transcript, geneDbxrefs, exonDbxrefs);
+                        parseGene(gtf, chromosome, indexer);
+                        break;
+                    case "transcript":
+                        break;
+                    case "exon":
+                        parseExon(gtf, chromosome, fastaIndex, indexer);
+                        break;
+                    case "CDS":
+                        parseCDS(gtf, indexer);
+                        break;
+                    case "start_codon":
+                        seenStopCodon = false;
+                        break;
+                    case "stop_codon":
+                        if (!seenStopCodon) {
+                            parseStopCodon(gtf);
+                            seenStopCodon = true;
+                        }
+                        break;
+                    default:
+                        throw new CellBaseException("Error parsing: unexpected feature type: " + gtf.getFeature());
+                }
             }
         }
 
@@ -208,7 +224,6 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         store();
 
         // Close
-        gtfReader.close();
         serializer.close();
         if (fastaIndex != null) {
             fastaIndex.close();
@@ -239,7 +254,6 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
             return;
         }
         exonDbxrefs.addAll(geneDbxrefs);
-//        transcript.setXrefs(new ArrayList<>(exonDbxrefs));
         transcript.getXrefs().addAll(exonDbxrefs);
         transcript.getXrefs().add(new Xref(transcript.getName(), "hgnc_symbol", "HGNC Symbol"));
 
@@ -278,8 +292,9 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         geneDbxrefs = parseXrefs(gtf);
     }
 
-    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex, RefSeqGeneBuilderIndexer indexer) throws RocksDBException {
-        String transcriptId = gtf.getAttributes().get("transcript_id");
+    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex, RefSeqGeneBuilderIndexer indexer) throws RocksDBException,
+            CellBaseException {
+        String transcriptId = gtf.getAttributes().get(TRANSCRIPT_ID);
 
         // new transcript
         if (!transcriptDict.containsKey(transcriptId)) {
@@ -303,7 +318,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         if (fastaIndex != null) {
             exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
         }
-        String exonNumber = gtf.getAttributes().get("exon_number");
+        String exonNumber = gtf.getAttributes().get(EXON_NUMBER);
         // RefSeq does not provide Exon IDs, we are using transcript ID and exon numbers
         String exonId = transcriptId + "_" + exonNumber;
 
@@ -325,14 +340,14 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         }
     }
 
-    private void parseCDS(Gtf gtf, RefSeqGeneBuilderIndexer indexer) throws RocksDBException {
-        String exonNumber = gtf.getAttributes().get("exon_number");
+    private void parseCDS(Gtf gtf, RefSeqGeneBuilderIndexer indexer) throws RocksDBException, CellBaseException {
+        String exonNumber = gtf.getAttributes().get(EXON_NUMBER);
         if (StringUtils.isEmpty(exonNumber)) {
             // this CDS doesn't know which exon it belongs to. skip
             return;
         }
 
-        transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
+        transcript = transcriptDict.get(gtf.getAttributes().get(TRANSCRIPT_ID));
         String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
 
@@ -458,12 +473,12 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     }
 
     private void parseStopCodon(Gtf gtf) {
-        String exonNumber = gtf.getAttributes().get("exon_number");
+        String exonNumber = gtf.getAttributes().get(EXON_NUMBER);
         if (StringUtils.isEmpty(exonNumber)) {
             // some codons don't have an exon number, discard
             return;
         }
-        Transcript transcript = transcriptDict.get(gtf.getAttributes().get("transcript_id"));
+        transcript = transcriptDict.get(gtf.getAttributes().get(TRANSCRIPT_ID));
         String exonId = transcript.getId() + "_" + exonNumber;
         Exon exon = exonDict.get(exonId);
 
@@ -564,14 +579,14 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         }
     }
 
-    private Set<Xref> parseXrefs(Gtf gtf) {
+    private Set<Xref> parseXrefs(Gtf gtf) throws CellBaseException {
         Set<Xref> xrefSet = new HashSet<>();
         String xrefs = gtf.getAttributes().get("db_xref");
         if (StringUtils.isNotEmpty(xrefs)) {
             for (String xrefString : xrefs.split(",")) {
                 String[] dbxrefParts = xrefString.split(":", 2);
                 if (dbxrefParts.length != 2) {
-                    throw new RuntimeException("Bad xref, expected colon: " + xrefString);
+                    throw new CellBaseException("Error parsing Xrefs: bad xref, expected colon: " + xrefString);
                 }
                 String dbName = dbxrefParts[0].toLowerCase();
                 String id = dbxrefParts[1];
@@ -580,7 +595,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
                     dbName = "hgnc_id";
                     dbDisplayName = "HGNC ID";
                 }
-                if ("ensembl".equalsIgnoreCase(dbName)) {
+                if (ENSEMBL.equalsIgnoreCase(dbName)) {
                     if (id.startsWith("ENST")) {
                         dbName = "ensembl_transcript";
                         dbDisplayName = "Ensembl transcript";
@@ -601,7 +616,6 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         Map<String, String> gtfAttributes = gtf.getAttributes();
 
         String name = gene.getName();
-//        String biotype = gtfAttributes.get("gbkey");
         String biotype = gtfAttributes.get("transcript_biotype");
         if ("mRNA".equals(biotype)) {
             biotype = "protein_coding";
@@ -612,7 +626,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), new TranscriptAnnotation());
 
         // Add MANE Select mappings, with this we can know which Ensembl and Refseq transcripts match according to MANE
-        for (String suffix: Arrays.asList("ensembl", "ensembl_protein")) {
+        for (String suffix: Arrays.asList(ENSEMBL, "ensembl_protein")) {
             String maneRefSeq = indexer.getMane(transcriptId, suffix);
             if (StringUtils.isNotEmpty(maneRefSeq)) {
                 transcript.getXrefs().add(new Xref(maneRefSeq, "mane_select_" + suffix,
@@ -621,7 +635,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         }
 
         // Add LRG mappings, with this we can know which Ensembl and Refseq transcripts match according to LRG
-        String lrgRefSeq = indexer.getLrg(transcriptId, "ensembl");
+        String lrgRefSeq = indexer.getLrg(transcriptId, ENSEMBL);
         if (StringUtils.isNotEmpty(lrgRefSeq)) {
             transcript.getXrefs().add(new Xref(lrgRefSeq, "lrg_ensembl", "LRG Ensembl"));
         }
@@ -637,15 +651,6 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         if (StringUtils.isNotEmpty(lrg)) {
             transcript.getFlags().add("LRG");
         }
-        // 3. TSO500 and EGLH HaemOnc
-//        String tso500Flag = indexer.getTSO500(transcriptId.split("\\.")[0]);
-//        if (StringUtils.isNotEmpty(tso500Flag)) {
-//            transcript.getFlags().add(tso500Flag);
-//        }
-//        String eglhHaemOncFlag = indexer.getEGLHHaemOnc(transcriptId.split("\\.")[0]);
-//        if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-//            transcript.getFlags().add(eglhHaemOncFlag);
-//        }
 
         gene.getTranscripts().add(transcript);
 
@@ -654,7 +659,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     }
 
     private String getGeneId(Gtf gtf) throws CellBaseException {
-        // db_xref "GeneID:100287102";
+        // Splitting the db_xref, e.g.: "GeneID:100287102"
         String xrefString = gtf.getAttributes().get("db_xref");
         String[] xrefs = xrefString.split(",");
         for (String xref : xrefs) {
@@ -667,11 +672,11 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         throw new CellBaseException("Didn't find geneId for db_xref:" + xrefString);
     }
 
-    private String getSequenceName(String fullSequenceName) {
+    private String getSequenceName(String fullSequenceName) throws CellBaseException {
         String[] sequenceNameParts = fullSequenceName.split("\\.");
 
         if (sequenceNameParts.length != 2) {
-            throw new RuntimeException("bad chromosome: " + fullSequenceName);
+            throw new CellBaseException("Invalid sequence name: bad chromosome: " + fullSequenceName);
         }
 
         // just get the first part, e.g. NC_000024.11
@@ -682,20 +687,6 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         // scaffold
         return fullSequenceName;
     }
-
-//    private void setAnnotationFiles(Path refSeqDirectoryPath) {
-//        Path geneDirectoryPath = refSeqDirectoryPath.getParent().resolve("gene");
-//        maneFile = geneDirectoryPath.resolve("MANE.GRCh38.v1.0.summary.txt.gz");
-//        lrgFile = geneDirectoryPath.resolve("list_LRGs_transcripts_xrefs.txt");
-//        geneDrugFile = geneDirectoryPath.resolve("dgidb.tsv");
-//        disgenetFile = geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz");
-//        hpoFile = geneDirectoryPath.resolve("phenotype_to_genes.txt");
-//        cancerGeneCensus = geneDirectoryPath.resolve("cancer-gene-census.tsv");
-//        cancerHotspot = geneDirectoryPath.resolve("hotspots_v2.xls");
-//        tso500File = geneDirectoryPath.resolve("TSO500_transcripts.txt");
-//        eglhHaemOncFile = geneDirectoryPath.resolve("EGLH_HaemOnc_transcripts.txt");
-//        miRTarBaseFile = refSeqDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx");
-//    }
 
     static {
         REFSEQ_CHROMOSOMES.put("NC_000001", "1");
