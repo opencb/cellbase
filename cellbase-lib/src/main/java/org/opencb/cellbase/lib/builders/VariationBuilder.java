@@ -36,7 +36,7 @@ import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS;
 
 /**
- * Created by jtarraga on 01/08/24
+ * Created by jtarraga on 01/08/24.
  */
 public class VariationBuilder extends AbstractBuilder {
 

@@ -48,6 +48,7 @@ import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FIL
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.VariationBuilder.VARIATION_CHR_PREFIX;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
 /**
@@ -139,8 +140,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
-                            // Load data, create index and update release
-                            loadVariationData();
+                            loadVariation();
                             break;
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
@@ -303,31 +303,15 @@ public class LoadCommandExecutor extends CommandExecutor {
         dataRelease = getDataReleaseForLoading(dataReleaseManager).getRelease();
     }
 
-    private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
+    private void loadVariation() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException, CellBaseException {
-        // First load data
-        // Common loading process from CellBase variation data models
         if (field == null) {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input,
-                    entry -> entry.getFileName().toString().startsWith("variation_chr"));
-
-            for (Path entry : stream) {
-                logger.info("Loading file '{}'", entry);
-                loadRunner.load(input.resolve(entry.getFileName()), "variation", dataRelease);
-            }
-
-            // Create index
-            createIndex("variation");
-
-            // Update release (collection and sources)
-            List<Path> sources = new ArrayList<>(Arrays.asList(
-                    input.resolve("ensemblVariationVersion.json")
-            ));
-            dataReleaseManager.update(dataRelease, "variation", sources);
-
-            // Custom update required e.g. population freqs loading
+            // First load data
+            // Common loading process from CellBase variation data models
+            loadData(input.resolve(VARIATION_DATA), VARIATION_DATA, VARIATION_CHR_PREFIX);
         } else {
+            // Custom update required e.g. population freqs loading
             logger.info("Loading file '{}'", input);
             loadRunner.load(input, "variation", dataRelease, field, innerFields);
         }
