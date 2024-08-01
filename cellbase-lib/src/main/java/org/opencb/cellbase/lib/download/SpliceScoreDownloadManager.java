@@ -38,7 +38,7 @@ public class SpliceScoreDownloadManager extends AbstractDownloadManager {
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
         // Check if the species is supported
-        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             logger.info("{} not supported for the species {}", getDataName(SPLICE_SCORE_DATA),
                     speciesConfiguration.getScientificName());
             return Collections.emptyList();

@@ -35,10 +35,7 @@ import org.opencb.cellbase.lib.builders.*;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +50,7 @@ import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FIL
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.VariationBuilder.VARIATION_CHR_PREFIX;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
 
@@ -144,6 +142,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         break;
                     case PROTEIN_DATA:
                         parser = buildProtein();
+                        break;
+                    case VARIATION_DATA:
+                        parser = buildVariation();
                         break;
                     case REGULATION_DATA:
                         parser = buildRegulation();
@@ -392,6 +393,36 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ProteinBuilder(proteinDownloadPath, speciesConfiguration.getScientificName(), serializer);
     }
 
+    private AbstractBuilder buildVariation() throws CellBaseException, IOException {
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(VARIATION_DATA));
+
+        // Sanity check
+        Path variationDownloadPath = downloadFolder.resolve(VARIATION_DATA);
+        Path variationBuildPath = buildFolder.resolve(VARIATION_DATA);
+
+        List<Path> filesToCheck = new ArrayList<>();
+        if (!speciesConfiguration.getId().equalsIgnoreCase(HSAPIENS)) {
+            filesToCheck.add(variationBuildPath.resolve(getDataVersionFilename(VARIATION_DATA)));
+        }
+
+        try (DirectoryStream<Path> vcfPaths = Files.newDirectoryStream(variationBuildPath,
+                entry -> entry.getFileName().toString().startsWith(VARIATION_CHR_PREFIX))) {
+            if (AbstractBuilder.existFiles(filesToCheck) && vcfPaths.iterator().hasNext()) {
+                logger.warn(DATA_ALREADY_BUILT, getDataName(VARIATION_DATA));
+                return null;
+            }
+        }
+
+        // Copy version files
+        if (!speciesConfiguration.getId().equalsIgnoreCase(HSAPIENS)) {
+            copyVersionFiles(Arrays.asList(variationDownloadPath.resolve(getDataVersionFilename(VARIATION_DATA))), variationBuildPath);
+        }
+
+        // Create the file serializer and the variation builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(variationBuildPath);
+        return new VariationBuilder(variationDownloadPath, speciesConfiguration.getScientificName(), serializer);
+    }
+
     private AbstractBuilder buildConservation() throws CellBaseException {
         logger.info(BUILDING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
 
@@ -429,7 +460,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private String getDefaultHumanAssembly() {
         for (SpeciesConfiguration species : configuration.getSpecies().getVertebrates()) {
-            if (species.getId().equals(HSAPIENS_NAME)) {
+            if (species.getId().equals(HSAPIENS)) {
                 return species.getAssemblies().get(0).getName();
             }
         }

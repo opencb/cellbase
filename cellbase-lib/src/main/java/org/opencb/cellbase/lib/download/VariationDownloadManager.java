@@ -47,7 +47,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
         // Check if species is supported
         // and we do not need to download human variation data from Ensembl. It is already included in the CellBase.
         if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)
-                && !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+                && !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variationFolder);
 

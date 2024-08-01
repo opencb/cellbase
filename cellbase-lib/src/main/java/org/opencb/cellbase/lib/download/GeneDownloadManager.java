@@ -83,7 +83,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENE_ANNOTATION_DATA));
 
         // Save data sources manually downloaded
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             // HPO
             if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)))) {
                 logger.warn("The version file {} already exists", getDataVersionFilename(HPO_DISEASE_DATA));
@@ -245,7 +245,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(MANE_SELECT_DATA)),
                 getDataName(MANE_SELECT_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MANE_SELECT_DATA));
@@ -262,7 +262,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(LRG_DATA));
 
             downloadFile = downloadAndSaveDataSource(configuration.getDownload().getLrg(), LRG_FILE_ID, LRG_DATA, geneDownloadPath);
@@ -276,7 +276,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(HGNC_DATA)), getDataName(HGNC_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(HGNC_DATA));
 
@@ -291,7 +291,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(CANCER_HOTSPOT_DATA)),
                 getDataName(CANCER_HOTSPOT_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CANCER_HOTSPOT_DATA));
@@ -308,7 +308,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(DGIDB_DATA)), getDataName(DGIDB_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(DGIDB_DATA));
 
@@ -341,7 +341,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(GENE_EXPRESSION_ATLAS_DATA)),
                 getDataName(GENE_EXPRESSION_ATLAS_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENE_EXPRESSION_ATLAS_DATA));
@@ -358,7 +358,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
 
         // Check if the species is supported
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)
                 && !isAlreadyDownloaded(geneDownloadPath.resolve(getDataVersionFilename(GNOMAD_CONSTRAINTS_DATA)),
                 getDataName(GNOMAD_CONSTRAINTS_DATA))) {
             logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA));

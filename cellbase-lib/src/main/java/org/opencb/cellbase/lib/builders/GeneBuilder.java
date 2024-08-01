@@ -84,7 +84,7 @@ public class GeneBuilder extends AbstractBuilder {
         List<String> dataList = new ArrayList<>();
 
         boolean isHSapiens = false;
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             isHSapiens = true;
         }
 

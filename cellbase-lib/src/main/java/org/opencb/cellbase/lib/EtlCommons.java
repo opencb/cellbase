@@ -42,12 +42,12 @@ import java.util.stream.Collectors;
 public final class EtlCommons {
 
     // Commons
-    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
-    public static final String HSAPIENS_NAME= "hsapiens";
-    public static final String MUS_MUSCULUS_NAME= "Mus musculus";
-    public static final String RATTUS_NORVEGICUS_NAME= "Rattus norvegicus";
-    public static final String BOS_TAURUS_NAME= "Bos taurus";
-    public static final String DANIO_RERIO_NAME= "Danio rerio";
+    public static final String HOMO_SAPIENS = "Homo sapiens";
+    public static final String HSAPIENS = "hsapiens";
+    public static final String MUS_MUSCULUS = "Mus musculus";
+    public static final String RATTUS_NORVEGICUS = "Rattus norvegicus";
+    public static final String BOS_TAURUS = "Bos taurus";
+    public static final String DANIO_RERIO = "Danio rerio";
 
     public static final String GRCH38_NAME = "GRCh38";
     public static final String GRCH37_NAME = "GRCh37";
@@ -745,7 +745,7 @@ public final class EtlCommons {
     private static List<String> getRepeatsDataList(CellBaseConfiguration configuration, SpeciesConfiguration speciesConfiguration) {
         List<String> dataList = new ArrayList<>();
         String speciesId = speciesConfiguration.getId().toUpperCase(Locale.ROOT);
-        if (speciesId.equalsIgnoreCase(HSAPIENS_NAME)) {
+        if (speciesId.equalsIgnoreCase(HSAPIENS)) {
             return Arrays.asList(TRF_DATA, WM_DATA, GSD_DATA);
         }
 

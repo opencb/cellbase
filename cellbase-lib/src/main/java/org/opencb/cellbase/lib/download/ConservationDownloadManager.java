@@ -87,7 +87,7 @@ public class ConservationDownloadManager extends AbstractDownloadManager {
             String gerpUrl = null;
 
             // Human
-            if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+            if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
                 // 1. PhastCons and PhyloP
                 String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
                         "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "M"};
@@ -128,7 +128,7 @@ public class ConservationDownloadManager extends AbstractDownloadManager {
             }
 
             // Mouse
-            if (speciesConfiguration.getScientificName().equals(MUS_MUSCULUS_NAME)) {
+            if (speciesConfiguration.getScientificName().equals(MUS_MUSCULUS)) {
                 String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
 
                 // 1. PhastCons and PhyloP

@@ -87,7 +87,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
 
-        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             isHSapiens = true;
         }
     }
