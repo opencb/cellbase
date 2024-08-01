@@ -48,7 +48,7 @@ public class ProteinBuilder extends AbstractBuilder {
     private Path proteinPath;
     private String species;
 
-    public static final String OUTPUT_PROTEIN_OUTPUT_FILENAME = PROTEIN_DATA + ".json.gz";
+    public static final String PROTEIN_OUTPUT_FILENAME = PROTEIN_DATA + ".json.gz";
 
     public ProteinBuilder(Path proteinPath, String species, CellBaseSerializer serializer) {
         super(serializer);

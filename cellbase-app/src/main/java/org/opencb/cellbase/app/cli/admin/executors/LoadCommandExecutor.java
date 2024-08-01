@@ -42,7 +42,10 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
+import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
@@ -132,36 +135,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.GENE_DATA: {
-                            // Load data
-                            loadIfExists(input.resolve("gene.json.gz"), "gene");
-
-                            // Create index
-                            createIndex("gene");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("dgidbVersion.json"),
-                                    input.resolve("ensemblCoreVersion.json"),
-                                    input.resolve("uniprotXrefVersion.json"),
-                                    input.resolve("geneExpressionAtlasVersion.json"),
-                                    input.resolve("hpoVersion.json"),
-                                    input.resolve("disgenetVersion.json"),
-                                    input.resolve("gnomadVersion.json")
-                            ));
-                            dataReleaseManager.update(dataRelease, "gene", sources);
-                            break;
-                        }
-                        case EtlCommons.REFSEQ_DATA: {
-                            // Load data
-                            loadIfExists(input.resolve("refseq.json.gz"), "refseq");
-
-                            // Create index
-                            createIndex("refseq");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(
-                                    Collections.singletonList(input.resolve("refseqVersion.json")));
-                            dataReleaseManager.update(dataRelease, "refseq", sources);
+                            loadGene();
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
@@ -203,18 +177,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.PROTEIN_DATA: {
-                            // Load data
-                            loadIfExists(input.resolve("protein.json.gz"), "protein");
-
-                            // Create index
-                            createIndex("protein");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("uniprotVersion.json"),
-                                    input.resolve("interproVersion.json")
-                            ));
-                            dataReleaseManager.update(dataRelease, "protein", sources);
+                            loadProtein();
                             break;
                         }
 //                        case EtlCommons.PPI_DATA:
@@ -432,6 +395,14 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadData(input.resolve(GENOME_DATA), collectionMap);
     }
 
+    private void loadGene() throws CellBaseException {
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(GENE_DATA, ENSEMBL_GENE_OUTPUT_FILENAME);
+        collectionMap.put(REFSEQ_DATA, REFSEQ_GENE_OUTPUT_FILENAME);
+
+        loadData(input.resolve(GENE_DATA), collectionMap);
+    }
+
     private void loadRepeats() throws CellBaseException {
         HashMap<String, String> collectionMap = new HashMap<>();
         collectionMap.put(REPEATS_DATA, REPEATS_OUTPUT_FILENAME);
@@ -445,6 +416,13 @@ public class LoadCommandExecutor extends CommandExecutor {
         collectionMap.put(REGULATORY_PFM_BASENAME, REGULATORY_PFM_OUTPUT_FILENAME);
 
         loadData(input.resolve(REGULATION_DATA), collectionMap);
+    }
+
+    private void loadProtein() throws CellBaseException {
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(PROTEIN_DATA, PROTEIN_OUTPUT_FILENAME);
+
+        loadData(input.resolve(PROTEIN_DATA), collectionMap);
     }
 
     private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,

@@ -49,7 +49,7 @@ import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
-import static org.opencb.cellbase.lib.builders.ProteinBuilder.OUTPUT_PROTEIN_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
@@ -373,7 +373,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         // Sanity check
         Path proteinDownloadPath = downloadFolder.resolve(PROTEIN_DATA);
         Path proteinBuildPath = buildFolder.resolve(PROTEIN_DATA);
-        List<Path> filesToCheck = Arrays.asList(proteinBuildPath.resolve(OUTPUT_PROTEIN_OUTPUT_FILENAME),
+        List<Path> filesToCheck = Arrays.asList(proteinBuildPath.resolve(PROTEIN_OUTPUT_FILENAME),
                 proteinBuildPath.resolve(getDataVersionFilename(INTERPRO_DATA)),
                 proteinBuildPath.resolve(getDataVersionFilename(INTACT_DATA)),
                 proteinBuildPath.resolve(getDataVersionFilename(UNIPROT_DATA)));
