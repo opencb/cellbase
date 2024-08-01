@@ -92,6 +92,7 @@ public final class EtlCommons {
 
     // Genome
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_SEQUENCE_COLLECTION_NAME = "genome_sequence";
     public static final String GENOME_INFO_DATA = "genome_info";
 
     // Gene

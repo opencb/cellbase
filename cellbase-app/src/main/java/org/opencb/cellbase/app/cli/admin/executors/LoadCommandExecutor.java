@@ -45,7 +45,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
 /**
  * Created by imedina on 03/02/15.
@@ -128,24 +130,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 try {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA: {
-                            // Load data
-                            if (input.resolve("genome_info.json").toFile().exists()) {
-                                loadIfExists(input.resolve("genome_info.json"), "genome_info");
-                            } else {
-                                loadIfExists(input.resolve("genome_info.json.gz"), "genome_info");
-                            }
-                            loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-
-                            // Create index
-                            createIndex("genome_info");
-                            createIndex("genome_sequence");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve("genomeVersion.json")
-                            ));
-                            dataReleaseManager.update(dataRelease, "genome_info", EtlCommons.GENOME_DATA, sources);
-                            dataReleaseManager.update(dataRelease, "genome_sequence", null, null);
+                            loadGenome();
                             break;
                         }
                         case EtlCommons.GENE_DATA: {
@@ -474,6 +459,18 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void loadGenome() throws CellBaseException {
+        // Genome sequence
+        Path jsonPath = input.resolve(GENOME_DATA).resolve(GENOME_JSON_FILENAME);
+        loadJson(GENOME_DATA, GENOME_SEQUENCE_COLLECTION_NAME, jsonPath);
+
+        // Genome info
+        jsonPath = input.resolve(GENOME_DATA).resolve(GENOME_INFO_FILENAME);
+        // The fourh parameter to null is required to avoid read and load the genome version file since it was done previously
+        // when loading the GENOME_JSON_FILENAME into the collection GENOME_SEQUENCE_COLLECTION_NAME
+        loadJson(GENOME_INFO_DATA, GENOME_INFO_DATA, jsonPath, null);
+    }
+
     private void loadRepeats() throws CellBaseException {
         Path jsonPath = input.resolve(REPEATS_DATA).resolve(REPEATS_OUTPUT_FILENAME);
         loadJson(REPEATS_DATA, jsonPath);
@@ -568,35 +565,61 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadJson(String data, Path jsonPath) throws CellBaseException {
-        String dataName = getDataName(data);
-        if (!Files.exists(jsonPath)) {
-            logger.warn("JSON file {} not found", jsonPath);
-            logger.warn("No '{}' data will be loaded", dataName);
+        loadJson(data, data, jsonPath);
+    }
+
+    private void loadJson(String data, String collection, Path jsonPath) throws CellBaseException {
+        if (!existsJsonFile(jsonPath, data)) {
+            return;
+        }
+        List<Path> sources = new ArrayList<>();
+        for (File file : jsonPath.getParent().toFile().listFiles()) {
+            if (file.getName().endsWith(SUFFIX_VERSION_FILENAME)) {
+                sources.add(file.getAbsoluteFile().toPath());
+            }
+        }
+        loadJson(data, collection, jsonPath, sources);
+    }
+
+    private void loadJson(String data, String collection, Path jsonPath, List<Path> sources) throws CellBaseException {
+        if (!existsJsonFile(jsonPath, data)) {
             return;
         }
 
+        String dataName = getDataName(data);
+
         try {
             // Load data
-            logger.debug("Loading JSON file '{}' ...", jsonPath);
-            loadRunner.load(jsonPath, "repeats", dataRelease);
+            logger.info("Loading JSON file '{}' ...", jsonPath);
+            loadRunner.load(jsonPath, collection, dataRelease);
+            logger.info(DONE_LOG_MESSAGE);
 
             // Create index
-            createIndex(data);
+            createIndex(data, collection);
 
             // Update release (collection and sources)
-            List<Path> sources = new ArrayList<>();
-            for (File file : jsonPath.getParent().toFile().listFiles()) {
-                if (file.getName().endsWith(SUFFIX_VERSION_FILENAME)) {
-                    sources.add(file.getAbsoluteFile().toPath());
-                }
-            }
-            dataReleaseManager.update(dataRelease, data, data, sources);
+            dataReleaseManager.update(dataRelease, collection, data, sources);
         } catch (Exception e) {
             throw new CellBaseException("Error loading data '" + dataName + "'", e);
         }
     }
 
+    private boolean existsJsonFile(Path jsonPath, String data) throws CellBaseException {
+        String dataName = getDataName(data);
+        if (!Files.exists(jsonPath)) {
+            logger.warn("JSON file {} not found", jsonPath);
+            logger.warn("No '{}' data will be loaded", dataName);
+            return false;
+        }
+        return true;
+    }
+
+    @Deprecated
     private void createIndex(String data) {
+        createIndex(data, data);
+    }
+
+    private void createIndex(String data, String collection) {
         if (!createIndexes) {
             return;
         }
@@ -605,7 +628,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         String collectionName = null;
         try {
             dataName = getDataName(data);
-            collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
+            collectionName = CellBaseDBAdaptor.buildCollectionName(collection, dataRelease);
             logger.info("Creating indexes for data '{}' in collection '{}' ...", dataName, collectionName);
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
             logger.info(DONE_LOG_MESSAGE);

@@ -20,21 +20,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.opencb.cellbase.lib.EtlCommons.*;
-
 public class GenomeSequenceFastaBuilder extends AbstractBuilder {
 
     private Path genomeReferenceFastaFile;
 
     private static final int CHUNK_SIZE = 2000;
-    public static final String GENOME_OUTPUT_FILENAME = EtlCommons.GENOME_DATA + ".json.gz";
+    public static final String GENOME_JSON_BASENAME = "genome";
+    public static final String GENOME_JSON_FILENAME = GENOME_JSON_BASENAME + ".json.gz";
 
     public GenomeSequenceFastaBuilder(Path genomeReferenceFastaFile, CellBaseSerializer serializer) {
         super(serializer);

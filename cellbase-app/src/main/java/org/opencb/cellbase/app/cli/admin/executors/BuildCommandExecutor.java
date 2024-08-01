@@ -48,7 +48,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
-import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_OUTPUT_FILENAME;
+import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
 import static org.opencb.cellbase.lib.builders.ProteinBuilder.OUTPUT_PROTEIN_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
@@ -195,7 +195,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeDownloadFolder = downloadFolder.resolve(GENOME_DATA);
         Path genomeBuildFolder = buildFolder.resolve(GENOME_DATA);
 
-        if (Files.exists(genomeBuildFolder.resolve(GENOME_OUTPUT_FILENAME))
+        if (Files.exists(genomeBuildFolder.resolve(GENOME_JSON_FILENAME))
                 && Files.exists(genomeBuildFolder.resolve(GENOME_INFO_FILENAME))
                 && Files.exists(genomeBuildFolder.resolve(getDataVersionFilename(GENOME_DATA)))) {
             logger.warn(DATA_ALREADY_BUILT, getDataName(GENOME_DATA));
@@ -222,7 +222,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
 
         // Parse file
-        if (!Files.exists(genomeBuildFolder.resolve(GENOME_OUTPUT_FILENAME))) {
+        if (!Files.exists(genomeBuildFolder.resolve(GENOME_JSON_FILENAME))) {
             // Get FASTA path
             Path fastaPath = getFastaReferenceGenome();
 

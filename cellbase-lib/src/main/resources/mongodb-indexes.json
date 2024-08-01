@@ -16,6 +16,8 @@
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 
+{"collection": "genome_info", "fields": {"supercontigs.name": 1}, "options": {"background": true}}
+
 {"collection": "genome_sequence", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "genome_sequence", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "genome_sequence", "fields": {"sequenceType": 1}, "options": {"background": true}}
