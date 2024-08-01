@@ -66,6 +66,7 @@ public final class EtlCommons {
     public static final String GZ_EXTENSION = ".gz";
 
     public static final String OK_LOG_MESSAGE = "Ok.";
+    public static final String DONE_LOG_MESSAGE = "Done.";
 
     // Ensembl
     public static final String ENSEMBL_DATA = "ensembl";
@@ -211,11 +212,6 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
-    /**
-     * @deprecated (when refactoring downloaders, builders and loaders)
-     */
-    @Deprecated
-    public static final String REPEATS_JSON = "repeats";
     // Simple repeats
     public static final String TRF_DATA = "trf";
     // Must match the configuration file

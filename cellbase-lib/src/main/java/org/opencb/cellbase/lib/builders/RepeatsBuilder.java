@@ -44,7 +44,8 @@ public class RepeatsBuilder extends AbstractBuilder {
     private List<String> dataList;
     private final Path filesDir;
 
-    public static final String REPEATS_OUTPUT_FILENAME = EtlCommons.REPEATS_DATA + ".json.gz";
+    public static final String REPEATS_OUTPUT_BASENAME = "repeats";
+    public static final String REPEATS_OUTPUT_FILENAME = REPEATS_OUTPUT_BASENAME + ".json.gz";
 
     public RepeatsBuilder(List<String> dataList, Path filesDir, CellBaseFileSerializer serializer, CellBaseConfiguration configuration) {
         super(serializer);

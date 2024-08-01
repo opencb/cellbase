@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 
 /**
  * Created by imedina on 03/02/15.
@@ -473,34 +474,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadRepeats() {
-        Path path = input.resolve(EtlCommons.REPEATS_JSON + ".json.gz");
-        if (Files.exists(path)) {
-            try {
-                // Load data
-                logger.debug("Loading '{}' ...", path);
-                loadRunner.load(path, "repeats", dataRelease);
-
-                // Create index
-                createIndex("repeats");
-
-                // Update release (collection and sources)
-                List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(getDataVersionFilename(TRF_DATA)),
-                        input.resolve(getDataVersionFilename(GSD_DATA)),
-                        input.resolve(getDataVersionFilename(WM_DATA))
-                ));
-                dataReleaseManager.update(dataRelease, "repeats", EtlCommons.REPEATS_DATA, sources);
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                    | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
-                logger.error(e.toString());
-            } catch (LoaderException e) {
-                e.printStackTrace();
-            }
-        } else {
-            logger.warn("Repeats file {} not found", path);
-            logger.warn("No repeats data will be loaded");
-        }
+    private void loadRepeats() throws CellBaseException {
+        Path jsonPath = input.resolve(REPEATS_DATA).resolve(REPEATS_OUTPUT_FILENAME);
+        loadJson(REPEATS_DATA, jsonPath);
     }
 
     private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
@@ -591,16 +567,51 @@ public class LoadCommandExecutor extends CommandExecutor {
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 
-    private void createIndex(String collection) {
+    private void loadJson(String data, Path jsonPath) throws CellBaseException {
+        String dataName = getDataName(data);
+        if (!Files.exists(jsonPath)) {
+            logger.warn("JSON file {} not found", jsonPath);
+            logger.warn("No '{}' data will be loaded", dataName);
+            return;
+        }
+
+        try {
+            // Load data
+            logger.debug("Loading JSON file '{}' ...", jsonPath);
+            loadRunner.load(jsonPath, "repeats", dataRelease);
+
+            // Create index
+            createIndex(data);
+
+            // Update release (collection and sources)
+            List<Path> sources = new ArrayList<>();
+            for (File file : jsonPath.getParent().toFile().listFiles()) {
+                if (file.getName().endsWith(SUFFIX_VERSION_FILENAME)) {
+                    sources.add(file.getAbsoluteFile().toPath());
+                }
+            }
+            dataReleaseManager.update(dataRelease, data, data, sources);
+        } catch (Exception e) {
+            throw new CellBaseException("Error loading data '" + dataName + "'", e);
+        }
+    }
+
+    private void createIndex(String data) {
         if (!createIndexes) {
             return;
         }
-        String collectionName = CellBaseDBAdaptor.buildCollectionName(collection, dataRelease);
-        logger.info("Loading indexes for '{}' collection ...", collectionName);
+
+        String dataName = null;
+        String collectionName = null;
         try {
+            dataName = getDataName(data);
+            collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
+            logger.info("Creating indexes for data '{}' in collection '{}' ...", dataName, collectionName);
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
-        } catch (IOException e) {
-            logger.error("Error creating index: {}", e.getMessage());
+            logger.info(DONE_LOG_MESSAGE);
+        } catch (IOException | CellBaseException e) {
+            logger.error("Error creating indexes for data '{}' in collection '{}': {}", dataName, collectionName,
+                    Arrays.toString(e.getStackTrace()));
         }
     }
 
