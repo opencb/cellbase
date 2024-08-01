@@ -38,14 +38,12 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
+import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
@@ -150,7 +148,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("disgenetVersion.json"),
                                     input.resolve("gnomadVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, "gene", EtlCommons.GENE_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "gene", sources);
                             break;
                         }
                         case EtlCommons.REFSEQ_DATA: {
@@ -163,7 +161,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             // Update release (collection and sources)
                             List<Path> sources = new ArrayList<>(
                                     Collections.singletonList(input.resolve("refseqVersion.json")));
-                            dataReleaseManager.update(dataRelease, "refseq", EtlCommons.REFSEQ_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "refseq", sources);
                             break;
                         }
                         case EtlCommons.VARIATION_DATA: {
@@ -180,8 +178,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                             // Update release (collection and sources)
                             List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("caddVersion.json")));
-                            dataReleaseManager.update(dataRelease, "variation_functional_score",
-                                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "variation_functional_score", sources);
                             break;
                         }
                         case EtlCommons.MISSENSE_VARIATION_SCORE_DATA: {
@@ -194,28 +191,15 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                             // Update release (collection and sources)
                             List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("revelVersion.json")));
-                            dataReleaseManager.update(dataRelease, "missense_variation_functional_score",
-                                    EtlCommons.MISSENSE_VARIATION_SCORE_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "missense_variation_functional_score", sources);
                             break;
                         }
                         case EtlCommons.CONSERVATION_DATA: {
-                            // Load data, create index and update release
                             loadConservation();
                             break;
                         }
                         case EtlCommons.REGULATION_DATA: {
-                            // Load data (regulatory region and regulatory PFM))
-                            loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
-                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
-
-                            // Create index
-                            createIndex("regulatory_region");
-                            createIndex("regulatory_pfm");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("ensemblRegulationVersion.json")));
-                            dataReleaseManager.update(dataRelease, "regulatory_region", EtlCommons.REGULATION_DATA, sources);
-                            dataReleaseManager.update(dataRelease, "regulatory_pfm", null, null);
+                            loadRegulation();
                             break;
                         }
                         case EtlCommons.PROTEIN_DATA: {
@@ -230,7 +214,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve("uniprotVersion.json"),
                                     input.resolve("interproVersion.json")
                             ));
-                            dataReleaseManager.update(dataRelease, "protein", EtlCommons.PROTEIN_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "protein", sources);
                             break;
                         }
 //                        case EtlCommons.PPI_DATA:
@@ -249,7 +233,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.REPEATS_DATA: {
-                            // Load data, create index and update release
                             loadRepeats();
                             break;
                         }
@@ -269,7 +252,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                                     input.resolve(EtlCommons.GO_VERSION_FILE),
                                     input.resolve(EtlCommons.DO_VERSION_FILE)
                             ));
-                            dataReleaseManager.update(dataRelease, "ontology", EtlCommons.ONTOLOGY_DATA, sources);
+                            dataReleaseManager.update(dataRelease, "ontology", sources);
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -378,7 +361,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             List<Path> sources = new ArrayList<>(Arrays.asList(
                     input.resolve("ensemblVariationVersion.json")
             ));
-            dataReleaseManager.update(dataRelease, "variation", EtlCommons.VARIATION_DATA, sources);
+            dataReleaseManager.update(dataRelease, "variation", sources);
 
             // Custom update required e.g. population freqs loading
         } else {
@@ -390,25 +373,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, CellBaseException, LoaderException {
-        // Load data
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input,
-                entry -> entry.getFileName().toString().startsWith("conservation_"));
-
-        for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry);
-            loadRunner.load(input.resolve(entry.getFileName()), "conservation", dataRelease);
-        }
-
-        // Create index
-        createIndex("conservation");
-
-        // Update release (collection and sources)
-        List<Path> sources = new ArrayList<>(Arrays.asList(
-                input.resolve("gerpVersion.json"),
-                input.resolve("phastConsVersion.json"),
-                input.resolve("phyloPVersion.json")
-        ));
-        dataReleaseManager.update(dataRelease, "conservation", EtlCommons.CONSERVATION_DATA, sources);
+        loadData(input.resolve(CONSERVATION_DATA), CONSERVATION_DATA, "conservation_");
     }
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
@@ -427,7 +392,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex("protein_functional_prediction");
 
         // Update release (collection and sources)
-        dataReleaseManager.update(dataRelease, "protein_functional_prediction", null, null);
+        dataReleaseManager.update(dataRelease, "protein_functional_prediction", null);
     }
 
     private void loadClinical() throws FileNotFoundException {
@@ -447,7 +412,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         input.resolve("cosmicVersion.json"),
                         input.resolve("gwasVersion.json")
                 ));
-                dataReleaseManager.update(dataRelease, "clinical_variants", EtlCommons.CLINICAL_VARIANT_DATA, sources);
+                dataReleaseManager.update(dataRelease, "clinical_variants", sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException | CellBaseException e) {
                 logger.error(e.toString());
@@ -460,20 +425,26 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadGenome() throws CellBaseException {
-        // Genome sequence
-        Path jsonPath = input.resolve(GENOME_DATA).resolve(GENOME_JSON_FILENAME);
-        loadJson(GENOME_DATA, GENOME_SEQUENCE_COLLECTION_NAME, jsonPath);
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(GENOME_SEQUENCE_COLLECTION_NAME, GENOME_JSON_FILENAME);
+        collectionMap.put(GENOME_INFO_DATA, GENOME_INFO_FILENAME);
 
-        // Genome info
-        jsonPath = input.resolve(GENOME_DATA).resolve(GENOME_INFO_FILENAME);
-        // The fourh parameter to null is required to avoid read and load the genome version file since it was done previously
-        // when loading the GENOME_JSON_FILENAME into the collection GENOME_SEQUENCE_COLLECTION_NAME
-        loadJson(GENOME_INFO_DATA, GENOME_INFO_DATA, jsonPath, null);
+        loadData(input.resolve(GENOME_DATA), collectionMap);
     }
 
     private void loadRepeats() throws CellBaseException {
-        Path jsonPath = input.resolve(REPEATS_DATA).resolve(REPEATS_OUTPUT_FILENAME);
-        loadJson(REPEATS_DATA, jsonPath);
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(REPEATS_DATA, REPEATS_OUTPUT_FILENAME);
+
+        loadData(input.resolve(REPEATS_DATA), collectionMap);
+    }
+
+    private void loadRegulation() throws CellBaseException {
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(REGULATORY_REGION_BASENAME, REGULATORY_REGION_OUTPUT_FILENAME);
+        collectionMap.put(REGULATORY_PFM_BASENAME, REGULATORY_PFM_OUTPUT_FILENAME);
+
+        loadData(input.resolve(REGULATION_DATA), collectionMap);
     }
 
     private void loadSpliceScores() throws NoSuchMethodException, InterruptedException, ExecutionException, InstantiationException,
@@ -493,7 +464,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 input.resolve(SPLICE_SCORE_DATA + "/" + getDataVersionFilename(MMSPLICE_DATA)),
                 input.resolve(SPLICE_SCORE_DATA + "/" + getDataVersionFilename(SPLICEAI_DATA))
         ));
-        dataReleaseManager.update(dataRelease, "splice_score", SPLICE_SCORE_DATA, sources);
+        dataReleaseManager.update(dataRelease, SPLICE_SCORE_DATA, sources);
     }
 
     private void loadSpliceScores(Path spliceFolder) throws IOException, ExecutionException, InterruptedException,
@@ -531,7 +502,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             // Update release (collection and sources)
             List<Path> sources = Collections.singletonList(pubmedPath.resolve(EtlCommons.getDataVersionFilename(PUBMED_DATA)));
-            dataReleaseManager.update(dataRelease, PUBMED_DATA, PUBMED_DATA, sources);
+            dataReleaseManager.update(dataRelease, PUBMED_DATA, sources);
         } else {
             logger.warn("PubMed folder {} not found", pubmedPath);
         }
@@ -561,81 +532,93 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Update release (collection and sources)
         List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(PHARMGKB_DATA)));
-        dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PHARMACOGENOMICS_DATA, sources);
+        dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 
-    private void loadJson(String data, Path jsonPath) throws CellBaseException {
-        loadJson(data, data, jsonPath);
-    }
-
-    private void loadJson(String data, String collection, Path jsonPath) throws CellBaseException {
-        if (!existsJsonFile(jsonPath, data)) {
-            return;
+    private void loadData(Path buildPath, Map<String, String> collectionMap) throws CellBaseException {
+        // Load data from the different files into the input collections
+        for (Map.Entry<String, String> entry : collectionMap.entrySet()) {
+            Path jsonPath = buildPath.resolve(entry.getValue());
+            loadJsonFile(entry.getKey(), jsonPath);
         }
-        List<Path> sources = new ArrayList<>();
-        for (File file : jsonPath.getParent().toFile().listFiles()) {
-            if (file.getName().endsWith(SUFFIX_VERSION_FILENAME)) {
-                sources.add(file.getAbsoluteFile().toPath());
+
+        // Load sources
+        loadSources(buildPath);
+    }
+
+    private void loadData(Path buildPath, String collection, String prefix) throws CellBaseException, IOException {
+        // Load data
+        DirectoryStream<Path> stream = Files.newDirectoryStream(buildPath, entry -> entry.getFileName().toString().startsWith(prefix));
+
+        try {
+            for (Path entry : stream) {
+                logger.info("Loading JSON file '{}' ...", entry);
+                loadRunner.load(buildPath.resolve(entry.getFileName()), collection, dataRelease);
+                logger.info(DONE_LOG_MESSAGE);
             }
+        } catch (Exception e) {
+            throw new CellBaseException("Error loading data in collection '" + collection + "'", e);
         }
-        loadJson(data, collection, jsonPath, sources);
+
+        // Create index
+        createIndex(collection);
+
+        // Update the data release collection
+        dataReleaseManager.update(dataRelease, collection, getVersionPaths(buildPath));
     }
 
-    private void loadJson(String data, String collection, Path jsonPath, List<Path> sources) throws CellBaseException {
-        if (!existsJsonFile(jsonPath, data)) {
+    private void loadJsonFile(String collection, Path jsonPath) throws CellBaseException {
+        if (!Files.exists(jsonPath)) {
+            logger.warn("JSON file '{}' not found. No data will be loaded in collection '{}'.", jsonPath,
+                    CellBaseDBAdaptor.buildCollectionName(collection, dataRelease));
             return;
         }
-
-        String dataName = getDataName(data);
 
         try {
             // Load data
             logger.info("Loading JSON file '{}' ...", jsonPath);
             loadRunner.load(jsonPath, collection, dataRelease);
             logger.info(DONE_LOG_MESSAGE);
-
-            // Create index
-            createIndex(data, collection);
-
-            // Update release (collection and sources)
-            dataReleaseManager.update(dataRelease, collection, data, sources);
         } catch (Exception e) {
-            throw new CellBaseException("Error loading data '" + dataName + "'", e);
+            throw new CellBaseException("Error loading data in collection '" + collection + "'", e);
         }
+
+        // Create index
+        createIndex(collection);
+
+        // Update collection in data release
+        dataReleaseManager.update(dataRelease, collection);
     }
 
-    private boolean existsJsonFile(Path jsonPath, String data) throws CellBaseException {
-        String dataName = getDataName(data);
-        if (!Files.exists(jsonPath)) {
-            logger.warn("JSON file {} not found", jsonPath);
-            logger.warn("No '{}' data will be loaded", dataName);
-            return false;
-        }
-        return true;
-    }
-
-    @Deprecated
-    private void createIndex(String data) {
-        createIndex(data, data);
-    }
-
-    private void createIndex(String data, String collection) {
+    private void createIndex(String collection) {
         if (!createIndexes) {
             return;
         }
 
-        String dataName = null;
         String collectionName = null;
         try {
-            dataName = getDataName(data);
             collectionName = CellBaseDBAdaptor.buildCollectionName(collection, dataRelease);
-            logger.info("Creating indexes for data '{}' in collection '{}' ...", dataName, collectionName);
+            logger.info("Creating indexes for collection '{}' ...", collectionName);
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
             logger.info(DONE_LOG_MESSAGE);
-        } catch (IOException | CellBaseException e) {
-            logger.error("Error creating indexes for data '{}' in collection '{}': {}", dataName, collectionName,
-                    Arrays.toString(e.getStackTrace()));
+        } catch (IOException e) {
+            logger.error("Error creating indexes for collection '{}': {}", collectionName, Arrays.toString(e.getStackTrace()));
         }
+    }
+
+    private void loadSources(Path path) throws CellBaseException {
+        // Update data source in data release
+        dataReleaseManager.updateSources(dataRelease, getVersionPaths(path));
+    }
+
+    private List<Path> getVersionPaths(Path path) {
+        List<Path> sources = new ArrayList<>();
+        for (File file : path.toFile().listFiles()) {
+            if (file.getName().endsWith(SUFFIX_VERSION_FILENAME)) {
+                sources.add(file.getAbsoluteFile().toPath());
+            }
+        }
+        return sources;
     }
 
     private DataRelease getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
