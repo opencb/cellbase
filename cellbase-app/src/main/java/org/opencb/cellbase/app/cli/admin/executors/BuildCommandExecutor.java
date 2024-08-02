@@ -400,16 +400,18 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path variationDownloadPath = downloadFolder.resolve(VARIATION_DATA);
         Path variationBuildPath = buildFolder.resolve(VARIATION_DATA);
 
-        List<Path> filesToCheck = new ArrayList<>();
-        if (!speciesConfiguration.getId().equalsIgnoreCase(HSAPIENS)) {
-            filesToCheck.add(variationBuildPath.resolve(getDataVersionFilename(VARIATION_DATA)));
-        }
+        if (Files.exists(variationBuildPath)) {
+            List<Path> filesToCheck = new ArrayList<>();
+            if (!speciesConfiguration.getId().equalsIgnoreCase(HSAPIENS)) {
+                filesToCheck.add(variationBuildPath.resolve(getDataVersionFilename(VARIATION_DATA)));
+            }
 
-        try (DirectoryStream<Path> vcfPaths = Files.newDirectoryStream(variationBuildPath,
-                entry -> entry.getFileName().toString().startsWith(VARIATION_CHR_PREFIX))) {
-            if (AbstractBuilder.existFiles(filesToCheck) && vcfPaths.iterator().hasNext()) {
-                logger.warn(DATA_ALREADY_BUILT, getDataName(VARIATION_DATA));
-                return null;
+            try (DirectoryStream<Path> vcfPaths = Files.newDirectoryStream(variationBuildPath,
+                    entry -> entry.getFileName().toString().startsWith(VARIATION_CHR_PREFIX))) {
+                if (AbstractBuilder.existFiles(filesToCheck) && vcfPaths.iterator().hasNext()) {
+                    logger.warn(DATA_ALREADY_BUILT, getDataName(VARIATION_DATA));
+                    return null;
+                }
             }
         }
 
