@@ -122,16 +122,20 @@ public class ProteinBuilder extends AbstractBuilder {
             }
 
             logger.info(PARSING_LOG_MESSAGE, interProFiles.get(0));
+            String interproName = getDataName(INTERPRO_DATA);
+            int numLine = 0;
+            int numInterProLinesProcessed = 0;
+            int numUniqueProteinsProcessed = 0;
             try (BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interProFiles.get(0).toPath())) {
+
                 Set<String> hashSet = proteinMap.keySet();
                 Set<String> visited = new HashSet<>(proteinMap.size());
 
-                int numInterProLinesProcessed = 0;
-                int numUniqueProteinsProcessed = 0;
                 String[] fields;
                 String line;
                 boolean iprAdded;
                 while ((line = interproBuffereReader.readLine()) != null) {
+                    numLine++;
                     fields = line.split("\t");
 
                     if (hashSet.contains(fields[0])) {
@@ -183,23 +187,20 @@ public class ProteinBuilder extends AbstractBuilder {
                             visited.add(fields[0]);
                             numUniqueProteinsProcessed++;
                         }
-                    } else {
-                        logger.info("{} not found in protein map", fields[0]);
                     }
 
                     if (++numInterProLinesProcessed % 10000000 == 0) {
-                        logger.info("{} {} lines processed", numInterProLinesProcessed, getDataName(INTERPRO_DATA));
-                        logger.info("{} {} unique proteins processed", getDataName(INTERPRO_DATA), numUniqueProteinsProcessed);
+                        printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
                     }
                 }
-                logger.info("{} {} lines processed", numInterProLinesProcessed, getDataName(INTERPRO_DATA));
-                logger.info("{} {} unique proteins processed", getDataName(INTERPRO_DATA), numUniqueProteinsProcessed);
+                printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
 
                 logger.info(PARSING_DONE_LOG_MESSAGE);
             } catch (IOException e) {
-                throw new CellBaseException("Error parsing " + getDataName(INTERPRO_DATA) + " file: " + interProFiles.get(0), e);
+                logger.error("Error parsing {} file: {}. Num. line = {}. Error stack trace = {}", interproName, interProFiles.get(0),
+                        numLine, Arrays.toString(e.getStackTrace()));
+                printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
             }
-
 
             // Serialize and save results
             RocksIterator rocksIterator = rocksDb.newIterator();
@@ -279,4 +280,10 @@ public class ProteinBuilder extends AbstractBuilder {
     private String getMismatchNumFilesErrorMessage(String dataName, int numFiles) {
         return "Only one " + dataName + " file is expected, but currently there are " + numFiles + " files";
     }
+
+    private void printInfoLogs(int numInterProLinesProcessed, int numUniqueProteinsProcessed, String dataName) {
+        logger.info("{}: {} lines processed", dataName, numInterProLinesProcessed);
+        logger.info("{}: {} unique proteins processed", dataName, numUniqueProteinsProcessed);
+    }
+
 }
