@@ -92,6 +92,8 @@ public class LoadCommandExecutor extends CommandExecutor {
         } else {
             loadOptions = loadCommandOptions.data.split(",");
         }
+
+
         if (loadCommandOptions.field != null) {
             field = loadCommandOptions.field;
         }
