@@ -24,15 +24,15 @@ import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
+import org.opencb.commons.run.ParallelTaskRunner;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS;
 
 /**
@@ -44,6 +44,24 @@ public class VariationBuilder extends AbstractBuilder {
     private String species;
 
     public static final String VARIATION_CHR_PREFIX = "variation_chr";
+
+    public static final Map<String, String> SV_VALUES_MAP;
+
+    static {
+        Map<String, String> tempMap = new HashMap<>();
+        tempMap.put("<complex_structural_alteration>", "<CS>");
+        tempMap.put("<copy_number_loss>", "<CNL>");
+        tempMap.put("<copy_number_gain>", "<CNG>");
+        tempMap.put("<copy_number_variation>", "<CNV>");
+        tempMap.put("<deletion>", "<DEL>");
+        tempMap.put("<duplication>", "<DUP>");
+        tempMap.put("<insertion>", "<INS>");
+        tempMap.put("<inversion>", "<INV>");
+        tempMap.put("<mobile_element_insertion>", "<INS:ME>");
+        tempMap.put("<tandem_duplication>", "<DUP:TANDEM>");
+        SV_VALUES_MAP = Collections.unmodifiableMap(tempMap);
+    }
+
 
     public VariationBuilder(Path downloadPath, String species, CellBaseFileSerializer fileSerializer) {
         super(fileSerializer);
@@ -74,22 +92,45 @@ public class VariationBuilder extends AbstractBuilder {
         try (DirectoryStream<Path> vcfPaths = Files.newDirectoryStream(downloadPath,
                 entry -> entry.getFileName().toString().startsWith(prefix))) {
             for (Path vcfPath : vcfPaths) {
-                VariantStudyMetadata variantStudyMetadata = new VariantFileMetadata(vcfPath.getFileName().toString(), "")
-                        .toVariantStudyMetadata(ENSEMBL_DATA);
+
+                logger.info(PARSING_LOG_MESSAGE, vcfPath);
+
+                VariantStudyMetadata variantStudyMetadata = new VariantFileMetadata(vcfPath.getFileName().toString(),
+                        vcfPath.toAbsolutePath().toString()).toVariantStudyMetadata("");
                 VariantReader variantVcfReader = new VariantVcfHtsjdkReader(vcfPath, variantStudyMetadata,
                         new VariantNormalizer(normalizerConfig));
 
                 // Write variant to the JSON files according to the chromosome
+                int count = 0;
                 Iterator<Variant> iterator = variantVcfReader.iterator();
                 while (iterator.hasNext()) {
                     Variant variant = iterator.next();
-                    variant.setId(variant.toStringSimple());
+                    if (SV_VALUES_MAP.containsKey(variant.getAlternate())) {
+                        variant.setAlternate(SV_VALUES_MAP.get(variant.getAlternate()));
+                    }
+                    variant.setId(variant.toString());
                     fileSerializer.serialize(variant, VARIATION_CHR_PREFIX + variant.getChromosome());
+                    if (++count % 1000000 == 0) {
+                        logger.info("{} variants parsed", count);
+                    }
                 }
                 variantVcfReader.close();
+
+                logger.info("{} variants parsed", count);
+                logger.info(PARSING_DONE_LOG_MESSAGE);
             }
         }
 
         fileSerializer.close();
+    }
+
+
+
+    public class VariantReaderTask implements ParallelTaskRunner.TaskWithException<Variant, Variant, Exception> {
+
+        @Override
+        public List<Variant> apply(List<Variant> list) throws Exception {
+            return list.stream().map(v -> v.setId(v.toString())).collect(Collectors.toList());
+        }
     }
 }
