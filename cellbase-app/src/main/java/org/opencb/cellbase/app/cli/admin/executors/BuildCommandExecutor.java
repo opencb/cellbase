@@ -273,8 +273,6 @@ public class BuildCommandExecutor extends CommandExecutor {
             return null;
         }
 
-        System.exit(-1);
-
         copyVersionFiles(versionFiles, geneBuildPath);
 
         return new GeneBuilder(geneDownloadPath, geneBuildPath, speciesConfiguration, flexibleGTFParsing, configuration);
