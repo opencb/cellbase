@@ -83,6 +83,7 @@ public class VariationBuilder extends AbstractBuilder {
                 Iterator<Variant> iterator = variantVcfReader.iterator();
                 while (iterator.hasNext()) {
                     Variant variant = iterator.next();
+                    variant.setId(variant.toStringSimple());
                     fileSerializer.serialize(variant, VARIATION_CHR_PREFIX + variant.getChromosome());
                 }
                 variantVcfReader.close();
