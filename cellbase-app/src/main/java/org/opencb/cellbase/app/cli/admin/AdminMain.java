@@ -64,6 +64,9 @@ public class AdminMain {
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
+                    case "data-list":
+                        commandExecutor = new DataListCommandExecutor(cliOptionsParser.getDataListCommandOptions());
+                        break;
                     case "data-release":
                         commandExecutor = new DataReleaseCommandExecutor(cliOptionsParser.getDataReleaseCommandOptions());
                         break;

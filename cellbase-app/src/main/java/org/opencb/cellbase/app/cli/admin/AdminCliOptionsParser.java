@@ -34,6 +34,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
+    private DataListCommandOptions dataListCommandOptions;
     private DataReleaseCommandOptions dataReleaseCommandOptions;
     private ApiKeyCommandOptions apiKeyCommandOptions;
     private LoadCommandOptions loadCommandOptions;
@@ -50,6 +51,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
+        dataListCommandOptions = new DataListCommandOptions();
         dataReleaseCommandOptions = new DataReleaseCommandOptions();
         apiKeyCommandOptions = new ApiKeyCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
@@ -61,6 +63,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
+        jCommander.addCommand("data-list", dataListCommandOptions);
         jCommander.addCommand("data-release", dataReleaseCommandOptions);
         jCommander.addCommand("api-key", apiKeyCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
@@ -84,10 +87,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: " + GENOME_DATA + "," + GENE_DATA
-                + "," + VARIATION_FUNCTIONAL_SCORE_DATA + "," + MISSENSE_VARIATION_SCORE_DATA + "," + REGULATION_DATA + "," + PROTEIN_DATA
-                + "," + CONSERVATION_DATA + "," + CLINICAL_VARIANT_DATA + "," + REPEATS_DATA + "," + ONTOLOGY_DATA + "," + SPLICE_SCORE_DATA
-                + "," + PUBMED_DATA + "," + PHARMACOGENOMICS_DATA + "; or use 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to download"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
@@ -129,6 +131,16 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "requires more memory and is less efficient.", required = false, arity = 0)
         public boolean flexibleGTFParsing = false;
 
+    }
+
+    @Parameters(commandNames = {"data-list"}, commandDescription = "List the data supported by the given species")
+    public class DataListCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to list the data, valid formats include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        public String species = "Homo sapiens";
     }
 
     @Parameters(commandNames = {"data-release"}, commandDescription = "Manage data releases in order to support multiple versions of data")
@@ -392,6 +404,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     public BuildCommandOptions getBuildCommandOptions() {
         return buildCommandOptions;
+    }
+
+    public DataListCommandOptions getDataListCommandOptions() {
+        return dataListCommandOptions;
     }
 
     public DataReleaseCommandOptions getDataReleaseCommandOptions() {
