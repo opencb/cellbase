@@ -205,9 +205,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation,"
-                + " conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed, pharmacogenomics."
-                + " 'all' loads everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to load, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to load"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, required = true, arity = 1,
@@ -252,9 +252,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed. 'all' "
-                + " loads everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to export, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to export"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"--db", "--database"}, description = "Database name, e.g., cellbase_hsapiens_grch38_v5", required = true,
@@ -314,10 +314,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
-                + "regulation, protein, ontology, clinical_variants, repeats, refseq and missense_variation_functional_score. 'all' "
-                + "indexes everything", required = true,
-                arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to index, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to index"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"--db", "--database"}, description = "Database name.", required = true, arity = 1)
