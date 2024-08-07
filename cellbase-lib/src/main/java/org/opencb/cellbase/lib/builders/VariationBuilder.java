@@ -162,9 +162,6 @@ public class VariationBuilder extends AbstractBuilder {
                     if (++count % 1000000 == 0) {
                         logger.info(VARIANTS_PARSED_LOG_MESSAGE, count);
                     }
-                    if (count > 100) {
-                        break;
-                    }
                 }
                 variantVcfReader.close();
 
