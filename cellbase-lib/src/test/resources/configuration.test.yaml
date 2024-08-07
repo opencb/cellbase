@@ -336,7 +336,8 @@ species:
         - gene
         - regulation
         - protein
-    #        - variation
+        - variation
+        - ontology
     - id: rnorvegicus
       scientificName: Rattus norvegicus
       assemblies:

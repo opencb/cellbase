@@ -51,34 +51,37 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
             Path oboFolder = downloadFolder.resolve(ONTOLOGY_DATA);
             Files.createDirectories(oboFolder);
 
+            String version;
             DownloadFile downloadFile;
 
-            // HPO
-            downloadFile = downloadDataSource(configuration.getDownload().getHpoObo(), HPO_OBO_FILE_ID, oboFolder);
-            String version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-            saveDataSource(HPO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                    oboFolder.resolve(getDataVersionFilename(HPO_OBO_DATA)));
-            downloadFiles.add(downloadFile);
+            if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+                // HPO
+                downloadFile = downloadDataSource(configuration.getDownload().getHpoObo(), HPO_OBO_FILE_ID, oboFolder);
+                version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+                saveDataSource(HPO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                        oboFolder.resolve(getDataVersionFilename(HPO_OBO_DATA)));
+                downloadFiles.add(downloadFile);
+
+                // DOID
+                downloadFile = downloadDataSource(configuration.getDownload().getDoidObo(), DOID_OBO_FILE_ID, oboFolder);
+                version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+                saveDataSource(DOID_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                        oboFolder.resolve(getDataVersionFilename(DOID_OBO_DATA)));
+                downloadFiles.add(downloadFile);
+
+                // Mondo
+                downloadFile = downloadDataSource(configuration.getDownload().getMondoObo(), MONDO_OBO_FILE_ID, oboFolder);
+                version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
+                saveDataSource(MONDO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                        oboFolder.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
+                downloadFiles.add(downloadFile);
+            }
 
             // GO
             downloadFile = downloadDataSource(configuration.getDownload().getGoObo(), GO_OBO_FILE_ID, oboFolder);
             version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
             saveDataSource(GO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
                     oboFolder.resolve(getDataVersionFilename(GO_OBO_DATA)));
-            downloadFiles.add(downloadFile);
-
-            // DOID
-            downloadFile = downloadDataSource(configuration.getDownload().getDoidObo(), DOID_OBO_FILE_ID, oboFolder);
-            version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-            saveDataSource(DOID_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                    oboFolder.resolve(getDataVersionFilename(DOID_OBO_DATA)));
-            downloadFiles.add(downloadFile);
-
-            // Mondo
-            downloadFile = downloadDataSource(configuration.getDownload().getMondoObo(), MONDO_OBO_FILE_ID, oboFolder);
-            version = getVersionFromOboFile(oboFolder.resolve(downloadFile.getOutputFile()));
-            saveDataSource(MONDO_OBO_DATA, version, getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
-                    oboFolder.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
             downloadFiles.add(downloadFile);
 
             logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
