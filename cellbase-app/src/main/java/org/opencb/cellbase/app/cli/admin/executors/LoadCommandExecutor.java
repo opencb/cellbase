@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
+import static org.opencb.cellbase.lib.builders.OntologyBuilder.OBO_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
@@ -205,19 +206,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            loadStructuralVariants();
 //                            break;
                         case EtlCommons.ONTOLOGY_DATA: {
-                            // Load data
-                            loadIfExists(input.resolve("ontology.json.gz"), "ontology");
-
-                            // Create index
-                            createIndex("ontology");
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Arrays.asList(
-                                    input.resolve(EtlCommons.HPO_VERSION_FILE),
-                                    input.resolve(EtlCommons.GO_VERSION_FILE),
-                                    input.resolve(EtlCommons.DO_VERSION_FILE)
-                            ));
-                            dataReleaseManager.update(dataRelease, "ontology", sources);
+                            loadOntology();
                             break;
                         }
                         case EtlCommons.SPLICE_SCORE_DATA: {
@@ -394,6 +383,13 @@ public class LoadCommandExecutor extends CommandExecutor {
         collectionMap.put(REPEATS_DATA, REPEATS_OUTPUT_FILENAME);
 
         loadData(input.resolve(REPEATS_DATA), collectionMap);
+    }
+
+    private void loadOntology() throws CellBaseException {
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(ONTOLOGY_DATA, OBO_OUTPUT_FILENAME);
+
+        loadData(input.resolve(ONTOLOGY_DATA), collectionMap);
     }
 
     private void loadRegulation() throws CellBaseException {
