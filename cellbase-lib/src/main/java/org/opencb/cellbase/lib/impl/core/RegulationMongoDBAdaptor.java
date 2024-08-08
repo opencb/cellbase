@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.REGULATORY_REGION_DATA;
+
 /**
  * Created by imedina on 07/12/15.
  */
@@ -51,14 +53,6 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
 
     public RegulationMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        this.init();
-    }
-
-    private void init() {
-        logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("regulatory_region");
     }
 
     public Bson parseQuery(RegulationQuery query) {
@@ -98,7 +92,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(REGULATORY_REGION_DATA, query.getDataRelease());
         MongoDBIterator<RegulatoryFeature> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -112,7 +106,7 @@ public class RegulationMongoDBAdaptor extends CellBaseDBAdaptor implements CellB
     @Override
     public CellBaseDataResult<String> distinct(RegulationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(REGULATORY_REGION_DATA, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
     @Override

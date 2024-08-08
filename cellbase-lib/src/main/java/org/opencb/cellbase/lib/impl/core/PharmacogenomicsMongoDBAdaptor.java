@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.PHARMACOGENOMICS_DATA;
+
 /**
  * Created by jtarraga on 9/4/23.
  */
@@ -53,14 +55,6 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
 
     public PharmacogenomicsMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        this.init();
-    }
-
-    private void init() {
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("pharmacogenomics");
-
-        logger.debug("PharmacogenomicsMongoDBAdaptor initialised");
     }
 
     @Override
@@ -79,7 +73,7 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
             orBsonList.add(Filters.eq("id", id));
             orBsonList.add(Filters.eq("name", id));
             Bson query = Filters.or(orBsonList);
-            MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+            MongoDBCollection mongoDBCollection = getMongoDBCollection(PHARMACOGENOMICS_DATA, dataRelease);
             results.add(new CellBaseDataResult<>(mongoDBCollection.find(query, projection, CONVERTER, new QueryOptions())));
         }
         return results;
@@ -91,7 +85,7 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         MongoDBIterator<PharmaChemical> iterator;
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PHARMACOGENOMICS_DATA, query.getDataRelease());
         iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -99,7 +93,7 @@ public class PharmacogenomicsMongoDBAdaptor extends CellBaseDBAdaptor
     @Override
     public CellBaseDataResult<String> distinct(PharmaChemicalQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PHARMACOGENOMICS_DATA, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 

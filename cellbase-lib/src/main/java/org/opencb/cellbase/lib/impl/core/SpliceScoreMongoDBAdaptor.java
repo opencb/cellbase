@@ -23,7 +23,6 @@ import org.opencb.biodata.models.core.SpliceScore;
 import org.opencb.biodata.models.core.SpliceScoreAlternate;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -33,18 +32,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.lib.EtlCommons.SPLICE_SCORE_DATA;
+
 public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
     public SpliceScoreMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        init();
-    }
-
-    private void init() {
-        logger.debug("SpliceScoreMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap(EtlCommons.SPLICE_SCORE_DATA);
     }
 
     public CellBaseDataResult<SpliceScore> getScores(String chromosome, int position, String reference, String alternate)
@@ -67,7 +60,7 @@ public class SpliceScoreMongoDBAdaptor extends CellBaseDBAdaptor {
 
         final String id = chromosome + ":" + position + ":" + ref + ":" + alt;
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SPLICE_SCORE_DATA, dataRelease);
         DataResult<SpliceScore> spliceScoreDataResult = mongoDBCollection.find(query, null, SpliceScore.class, new QueryOptions());
 
         List<SpliceScore> results = new ArrayList<>();
