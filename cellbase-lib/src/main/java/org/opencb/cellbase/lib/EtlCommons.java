@@ -187,8 +187,8 @@ public final class EtlCommons {
     public static final String REVEL_FILE_ID = "REVEL";
 
     // Clinical variants data
-    public static final String CLINICAL_VARIANT_DATA = "clinical_variant";
-    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariant";
+    public static final String CLINICAL_VARIANT_DATA = "clinical_variants";
+    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariants";
     // ClinVar
     public static final String CLINVAR_DATA = "clinvar";
     public static final String CLINVAR_CHUNKS_SUBDIRECTORY = "clinvar_chunks";
