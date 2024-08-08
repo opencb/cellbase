@@ -228,7 +228,6 @@ public final class EtlCommons {
 
     // Ontology
     public static final String ONTOLOGY_DATA = "ontology";
-    public static final String OBO_BASENAME = "ontology";
     // HPO
     public static final String HPO_OBO_DATA = "hpo";
     // Must match the configuration file
