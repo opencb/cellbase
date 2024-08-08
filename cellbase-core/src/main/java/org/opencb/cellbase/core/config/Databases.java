@@ -16,48 +16,32 @@
 
 package org.opencb.cellbase.core.config;
 
-import java.util.Map;
-
-/**
- * Created by imedina on 16/09/16.
- */
 public class Databases {
 
-    private MongoDBDatabaseCredentials mongodb;
-    private Map<String, DatabaseCredentials> neo4j;
+    private DatabaseCredentials mongodb;
 
     public Databases() {
     }
 
-    public Databases(MongoDBDatabaseCredentials mongodb, Map<String, DatabaseCredentials> neo4j) {
+    public Databases(DatabaseCredentials mongodb) {
         this.mongodb = mongodb;
-        this.neo4j = neo4j;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Databases{");
         sb.append("mongodb=").append(mongodb);
-        sb.append(", neo4j=").append(neo4j);
         sb.append('}');
         return sb.toString();
     }
 
-    public MongoDBDatabaseCredentials getMongodb() {
+    public DatabaseCredentials getMongodb() {
         return mongodb;
     }
 
-    public Databases setMongodb(MongoDBDatabaseCredentials mongodb) {
+    public Databases setMongodb(DatabaseCredentials mongodb) {
         this.mongodb = mongodb;
         return this;
     }
 
-    public Map<String, DatabaseCredentials> getNeo4j() {
-        return neo4j;
-    }
-
-    public Databases setNeo4j(Map<String, DatabaseCredentials> neo4j) {
-        this.neo4j = neo4j;
-        return this;
-    }
 }

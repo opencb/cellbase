@@ -42,12 +42,11 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "transcripts.biotype", alias = {ParamConstants.TRANSCRIPT_BIOTYPES_PARAM,
-            "transcriptsBiotype"})
+    @QueryParameter(id = "transcripts.biotype", alias = {ParamConstants.TRANSCRIPT_BIOTYPES_PARAM, "transcriptsBiotype"})
     private List<String> transcriptsBiotype;
 
-    @QueryParameter(id = "transcripts.xrefs.id", alias = {ParamConstants.TRANSCRIPT_XREFS_PARAM, "xrefs", "transcriptsXrefsId",
-            "transcripts.xrefs"})
+    @QueryParameter(id = "transcripts.xrefs.id",
+            alias = {ParamConstants.TRANSCRIPT_XREFS_PARAM, "xrefs", "transcriptsXrefsId", "transcripts.xrefs"})
     private List<String> transcriptsXrefs;
     @QueryParameter(id = "transcripts.id", alias = {ParamConstants.TRANSCRIPT_IDS_PARAM, "transcriptsId"})
     private List<String> transcriptsId;
@@ -61,22 +60,23 @@ public class GeneQuery extends AbstractQuery {
     private LogicalList<String> transcriptsTfbsId;
     @QueryParameter(id = "transcripts.tfbs.pfmId", alias = {ParamConstants.TRANSCRIPT_TFBS_PFMIDS_PARAM, "transcriptsTfbsPfmId"})
     private LogicalList<String> transcriptsTfbsPfmId;
-    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
-            "transcriptsTfbsTranscriptionFactors"})
+    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors",
+            alias = {ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM, "transcriptsTfbsTranscriptionFactors"})
     private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-    @QueryParameter(id = ParamConstants.ONTOLOGY_PARAM, alias = {"transcripts.annotation.ontologies.id",
-            "transcripts.annotation.ontologies.name", "transcriptAnnotationOntologiesId"})
+    @QueryParameter(id = ParamConstants.ONTOLOGY_PARAM,
+            alias = {"transcripts.annotation.ontologies.id", "transcripts.annotation.ontologies.name", "transcriptAnnotationOntologiesId"})
     private LogicalList<String> transcriptAnnotationOntologiesId;
-    @QueryParameter(id = ParamConstants.ANNOTATION_DISEASES_PARAM, alias = {"annotation.diseases.id", "annotation.diseases.name"})
+    @QueryParameter(id = ParamConstants.ANNOTATION_DISEASES_PARAM,
+            alias = {"annotation.diseases.id", "annotation.diseases.name", "annotation.diseases.hpo"})
     private LogicalList<String> annotationDiseases;
-    @QueryParameter(id = "annotation.expression.tissue", alias = {ParamConstants.ANNOTATION_EXPRESSION_TISSUE_PARAM,
-            "annotationExpressionTissue"})
+    @QueryParameter(id = "annotation.expression.tissue",
+            alias = {ParamConstants.ANNOTATION_EXPRESSION_TISSUE_PARAM, "annotationExpressionTissue"})
     private LogicalList<String> annotationExpressionTissue;
-    @QueryParameter(id = "annotation.expression.value", alias = {ParamConstants.ANNOTATION_EXPRESSION_VALUE_PARAM,
-            "annotationExpressionValue"})
+    @QueryParameter(id = "annotation.expression.value",
+            alias = {ParamConstants.ANNOTATION_EXPRESSION_VALUE_PARAM, "annotationExpressionValue"})
     private LogicalList<String> annotationExpressionValue;
-    @QueryParameter(id = "annotation.drugs.drugName", alias = {ParamConstants.ANNOTATION_DRUGS_NAME_PARAM, "annotation.drugs.name",
-            "annotationDrugsName"})
+    @QueryParameter(id = "annotation.drugs.drugName",
+            alias = {ParamConstants.ANNOTATION_DRUGS_NAME_PARAM, "annotation.drugs.name", "annotationDrugsName"})
     private LogicalList<String> annotationDrugsName;
     @QueryParameter(id = "constraints", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_PARAM})
     private LogicalList<String> annotationConstraints;

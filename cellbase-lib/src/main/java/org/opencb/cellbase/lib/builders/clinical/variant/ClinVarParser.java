@@ -20,7 +20,7 @@ import org.opencb.biodata.formats.variant.clinvar.rcv.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.*;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.cellbase.lib.builders.AbstractBuilder;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -45,7 +45,7 @@ import java.util.zip.GZIPInputStream;
  * Created by imedina on 26/09/14.
  */
 @Deprecated
-public class ClinVarParser extends CellBaseBuilder {
+public class ClinVarParser extends AbstractBuilder {
 
     private static final String ASSEMBLY_PREFIX = "GRCh";
     public static final String GRCH37_ASSEMBLY = "37";

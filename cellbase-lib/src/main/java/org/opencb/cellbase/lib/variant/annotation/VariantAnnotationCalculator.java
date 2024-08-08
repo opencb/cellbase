@@ -33,13 +33,16 @@ import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.futures.FutureSpliceScoreAnnotator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -53,6 +56,7 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 06/02/16.
@@ -74,10 +78,15 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private PharmacogenomicsManager pharmacogenomicsManager;
+
     private DataRelease dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
+
+    private String species;
+    private String assembly;
+    private CellBaseConfiguration configuration;
 
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
@@ -99,7 +108,14 @@ public class VariantAnnotationCalculator {
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
     public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease, String apiKey,
-                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
+                                       CellBaseManagerFactory cellbaseManagerFactory, CellBaseConfiguration configuration)
+            throws CellBaseException {
+        logger.debug("VariantAnnotationCalculator: in 'constructor'");
+
+        this.species = species;
+        this.assembly = assembly;
+        this.configuration = configuration;
+
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
@@ -118,9 +134,9 @@ public class VariantAnnotationCalculator {
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-        hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease.getRelease());
+        this.hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease.getRelease());
 
-        logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
+
     }
 
     private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() {
@@ -467,7 +483,7 @@ public class VariantAnnotationCalculator {
 
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
-        if (annotatorSet.contains("conservation")) {
+        if (SpeciesUtils.hasData(configuration, species, CONSERVATION_DATA) && annotatorSet.contains("conservation")) {
             futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease());
             conservationFuture = CACHED_THREAD_POOL.submit(futureConservationAnnotator);
@@ -475,7 +491,7 @@ public class VariantAnnotationCalculator {
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture = null;
-        if (annotatorSet.contains("functionalScore")) {
+        if (SpeciesUtils.hasData(configuration, species, VARIATION_FUNCTIONAL_SCORE_DATA) && annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease());
             variantFunctionalScoreFuture = CACHED_THREAD_POOL.submit(futureVariantFunctionalScoreAnnotator);
@@ -484,7 +500,8 @@ public class VariantAnnotationCalculator {
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
         // FIXME "clinical" is deprecated, replaced with traitAssociation
-        if (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation")) {
+        if (SpeciesUtils.hasData(configuration, species, CLINICAL_VARIANT_DATA)
+                && (annotatorSet.contains("clinical") || annotatorSet.contains("traitAssociation"))) {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
             queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
@@ -495,7 +512,7 @@ public class VariantAnnotationCalculator {
 
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
         Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
-        if (annotatorSet.contains("repeats")) {
+        if (SpeciesUtils.hasData(configuration, species, REPEATS_DATA) && annotatorSet.contains("repeats")) {
             futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, dataRelease.getRelease());
             repeatsFuture = CACHED_THREAD_POOL.submit(futureRepeatsAnnotator);
         }
@@ -509,15 +526,16 @@ public class VariantAnnotationCalculator {
 
         FutureSpliceScoreAnnotator futureSpliceScoreAnnotator = null;
         Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture = null;
-        if (annotatorSet.contains("consequenceType")) {
+        if (SpeciesUtils.hasData(configuration, species, SPLICE_SCORE_DATA) && annotatorSet.contains("consequenceType")) {
             futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
-                    dataRelease.getRelease());
+                    dataRelease.getRelease(), apiKey, variantManager);
             spliceScoreFuture = CACHED_THREAD_POOL.submit(futureSpliceScoreAnnotator);
         }
 
         FuturePharmacogenomicsAnnotator futurePharmacogenomicsAnnotator = null;
         Future<List<CellBaseDataResult<PharmaChemical>>> pharmacogenomicsFuture = null;
-        if (annotatorSet.contains("pharmacogenomics") && dataRelease.getCollections().containsKey(EtlCommons.PHARMACOGENOMICS_DATA)) {
+        if (SpeciesUtils.hasData(configuration, species, PHARMACOGENOMICS_DATA) && annotatorSet.contains("pharmacogenomics")
+                && dataRelease.getCollections().containsKey(EtlCommons.PHARMACOGENOMICS_DATA)) {
             futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease(), pharmacogenomicsManager, logger);
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
@@ -1584,7 +1602,8 @@ public class VariantAnnotationCalculator {
                         }
                     }
 
-                    if (annotatorSet.contains("populationFrequencies") && preferredVariant != null) {
+                    if (annotatorSet.contains("populationFrequencies") && preferredVariant != null
+                            && preferredVariant.getAnnotation() != null) {
                         variantAnnotationList.get(i)
                                 .setPopulationFrequencies(preferredVariant.getAnnotation().getPopulationFrequencies());
                     }
@@ -1902,74 +1921,6 @@ public class VariantAnnotationCalculator {
                         CellBaseDataResult cellBaseDataResult = cellBaseDataResultList.get(i);
                         if (cellBaseDataResult.getResults() != null && cellBaseDataResult.getResults().size() > 0) {
                             variantAnnotationList.get(i).setCytoband(cellBaseDataResult.getResults());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    class FutureSpliceScoreAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
-        private List<Variant> variantList;
-        private QueryOptions queryOptions;
-        private int dataRelease;
-
-        FutureSpliceScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions, int dataRelease) {
-            this.variantList = variantList;
-            this.queryOptions = queryOptions;
-            this.dataRelease = dataRelease;
-        }
-
-        @Override
-        public List<CellBaseDataResult<SpliceScore>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
-
-            List<CellBaseDataResult<SpliceScore>> cellBaseDataResultList = new ArrayList<>(variantList.size());
-
-            logger.debug("Query splice");
-            // Want to return only one CellBaseDataResult object per Variant
-            for (Variant variant : variantList) {
-                cellBaseDataResultList.add(variantManager.getSpliceScoreVariant(variant, apiKey, dataRelease));
-            }
-            logger.debug("Splice score query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
-                    variantList.size());
-            return cellBaseDataResultList;
-        }
-
-        public void processResults(Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture,
-                                   List<VariantAnnotation> variantAnnotationList)
-                throws InterruptedException, ExecutionException {
-            List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults;
-            try {
-                spliceCellBaseDataResults = spliceFuture.get(30, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                spliceFuture.cancel(true);
-                throw new ExecutionException("Unable to finish splice score query on time", e);
-            }
-
-            if (CollectionUtils.isNotEmpty(spliceCellBaseDataResults)) {
-                for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    CellBaseDataResult<SpliceScore> spliceScoreResult = spliceCellBaseDataResults.get(i);
-                    if (spliceScoreResult != null && CollectionUtils.isNotEmpty(spliceScoreResult.getResults())) {
-                        for (SpliceScore spliceScore : spliceScoreResult.getResults()) {
-                            for (ConsequenceType ct : variantAnnotationList.get(i).getConsequenceTypes()) {
-                                for (SpliceScoreAlternate spliceScoreAlt : spliceScore.getAlternates()) {
-                                    String alt = StringUtils.isEmpty(variantAnnotationList.get(i).getAlternate())
-                                            ? "-"
-                                            : variantAnnotationList.get(i).getAlternate();
-                                    if (alt.equals(spliceScoreAlt.getAltAllele())) {
-                                        if (StringUtils.isEmpty(spliceScore.getTranscriptId())
-                                                || StringUtils.isEmpty(ct.getTranscriptId())
-                                                || spliceScore.getTranscriptId().equals(ct.getTranscriptId())) {
-                                            SpliceScores scores = new SpliceScores(spliceScore.getSource(), spliceScoreAlt.getScores());
-                                            if (ct.getSpliceScores() == null) {
-                                                ct.setSpliceScores(new ArrayList<>());
-                                            }
-                                            ct.getSpliceScores().add(scores);
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }

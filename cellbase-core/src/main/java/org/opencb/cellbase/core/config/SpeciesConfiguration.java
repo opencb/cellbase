@@ -18,9 +18,7 @@ package org.opencb.cellbase.core.config;
 
 import java.util.List;
 
-/**
- * Created by imedina on 19/08/16.
- */
+
 public class SpeciesConfiguration {
 
     private String id;
@@ -28,22 +26,18 @@ public class SpeciesConfiguration {
     private String commonName;
     private List<Assembly> assemblies;
     private List<String> data;
-    private List<ShardConfig> shards;
 
 
     public SpeciesConfiguration() {
     }
 
-    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data,
-                                List<ShardConfig> shards) {
+    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data) {
         this.id = id;
         this.scientificName = scientificName;
         this.commonName = commonName;
         this.assemblies = assemblies;
         this.data = data;
-        this.shards = shards;
     }
-
 
     @Override
     public String toString() {
@@ -53,7 +47,6 @@ public class SpeciesConfiguration {
         sb.append(", commonName='").append(commonName).append('\'');
         sb.append(", assemblies=").append(assemblies);
         sb.append(", data=").append(data);
-        sb.append(", shards=").append(shards);
         sb.append('}');
         return sb.toString();
     }
@@ -62,40 +55,45 @@ public class SpeciesConfiguration {
         return id;
     }
 
-    public void setId(String id) {
+    public SpeciesConfiguration setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getScientificName() {
         return scientificName;
     }
 
-    public void setScientificName(String scientificName) {
+    public SpeciesConfiguration setScientificName(String scientificName) {
         this.scientificName = scientificName;
+        return this;
     }
 
     public String getCommonName() {
         return commonName;
     }
 
-    public void setCommonName(String commonName) {
+    public SpeciesConfiguration setCommonName(String commonName) {
         this.commonName = commonName;
+        return this;
     }
 
     public List<Assembly> getAssemblies() {
         return assemblies;
     }
 
-    public void setAssemblies(List<Assembly> assemblies) {
+    public SpeciesConfiguration setAssemblies(List<Assembly> assemblies) {
         this.assemblies = assemblies;
+        return this;
     }
 
     public List<String> getData() {
         return data;
     }
 
-    public void setData(List<String> data) {
+    public SpeciesConfiguration setData(List<String> data) {
         this.data = data;
+        return this;
     }
 
     public static class Assembly {
@@ -103,126 +101,51 @@ public class SpeciesConfiguration {
         private String ensemblVersion;
         private String ensemblCollection;  // Only for bacteria
 
-        public String getName() {
-            return name;
+        public Assembly() {
         }
 
-        public void setName(String name) {
+        public Assembly(String ensemblCollection, String ensemblVersion, String name) {
+            this.ensemblCollection = ensemblCollection;
+            this.ensemblVersion = ensemblVersion;
             this.name = name;
         }
 
-        public String getEnsemblVersion() {
-            return ensemblVersion;
-        }
-
-        public void setEnsemblVersion(String ensemblVersion) {
-            this.ensemblVersion = ensemblVersion;
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Assembly{");
+            sb.append("ensemblCollection='").append(ensemblCollection).append('\'');
+            sb.append(", name='").append(name).append('\'');
+            sb.append(", ensemblVersion='").append(ensemblVersion).append('\'');
+            sb.append('}');
+            return sb.toString();
         }
 
         public String getEnsemblCollection() {
             return ensemblCollection;
         }
 
-        public void setEnsemblCollection(String ensemblCollection) {
+        public Assembly setEnsemblCollection(String ensemblCollection) {
             this.ensemblCollection = ensemblCollection;
-        }
-    }
-
-    public List<ShardConfig> getShards() {
-        return shards;
-    }
-
-    public SpeciesConfiguration setShards(List<ShardConfig> shards) {
-        this.shards = shards;
-        return this;
-    }
-
-    public static class ShardConfig {
-        private String collection;
-        private List<String> key;
-        private String rangeKey;
-        private List<Zone> zones;
-
-        public String getCollection() {
-            return collection;
-        }
-
-        public ShardConfig setCollection(String collection) {
-            this.collection = collection;
             return this;
         }
 
-        public List<String> getKey() {
-            return key;
+        public String getEnsemblVersion() {
+            return ensemblVersion;
         }
 
-        public ShardConfig setKey(List<String> key) {
-            this.key = key;
+        public Assembly setEnsemblVersion(String ensemblVersion) {
+            this.ensemblVersion = ensemblVersion;
             return this;
         }
-
-        public String getRangeKey() {
-            return rangeKey;
-        }
-
-        public ShardConfig setRangeKey(String rangeKey) {
-            this.rangeKey = rangeKey;
-            return this;
-        }
-
-        public List<Zone> getZones() {
-            return zones;
-        }
-
-        public ShardConfig setZones(List<Zone> zones) {
-            this.zones = zones;
-            return this;
-        }
-    }
-
-    public static class Zone {
-        private String name;
-        private List<ShardRange> shardRanges;
 
         public String getName() {
             return name;
         }
 
-        public Zone setName(String name) {
+        public Assembly setName(String name) {
             this.name = name;
             return this;
         }
-
-        public List<ShardRange> getShardRanges() {
-            return shardRanges;
-        }
-
-        public Zone setShardRanges(List<ShardRange> shardRanges) {
-            this.shardRanges = shardRanges;
-            return this;
-        }
     }
 
-    public static class ShardRange {
-        private String minimum;
-        private String maximum;
-
-        public String getMinimum() {
-            return minimum;
-        }
-
-        public ShardRange setMinimum(String minimum) {
-            this.minimum = minimum;
-            return this;
-        }
-
-        public String getMaximum() {
-            return maximum;
-        }
-
-        public ShardRange setMaximum(String maximum) {
-            this.maximum = maximum;
-            return this;
-        }
-    }
 }

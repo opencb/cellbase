@@ -71,9 +71,14 @@ public class MetaWSServer extends GenericRestWSServer {
     public MetaWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                        @PathParam("species")
+                        @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                        @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
             metaManager = cellBaseManagerFactory.getMetaManager();
         } catch (Exception e) {
@@ -101,7 +106,6 @@ public class MetaWSServer extends GenericRestWSServer {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
-            logger.error("species " + species);
             CellBaseDataResult queryResult = metaManager.getVersions(species, assembly);
             return createOkResponse(queryResult);
         } catch (CellBaseException e) {

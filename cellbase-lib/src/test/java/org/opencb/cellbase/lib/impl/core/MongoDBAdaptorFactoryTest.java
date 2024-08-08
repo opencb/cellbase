@@ -18,13 +18,14 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
 
 import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opencb.cellbase.lib.db.MongoDBManager.DBNAME_SEPARATOR;
+import static org.opencb.cellbase.core.utils.DatabaseNameUtils.DBNAME_SEPARATOR;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
@@ -46,18 +47,18 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
         }
 
         // provide assembly
-        String databaseName = mongoDBManager.getDatabaseName("speciesName", "assemblyName", cellBaseConfiguration.getVersion());
+        String databaseName = DatabaseNameUtils.getDatabaseName("speciesName", "assemblyName", cellBaseConfiguration.getVersion());
         assertEquals("cellbase_speciesname_assemblyname_" + version, databaseName);
 
         // don't provide assembly
         InvalidParameterException thrown =
                 assertThrows(InvalidParameterException.class,
-                        () -> mongoDBManager.getDatabaseName("speciesName", null, cellBaseConfiguration.getVersion()),
+                        () -> DatabaseNameUtils.getDatabaseName("speciesName", null, cellBaseConfiguration.getVersion()),
                         "Expected getDatabaseName() to throw an exception, but it didn't");
         assertTrue(thrown.getMessage().contains("Species and assembly are required"));
 
         // handle special characters
-        databaseName = mongoDBManager.getDatabaseName("speciesName", "my_funny.assembly--name", cellBaseConfiguration.getVersion());
+        databaseName = DatabaseNameUtils.getDatabaseName("speciesName", "my_funny.assembly--name", cellBaseConfiguration.getVersion());
         assertEquals("cellbase_speciesname_myfunnyassemblyname_" + version, databaseName);
     }
 }

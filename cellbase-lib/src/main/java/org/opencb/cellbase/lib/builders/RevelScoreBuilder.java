@@ -19,8 +19,8 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -30,75 +30,95 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-public class RevelScoreBuilder extends CellBaseBuilder {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private Path revelFilePath = null;
-    private static final String SOURCE = "revel";
+public class RevelScoreBuilder extends AbstractBuilder {
 
-    public RevelScoreBuilder(Path revelDirectoryPath, CellBaseSerializer serializer) {
+    private Path revelDownloadPath = null;
+
+    public RevelScoreBuilder(Path revelDownloadPath, CellBaseSerializer serializer) {
         super(serializer);
-        this.revelFilePath = revelDirectoryPath.resolve("revel-v1.3_all_chromosomes.zip");
-        logger = LoggerFactory.getLogger(ConservationBuilder.class);
-
+        this.revelDownloadPath = revelDownloadPath;
     }
 
     @Override
-    public void parse() throws IOException {
-        logger.error("processing Revel file at " + revelFilePath.toAbsolutePath());
-        ZipInputStream zis = new ZipInputStream(new FileInputStream(String.valueOf(revelFilePath)));
-        ZipEntry zipEntry = zis.getNextEntry();
+    public void parse() throws IOException, CellBaseException {
+        String dataName = getDataName(REVEL_DATA);
+        String dataCategory = getDataCategory(REVEL_DATA);
 
-        ZipFile zipFile = new ZipFile(String.valueOf(revelFilePath));
-        InputStream inputStream = zipFile.getInputStream(zipEntry);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        logger.info(CATEGORY_BUILDING_LOG_MESSAGE, dataCategory, dataName);
 
-        // skip header
-        String line = bufferedReader.readLine();
-        String[] fields = null;
-        String lastEntry = null;
-        String currentEntry = null;
-        List<TranscriptMissenseVariantFunctionalScore> scores = new ArrayList<>();
-        MissenseVariantFunctionalScore predictions = null;
-        while ((line = bufferedReader.readLine()) != null) {
-            fields = line.split(",");
-            String chromosome = fields[0];
-            if (".".equalsIgnoreCase(fields[2])) {
-                // 1,12855835,.,C,A,A,D,0.175
-                // skip if invalid position
-                continue;
-            }
-            int position = Integer.parseInt(fields[2]);
-            String reference = fields[3];
-            String alternate = fields[4];
-            String aaReference = fields[5];
-            String aaAlternate = fields[6];
-            double score = Double.parseDouble(fields[7]);
+        // Sanity check
+        checkDirectory(revelDownloadPath, dataName);
 
-            currentEntry = chromosome + position;
-
-            // new chromosome + position, store previous entry
-            if (lastEntry != null && !currentEntry.equals(lastEntry)) {
-                serializer.serialize(predictions);
-                scores = new ArrayList<>();
-                predictions = null;
-            }
-
-            if (predictions == null) {
-                predictions = new MissenseVariantFunctionalScore(chromosome, position, reference, SOURCE, scores);
-            }
-
-            TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore("",
-                    alternate, aaReference, aaAlternate, score);
-            scores.add(predictedScore);
-            lastEntry = chromosome + position;
+        // Check ontology files
+        List<File> revelFiles = checkFiles(dataSourceReader.readValue(revelDownloadPath.resolve(getDataVersionFilename(REVEL_DATA))
+                        .toFile()), revelDownloadPath, dataName);
+        if (revelFiles.size() != 1) {
+            throw new CellBaseException("One " + dataName + " file is expected, but currently there are " + revelFiles.size() + " files");
         }
 
-        // serialise last entry
-        serializer.serialize(predictions);
+        logger.info(PARSING_LOG_MESSAGE, revelFiles.get(0));
 
+        ZipInputStream zis = new ZipInputStream(new FileInputStream(String.valueOf(revelFiles.get(0))));
+        ZipEntry zipEntry = zis.getNextEntry();
+
+        ZipFile zipFile = new ZipFile(revelFiles.get(0).toString());
+        InputStream inputStream = zipFile.getInputStream(zipEntry);
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            // Skip header
+            bufferedReader.readLine();
+            String[] fields;
+            String lastEntry = null;
+            String currentEntry;
+            List<TranscriptMissenseVariantFunctionalScore> scores = new ArrayList<>();
+            MissenseVariantFunctionalScore predictions = null;
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                fields = line.split(",");
+                String chromosome = fields[0];
+                if (".".equalsIgnoreCase(fields[2])) {
+                    // 1,12855835,.,C,A,A,D,0.175
+                    // skip if invalid position
+                    continue;
+                }
+                int position = Integer.parseInt(fields[2]);
+                String reference = fields[3];
+                String alternate = fields[4];
+                String aaReference = fields[5];
+                String aaAlternate = fields[6];
+                double score = Double.parseDouble(fields[7]);
+
+                currentEntry = chromosome + position;
+
+                // new chromosome + position, store previous entry
+                if (lastEntry != null && !currentEntry.equals(lastEntry)) {
+                    serializer.serialize(predictions);
+                    scores = new ArrayList<>();
+                    predictions = null;
+                }
+
+                if (predictions == null) {
+                    predictions = new MissenseVariantFunctionalScore(chromosome, position, reference, REVEL_DATA, scores);
+                }
+
+                TranscriptMissenseVariantFunctionalScore predictedScore = new TranscriptMissenseVariantFunctionalScore("", alternate,
+                        aaReference, aaAlternate, score);
+                scores.add(predictedScore);
+                lastEntry = chromosome + position;
+            }
+
+            // Serialise last entry
+            serializer.serialize(predictions);
+        }
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, revelFiles.get(0));
+
+        // Close
         zis.close();
         zipFile.close();
         inputStream.close();
-        bufferedReader.close();
+
+        logger.info(CATEGORY_BUILDING_DONE_LOG_MESSAGE, dataCategory, dataName);
     }
 }

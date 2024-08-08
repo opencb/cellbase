@@ -257,6 +257,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
             List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.id"));
             orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.name"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.hpo"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }

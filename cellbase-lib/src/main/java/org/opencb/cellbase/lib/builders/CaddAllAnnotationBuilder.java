@@ -29,7 +29,7 @@ import java.nio.file.Path;
  * @since October 08, 2014
  */
 @Deprecated
-public class CaddAllAnnotationBuilder extends CellBaseBuilder {
+public class CaddAllAnnotationBuilder extends AbstractBuilder {
 
 
     private final Path caddFilePath;

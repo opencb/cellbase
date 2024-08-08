@@ -51,7 +51,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public VariantAnnotationCalculatorTest() throws Exception {
         super();
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey, cellBaseManagerFactory,
+                cellBaseConfiguration);
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -646,7 +647,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
         VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dataRelease,
-                apiKey, cellBaseManagerFactory);
+                apiKey, cellBaseManagerFactory, cellBaseConfiguration);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
@@ -1041,7 +1042,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedClinicalHGMDAnnotation() throws Exception {
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_ACCESS_API_KEY, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_ACCESS_API_KEY,
+                cellBaseManagerFactory, cellBaseConfiguration);
 
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
@@ -1060,7 +1062,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testLicensedClinicalHGMDandCOSMICAnnotation() throws Exception {
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_COSMIC_ACCESS_API_KEY, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, HGMD_COSMIC_ACCESS_API_KEY,
+                cellBaseManagerFactory, cellBaseConfiguration);
 
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
@@ -1084,7 +1087,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("include", "clinical");
         queryOptions.put("normalize", true);
 
-        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, null, cellBaseManagerFactory);
+        variantAnnotationCalculator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, null, cellBaseManagerFactory,
+                cellBaseConfiguration);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator

@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
-import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.cellbase.lib.builders.AbstractBuilder;
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * @since October 08, 2014
  */
 @Deprecated
-public class CosmicBuilder extends CellBaseBuilder {
+public class CosmicBuilder extends AbstractBuilder {
 
     private final Path cosmicFilePath;
     private static final String CHROMOSOME = "CHR";

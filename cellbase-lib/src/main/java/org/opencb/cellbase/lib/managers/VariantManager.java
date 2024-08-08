@@ -28,6 +28,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
 import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -38,7 +39,6 @@ import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
-import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
@@ -96,7 +96,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease.getRelease());
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
@@ -120,7 +120,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                  DataRelease dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
 
 
         // Set decompose MNV behaviour
@@ -195,7 +195,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, apiKey, cellbaseManagerFactory);
+                dataRelease, apiKey, cellbaseManagerFactory, configuration);
         List<CellBaseDataResult<VariantAnnotation>> queryResults = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
                 queryOptions);
         return queryResults;

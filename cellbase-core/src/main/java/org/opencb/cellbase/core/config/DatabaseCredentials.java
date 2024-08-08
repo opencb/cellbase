@@ -18,15 +18,13 @@ package org.opencb.cellbase.core.config;
 
 import java.util.Map;
 
-/**
- * Created by imedina on 19/08/16.
- */
+
 public class DatabaseCredentials {
 
-    private String host;
-    private String user;
-    private String password;
-    private Map<String, String> options;
+    protected String host;
+    protected String user;
+    protected String password;
+    protected Map<String, String> options;
 
     public DatabaseCredentials() {
     }
@@ -40,7 +38,7 @@ public class DatabaseCredentials {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DatabaseProperties{");
+        final StringBuilder sb = new StringBuilder("DatabaseCredentials{");
         sb.append("host='").append(host).append('\'');
         sb.append(", user='").append(user).append('\'');
         sb.append(", password='").append(password).append('\'');
@@ -53,31 +51,35 @@ public class DatabaseCredentials {
         return host;
     }
 
-    public void setHost(String host) {
+    public DatabaseCredentials setHost(String host) {
         this.host = host;
+        return this;
     }
 
     public String getUser() {
         return user;
     }
 
-    public void setUser(String user) {
+    public DatabaseCredentials setUser(String user) {
         this.user = user;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public DatabaseCredentials setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public Map<String, String> getOptions() {
         return options;
     }
 
-    public void setOptions(Map<String, String> options) {
+    public DatabaseCredentials setOptions(Map<String, String> options) {
         this.options = options;
+        return this;
     }
 }

@@ -60,8 +60,11 @@ public class RocksDbManager {
         Options options = new Options().setCreateIfMissing(true);
         RocksDB db = null;
         try {
+            if (!Files.exists(Paths.get(dbLocation))) {
+                Files.createDirectories(Paths.get(dbLocation));
+            }
             return RocksDB.open(options, dbLocation);
-        } catch (RocksDBException e) {
+        } catch (RocksDBException | IOException e) {
             // do some error handling
             e.printStackTrace();
             System.exit(1);

@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import java.util.concurrent.TimeUnit;
 
 public class DownloadFile {
+
     private String startTime;
     private String elapsedTime;
     private Status status;
@@ -38,6 +39,20 @@ public class DownloadFile {
         this.startTime = startTime;
     }
 
+    @Override
+    public String toString() {
+        return "DownloadFile{"
+                + "startTime='" + startTime + '\''
+                + ", elapsedTime='" + elapsedTime + '\''
+                + ", status=" + status
+                + ", message='" + message + '\''
+                + ", expectedFileSize=" + expectedFileSize
+                + ", actualFileSize=" + actualFileSize
+                + ", outputFile='" + outputFile + '\''
+                + ", url='" + url + '\''
+                + '}';
+    }
+
     public String getStartTime() {
         return startTime;
     }
@@ -47,7 +62,7 @@ public class DownloadFile {
     }
 
     public DownloadFile setElapsedTime(Long startTime, Long endTime) {
-        Long elapsedTime = endTime - startTime;
+        long elapsedTime = endTime - startTime;
         this.elapsedTime = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) + " seconds";
         return this;
     }
@@ -96,17 +111,4 @@ public class DownloadFile {
         return this;
     }
 
-    @Override
-    public String toString() {
-        return "DownloadFile{"
-                + "startTime='" + startTime + '\''
-                + ", elapsedTime='" + elapsedTime + '\''
-                + ", status=" + status
-                + ", message='" + message + '\''
-                + ", expectedFileSize=" + expectedFileSize
-                + ", actualFileSize=" + actualFileSize
-                + ", outputFile='" + outputFile + '\''
-                + ", url='" + url + '\''
-                + '}';
-    }
 }

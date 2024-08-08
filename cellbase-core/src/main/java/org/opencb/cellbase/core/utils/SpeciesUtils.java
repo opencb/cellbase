@@ -16,12 +16,15 @@
 
 package org.opencb.cellbase.core.utils;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -39,7 +42,7 @@ public class SpeciesUtils {
      */
     public static Species getSpecies(CellBaseConfiguration configuration, String speciesStr, String assemblyStr) throws CellBaseException {
         Species species = null;
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+        for (SpeciesConfiguration sp : SpeciesUtils.getAllSpecies(configuration)) {
             if (speciesStr.equalsIgnoreCase(sp.getScientificName()) || speciesStr.equalsIgnoreCase(sp.getCommonName())
                     || speciesStr.equalsIgnoreCase(sp.getId())) {
                 SpeciesConfiguration.Assembly assembly;
@@ -82,7 +85,7 @@ public class SpeciesUtils {
             return false;
         }
 
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+        for (SpeciesConfiguration sp : SpeciesUtils.getAllSpecies(configuration)) {
             if (species.equalsIgnoreCase(sp.getScientificName()) || species.equalsIgnoreCase(sp.getCommonName())
                     || species.equalsIgnoreCase(sp.getId())) {
                 return getAssembly(sp, assembly) != null;
@@ -96,8 +99,9 @@ public class SpeciesUtils {
             return false;
         }
 
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-            if (species.equalsIgnoreCase(sp.getScientificName()) || species.equalsIgnoreCase(sp.getCommonName())
+        for (SpeciesConfiguration sp : SpeciesUtils.getAllSpecies(configuration)) {
+            if (species.equalsIgnoreCase(sp.getScientificName())
+                    || species.equalsIgnoreCase(sp.getCommonName())
                     || species.equalsIgnoreCase(sp.getId())) {
                 return true;
             }
@@ -108,7 +112,7 @@ public class SpeciesUtils {
 
     public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species) {
         SpeciesConfiguration speciesConfiguration = null;
-        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+        for (SpeciesConfiguration sp : SpeciesUtils.getAllSpecies(configuration)) {
             if (species.equalsIgnoreCase(sp.getScientificName())
                     || species.equalsIgnoreCase(sp.getCommonName())
                     || species.equalsIgnoreCase(sp.getId())) {
@@ -117,6 +121,11 @@ public class SpeciesUtils {
             }
         }
         return speciesConfiguration;
+    }
+
+    public static boolean hasData(CellBaseConfiguration configuration, String species, String data) {
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
+        return CollectionUtils.isNotEmpty(speciesConfiguration.getData()) && speciesConfiguration.getData().contains(data);
     }
 
     /**
@@ -132,6 +141,34 @@ public class SpeciesUtils {
             throw new CellBaseException("Species has no associated assembly: " + speciesConfiguration.getScientificName());
         }
         return assemblies.get(0);
+    }
+
+    public static List<SpeciesConfiguration> getAllSpecies(CellBaseConfiguration cellBaseConfiguration) {
+        List<SpeciesConfiguration> allSpecies = new ArrayList<>();
+        SpeciesProperties species = cellBaseConfiguration.getSpecies();
+        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
+            allSpecies.addAll(species.getVertebrates());
+        }
+        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
+            allSpecies.addAll(species.getMetazoa());
+        }
+        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
+            allSpecies.addAll(species.getFungi());
+        }
+        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
+            allSpecies.addAll(species.getProtist());
+        }
+        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
+            allSpecies.addAll(species.getPlants());
+        }
+        if (species.getVirus() != null && !species.getVirus().isEmpty()) {
+            allSpecies.addAll(species.getVirus());
+        }
+        if (species.getBacteria() != null && !species.getBacteria().isEmpty()) {
+            allSpecies.addAll(species.getBacteria());
+        }
+
+        return allSpecies;
     }
 
     /**

@@ -50,6 +50,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
 
@@ -253,6 +254,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                     case "region":
                         createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
+                    case API_KEY_PARAM:
                     case DATA_RELEASE_PARAM:
                     case "svType":
                         // don't do anything, this is parsed later

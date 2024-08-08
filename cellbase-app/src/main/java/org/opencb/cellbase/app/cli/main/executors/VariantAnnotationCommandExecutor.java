@@ -207,7 +207,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
                     DataRelease dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
                     VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                            dataRelease, variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory);
+                            dataRelease, variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory, configuration);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -485,7 +485,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
             DataRelease dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly, dataRelease,
-                    variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory), serverQueryOptions);
+                    variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory, configuration), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()

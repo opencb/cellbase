@@ -48,13 +48,18 @@ public class PublicationWSServer extends GenericRestWSServer {
     public PublicationWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                               @PathParam("species")
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
                                @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0")
                                @QueryParam("dataRelease") int dataRelease,
                                @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey")
                                        String apiKey,
                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
             publicationManager = cellBaseManagerFactory.getPublicationManager();
         } catch (Exception e) {
