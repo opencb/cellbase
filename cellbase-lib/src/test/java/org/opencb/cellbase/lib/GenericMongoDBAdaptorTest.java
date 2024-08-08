@@ -23,7 +23,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -94,7 +94,7 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
-            cellBaseName = MongoDBManager.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
+            cellBaseName = DatabaseNameUtils.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
 
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, cellBaseName, 2,
                     cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);

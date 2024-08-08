@@ -20,9 +20,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.utils.DatabaseNameUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.lib.indexer.IndexManager;
@@ -62,7 +65,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.LoadCommandOptions loadCommandOptions;
 
     private Path input;
-    private String[] loadOptions;
+    private List<String> dataList;
     private int dataRelease;
 
     private String database;
@@ -78,33 +81,6 @@ public class LoadCommandExecutor extends CommandExecutor {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.conf);
 
         this.loadCommandOptions = loadCommandOptions;
-
-        input = Paths.get(loadCommandOptions.input);
-        if (loadCommandOptions.database != null) {
-            database = loadCommandOptions.database;
-        }
-        if (loadCommandOptions.data.equals("all")) {
-            loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
-                    EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-                    EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANT_DATA, EtlCommons.REPEATS_DATA,
-                    EtlCommons.ONTOLOGY_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA,
-                    PUBMED_DATA, EtlCommons.PHARMACOGENOMICS_DATA};
-        } else {
-            loadOptions = loadCommandOptions.data.split(",");
-        }
-
-
-        if (loadCommandOptions.field != null) {
-            field = loadCommandOptions.field;
-        }
-        if (loadCommandOptions.innerFields != null) {
-            innerFields = loadCommandOptions.innerFields.split(",");
-        }
-        if (loadCommandOptions.loader != null) {
-            loader = loadCommandOptions.loader;
-        }
-        createIndexes = !loadCommandOptions.skipIndex;
     }
 
     /**
@@ -113,13 +89,10 @@ public class LoadCommandExecutor extends CommandExecutor {
      * @throws CellBaseException CellBase exception
      */
     public void execute() throws CellBaseException {
-        // Init release manager
-        dataReleaseManager = new DataReleaseManager(database, configuration);
-
         checkParameters();
         logger.info("Loading in data release {}", dataRelease);
 
-        if (loadCommandOptions.data != null) {
+        if (CollectionUtils.isNotEmpty(dataList)) {
             // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
             if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
                 configuration.getDatabases().getMongodb().getOptions().put("authenticationDatabase",
@@ -131,9 +104,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                 indexManager = new IndexManager(database, indexFile, configuration);
             }
 
-            for (String loadOption : loadOptions) {
+            for (String data : dataList) {
                 try {
-                    switch (loadOption) {
+                    switch (data) {
                         case EtlCommons.GENOME_DATA: {
                             loadGenome();
                             break;
@@ -202,9 +175,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRepeats();
                             break;
                         }
-//                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-//                            loadStructuralVariants();
-//                            break;
                         case EtlCommons.ONTOLOGY_DATA: {
                             loadOntology();
                             break;
@@ -225,7 +195,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         default:
-                            logger.warn("Not valid 'data'. We should not reach this point");
+                            logger.warn("Not valid data: {}. We should not reach this point", data);
                             break;
                     }
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
@@ -235,20 +205,6 @@ public class LoadCommandExecutor extends CommandExecutor {
             }
         }
     }
-
-//    private void loadStructuralVariants() {
-//        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
-//        if (Files.exists(path)) {
-//            try {
-//                logger.debug("Loading '{}' ...", path.toString());
-//                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
-//                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
-//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-//                logger.error(e.toString());
-//            }
-//        }
-//    }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
             ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
@@ -266,6 +222,74 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void checkParameters() throws CellBaseException {
+        // Input folder
+        if (!Files.exists(Paths.get(loadCommandOptions.input))) {
+            throw new CellBaseException("Input path '" + loadCommandOptions.input + "' does not exist");
+        }
+        if (!Files.isDirectory(Paths.get(loadCommandOptions.input))) {
+            throw new CellBaseException("Input path '" + loadCommandOptions.input + "' is not a directyory");
+        }
+        input = Paths.get(loadCommandOptions.input);
+
+        // Database
+        if (StringUtils.isEmpty(loadCommandOptions.database)) {
+            throw new CellBaseException("Missing database");
+        }
+        database = loadCommandOptions.database;
+
+        // Data
+        if (StringUtils.isEmpty(loadCommandOptions.data)) {
+            throw new CellBaseException("Missing data. Please, specify a list of data separated by commas, or use 'all' to load"
+                    + " everything");
+        }
+        String species = DatabaseNameUtils.getSpeciesFromDatabaseName(database);
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
+        if (speciesConfiguration == null) {
+            throw new CellBaseException("Species '" + species + "' not supported (database name '" + database + "')");
+        }
+        if (loadCommandOptions.data.equals("all")) {
+            dataList = speciesConfiguration.getData();
+        } else {
+            dataList = Arrays.asList(loadCommandOptions.data.split(","));
+            if (CollectionUtils.isEmpty(dataList)) {
+                throw new CellBaseException("Missing data. Please, specify a list of data separated by commas, or use 'all' to load"
+                        + " everything");
+            }
+            Set<String> invalidData = new HashSet<>();
+            for (String data : dataList) {
+                if (!speciesConfiguration.getData().contains(data)) {
+                    invalidData.add(data);
+                }
+            }
+            if (!CollectionUtils.isEmpty(invalidData)) {
+                throw new CellBaseException("Data '" + StringUtils.join(invalidData, ",") + "' not supported by species '" + species + "'");
+            }
+        }
+
+        // Field
+        if (StringUtils.isNotEmpty(loadCommandOptions.field)) {
+            field = loadCommandOptions.field;
+        }
+
+        // Inner fields
+        if (StringUtils.isNotEmpty(loadCommandOptions.innerFields)) {
+            innerFields = loadCommandOptions.innerFields.split(",");
+        }
+
+        // Loader
+        if (StringUtils.isNotEmpty(loadCommandOptions.loader)) {
+            loader = loadCommandOptions.loader;
+            try {
+                Class.forName(loader);
+            } catch (ClassNotFoundException e) {
+                throw new CellBaseException("Loader Java class '" + loader + "' does not exist", e);
+            }
+        }
+
+        // Skip indexes
+        createIndexes = !loadCommandOptions.skipIndex;
+
+        // Num. threads
         if (loadCommandOptions.numThreads > 1) {
             numThreads = loadCommandOptions.numThreads;
         } else {
@@ -273,24 +297,8 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.warn("Incorrect number of numThreads, it must be a positive value. This has been set to '{}'", numThreads);
         }
 
-        if (field != null) {
-            if (loadCommandOptions.data == null) {
-                logger.error("--data option cannot be empty. Please provide a valid value for the --data parameter.");
-            } else if (!Files.exists(input)) {
-                logger.error("Input parameter {} does not exist", input);
-            }
-        } else if (!Files.exists(input) || !Files.isDirectory(input)) {
-            logger.error("Input parameter {} does not exist or is not a directory", input);
-        }
-        try {
-            Class.forName(loader);
-        } catch (ClassNotFoundException e) {
-            logger.error("Loader Java class '{}' does not exist", loader);
-            e.printStackTrace();
-            System.exit(-1);
-        }
-
-        // Check data release
+        // Data release
+        dataReleaseManager = new DataReleaseManager(database, configuration);
         dataRelease = getDataReleaseForLoading(dataReleaseManager).getRelease();
     }
 
@@ -304,7 +312,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         } else {
             // Custom update required e.g. population freqs loading
             logger.info("Loading file '{}'", input);
-            loadRunner.load(input, "variation", dataRelease, field, innerFields);
+            loadRunner.load(input, VARIATION_DATA, dataRelease, field, innerFields);
         }
     }
 

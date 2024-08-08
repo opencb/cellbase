@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.impl.core.ReleaseMongoDBAdaptor;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -48,8 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MongoDBManager {
-
-    public static final String DBNAME_SEPARATOR = "_";
 
     private MongoDataStoreManager mongoDataStoreManager;
     private final CellBaseConfiguration cellBaseConfiguration;
@@ -99,7 +98,7 @@ public class MongoDBManager {
             //  cellbase_speciesId_assembly_cellbaseVersion
             // Example:
             //  cellbase_hsapiens_grch37_v3
-            String database = getDatabaseName(species.getId(), species.getAssembly(), cellBaseConfiguration.getVersion());
+            String database = DatabaseNameUtils.getDatabaseName(species.getId(), species.getAssembly(), cellBaseConfiguration.getVersion());
             logger.debug("Database for the species is '{}'", database);
             return createMongoDBDatastore(database);
         } catch (CellBaseException e) {
@@ -160,29 +159,6 @@ public class MongoDBManager {
 
         // we return the MongoDataStore object
         return mongoDatastore;
-    }
-
-    public static String getDatabaseName(String species, String assembly, String version) {
-        if (StringUtils.isEmpty(species) || StringUtils.isEmpty(assembly)) {
-            throw new InvalidParameterException("Species and assembly are required");
-        }
-
-        String cleanAssembly = assembly
-                .replaceAll("\\.", "")
-                .replaceAll("-", "")
-                .replaceAll("_", "");
-
-        // Process version from the configuration file, in order to suffix the database name
-        //  - Production environment, e.g.: if version is "v5", the suffix added wil be "_v5"
-        //  - Test environment, e.g.: if version is "v5.6" or "v5.6.0-SNAPSHOT", the suffix added will be "_v5_6"
-        String auxVersion = version.replace(".", DBNAME_SEPARATOR).replace("-", DBNAME_SEPARATOR);
-        String[] split = auxVersion.split(DBNAME_SEPARATOR);
-        String dbName = "cellbase" + DBNAME_SEPARATOR + species.toLowerCase() + DBNAME_SEPARATOR + cleanAssembly.toLowerCase()
-                + DBNAME_SEPARATOR + split[0];
-        if (split.length > 1) {
-            dbName += (DBNAME_SEPARATOR + split[1]);
-        }
-        return dbName;
     }
 
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
