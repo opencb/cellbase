@@ -87,11 +87,6 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
     }
 
     @Override
-    public CellBaseDataResult<Long> count(PublicationQuery query) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<String> distinct(PublicationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());

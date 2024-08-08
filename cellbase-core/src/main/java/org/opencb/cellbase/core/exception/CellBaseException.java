@@ -22,5 +22,8 @@ public class CellBaseException extends Exception {
         super(msg);
     }
 
+    public CellBaseException(String msg, Exception e) {
+        super(msg, e);
+    }
 }
 

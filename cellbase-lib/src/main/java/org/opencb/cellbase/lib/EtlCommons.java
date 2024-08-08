@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String HOMO_SAPIENS_NAME ="Homo sapiens";
+
     public static final String GENOME_DATA = "genome";
     public static final String GENE_DATA = "gene";
     public static final String REFSEQ_DATA = "refseq";
@@ -63,7 +65,11 @@ public class EtlCommons {
     public static final String IARCTP53_FILE = "IARC-TP53.zip";
     public static final String GWAS_FILE = "gwas_catalog.tsv";
     public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
-    public static final String DBSNP_FILE = "All.vcf.gz";
+    @Deprecated
+    public static final String DBSNP_FILE = "GCF_000001405.40.gz";
+    public static final String DBSNP_NAME = "dbSNP";
+    public static final String DBSNP_VERSION_FILENAME = DBSNP_NAME + "Version.json";
+    public static final String SNP_COLLECTION_NAME = "snp";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";

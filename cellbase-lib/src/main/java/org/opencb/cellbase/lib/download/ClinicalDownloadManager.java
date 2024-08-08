@@ -55,12 +55,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            if (assemblyConfiguration.getName() == null) {
-//                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
-//                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
-//            }
-
-            logger.info("Downloading clinical information ...");
+            logger.info("Downloading clinical variant information ...");
 
             String url;
             List<DownloadFile> downloadFiles = new ArrayList<>();
