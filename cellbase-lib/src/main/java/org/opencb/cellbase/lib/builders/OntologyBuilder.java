@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.models.core.OntologyTerm;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -27,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -34,35 +36,44 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 public class OntologyBuilder extends AbstractBuilder {
 
     private Path oboDownloadPath;
+    private SpeciesConfiguration speciesConfiguration;
 
-    public OntologyBuilder(Path oboDownloadPath, CellBaseSerializer serializer) {
+    public static final String OBO_OUTPUT_BASENAME = "ontology";
+    public static final String OBO_OUTPUT_FILENAME = OBO_OUTPUT_BASENAME + ".json.gz";
+
+    public OntologyBuilder(Path oboDownloadPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
+
         this.oboDownloadPath = oboDownloadPath;
+        this.speciesConfiguration = speciesConfiguration;
     }
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
-
         // Sanity check
-        checkDirectory(oboDownloadPath, getDataName(REGULATION_DATA));
+        checkDirectory(oboDownloadPath, getDataName(ONTOLOGY_DATA));
 
         // Check ontology files
-        List<File> hpoFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(HPO_OBO_DATA)), getDataName(HPO_OBO_DATA));
-        List<File> goFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(GO_OBO_DATA)), getDataName(GO_OBO_DATA));
-        List<File> doidFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(DOID_OBO_DATA)), getDataName(DOID_OBO_DATA));
-        List<File> mondoFiles = checkOboFiles(oboDownloadPath.resolve(getDataVersionFilename(MONDO_OBO_DATA)), getDataName(MONDO_OBO_DATA));
+        List<File> hpoFiles = Collections.emptyList();
+        List<File> doidFiles = Collections.emptyList();
+        List<File> mondoFiles = Collections.emptyList();
+        if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+            hpoFiles = checkOboFiles(HPO_OBO_DATA);
+            doidFiles = checkOboFiles(DOID_OBO_DATA);
+            mondoFiles = checkOboFiles(MONDO_OBO_DATA);
+        }
+        List<File> goFiles = checkOboFiles(GO_OBO_DATA);
 
         // Parse OBO files and build
-        parseOboFile(hpoFiles.get(0), HPO_OBO_DATA);
+        if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+            parseOboFile(hpoFiles.get(0), HPO_OBO_DATA);
+            parseOboFile(doidFiles.get(0), DOID_OBO_DATA);
+            parseOboFile(mondoFiles.get(0), MONDO_OBO_DATA);
+        }
         parseOboFile(goFiles.get(0), GO_OBO_DATA);
-        parseOboFile(doidFiles.get(0), DOID_OBO_DATA);
-        parseOboFile(mondoFiles.get(0), MONDO_OBO_DATA);
 
         // Close serializer
         serializer.close();
-
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(ONTOLOGY_DATA));
     }
 
     private void parseOboFile(File oboFile, String data) throws IOException {
@@ -77,9 +88,12 @@ public class OntologyBuilder extends AbstractBuilder {
         logger.info(PARSING_DONE_LOG_MESSAGE, oboFile);
     }
 
-    private List<File> checkOboFiles(Path versionFilePath, String name) throws IOException, CellBaseException {
-        List<File> files = checkFiles(dataSourceReader.readValue(versionFilePath.toFile()), oboDownloadPath, getDataName(ONTOLOGY_DATA)
-                + "/" + name);
+    private List<File> checkOboFiles(String data) throws IOException, CellBaseException {
+        Path versionFilePath = oboDownloadPath.resolve(data).resolve(getDataVersionFilename(data));
+        String name = getDataName(data);
+
+        List<File> files = checkFiles(dataSourceReader.readValue(versionFilePath.toFile()), oboDownloadPath.resolve(data),
+                getDataName(ONTOLOGY_DATA) + "/" + name);
         if (files.size() != 1) {
             throw new CellBaseException("One " + name + " file is expected, but currently there are " + files.size() + " files");
         }

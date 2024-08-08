@@ -46,6 +46,7 @@ import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_DONE_LOG
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.BUILDING_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
+import static org.opencb.cellbase.lib.builders.OntologyBuilder.OBO_OUTPUT_BASENAME;
 import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
@@ -307,17 +308,37 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private AbstractBuilder buildObo() throws CellBaseException {
+        // Sanity check
         Path oboDownloadPath = downloadFolder.resolve(ONTOLOGY_DATA);
         Path oboBuildPath = buildFolder.resolve(ONTOLOGY_DATA);
-        List<Path> versionPaths = Arrays.asList(oboDownloadPath.resolve(getDataVersionFilename(HPO_OBO_DATA)),
-                oboDownloadPath.resolve(getDataVersionFilename(GO_OBO_DATA)),
-                oboDownloadPath.resolve(getDataVersionFilename(DOID_OBO_DATA)),
-                oboDownloadPath.resolve(getDataVersionFilename(MONDO_OBO_DATA)));
-        copyVersionFiles(versionPaths, oboBuildPath);
+        List<Path> filesToCheck = new ArrayList<>(Arrays.asList(oboBuildPath.resolve(OBO_OUTPUT_BASENAME)));
+        List<String> dataList = new ArrayList<>(Arrays.asList(GO_OBO_DATA));
+        if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+            dataList.add(HPO_OBO_DATA);
+            dataList.add(DOID_OBO_DATA);
+            dataList.add(MONDO_OBO_DATA);
+        }
+
+        for (String data : dataList) {
+            filesToCheck.add(oboBuildPath.resolve(data).resolve(getDataVersionFilename(data)));
+        }
+
+        if (AbstractBuilder.existFiles(filesToCheck)) {
+            logger.warn(DATA_ALREADY_BUILT, getDataName(ONTOLOGY_DATA));
+            return null;
+        }
+
+        for (String data : dataList) {
+            checkVersionFiles(Collections.singletonList(oboDownloadPath.resolve(data).resolve(getDataVersionFilename(data))));
+        }
+        for (String data : dataList) {
+            copyVersionFiles(Collections.singletonList(oboDownloadPath.resolve(data).resolve(getDataVersionFilename(data))),
+                    oboBuildPath);
+        }
 
         // Create serializer and return the ontology builder
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(oboBuildPath, OBO_BASENAME);
-        return new OntologyBuilder(oboDownloadPath, serializer);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(oboBuildPath, OBO_OUTPUT_BASENAME);
+        return new OntologyBuilder(oboDownloadPath, speciesConfiguration, serializer);
     }
 
     private AbstractBuilder buildCadd() throws CellBaseException {
