@@ -11,6 +11,7 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.lib.impl.core.singleton.DataReleaseSingleton;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;

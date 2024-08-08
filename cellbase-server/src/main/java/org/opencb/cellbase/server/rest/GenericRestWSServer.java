@@ -36,7 +36,7 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
-import org.opencb.cellbase.lib.impl.core.DataReleaseSingleton;
+import org.opencb.cellbase.lib.impl.core.singleton.DataReleaseSingleton;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.cellbase.lib.managers.MetaManager;
