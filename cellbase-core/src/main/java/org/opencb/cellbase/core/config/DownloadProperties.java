@@ -52,6 +52,7 @@ public class DownloadProperties {
     private URLProperties clinvarSummary;
     private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
+    private URLProperties dbSNP;
     private URLProperties iarctp53;
     private URLProperties docm;
     private URLProperties docmVersion;
@@ -262,6 +263,15 @@ public class DownloadProperties {
 
     public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
         this.clinvarEfoTerms = clinvarEfoTerms;
+        return this;
+    }
+
+    public URLProperties getDbSNP() {
+        return dbSNP;
+    }
+
+    public DownloadProperties setDbSNP(URLProperties dbSNP) {
+        this.dbSNP = dbSNP;
         return this;
     }
 

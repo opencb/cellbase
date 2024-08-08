@@ -140,6 +140,9 @@ download:
     version: "2023-12-01"
   clinvarEfoTerms:
     host: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
+  dbSNP:
+    host: https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz
+    version: "156"
   iarctp53:
     host: http://p53.iarc.fr/ajax/Zipper.ashx
   docm:
@@ -233,6 +236,7 @@ species:
         - refseq
         - regulation
         - repeats
+        - variation
         - variation_functional_score
         - splice_score
       shards:
