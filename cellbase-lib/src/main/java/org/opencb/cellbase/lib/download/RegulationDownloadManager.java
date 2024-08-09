@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -43,53 +44,31 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), REGULATION_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(REGULATION_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        Path regulationFolder = downloadFolder.resolve(REGULATION_DATA);
+        Files.createDirectories(regulationFolder);
+        regulatoryBuildFolder = Files.createDirectories(regulationFolder.resolve(REGULATORY_BUILD_DATA));
+        motifFeaturesFolder = Files.createDirectories(regulationFolder.resolve(MOTIF_FEATURES_DATA));
+        mirTarBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRTARBASE_DATA));
+        mirBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRBASE_DATA));
+
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Check if species is supported
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), REGULATION_DATA)) {
-            Path regulationFolder = downloadFolder.resolve(REGULATION_DATA);
-            Files.createDirectories(regulationFolder);
-            regulatoryBuildFolder = Files.createDirectories(regulationFolder.resolve(REGULATORY_BUILD_DATA));
-            motifFeaturesFolder = Files.createDirectories(regulationFolder.resolve(MOTIF_FEATURES_DATA));
-            mirTarBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRTARBASE_DATA));
-            mirBaseFolder = Files.createDirectories(regulationFolder.resolve(MIRBASE_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(REGULATION_DATA));
 
-            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        downloadFiles.addAll(downloadRegulatoryaBuild());
+        downloadFiles.addAll(downloadMotifFeatures());
+        downloadFiles.add(downloadMiRTarBase());
+        downloadFiles.add(downloadMirna());
 
-            // Already downloaded ?
-            boolean downloadRegulatoryBuild = !isAlreadyDownloaded(regulatoryBuildFolder.resolve(getDataVersionFilename(
-                    REGULATORY_BUILD_DATA)), getDataName(REGULATORY_BUILD_DATA));
-            boolean downloadMotifFeatures = !isAlreadyDownloaded(motifFeaturesFolder.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)),
-                    getDataName(MOTIF_FEATURES_DATA));
-            boolean downloadMirTarBase = !isAlreadyDownloaded(mirTarBaseFolder.resolve(getDataVersionFilename(MIRTARBASE_DATA)),
-                    getDataName(MIRTARBASE_DATA)) && configuration.getDownload().getMiRTarBase().getFiles().containsKey(prefixId
-                    + MIRTARBASE_FILE_ID);
-            boolean downloadMirBase = !isAlreadyDownloaded(mirBaseFolder.resolve(getDataVersionFilename(MIRBASE_DATA)),
-                    getDataName(MIRBASE_DATA));
-
-            if (!downloadRegulatoryBuild && !downloadMotifFeatures && !downloadMirTarBase && !downloadMirBase) {
-                return new ArrayList<>();
-            }
-
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATION_DATA));
-
-            if (downloadRegulatoryBuild) {
-                downloadFiles.addAll(downloadRegulatoryaBuild());
-            }
-
-            if (downloadMotifFeatures) {
-                downloadFiles.addAll(downloadMotifFeatures());
-            }
-
-            if (downloadMirTarBase) {
-                downloadFiles.add(downloadMiRTarBase());
-            }
-            if (downloadMirBase) {
-                downloadFiles.add(downloadMirna());
-            }
-
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
-        }
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(REGULATION_DATA));
 
         return downloadFiles;
     }
@@ -100,7 +79,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
      * @throws InterruptedException Any issue downloading files
      */
     private List<DownloadFile> downloadRegulatoryaBuild() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REGULATORY_BUILD_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(REGULATORY_BUILD_DATA));
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
@@ -119,7 +98,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
      * @throws InterruptedException Any issue downloading files
      */
     private List<DownloadFile> downloadMotifFeatures() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MOTIF_FEATURES_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(MOTIF_FEATURES_DATA));
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
@@ -145,7 +124,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     }
 
     private DownloadFile downloadMirna() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRBASE_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(MIRBASE_DATA));
 
         return downloadAndSaveDataSource(configuration.getDownload().getMirbase(), MIRBASE_FILE_ID, MIRBASE_DATA, mirBaseFolder);
     }
@@ -154,7 +133,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = null;
         String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
         if (configuration.getDownload().getMiRTarBase().getFiles().containsKey(prefixId + MIRTARBASE_FILE_ID)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MIRTARBASE_DATA));
+            logger.info(DOWNLOADING_MSG, getDataName(MIRTARBASE_DATA));
 
             downloadFile = downloadAndSaveDataSource(configuration.getDownload().getMiRTarBase(), prefixId + MIRTARBASE_FILE_ID,
                     MIRTARBASE_DATA, mirTarBaseFolder);

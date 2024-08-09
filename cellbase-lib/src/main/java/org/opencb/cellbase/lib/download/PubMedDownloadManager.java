@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +39,13 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PUBMED_DATA));
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PUBMED_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PUBMED_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        logger.info(DOWNLOADING_MSG, getDataName(PUBMED_DATA));
 
         Path pubmedDownloadFolder = downloadFolder.resolve(PUBMED_DATA);
         Files.createDirectories(pubmedDownloadFolder);
@@ -49,16 +56,16 @@ public class PubMedDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         for (String filename : filenames) {
             String url = host + filename;
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, pubmedDownloadFolder.resolve(filename));
-            downloadFiles.add(downloadFile(url, pubmedDownloadFolder.resolve(filename).toString()));
-            logger.info(OK_LOG_MESSAGE);
+            logger.info(DOWNLOADING_FROM_TO_MSG, url, pubmedDownloadFolder.resolve(filename));
+            downloadFiles.add(downloadFile(url, pubmedDownloadFolder.resolve(filename)));
+            logger.info(OK_MSG);
         }
 
         // Save data source
         saveDataSource(PUBMED_DATA, configuration.getDownload().getPubmed().getVersion(), getTimeStamp(), Collections.singletonList(host),
                 pubmedDownloadFolder.resolve(getDataVersionFilename(PUBMED_DATA)));
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PUBMED_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(PUBMED_DATA));
 
         return downloadFiles;
     }

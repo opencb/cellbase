@@ -35,13 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -51,13 +49,13 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public abstract class AbstractDownloadManager {
 
-    protected static final String DOWNLOADING_LOG_MESSAGE = "Downloading {} ...";
-    protected static final String DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {} done.";
-    protected static final String CATEGORY_DOWNLOADING_LOG_MESSAGE = "Downloading {}/{} ...";
-    protected static final String CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE = "Downloading {}/{} done.";
-    protected static final String DOWNLOADING_FROM_TO_LOG_MESSAGE = "Downloading {} to {} ...";
-    protected static final String DATA_ALREADY_DOWNLOADED = "The file {} already exists, indicating that the data {} has already been"
-        + " downloaded.";
+    protected static final String DOWNLOADING_MSG = "Downloading {} ...";
+    protected static final String DOWNLOADING_DONE_MSG = "Downloading {} done.";
+    protected static final String CATEGORY_DOWNLOADING_MSG = "Downloading {}/{} ...";
+    protected static final String CATEGORY_DOWNLOADING_DONE_MSG = "Downloading {}/{} done.";
+    protected static final String DOWNLOADING_FROM_TO_MSG = "Downloading {} to {} ...";
+    protected static final String DATA_ALREADY_DOWNLOADED_MSG = "The file {} already exists, indicating that the data {} has already been"
+            + " downloaded.";
 
     protected String species;
     protected String assembly;
@@ -119,16 +117,16 @@ public abstract class AbstractDownloadManager {
         // Prepare outdir
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
-        logger.info("Creating download dir {}", downloadFolder);
+        logger.info("Creating download dir: {}", downloadFolder);
         Files.createDirectories(downloadFolder);
 
         downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
-        logger.info("Creating download log dir {}", downloadLogFolder);
+        logger.info("Creating download log dir: {}", downloadLogFolder);
         Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
         buildFolder = outdir.resolve(speciesFolder + "/generated_json");
-        logger.info("Creating build dir {}", buildFolder);
+        logger.info("Creating build dir: {}", buildFolder);
         Files.createDirectories(buildFolder);
 
         logger.info("Processing species {}", speciesConfiguration.getScientificName());
@@ -200,11 +198,8 @@ public abstract class AbstractDownloadManager {
                                               String chromosome, Path outPath)
             throws IOException, InterruptedException, CellBaseException {
         String url = EtlCommons.getUrl(props, fileId, species, assembly, chromosome);
-        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
-        logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
-        DownloadFile downloadFile = downloadFile(url, outFile.toString());
-        logger.info(OK_LOG_MESSAGE);
-        return downloadFile;
+        Path outFile = outPath.resolve(getFilenameFromUrl(url));
+        return downloadFile(url, outFile);
     }
 
     protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, Path outPath)
@@ -216,11 +211,8 @@ public abstract class AbstractDownloadManager {
                                                      Path outPath) throws IOException, InterruptedException, CellBaseException {
         String url = EtlCommons.getEnsemblUrl(ensemblProps, ensemblRelease, fileId, speciesShortName, assemblyConfiguration.getName(),
                 chromosome);
-        File outFile = outPath.resolve(getFilenameFromUrl(url)).toFile();
-        logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outFile);
-        DownloadFile downloadFile = downloadFile(url, outFile.toString());
-        logger.info(OK_LOG_MESSAGE);
-        return downloadFile;
+        Path outFile = outPath.resolve(getFilenameFromUrl(url));
+        return downloadFile(url, outFile);
     }
 
     protected void saveDataSource(String data, String version, String date, List<String> urls, Path versionFilePath)
@@ -284,71 +276,85 @@ public abstract class AbstractDownloadManager {
         }
     }
 
-    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException, CellBaseException {
-        return downloadFile(url, outputFileName, null);
+    protected DownloadFile downloadFile(String url, Path outputFile) throws IOException, InterruptedException, CellBaseException {
+        return downloadFile(url, outputFile, null);
     }
 
-    protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
+    protected DownloadFile downloadFile(String url, Path outputFile, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException, CellBaseException {
-        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
+        DownloadFile downloadFile = new DownloadFile(url, outputFile.toAbsolutePath().toString(),
+                Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
-        if (Paths.get(outputFileName).toFile().exists()) {
-            logger.warn("File '{}' is already downloaded", outputFileName);
-            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, "File '" + outputFileName + "' is already downloaded", true);
+        final Path outputLog = downloadLogFolder.resolve(outputFile.getFileName().toString() + ".log");
+        if (Files.exists(outputFile)) {
+            logger.warn("File '{}' is already downloaded", outputFile);
+            setDownloadStatusAndMessage(outputFile, downloadFile, outputLog, true);
+            downloadFile.setMessage("File is already downloaded");
         } else {
-            final String outputLog = downloadLogFolder + "/" + Paths.get(outputFileName).toFile().getName() + ".log";
-            List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
+            logger.info(DOWNLOADING_FROM_TO_MSG, url, outputFile);
+            List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url,
+                    "-O", outputFile.toAbsolutePath().toString(),
+                    "-o", outputLog.toAbsolutePath().toString()));
             if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
                 wgetArgs.addAll(wgetAdditionalArgs);
             }
             boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
-            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
+            setDownloadStatusAndMessage(outputFile, downloadFile, outputLog, downloaded);
+            logger.info(OK_MSG);
         }
-        downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
-        return downloadFileInfo;
+        downloadFile.setElapsedTime(startTime, System.currentTimeMillis());
+        return downloadFile;
     }
 
-    private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded) {
+    private void setDownloadStatusAndMessage(Path outputFile, DownloadFile downloadFile, Path logFile, boolean downloaded) {
         if (downloaded) {
-            boolean validFileSize = validateDownloadFile(downloadFile, outputFileName, outputLog);
+            boolean validFileSize = validateDownloadFile(downloadFile, outputFile, logFile);
             if (validFileSize) {
                 downloadFile.setStatus(DownloadFile.Status.OK);
                 downloadFile.setMessage("File downloaded successfully");
             } else {
                 downloadFile.setStatus(DownloadFile.Status.ERROR);
                 downloadFile.setMessage("Expected downloaded file size " + downloadFile.getExpectedFileSize()
-                        + ", Actual file size " + downloadFile.getActualFileSize());
+                        + ", actual file size " + downloadFile.getActualFileSize());
             }
         } else {
-            downloadFile.setMessage("See full error message in " + outputLog);
+            downloadFile.setMessage("See full error message in " + logFile);
             downloadFile.setStatus(DownloadFile.Status.ERROR);
         }
     }
 
-    public static void writeDownloadLogFile(Path downloadFolder, List<DownloadFile> downloadFiles) throws IOException {
+    public void writeDownloadLogFile(Map<String, Object> params, List<DownloadFile> downloadFiles) throws IOException {
+        // Get current date and time
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        Path summaryPath = downloadLogFolder.resolve(timeStamp + "_summary.json");
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("params", params);
+        summary.put("downloadFiles", downloadFiles);
+
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
-        writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);
+        writer.writeValue(summaryPath.toFile(), summary);
     }
 
     public boolean isAlreadyDownloaded(Path path, String dataName) {
         if (Files.exists(path)) {
-            logger.info(DATA_ALREADY_DOWNLOADED, path.getFileName(), dataName);
+            logger.info(DATA_ALREADY_DOWNLOADED_MSG, path.getFileName(), dataName);
             return true;
         }
         return false;
     }
 
-    private boolean validateDownloadFile(DownloadFile downloadFile, String outputFileName, String outputFileLog) {
-        long expectedFileSize = getExpectedFileSize(outputFileLog);
-        long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
+    private boolean validateDownloadFile(DownloadFile downloadFile, Path outputFile, Path logFile) {
+        long expectedFileSize = getExpectedFileSize(logFile);
+        long actualFileSize = FileUtils.sizeOf(outputFile.toFile());
         downloadFile.setActualFileSize(actualFileSize);
         downloadFile.setExpectedFileSize(expectedFileSize);
         return expectedFileSize == actualFileSize;
     }
 
-    private long getExpectedFileSize(String outputFileLog) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(outputFileLog))) {
+    private long getExpectedFileSize(Path path) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 // looking for: Length: 13846591 (13M)
@@ -358,7 +364,7 @@ public abstract class AbstractDownloadManager {
                 }
             }
         } catch (Exception e) {
-            logger.info("Error getting expected file size {}", e.getMessage());
+            logger.info("Error getting expected file size: {}. Stack trace: {}", e.getMessage(), Arrays.toString(e.getStackTrace()));
         }
         return -1;
     }

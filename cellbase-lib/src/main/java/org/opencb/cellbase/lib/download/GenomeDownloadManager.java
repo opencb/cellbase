@@ -53,12 +53,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException, CellBaseException {
         Path genomeVersionFilePath = sequenceFolder.resolve(getDataVersionFilename(GENOME_DATA));
 
-        // Already downloaded
-        if (isAlreadyDownloaded(genomeVersionFilePath, getDataName(GENOME_DATA))) {
-            return new ArrayList<>();
-        }
-
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(GENOME_DATA));
         Files.createDirectories(sequenceFolder);
 
         List<String> urls = new ArrayList<>();
@@ -75,7 +70,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         // Save data source
         saveDataSource(GENOME_DATA, ensemblVersion, getTimeStamp(), urls, genomeVersionFilePath);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(GENOME_DATA));
 
         return Collections.singletonList(downloadFile);
     }
@@ -86,7 +81,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             return;
         }
 
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(GENOME_INFO_DATA));
         Files.createDirectories(sequenceFolder);
 
         String dockerImage = "opencb/cellbase-builder:" + GitRepositoryState.get().getBuildVersion();
@@ -108,6 +103,6 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
             throw new CellBaseException("Error executing Perl script from Docker " + dockerImage, e);
         }
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GENOME_INFO_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(GENOME_INFO_DATA));
     }
 }

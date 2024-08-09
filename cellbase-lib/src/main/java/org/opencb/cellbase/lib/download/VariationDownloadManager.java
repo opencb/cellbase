@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -42,20 +43,21 @@ public class VariationDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> downloadVariation() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(VARIATION_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Check if species is supported
-        // and we do not need to download human variation data from Ensembl. It is already included in the CellBase.
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)
-                && !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
+        // For homo sapiens, we do not need to download human variation data from Ensembl because it has already been included
+        // in CellBase
+        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
             Files.createDirectories(variationFolder);
 
-            if (isAlreadyDownloaded(variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)), getDataName(VARIATION_DATA))) {
-                return new ArrayList<>();
-            }
-
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(VARIATION_DATA));
+            logger.info(DOWNLOADING_MSG, getDataName(VARIATION_DATA));
 
             DownloadFile downloadFile;
             String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
@@ -72,7 +74,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
             saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), urls,
                     variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)));
 
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(VARIATION_DATA));
+            logger.info(DOWNLOADING_DONE_MSG, getDataName(VARIATION_DATA));
         }
         return downloadFiles;
     }

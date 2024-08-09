@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli.admin.executors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
@@ -26,9 +27,7 @@ import org.opencb.cellbase.lib.download.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -62,10 +61,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 throw new CellBaseException("Invalid species: '" + downloadCommandOptions.speciesAndAssemblyOptions.species + "'");
             }
             List<String> dataList = getDataList(species, speciesConfiguration);
-            logger.info("Downloading the following data sources: {}", StringUtils.join(dataList, ","));
+            logger.info("Downloading the following data sources: {}", CollectionUtils.isEmpty(dataList)
+                    ? Collections.emptyList()
+                    : StringUtils.join(dataList, ","));
 
             List<DownloadFile> downloadFiles = new ArrayList<>();
-            AbstractDownloadManager downloader;
+            AbstractDownloadManager downloader = null;
             for (String data : dataList) {
                 switch (data) {
                     case GENOME_DATA:
@@ -119,7 +120,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 // Call to download method and add the files to the list
                 downloadFiles.addAll(downloader.download());
             }
-            AbstractDownloadManager.writeDownloadLogFile(outputDirectory, downloadFiles);
+            if (downloader != null) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("species", species);
+                params.put("assembly", assembly);
+                params.put("data", dataList);
+                params.put("outDir", outputDirectory);
+                downloader.writeDownloadLogFile(params, downloadFiles);
+            } else {
+                logger.warn("Impossible to write log summary: downloader is null");
+            }
         } catch (InterruptedException e) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
@@ -138,12 +148,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
         } else {
             // Check if the data sources requested are valid for the species
             dataList = Arrays.asList(downloadCommandOptions.data.split(","));
+            Set<String> invalidData = new HashSet<>();
             for (String data : dataList) {
                 if (!speciesConfig.getData().contains(data)) {
-                    throw new CellBaseException("Data parameter '" + data + "' does not exist or it is not allowed for '" + species + "'. "
-                            + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ",") + ". "
-                            + "You can use data parameter 'all' to download everything");
+                    invalidData.add(data);
                 }
+            }
+            if (!CollectionUtils.isEmpty(invalidData)) {
+                throw new CellBaseException("Data '" + StringUtils.join(invalidData, ",") + "' not supported by species '" + species + "'."
+                        + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ",") + ". Our use data parameter 'all' to"
+                        + " download everything");
             }
         }
         return dataList;

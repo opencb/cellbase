@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -38,35 +39,39 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PHARMACOGENOMICS_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PHARMACOGENOMICS_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+
+        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
+        Files.createDirectories(pharmgkbDownloadFolder);
+
+        DownloadProperties.URLProperties pharmGKBConfig = configuration.getDownload().getPharmGKB();
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Check if the species has the data to download
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PHARMGKB_DATA)) {
-            logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+        List<String> urls = new ArrayList<>();
+        for (String fileName : pharmGKBConfig.getFiles().values()) {
+            String url = pharmGKBConfig.getHost() + fileName;
+            urls.add(url);
 
-            Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-            Files.createDirectories(pharmgkbDownloadFolder);
-
-            DownloadProperties.URLProperties pharmGKBConfig = configuration.getDownload().getPharmGKB();
-
-            List<String> urls = new ArrayList<>();
-            for (String fileName : pharmGKBConfig.getFiles().values()) {
-                String url = pharmGKBConfig.getHost() + fileName;
-                urls.add(url);
-
-                Path downloadedFilePath = pharmgkbDownloadFolder.resolve(getFilenameFromUrl(url));
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, downloadedFilePath);
-                DownloadFile downloadFile = downloadFile(url, downloadedFilePath.toString());
-                logger.info(OK_LOG_MESSAGE);
-                downloadFiles.add(downloadFile);
-            }
-
-            // Save data source
-            saveDataSource(PHARMGKB_DATA, pharmGKBConfig.getVersion(), getTimeStamp(), urls,
-                    pharmgkbDownloadFolder.resolve(getDataVersionFilename(PHARMGKB_DATA)));
-
-            logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+            Path downloadedFilePath = pharmgkbDownloadFolder.resolve(getFilenameFromUrl(url));
+            logger.info(DOWNLOADING_FROM_TO_MSG, url, downloadedFilePath);
+            downloadFile = downloadFile(url, downloadedFilePath);
+            logger.info(OK_MSG);
+            downloadFiles.add(downloadFile);
         }
+
+        // Save data source
+        saveDataSource(PHARMGKB_DATA, pharmGKBConfig.getVersion(), getTimeStamp(), urls,
+                pharmgkbDownloadFolder.resolve(getDataVersionFilename(PHARMGKB_DATA)));
+
+        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
 
         return downloadFiles;
     }

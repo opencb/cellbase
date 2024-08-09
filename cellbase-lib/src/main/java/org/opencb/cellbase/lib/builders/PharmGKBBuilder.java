@@ -1057,7 +1057,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
             try {
                 String outPath = serializer.getOutdir().resolve(pharmGgkFile.getName().split("\\.")[0]).toString();
                 List<String> params = Arrays.asList("-d", outPath, "-o", pharmGgkFile.toString());
-                EtlCommons.runCommandLineProcess(null, "unzip", params, Paths.get(outPath + ".log").toString());
+                EtlCommons.runCommandLineProcess(null, "unzip", params, Paths.get(outPath + ".log"));
             } catch (CellBaseException e) {
                 if (pharmGgkFile.getName().contains(GUIDELINE_ANNOTATIONS_BASENAME)) {
                     // It fails because of long filenames, so it does not raise any exception

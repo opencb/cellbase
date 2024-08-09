@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,14 +38,13 @@ public class SpliceScoreDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        // Check if the species is supported
-        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
-            logger.info("{} not supported for the species {}", getDataName(SPLICE_SCORE_DATA),
-                    speciesConfiguration.getScientificName());
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), SPLICE_SCORE_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(SPLICE_SCORE_DATA), speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
 
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(SPLICE_SCORE_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(SPLICE_SCORE_DATA));
 
         // Create splice score directory
         Path spliceScorePath = downloadFolder.resolve(SPLICE_SCORE_DATA).toAbsolutePath();
@@ -56,7 +56,7 @@ public class SpliceScoreDownloadManager extends AbstractDownloadManager {
         // MMSplice
         saveSpliceScoreSource(MMSPLICE_DATA, configuration.getDownload().getMmSplice(), spliceScorePath);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(SPLICE_SCORE_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(SPLICE_SCORE_DATA));
         return Collections.emptyList();
     }
 

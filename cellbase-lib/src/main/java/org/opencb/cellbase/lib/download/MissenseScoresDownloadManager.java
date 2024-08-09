@@ -37,14 +37,17 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        DownloadFile downloadFile = null;
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), MISSENSE_VARIATION_SCORE_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
-
-            downloadFile = downloadRevel();
-
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), MISSENSE_VARIATION_SCORE_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
+
+        logger.info(DOWNLOADING_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        DownloadFile downloadFile = downloadRevel();
+
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA));
 
         return Collections.singletonList(downloadFile);
     }
@@ -56,7 +59,7 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
         // Check if the species is supported
         if (configuration.getDownload().getRevel().getFiles().containsKey(prefixId + REVEL_FILE_ID)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+            logger.info(DOWNLOADING_MSG, getDataName(REVEL_DATA));
 
             // Create the REVEL download path
             Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
@@ -66,7 +69,7 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
             downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), prefixId + REVEL_FILE_ID, REVEL_DATA,
                     revelDownloadPath);
 
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+            logger.info(DOWNLOADING_MSG, getDataName(REVEL_DATA));
         }
 
         return downloadFile;

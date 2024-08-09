@@ -534,7 +534,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 logger.info("Loading JSON file '{}' ...", entry);
                 try {
                     loadRunner.load(buildPath.resolve(entry.getFileName()), collection, dataRelease);
-                    logger.info(DONE_LOG_MESSAGE);
+                    logger.info(DONE_MSG);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
@@ -561,7 +561,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             // Load data
             logger.info("Loading JSON file '{}' ...", jsonPath);
             loadRunner.load(jsonPath, collection, dataRelease);
-            logger.info(DONE_LOG_MESSAGE);
+            logger.info(DONE_MSG);
         } catch (InterruptedException e) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
@@ -587,7 +587,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             collectionName = CellBaseDBAdaptor.buildCollectionName(collection, dataRelease);
             logger.info("Creating indexes for collection '{}' ...", collectionName);
             indexManager.createMongoDBIndexes(Collections.singletonList(collectionName), true);
-            logger.info(DONE_LOG_MESSAGE);
+            logger.info(DONE_MSG);
         } catch (IOException e) {
             logger.error("Error creating indexes for collection '{}': {}", collectionName, Arrays.toString(e.getStackTrace()));
         }

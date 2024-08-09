@@ -65,8 +65,9 @@ public final class EtlCommons {
     public static final String FAI_EXTENSION = ".fai";
     public static final String GZ_EXTENSION = ".gz";
 
-    public static final String OK_LOG_MESSAGE = "Ok.";
-    public static final String DONE_LOG_MESSAGE = "Done.";
+    public static final String OK_MSG = "Ok.";
+    public static final String DONE_MSG = "Done.";
+    public static final String DATA_NOT_SUPPORTED_MSG = "Data '{}' not supported for species '{}'";
 
     // Ensembl
     public static final String ENSEMBL_DATA = "ensembl";
@@ -499,10 +500,10 @@ public final class EtlCommons {
         throw new IllegalStateException("Utility class");
     }
 
-    public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
+    public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, Path logFile)
             throws IOException, InterruptedException, CellBaseException {
 
-        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
+        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFile);
 
         LOGGER.info("Executing command: {}", StringUtils.join(builder.command(), " "));
         Process process = builder.start();
@@ -519,7 +520,7 @@ public final class EtlCommons {
         return true;
     }
 
-    private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
+    private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, Path logFile) {
         List<String> commandArgs = new ArrayList<>();
         commandArgs.add(binPath);
         commandArgs.addAll(args);
@@ -530,8 +531,8 @@ public final class EtlCommons {
             builder.directory(workingDirectory);
         }
         builder.redirectErrorStream(true);
-        if (logFilePath != null) {
-            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+        if (logFile != null) {
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile.toFile()));
         }
 
         return builder;

@@ -89,10 +89,10 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
         if (!Files.exists(genomeSequenceFilePath)) {
             throw new CellBaseException("Genome file path does not exist " + genomeSequenceFilePath);
         }
-        logger.info(OK_LOG_MESSAGE);
+        logger.info(OK_MSG);
         logger.info("Checking index for genome FASTA file ...");
         getIndexFastaReferenceGenome(genomeSequenceFilePath);
-        logger.info(OK_LOG_MESSAGE);
+        logger.info(OK_MSG);
 
         // Check ClinVar files
         clinvarFullReleaseFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_FULL_RELEASE_FILE_ID,
@@ -137,7 +137,7 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
             Files.createDirectories(chunksPath);
             logger.info("Splitting CliVar file {} in {} ...", clinvarFullReleaseFilePath, chunksPath);
             splitClinvar(clinvarFullReleaseFilePath, chunksPath);
-            logger.info(OK_LOG_MESSAGE);
+            logger.info(OK_MSG);
         }
 
         RocksDB rdb = null;

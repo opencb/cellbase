@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -44,56 +45,40 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
      * @throws CellBaseException if there is an error in the CelllBase configuration file
      */
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PROTEIN_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PROTEIN_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
+        Files.createDirectories(proteinFolder);
+
+        Path uniProtFolder = Files.createDirectories(proteinFolder.resolve(UNIPROT_DATA));
+        Path interProFolder = Files.createDirectories(proteinFolder.resolve(INTERPRO_DATA));
+        Path intactFolder = Files.createDirectories(proteinFolder.resolve(INTACT_DATA));
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Check if the species is supported
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PROTEIN_DATA)) {
-            Path proteinFolder = downloadFolder.resolve(PROTEIN_DATA);
-            Files.createDirectories(proteinFolder);
+        logger.info(DOWNLOADING_MSG, getDataName(PROTEIN_DATA));
 
-            Path uniProtFolder = Files.createDirectories(proteinFolder.resolve(UNIPROT_DATA));
-            Path interProFolder = Files.createDirectories(proteinFolder.resolve(INTERPRO_DATA));
-            Path intactFolder = Files.createDirectories(proteinFolder.resolve(INTACT_DATA));
+        // Uniprot
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_DATA,
+                uniProtFolder);
+        downloadFiles.add(downloadFile);
 
-            // Already downloaded ?
-            boolean downloadUniProt = !isAlreadyDownloaded(uniProtFolder.resolve(getDataVersionFilename(UNIPROT_DATA)),
-                    getDataName(UNIPROT_DATA));
-            boolean downloadInterPro = !isAlreadyDownloaded(interProFolder.resolve(getDataVersionFilename(INTERPRO_DATA)),
-                    getDataName(INTERPRO_DATA));
-            boolean downloadIntact = !isAlreadyDownloaded(intactFolder.resolve(getDataVersionFilename(INTACT_DATA)),
-                    getDataName(INTACT_DATA));
+        // InterPro
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_DATA,
+                interProFolder);
+        downloadFiles.add(downloadFile);
 
-            if (!downloadUniProt && !downloadInterPro && !downloadIntact) {
-                return new ArrayList<>();
-            }
+        // Intact
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_DATA,
+                intactFolder);
+        downloadFiles.add(downloadFile);
 
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
-
-            DownloadFile downloadFile;
-
-            // Uniprot
-            if (downloadUniProt) {
-                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getUniprot(), UNIPROT_FILE_ID, UNIPROT_DATA,
-                        uniProtFolder);
-                downloadFiles.add(downloadFile);
-            }
-
-            // InterPro
-            if (downloadInterPro) {
-                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getInterpro(), INTERPRO_FILE_ID, INTERPRO_DATA,
-                        interProFolder);
-                downloadFiles.add(downloadFile);
-            }
-
-            // Intact
-            if (downloadIntact) {
-                downloadFile = downloadAndSaveDataSource(configuration.getDownload().getIntact(), INTACT_FILE_ID, INTACT_DATA,
-                        intactFolder);
-                downloadFiles.add(downloadFile);
-            }
-
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(PROTEIN_DATA));
-        }
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(PROTEIN_DATA));
 
         return downloadFiles;
     }

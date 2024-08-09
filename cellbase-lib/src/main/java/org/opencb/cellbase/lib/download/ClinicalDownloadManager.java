@@ -45,55 +45,58 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), CLINICAL_VARIANT_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(CLINICAL_VARIANT_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        // Check if the species has the data to download
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), CLINICAL_VARIANT_DATA)) {
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CLINICAL_VARIANT_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(CLINICAL_VARIANT_DATA));
 
-            // Create clinical directory
-            Path clinicalPath = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANT_DATA).toAbsolutePath();
-            Files.createDirectories(clinicalPath);
+        // Create clinical directory
+        Path clinicalPath = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANT_DATA).toAbsolutePath();
+        Files.createDirectories(clinicalPath);
 
-            DownloadFile downloadFile;
 
-            // ClinVar
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CLINVAR_DATA));
-            DownloadProperties.URLProperties props = configuration.getDownload().getClinvar();
-            List<String> urls = new ArrayList<>();
-            for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
-                    CLINVAR_EFO_TERMS_FILE_ID)) {
-                downloadFile = downloadDataSource(props, fileId, clinicalPath);
-                downloadFiles.add(downloadFile);
-
-                // Save URLs to be written in the version file
-                urls.add(downloadFile.getUrl());
-            }
-            // Save data source
-            saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls,
-                    clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA)));
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(CLINVAR_DATA));
-
-            // COSMIC
-            logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
-            props = configuration.getDownload().getCosmic();
-            String url = props.getHost() + props.getFiles().get(COSMIC_FILE_ID);
-            saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
-                    clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA)));
-
-            // HGMD
-            logger.warn("{} files must be downloaded manually !", getDataName(HGMD_DATA));
-            props = configuration.getDownload().getHgmd();
-            url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
-            saveDataSource(HGMD_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
-                    clinicalPath.resolve(getDataVersionFilename(HGMD_DATA)));
-
-            // GWAS catalog
-            logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GWAS_DATA));
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, clinicalPath);
+        // ClinVar
+        logger.info(DOWNLOADING_MSG, getDataName(CLINVAR_DATA));
+        DownloadProperties.URLProperties props = configuration.getDownload().getClinvar();
+        List<String> urls = new ArrayList<>();
+        for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
+                CLINVAR_EFO_TERMS_FILE_ID)) {
+            downloadFile = downloadDataSource(props, fileId, clinicalPath);
             downloadFiles.add(downloadFile);
-            logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GWAS_DATA));
+
+            // Save URLs to be written in the version file
+            urls.add(downloadFile.getUrl());
         }
+        // Save data source
+        saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls,
+                clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA)));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(CLINVAR_DATA));
+
+        // COSMIC
+        logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
+        props = configuration.getDownload().getCosmic();
+        String url = props.getHost() + props.getFiles().get(COSMIC_FILE_ID);
+        saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
+                clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA)));
+
+        // HGMD
+        logger.warn("{} files must be downloaded manually !", getDataName(HGMD_DATA));
+        props = configuration.getDownload().getHgmd();
+        url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
+        saveDataSource(HGMD_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
+                clinicalPath.resolve(getDataVersionFilename(HGMD_DATA)));
+
+        // GWAS catalog
+        logger.info(DOWNLOADING_MSG, getDataName(GWAS_DATA));
+        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, clinicalPath);
+        downloadFiles.add(downloadFile);
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(GWAS_DATA));
 
         return downloadFiles;
     }

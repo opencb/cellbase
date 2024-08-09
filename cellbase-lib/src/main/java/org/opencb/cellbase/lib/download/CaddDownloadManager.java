@@ -37,20 +37,23 @@ public class CaddDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        DownloadFile downloadFile = null;
-
-        if (SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_FUNCTIONAL_SCORE_DATA)) {
-            logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
-
-            // Create the CADD download path
-            Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
-            Files.createDirectories(caddDownloadPath);
-
-            // Download CADD and save data source
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_DATA, caddDownloadPath);
-
-            logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_FUNCTIONAL_SCORE_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(VARIATION_FUNCTIONAL_SCORE_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
+
+        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+
+        // Create the CADD download path
+        Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        Files.createDirectories(caddDownloadPath);
+
+        // Download CADD and save data source
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_DATA,
+                caddDownloadPath);
+
+        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
 
         return Collections.singletonList(downloadFile);
     }
