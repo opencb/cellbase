@@ -231,6 +231,11 @@ download:
     files:
       GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
+
+  dbSNP:
+    host: https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz
+    version: "156"
+
   pharmGKB:
     host: https://api.pharmgkb.org/v1/download/file/data/
     version: v1
