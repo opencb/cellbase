@@ -26,6 +26,8 @@ import org.opencb.biodata.models.variant.avro.Xref;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 
@@ -35,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.DBSNP_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS;
 
 /**
@@ -44,6 +47,8 @@ public class VariationBuilder extends AbstractBuilder {
 
     private Path downloadPath;
     private String species;
+
+    private DbSnpBuilder dbSnpBuilder;
 
     public static final String VARIATION_CHR_PREFIX = "variation_chr";
     public static final String VCF_ID_KEY = "VCF_ID";
@@ -69,17 +74,24 @@ public class VariationBuilder extends AbstractBuilder {
         SV_VALUES_MAP = Collections.unmodifiableMap(tempMap);
     }
 
-
-    public VariationBuilder(Path downloadPath, String species, CellBaseFileSerializer fileSerializer) {
+    public VariationBuilder(Path downloadPath, String species, CellBaseFileSerializer fileSerializer, CellBaseConfiguration configuration) {
         super(fileSerializer);
 
         this.downloadPath = downloadPath;
         this.species = species;
+
+        // dbSNP
+        DownloadProperties.URLProperties dbSnpUrlProperties = configuration.getDownload().getDbSNP();
+        dbSnpBuilder = new DbSnpBuilder(downloadPath.resolve(DBSNP_DATA), dbSnpUrlProperties, fileSerializer);
     }
 
     @Override
-    public void parse() throws IOException {
-        if (!species.equalsIgnoreCase(HOMO_SAPIENS)) {
+    public void parse() throws Exception {
+        if (species.equalsIgnoreCase(HOMO_SAPIENS)) {
+            // Parsing dbSNP data
+            dbSnpBuilder.parse();
+        } else {
+            // Parsing VCF files
             parseVcf();
         }
     }

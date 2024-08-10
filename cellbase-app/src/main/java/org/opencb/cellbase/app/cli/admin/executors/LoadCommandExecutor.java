@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.DbSnpBuilder.DBSNP_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
 import static org.opencb.cellbase.lib.builders.OntologyBuilder.OBO_OUTPUT_FILENAME;
@@ -81,6 +82,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private static final String LOADING_FILE_LOG_MESSAGE = "Loading file '{}'";
     private static final String ERROR_LOADING_FILE_LOG_MESSAGE = "Error loading file '{}': {}";
     private static final String ERROR_LOADING_DATA = "Error loading data in collection ";
+    private static final String LOADING_JSON_IN_COLLECTION_MSG = "Loading JSON file '{}' in collection '{}' for data release '{}' ...";
 
     public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.conf);
@@ -309,9 +311,19 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException, CellBaseException {
         if (field == null) {
-            // First load data
-            // Common loading process from CellBase variation data models
-            loadData(input.resolve(VARIATION_DATA), VARIATION_DATA, VARIATION_CHR_PREFIX);
+            Path variationPath = input.resolve(VARIATION_DATA);
+
+            // Loading variant_chrXXX files, if necessary
+            File[] chrFiles = variationPath.toFile().listFiles((dir, name) -> name.startsWith(VARIATION_CHR_PREFIX));
+            if (chrFiles.length > 0) {
+                // Common loading process from CellBase variation data models
+                loadData(variationPath, VARIATION_DATA, VARIATION_CHR_PREFIX);
+            }
+
+            // Loading dbSNP file, if necessary
+            HashMap<String, String> collectionMap = new HashMap<>();
+            collectionMap.put(SNP_DATA, DBSNP_OUTPUT_FILENAME);
+            loadData(variationPath.resolve(DBSNP_DATA), collectionMap);
         } else {
             // Custom update required e.g. population freqs loading
             logger.info(LOADING_FILE_LOG_MESSAGE, input);
@@ -559,7 +571,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         try {
             // Load data
-            logger.info("Loading JSON file '{}' ...", jsonPath);
+            logger.info(LOADING_JSON_IN_COLLECTION_MSG, jsonPath.getFileName(), collection, dataRelease);
             loadRunner.load(jsonPath, collection, dataRelease);
             logger.info(DONE_MSG);
         } catch (InterruptedException e) {

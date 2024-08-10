@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli.admin;
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
 import org.opencb.cellbase.core.api.key.ApiKeyQuota;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +73,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("validate", validationCommandOptions);
     }
 
+    @Override
     public void parse(String[] args) throws ParameterException {
         jCommander.parse(args);
     }

@@ -46,6 +46,7 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties cosmic;
     private URLProperties hgmd;
+    private URLProperties dbSNP;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
@@ -237,6 +238,15 @@ public class DownloadProperties {
 
     public DownloadProperties setHgmd(URLProperties hgmd) {
         this.hgmd = hgmd;
+        return this;
+    }
+
+    public URLProperties getDbSNP() {
+        return dbSNP;
+    }
+
+    public DownloadProperties setDbSNP(URLProperties dbSNP) {
+        this.dbSNP = dbSNP;
         return this;
     }
 

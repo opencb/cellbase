@@ -54,7 +54,6 @@ import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FIL
 import static org.opencb.cellbase.lib.builders.VariationBuilder.VARIATION_CHR_PREFIX;
 import static org.opencb.cellbase.lib.download.GenomeDownloadManager.GENOME_INFO_FILENAME;
 
-
 public class BuildCommandExecutor extends CommandExecutor {
 
     private final AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
@@ -176,6 +175,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                                 + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ",")
                                 + ". You can use data parameter 'all' to download everything");
                 }
+
                 if (parser != null) {
                     parser.parse();
                     parser.disconnect();
@@ -441,7 +441,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         // Create the file serializer and the variation builder
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(variationBuildPath);
-        return new VariationBuilder(variationDownloadPath, speciesConfiguration.getScientificName(), serializer);
+        return new VariationBuilder(variationDownloadPath, speciesConfiguration.getScientificName(), serializer, configuration);
     }
 
     private AbstractBuilder buildConservation() throws CellBaseException {
@@ -604,5 +604,4 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
         return dataList;
     }
-
 }

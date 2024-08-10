@@ -163,7 +163,10 @@ public final class EtlCommons {
     // Must match the configuration file
     public static final String CANCER_GENE_CENSUS_FILE_ID = "CANCER_GENE_CENSUS";
 
+    // Variation
     public static final String VARIATION_DATA = "variation";
+    public static final String DBSNP_DATA = "dbsnp";
+    public static final String SNP_DATA = "snp";
 
     // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
@@ -403,6 +406,8 @@ public final class EtlCommons {
         dataNamesMap.put(MMSPLICE_DATA, "MMSplice");
         dataNamesMap.put(SPLICEAI_DATA, "SpliceAI");
         dataNamesMap.put(VARIATION_DATA, "Variation");
+        dataNamesMap.put(SNP_DATA, "SNP");
+        dataNamesMap.put(DBSNP_DATA, "dbSNP");
 
 
         // Populate data categories map
@@ -449,6 +454,8 @@ public final class EtlCommons {
         dataCategoriesMap.put(MMSPLICE_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
         dataCategoriesMap.put(SPLICEAI_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
         dataCategoriesMap.put(VARIATION_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(SNP_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(DBSNP_DATA, dataNamesMap.get(VARIATION_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -484,7 +491,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DOID_OBO_DATA, "doidObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(MONDO_OBO_DATA, "mondoObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
-        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGKB" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGkb" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(REVEL_DATA, "revel" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CLINVAR_DATA, "clinVar" + SUFFIX_VERSION_FILENAME);
@@ -494,6 +501,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(MMSPLICE_DATA, "mmSplice" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(VARIATION_DATA, "variation" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(DBSNP_DATA, "dbSnp" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {

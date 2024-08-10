@@ -36,6 +36,7 @@ import java.util.concurrent.*;
 
 public class FutureSpliceScoreAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
     private List<Variant> variantList;
+
     private QueryOptions queryOptions;
     private int dataRelease;
     private String apiKey;
@@ -68,8 +69,7 @@ public class FutureSpliceScoreAnnotator implements Callable<List<CellBaseDataRes
         return cellBaseDataResultList;
     }
 
-    public void processResults(Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture,
-                               List<VariantAnnotation> variantAnnotationList)
+    public void processResults(Future<List<CellBaseDataResult<SpliceScore>>> spliceFuture, List<VariantAnnotation> variantAnnotationList)
             throws InterruptedException, ExecutionException {
         List<CellBaseDataResult<SpliceScore>> spliceCellBaseDataResults;
         try {

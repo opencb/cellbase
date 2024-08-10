@@ -148,3 +148,6 @@
 {"collection": "pharmacogenomics", "fields": {"variants.phenotypeType": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.confidence": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.evidences.pubmed": 1}, "options": {"background": true}}
+
+{"collection": "snp", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "snp", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}

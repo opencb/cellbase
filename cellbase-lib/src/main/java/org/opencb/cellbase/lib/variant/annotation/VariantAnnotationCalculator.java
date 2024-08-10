@@ -42,6 +42,7 @@ import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.futures.FutureSnpAnnotator;
 import org.opencb.cellbase.lib.variant.annotation.futures.FutureSpliceScoreAnnotator;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -60,11 +61,6 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 06/02/16.
- */
-/**
- * Created by imedina on 11/07/14.
- *
- * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class VariantAnnotationCalculator {
 
@@ -481,6 +477,13 @@ public class VariantAnnotationCalculator {
             variationFuture = CACHED_THREAD_POOL.submit(futureVariationAnnotator);
         }
 
+        FutureSnpAnnotator futureSnpAnnotator = null;
+        Future<List<CellBaseDataResult<Snp>>> snpFuture = null;
+        if (annotatorSet.contains("xrefs") && dataRelease.getCollections().containsKey(SNP_DATA)) {
+            futureSnpAnnotator = new FutureSnpAnnotator(normalizedVariantList, dataRelease.getRelease(), variantManager, logger);
+            snpFuture = CACHED_THREAD_POOL.submit(futureSnpAnnotator);
+        }
+
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
         if (SpeciesUtils.hasData(configuration, species, CONSERVATION_DATA) && annotatorSet.contains("conservation")) {
@@ -526,6 +529,7 @@ public class VariantAnnotationCalculator {
 
         FutureSpliceScoreAnnotator futureSpliceScoreAnnotator = null;
         Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture = null;
+
         if (SpeciesUtils.hasData(configuration, species, SPLICE_SCORE_DATA) && annotatorSet.contains("consequenceType")) {
             futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease(), apiKey, variantManager);
@@ -660,6 +664,9 @@ public class VariantAnnotationCalculator {
          */
         if (futureVariationAnnotator != null) {
             futureVariationAnnotator.processResults(variationFuture, variantAnnotationList, annotatorSet);
+        }
+        if (futureSnpAnnotator != null) {
+            futureSnpAnnotator.processResults(snpFuture, variantAnnotationList);
         }
         if (futureConservationAnnotator != null) {
             futureConservationAnnotator.processResults(conservationFuture, variantAnnotationList);
@@ -1189,7 +1196,7 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets", "pharmacogenomics",
-                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs"));
+                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs", "xrefs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }

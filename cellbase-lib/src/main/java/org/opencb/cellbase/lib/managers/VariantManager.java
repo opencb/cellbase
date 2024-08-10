@@ -16,10 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.SpliceScore;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
@@ -27,6 +24,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.key.ApiKeyLicensedDataUtils;
 import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
@@ -37,6 +35,7 @@ import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.SnpMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.SpliceScoreMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -59,6 +58,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
     private VariantMongoDBAdaptor variantDBAdaptor;
     private SpliceScoreMongoDBAdaptor spliceDBAdaptor;
+    private SnpMongoDBAdaptor snpDBAdaptor;
 
     private CellBaseManagerFactory cellbaseManagerFactory;
     private GenomeManager genomeManager;
@@ -77,6 +77,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
     private void init() throws CellBaseException {
         variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor();
         spliceDBAdaptor = dbAdaptorFactory.getSpliceScoreDBAdaptor();
+        snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor();
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
         genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
     }
@@ -352,5 +353,13 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
 
         return variantDBAdaptor.getFunctionalScoreRegion(new ArrayList<>(chunkIdSet), options, dataRelease);
+    }
+
+    public CellBaseDataResult<Snp> searchSnp(SnpQuery query) throws CellBaseException {
+        return snpDBAdaptor.query(query);
+    }
+
+    public CellBaseDataResult<Snp> startsWithSnp(String id, QueryOptions options, int dataRelease) throws CellBaseException {
+        return snpDBAdaptor.startsWith(id, options, dataRelease);
     }
 }

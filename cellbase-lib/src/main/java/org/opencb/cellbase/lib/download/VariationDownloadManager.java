@@ -17,12 +17,14 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,11 +52,27 @@ public class VariationDownloadManager extends AbstractDownloadManager {
         }
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
+        Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
 
-        // For homo sapiens, we do not need to download human variation data from Ensembl because it has already been included
-        // in CellBase
-        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
-            Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
+            // For homo sapiens, the dbSNP file is downloaded (since it does not need to download human variation data from Ensembl
+            // because it has already been included in CellBase
+            Path dbSnpFolder = variationFolder.resolve(DBSNP_DATA);
+            Files.createDirectories(dbSnpFolder);
+
+            logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(DBSNP_DATA), getDataName(DBSNP_DATA));
+
+            DownloadProperties.URLProperties dbSNP = configuration.getDownload().getDbSNP();
+            String url = dbSNP.getHost();
+            Path outPath = dbSnpFolder.resolve(Paths.get(url).getFileName());
+            downloadFiles.add(downloadFile(url, outPath));
+
+            saveDataSource(DBSNP_DATA, dbSNP.getVersion(), getTimeStamp(), Collections.singletonList(url),
+                    dbSnpFolder.resolve(getDataVersionFilename(DBSNP_DATA)));
+
+            logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(DBSNP_DATA), getDataName(DBSNP_DATA));
+        } else {
+            // Other species download the VCF files from Ensembl
             Files.createDirectories(variationFolder);
 
             logger.info(DOWNLOADING_MSG, getDataName(VARIATION_DATA));
@@ -76,6 +94,7 @@ public class VariationDownloadManager extends AbstractDownloadManager {
 
             logger.info(DOWNLOADING_DONE_MSG, getDataName(VARIATION_DATA));
         }
+
         return downloadFiles;
     }
 }
