@@ -20,26 +20,26 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DatabaseInfo {
     private String dbName;
     private String species;
     private String assembly;
-    private ReentrantReadWriteLock rwLock;
+    private ReentrantLock lock;
     private Map<Integer, Map<String, MongoDBCollection>> cacheData;
 
     public DatabaseInfo() {
-        this.rwLock = new ReentrantReadWriteLock();
+        this.lock = new ReentrantLock();
         this.cacheData = new HashMap<>();
     }
 
-    public DatabaseInfo(String dbName, String species, String assembly, ReentrantReadWriteLock rwLock, Map<Integer,
-            Map<String, MongoDBCollection>> cacheData) {
+    public DatabaseInfo(String dbName, String species, String assembly, ReentrantLock lock,
+                        Map<Integer, Map<String, MongoDBCollection>> cacheData) {
         this.dbName = dbName;
         this.species = species;
         this.assembly = assembly;
-        this.rwLock = rwLock;
+        this.lock = lock;
         this.cacheData = cacheData;
     }
 
@@ -49,7 +49,7 @@ public class DatabaseInfo {
         sb.append("dbName='").append(dbName).append('\'');
         sb.append(", species='").append(species).append('\'');
         sb.append(", assembly='").append(assembly).append('\'');
-        sb.append(", rwLock=").append(rwLock);
+        sb.append(", lock=").append(lock);
         sb.append(", cacheData=").append(cacheData);
         sb.append('}');
         return sb.toString();
@@ -82,12 +82,12 @@ public class DatabaseInfo {
         return this;
     }
 
-    public ReentrantReadWriteLock getRwLock() {
-        return rwLock;
+    public ReentrantLock getLock() {
+        return lock;
     }
 
-    public DatabaseInfo setRwLock(ReentrantReadWriteLock rwLock) {
-        this.rwLock = rwLock;
+    public DatabaseInfo setRwLock(ReentrantLock lock) {
+        this.lock = lock;
         return this;
     }
 
