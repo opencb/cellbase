@@ -57,7 +57,7 @@ public final class DatabaseNameUtils {
             throw new InvalidParameterException("Assembly is empty");
         }
 
-        return assembly.replace("\\.", "")
+        return assembly.replace(".", "")
                 .replace("-", "")
                 .replace("_", "").toLowerCase(Locale.ROOT);
     }

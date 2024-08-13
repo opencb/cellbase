@@ -55,7 +55,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
                 assertThrows(InvalidParameterException.class,
                         () -> DatabaseNameUtils.getDatabaseName("speciesName", null, cellBaseConfiguration.getVersion()),
                         "Expected getDatabaseName() to throw an exception, but it didn't");
-        assertTrue(thrown.getMessage().contains("Species and assembly are required"));
+        assertTrue(thrown.getMessage().contains("species and assembly are required"));
 
         // handle special characters
         databaseName = DatabaseNameUtils.getDatabaseName("speciesName", "my_funny.assembly--name", cellBaseConfiguration.getVersion());

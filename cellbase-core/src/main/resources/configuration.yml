@@ -335,7 +335,7 @@ species:
         - variation
         - variation_functional_score
         - missense_variation_functional_score
-        - clinical_variant
+        - clinical_variants
         - splice_score
         - ontology
         - pubmed
