@@ -101,11 +101,6 @@ public class GenericRestWSServer implements IWSServer {
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
-    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws CellBaseServerException {
-        this(version, "hsapiens", null, uriInfo, hsr);
-    }
-
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
                                @PathParam("assembly") String assembly, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)

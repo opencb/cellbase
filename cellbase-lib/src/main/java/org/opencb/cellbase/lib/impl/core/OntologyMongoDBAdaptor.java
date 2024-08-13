@@ -86,11 +86,6 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseDataResult<Long> count(OntologyQuery query) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());

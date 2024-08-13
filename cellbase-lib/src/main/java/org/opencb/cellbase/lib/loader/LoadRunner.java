@@ -195,7 +195,7 @@ public class LoadRunner {
                     batch = new ArrayList<>(batchSize);
                 }
                 if (inputFileRecords % batchSize == 0) {
-                    logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
+                    logger.debug("{} records read from {}", inputFileRecords, inputFile);
                 }
             }
             br.close();

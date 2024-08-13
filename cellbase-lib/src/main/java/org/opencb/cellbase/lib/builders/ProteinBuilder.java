@@ -29,8 +29,6 @@ import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
@@ -41,15 +39,16 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class ProteinBuilder extends CellBaseBuilder {
+public class ProteinBuilder extends AbstractBuilder {
 
     private Path proteinPath;
     private String species;
 
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final String PROTEIN_OUTPUT_FILENAME = PROTEIN_DATA + ".json.gz";
 
     public ProteinBuilder(Path proteinPath, String species, CellBaseSerializer serializer) {
         super(serializer);
@@ -60,32 +59,31 @@ public class ProteinBuilder extends CellBaseBuilder {
 
     @Override
     public void parse() throws CellBaseException, IOException {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(PROTEIN_DATA));
-
         // Sanity check
         checkDirectory(proteinPath, getDataName(PROTEIN_DATA));
 
         // Check UniProt file
-        DataSource dataSource = dataSourceReader.readValue(proteinPath.resolve(getDataVersionFilename(UNIPROT_DATA)).toFile());
-        List<File> uniProtFiles = checkFiles(dataSource, proteinPath, getDataCategory(UNIPROT_DATA) + "/" + getDataName(UNIPROT_DATA));
+        DataSource dataSource = dataSourceReader.readValue(proteinPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(UNIPROT_DATA))
+                .toFile());
+        List<File> uniProtFiles = checkFiles(dataSource, proteinPath.resolve(UNIPROT_DATA), getDataCategory(UNIPROT_DATA) + "/"
+                + getDataName(UNIPROT_DATA));
         if (uniProtFiles.size() != 1) {
-            throw new CellBaseException("Only one " + getDataName(UNIPROT_DATA) + " file is expected, but currently there are "
-                    + uniProtFiles.size() + " files");
+            throw new CellBaseException(getMismatchNumFilesErrorMessage(getDataName(UNIPROT_DATA), uniProtFiles.size()));
         }
 
         // Check InterPro file
-        dataSource = dataSourceReader.readValue(proteinPath.resolve(getDataVersionFilename(INTERPRO_DATA)).toFile());
-        List<File> interProFiles = checkFiles(dataSource, proteinPath, getDataCategory(INTERPRO_DATA) + "/" + getDataName(INTERPRO_DATA));
+        dataSource = dataSourceReader.readValue(proteinPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(INTERPRO_DATA)).toFile());
+        List<File> interProFiles = checkFiles(dataSource, proteinPath.resolve(INTERPRO_DATA), getDataCategory(INTERPRO_DATA) + "/"
+                + getDataName(INTERPRO_DATA));
         if (interProFiles.size() != 1) {
-            throw new CellBaseException("Only one " + getDataName(INTERPRO_DATA) + " file is expected, but currently there are "
-                    + interProFiles.size() + " files");
+            throw new CellBaseException(getMismatchNumFilesErrorMessage(getDataName(INTERPRO_DATA), interProFiles.size()));
         }
 
         // Prepare UniProt data by splitting data in chunks
         Path uniProtChunksPath = serializer.getOutdir().resolve(UNIPROT_CHUNKS_SUBDIRECTORY);
         logger.info("Split {} file {} into chunks at {}", getDataName(UNIPROT_DATA), uniProtFiles.get(0).getName(), uniProtChunksPath);
         Files.createDirectories(uniProtChunksPath);
-        splitUniprot(proteinPath.resolve(uniProtFiles.get(0).getName()), uniProtChunksPath);
+        splitUniprot(proteinPath.resolve(UNIPROT_DATA).resolve(uniProtFiles.get(0).getName()), uniProtChunksPath);
 
         // Prepare RocksDB
         RocksDB rocksDb = getDBConnection(uniProtChunksPath);
@@ -99,6 +97,7 @@ public class ProteinBuilder extends CellBaseBuilder {
         try {
             File[] files = uniProtChunksPath.toFile().listFiles((dir, name) -> name.endsWith(".xml") || name.endsWith(".xml.gz"));
 
+
             for (File file : files) {
                 logger.info(PARSING_LOG_MESSAGE, file);
                 Uniprot uniprot = (Uniprot) UniProtParser.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
@@ -108,25 +107,35 @@ public class ProteinBuilder extends CellBaseBuilder {
                     for (OrganismNameType organismNameType : entry.getOrganism().getName()) {
                         entryOrganism = organismNameType.getValue();
                         if (entryOrganism.equals(species)) {
+                            proteinMap.put(entry.getAccession().get(0), entry);
+
+                            // Update RocksDB
                             rocksDb.put(entry.getAccession().get(0).getBytes(), jsonObjectWriter.writeValueAsBytes(entry));
                         }
                     }
                 }
-                logger.info(PARSING_DONE_LOG_MESSAGE, file);
+                logger.info(PARSING_DONE_LOG_MESSAGE);
             }
-            logger.debug("Number of proteins stored in map: '{}'", proteinMap.size());
+            logger.info("Number of proteins stored in map: '{}'", proteinMap.size());
+            if (proteinMap.size() > 10) {
+                logger.info("First 10 protein IDs in map: {}", proteinMap.keySet().stream().collect(Collectors.toList()).subList(0, 10));
+            }
 
             logger.info(PARSING_LOG_MESSAGE, interProFiles.get(0));
+            String interproName = getDataName(INTERPRO_DATA);
+            int numLine = 0;
+            int numInterProLinesProcessed = 0;
+            int numUniqueProteinsProcessed = 0;
             try (BufferedReader interproBuffereReader = FileUtils.newBufferedReader(interProFiles.get(0).toPath())) {
-                Set<String> hashSet = new HashSet<>(proteinMap.keySet());
-                Set<String> visited = new HashSet<>(30000);
 
-                int numInterProLinesProcessed = 0;
-                int numUniqueProteinsProcessed = 0;
+                Set<String> hashSet = proteinMap.keySet();
+                Set<String> visited = new HashSet<>(proteinMap.size());
+
                 String[] fields;
                 String line;
                 boolean iprAdded;
                 while ((line = interproBuffereReader.readLine()) != null) {
+                    numLine++;
                     fields = line.split("\t");
 
                     if (hashSet.contains(fields[0])) {
@@ -141,8 +150,6 @@ public class ProteinBuilder extends CellBaseBuilder {
                                     && featureType.getLocation().getEnd().getPosition() != null
                                     && featureType.getLocation().getBegin().getPosition().equals(start)
                                     && featureType.getLocation().getEnd().getPosition().equals(end)) {
-                                featureType.setId(fields[1]);
-                                featureType.setRef(fields[3]);
                                 iprAdded = true;
                                 break;
                             }
@@ -166,6 +173,14 @@ public class ProteinBuilder extends CellBaseBuilder {
                             bytes = rocksDb.get(fields[0].getBytes());
                             entry = mapper.readValue(bytes, Entry.class);
                             entry.getFeature().add(featureType);
+
+                            if (fields[0].equalsIgnoreCase(entry.getAccession().get(0))) {
+                                // Update RocksDB
+                                rocksDb.put(fields[0].getBytes(), jsonObjectWriter.writeValueAsBytes(entry));
+                            } else {
+                                logger.info("Something wrong happen: interpro fields[0] = {} vs entry.getAccession().get(0) = {}",
+                                        fields[0], entry.getAccession().get(0));
+                            }
                         }
 
                         if (!visited.contains(fields[0])) {
@@ -175,13 +190,16 @@ public class ProteinBuilder extends CellBaseBuilder {
                     }
 
                     if (++numInterProLinesProcessed % 10000000 == 0) {
-                        logger.debug("{} {} lines processed. {} unique proteins processed", numInterProLinesProcessed,
-                                getDataName(INTERPRO_DATA), numUniqueProteinsProcessed);
+                        printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
                     }
                 }
-                logger.info(PARSING_DONE_LOG_MESSAGE, interProFiles.get(0));
+                printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
+
+                logger.info(PARSING_DONE_LOG_MESSAGE);
             } catch (IOException e) {
-                throw new CellBaseException("Error parsing " + getDataName(INTERPRO_DATA) + " file: " + interProFiles.get(0), e);
+                logger.error("Error parsing {} file: {}. Num. line = {}. Error stack trace = {}", interproName, interProFiles.get(0),
+                        numLine, Arrays.toString(e.getStackTrace()));
+                printInfoLogs(numInterProLinesProcessed, numUniqueProteinsProcessed, interproName);
             }
 
             // Serialize and save results
@@ -258,4 +276,14 @@ public class ProteinBuilder extends CellBaseBuilder {
             }
         }
     }
+
+    private String getMismatchNumFilesErrorMessage(String dataName, int numFiles) {
+        return "Only one " + dataName + " file is expected, but currently there are " + numFiles + " files";
+    }
+
+    private void printInfoLogs(int numInterProLinesProcessed, int numUniqueProteinsProcessed, String dataName) {
+        logger.info("{}: {} lines processed", dataName, numInterProLinesProcessed);
+        logger.info("{}: {} unique proteins processed", dataName, numUniqueProteinsProcessed);
+    }
+
 }

@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,14 +37,13 @@ public class CaddDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(CATEGORY_DOWNLOADING_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
-
-        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_FUNCTIONAL_SCORE_DATA)
-                || !speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("{}/{} not supported for species {}", getDataCategory(CADD_DATA), getDataName(CADD_DATA),
-                    speciesConfiguration.getScientificName());
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_FUNCTIONAL_SCORE_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(VARIATION_FUNCTIONAL_SCORE_DATA), speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
+
+        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
 
         // Create the CADD download path
         Path caddDownloadPath = downloadFolder.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
@@ -53,7 +53,7 @@ public class CaddDownloadManager extends AbstractDownloadManager {
         DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getCadd(), CADD_FILE_ID, CADD_DATA,
                 caddDownloadPath);
 
-        logger.info(CATEGORY_DOWNLOADING_DONE_LOG_MESSAGE, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
+        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(CADD_DATA), getDataName(CADD_DATA));
 
         return Collections.singletonList(downloadFile);
     }

@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,7 +14,7 @@ class EnsemblGeneBuilderTest {
         Path buildPath = Paths.get("/home/jtarraga/data/cellbase/cb6/v6.1.0-dr1/homo_sapiens_grch38/generated_json/gene");
         boolean flexibleGTFParsing = false;
         CellBaseConfiguration configuration = CellBaseConfiguration.load(Paths.get("/home/jtarraga/appl/cellbase/build/conf/configuration.yml"));
-        SpeciesConfiguration speciesConfiguration = configuration.getSpeciesConfig("hsapiens");
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, "hsapiens");
 
         GeneBuilder geneBuilder = new GeneBuilder(downloadPath, buildPath, speciesConfiguration, flexibleGTFParsing, configuration);
         geneBuilder.check();

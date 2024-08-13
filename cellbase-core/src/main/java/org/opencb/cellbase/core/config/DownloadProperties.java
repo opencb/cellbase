@@ -46,13 +46,12 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties cosmic;
     private URLProperties hgmd;
+    private URLProperties dbSNP;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
     private URLProperties genomicSuperDups;
     private URLProperties hpo;
-    private URLProperties disgenet;
-    private URLProperties disgenetReadme;
     private URLProperties dgidb;
     private URLProperties cancerGeneCensus;
     private URLProperties gwasCatalog;
@@ -243,6 +242,15 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getDbSNP() {
+        return dbSNP;
+    }
+
+    public DownloadProperties setDbSNP(URLProperties dbSNP) {
+        this.dbSNP = dbSNP;
+        return this;
+    }
+
     public URLProperties getDgv() {
         return dgv;
     }
@@ -281,24 +289,6 @@ public class DownloadProperties {
 
     public DownloadProperties setHpo(URLProperties hpo) {
         this.hpo = hpo;
-        return this;
-    }
-
-    public URLProperties getDisgenet() {
-        return disgenet;
-    }
-
-    public DownloadProperties setDisgenet(URLProperties disgenet) {
-        this.disgenet = disgenet;
-        return this;
-    }
-
-    public URLProperties getDisgenetReadme() {
-        return disgenetReadme;
-    }
-
-    public DownloadProperties setDisgenetReadme(URLProperties disgenetReadme) {
-        this.disgenetReadme = disgenetReadme;
         return this;
     }
 

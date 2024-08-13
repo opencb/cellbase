@@ -22,7 +22,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.cellbase.lib.builders.AbstractBuilder;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -39,7 +39,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 /**
  * Created by fjlopez on 26/09/16.
  */
-public class ClinicalVariantBuilder extends CellBaseBuilder {
+public class ClinicalVariantBuilder extends AbstractBuilder {
 
     private final Path clinicalVariantPath;
     private final String assembly;
@@ -89,10 +89,10 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         if (!Files.exists(genomeSequenceFilePath)) {
             throw new CellBaseException("Genome file path does not exist " + genomeSequenceFilePath);
         }
-        logger.info(OK_LOG_MESSAGE);
+        logger.info(OK_MSG);
         logger.info("Checking index for genome FASTA file ...");
         getIndexFastaReferenceGenome(genomeSequenceFilePath);
-        logger.info(OK_LOG_MESSAGE);
+        logger.info(OK_MSG);
 
         // Check ClinVar files
         clinvarFullReleaseFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_FULL_RELEASE_FILE_ID,
@@ -137,7 +137,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             Files.createDirectories(chunksPath);
             logger.info("Splitting CliVar file {} in {} ...", clinvarFullReleaseFilePath, chunksPath);
             splitClinvar(clinvarFullReleaseFilePath, chunksPath);
-            logger.info(OK_LOG_MESSAGE);
+            logger.info(OK_MSG);
         }
 
         RocksDB rdb = null;

@@ -45,7 +45,7 @@ import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class PolygenicScoreBuilder extends CellBaseBuilder {
+public class PolygenicScoreBuilder extends AbstractBuilder {
 
     private Path downloadPath;
     private Path integrationPath;
@@ -113,6 +113,9 @@ public class PolygenicScoreBuilder extends CellBaseBuilder {
     private static final String DOSAGE_0_WEIGHT_KEY = "Effect weight with 0 copy of the effect allele";
     private static final String DOSAGE_1_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
     private static final String DOSAGE_2_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
+
+    public static final String PGS_COMMON_OUTPUT_FILENAME = PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION;
+    public static final String PGS_VARIANT_OUTPUT_FILENAME = PGS_VARIANT_COLLECTION + JSON_GZ_EXTENSION;
 
     private static final Set<String> VALID_CHROMOSOMES = new HashSet<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
             "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", "M"));

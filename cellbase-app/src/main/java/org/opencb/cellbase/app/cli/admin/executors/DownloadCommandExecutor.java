@@ -16,33 +16,26 @@
 
 package org.opencb.cellbase.app.cli.admin.executors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.download.AbstractDownloadManager;
-import org.opencb.cellbase.lib.download.DownloadFile;
-import org.opencb.cellbase.lib.download.Downloader;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.cellbase.lib.download.*;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-/**
- * Created by imedina on 03/02/15.
- */
+
 public class DownloadCommandExecutor extends CommandExecutor {
 
     private AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions;
     private Path outputDirectory;
-
-    public static final List<String> VALID_SOURCES_TO_DOWNLOAD = Arrays.asList(GENOME_DATA, GENE_DATA, VARIATION_FUNCTIONAL_SCORE_DATA,
-            MISSENSE_VARIATION_SCORE_DATA, REGULATION_DATA, PROTEIN_DATA, CONSERVATION_DATA, CLINICAL_VARIANT_DATA, REPEATS_DATA,
-            ONTOLOGY_DATA, SPLICE_SCORE_DATA, PUBMED_DATA, PHARMACOGENOMICS_DATA, PGS_DATA);
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.conf);
@@ -58,81 +51,116 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     public void execute() throws CellBaseException {
         try {
+            // Get the species and the assembly
             String species = downloadCommandOptions.speciesAndAssemblyOptions.species;
             String assembly = downloadCommandOptions.speciesAndAssemblyOptions.assembly;
+
+            // Get the valid list of data sources
+            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
+            if (speciesConfiguration == null) {
+                throw new CellBaseException("Invalid species: '" + downloadCommandOptions.speciesAndAssemblyOptions.species + "'");
+            }
+            List<String> dataList = getDataList(species, speciesConfiguration);
+            logger.info("Downloading the following data sources: {}", CollectionUtils.isEmpty(dataList)
+                    ? Collections.emptyList()
+                    : StringUtils.join(dataList, ","));
+
             List<DownloadFile> downloadFiles = new ArrayList<>();
-            List<String> dataList = checkDataSources();
-            Downloader downloader = new Downloader(species, assembly, outputDirectory, configuration);
+            AbstractDownloadManager downloader = null;
             for (String data : dataList) {
                 switch (data) {
                     case GENOME_DATA:
-                        downloadFiles.addAll(downloader.downloadGenome());
-                        break;
-                    case GENE_DATA:
-                        downloadFiles.addAll(downloader.downloadGene());
-                        break;
-                    case VARIATION_FUNCTIONAL_SCORE_DATA:
-                        downloadFiles.addAll(downloader.downloadCaddScores());
-                        break;
-                    case MISSENSE_VARIATION_SCORE_DATA:
-                        downloadFiles.addAll(downloader.downloadPredictionScores());
-                        break;
-                    case REGULATION_DATA:
-                        downloadFiles.addAll(downloader.downloadRegulation());
-                        break;
-                    case PROTEIN_DATA:
-                        downloadFiles.addAll(downloader.downloadProtein());
+                        downloader = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case CONSERVATION_DATA:
-                        downloadFiles.addAll(downloader.downloadConservation());
-                        break;
-                    case CLINICAL_VARIANT_DATA:
-                        downloadFiles.addAll(downloader.downloadClinicalVariants());
+                        downloader = new ConservationDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case REPEATS_DATA:
-                        downloadFiles.addAll(downloader.downloadRepeats());
+                        downloader = new RepeatsDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
-                    case ONTOLOGY_DATA:
-                        downloadFiles.addAll(downloader.downloadOntologies());
+                    case GENE_DATA:
+                        downloader = new GeneDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case PROTEIN_DATA:
+                        downloader = new ProteinDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case REGULATION_DATA:
+                        downloader = new RegulationDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case VARIATION_DATA:
+                        downloader = new VariationDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case VARIATION_FUNCTIONAL_SCORE_DATA:
+                        downloader = new CaddDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case MISSENSE_VARIATION_SCORE_DATA:
+                        downloader = new MissenseScoresDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case CLINICAL_VARIANT_DATA:
+                        downloader = new ClinicalDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case SPLICE_SCORE_DATA:
-                        downloadFiles.addAll(downloader.downloadSpliceScores());
+                        downloader = new SpliceScoreDownloadManager(species, assembly, outputDirectory, configuration);
+                        break;
+                    case ONTOLOGY_DATA:
+                        downloader = new OntologyDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case PUBMED_DATA:
-                        downloadFiles.addAll(downloader.downloadPubMed());
+                        downloader = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case PHARMACOGENOMICS_DATA:
-                        downloadFiles.addAll(downloader.downloadPharmKGB());
+                        downloader = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case PGS_DATA:
-                        downloadFiles.addAll(downloader.downloadPolygenicScores());
+                        downloader = new PgsDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     default:
-                        throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
-                                + StringUtils.join(VALID_SOURCES_TO_DOWNLOAD, ",") + "; or use 'all' to download everything");
+                        throw new IllegalArgumentException("Data parameter '" + data + "' is not allowed for '" + species + "'. "
+                                + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ",")
+                                + ". You can use data parameter 'all' to download everything");
                 }
+
+                // Call to download method and add the files to the list
+                downloadFiles.addAll(downloader.download());
             }
-            AbstractDownloadManager.writeDownloadLogFile(outputDirectory, downloadFiles);
+            if (downloader != null) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("species", species);
+                params.put("assembly", assembly);
+                params.put("data", dataList);
+                params.put("outDir", outputDirectory);
+                downloader.writeDownloadLogFile(params, downloadFiles);
+            } else {
+                logger.warn("Impossible to write log summary: downloader is null");
+            }
         } catch (InterruptedException e) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
             throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new CellBaseException("Error executing command line 'download': " + e.getMessage(), e);
         }
     }
 
-    private List<String> checkDataSources() {
-        if (StringUtils.isEmpty(downloadCommandOptions.data)) {
-            throw new IllegalArgumentException("Missing data parameter. Valid values are: "
-                    + StringUtils.join(VALID_SOURCES_TO_DOWNLOAD, ",") + "; or use 'all' to download everything");
-        }
-        List<String> dataList = Arrays.asList(downloadCommandOptions.data.split(","));
-        for (String data : dataList) {
-            if (!VALID_SOURCES_TO_DOWNLOAD.contains(data)) {
-                    throw new IllegalArgumentException("Value '" + data + "' is not allowed for the data parameter. Valid values are: "
-                            + StringUtils.join(VALID_SOURCES_TO_DOWNLOAD, ",") + "; or use 'all' to download everything");
+    private List<String> getDataList(String species, SpeciesConfiguration speciesConfig) throws CellBaseException {
+        // No need to check if 'data' exists since it is declared as required in JCommander
+        List<String> dataList;
+        if ("all".equalsIgnoreCase(downloadCommandOptions.data)) {
+            // Download all data sources for the species in the configuration.yml file
+            dataList = speciesConfig.getData();
+        } else {
+            // Check if the data sources requested are valid for the species
+            dataList = Arrays.asList(downloadCommandOptions.data.split(","));
+            Set<String> invalidData = new HashSet<>();
+            for (String data : dataList) {
+                if (!speciesConfig.getData().contains(data)) {
+                    invalidData.add(data);
+                }
+            }
+            if (!CollectionUtils.isEmpty(invalidData)) {
+                throw new CellBaseException("Data '" + StringUtils.join(invalidData, ",") + "' not supported by species '" + species + "'."
+                        + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ",") + ". Our use data parameter 'all' to"
+                        + " download everything");
             }
         }
         return dataList;

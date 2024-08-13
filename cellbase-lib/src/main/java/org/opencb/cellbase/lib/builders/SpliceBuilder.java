@@ -40,7 +40,7 @@ import java.util.HashMap;
 import static org.opencb.cellbase.lib.EtlCommons.MMSPLICE_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.SPLICEAI_DATA;
 
-public class SpliceBuilder extends CellBaseBuilder {
+public class SpliceBuilder extends AbstractBuilder {
 
     private Path spliceDir;
     private CellBaseFileSerializer fileSerializer;

@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
@@ -40,28 +41,28 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        List<DownloadFile> downloadFiles = new ArrayList<>();
-        downloadFiles.addAll(downloadClinical());
-        return downloadFiles;
+        return downloadClinical();
     }
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CLINICAL_VARIANT_DATA));
-        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("{} not supported for the species {}", getDataName(CLINICAL_VARIANT_DATA),
-                    speciesConfiguration.getScientificName());
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), CLINICAL_VARIANT_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(CLINICAL_VARIANT_DATA), speciesConfiguration.getScientificName());
             return Collections.emptyList();
         }
+
+        DownloadFile downloadFile;
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+
+        logger.info(DOWNLOADING_MSG, getDataName(CLINICAL_VARIANT_DATA));
 
         // Create clinical directory
         Path clinicalPath = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANT_DATA).toAbsolutePath();
         Files.createDirectories(clinicalPath);
 
-        DownloadFile downloadFile;
-        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // ClinVar
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(CLINVAR_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(CLINVAR_DATA));
         DownloadProperties.URLProperties props = configuration.getDownload().getClinvar();
         List<String> urls = new ArrayList<>();
         for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
@@ -73,8 +74,9 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             urls.add(downloadFile.getUrl());
         }
         // Save data source
-        saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls, clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA)));
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(CLINVAR_DATA));
+        saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls,
+                clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA)));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(CLINVAR_DATA));
 
         // COSMIC
         logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
@@ -91,10 +93,10 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                 clinicalPath.resolve(getDataVersionFilename(HGMD_DATA)));
 
         // GWAS catalog
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(GWAS_DATA));
+        logger.info(DOWNLOADING_MSG, getDataName(GWAS_DATA));
         downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, clinicalPath);
         downloadFiles.add(downloadFile);
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(GWAS_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(GWAS_DATA));
 
         return downloadFiles;
     }

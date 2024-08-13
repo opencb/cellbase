@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -40,8 +42,14 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PGS_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PGS_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
         String pgslabel = getDataCategory(PGS_CATALOG_DATA) + "/" + getDataName(PGS_CATALOG_DATA);
-        logger.info(DOWNLOADING_LOG_MESSAGE, pgslabel);
+        logger.info(DOWNLOADING_MSG, getDataName(PGS_DATA));
 
         DownloadProperties.URLProperties pgsProps = configuration.getDownload().getPgsCatalog();
 
@@ -59,7 +67,7 @@ public class PgsDownloadManager extends AbstractDownloadManager {
         String url;
         Path outPath;
         List<DownloadFile> list = new ArrayList<>();
-        list.add(downloadFile(urlAllMeta, pgsPath.resolve(filename).toString()));
+        list.add(downloadFile(urlAllMeta, pgsPath.resolve(filename)));
 
         String baseUrl = urlAllMeta.replace(filename, "").replace("metadata", "scores");
         try (BufferedReader br = FileUtils.newBufferedReader(pgsPath.resolve(filename))) {
@@ -71,14 +79,14 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
                 url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
                 outPath = pgsPath.resolve(new File(url).getName());
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-                list.add(downloadFile(url, outPath.toString()));
+                logger.info(DOWNLOADING_FROM_TO_MSG, url, outPath);
+                list.add(downloadFile(url, outPath));
                 urls.add(url);
 
                 url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
                 outPath = pgsPath.resolve(new File(url).getName());
-                logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-                list.add(downloadFile(url, outPath.toString()));
+                logger.info(DOWNLOADING_FROM_TO_MSG, url, outPath);
+                list.add(downloadFile(url, outPath));
                 urls.add(url);
             }
         }
@@ -87,7 +95,7 @@ public class PgsDownloadManager extends AbstractDownloadManager {
         saveDataSource(PGS_CATALOG_DATA, pgsProps.getVersion(), getTimeStamp(), urls,
                 pgsPath.resolve(getDataVersionFilename(PGS_CATALOG_DATA)));
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, pgslabel);
+        logger.info(DOWNLOADING_DONE_MSG, pgslabel);
 
         return list;
     }

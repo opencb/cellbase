@@ -39,10 +39,8 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-/**
- * Created by imedina on 30/08/14.
- */
-public abstract class CellBaseBuilder {
+
+public abstract class AbstractBuilder {
 
     protected CellBaseSerializer serializer;
     protected ObjectReader dataSourceReader = new ObjectMapper().readerFor(DataSource.class);
@@ -54,7 +52,7 @@ public abstract class CellBaseBuilder {
     public static final String CHECKING_BEFORE_BUILDING_LOG_MESSAGE = "Checking files before building {} ...";
     public static final String CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE = "Checking {} done!";
 
-    public static final String BUILDING_LOG_MESSAGE = "Building {} ...";
+    public static final String BUILDING_LOG_MESSAGE = "Building {} data ...";
     public static final String BUILDING_DONE_LOG_MESSAGE = "Building done.";
 
     public static final String CATEGORY_BUILDING_LOG_MESSAGE = "Building {}/{} ...";
@@ -63,7 +61,10 @@ public abstract class CellBaseBuilder {
     public static final String PARSING_LOG_MESSAGE = "Parsing {} ...";
     public static final String PARSING_DONE_LOG_MESSAGE = "Parsing done.";
 
-    public CellBaseBuilder(CellBaseSerializer serializer) {
+    public static final String SKIPPING_INDEX_DATA_LOG_MESSAGE = "Skipping index for data '{}': it is not supported for species '{}'.";
+    public static final String DATA_ALREADY_BUILT = "'{}' data has already been built.";
+
+    protected AbstractBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
         this.serializer = serializer;
@@ -77,9 +78,18 @@ public abstract class CellBaseBuilder {
             try {
                 serializer.close();
             } catch (Exception e) {
-                logger.error("Error closing serializer:\n" + StringUtils.join(e.getStackTrace(), "\n"));
+                logger.error("Error closing serializer. Stack trace: {}", e.getStackTrace());
             }
         }
+    }
+
+    protected static String getConfigurationFileIdPrefix(String scientificSpecies) {
+        String prefix = "";
+        if (StringUtils.isNotEmpty(scientificSpecies) && !scientificSpecies.equals("Homo sapiens") && scientificSpecies.contains(" ")) {
+            char c = scientificSpecies.charAt(0);
+            prefix = (c + scientificSpecies.split(" ")[1] + "_").toUpperCase();
+        }
+        return prefix;
     }
 
     protected File checkFile(DownloadProperties.URLProperties props, String fileId, Path targetPath, String name) throws CellBaseException {
@@ -87,6 +97,8 @@ public abstract class CellBaseBuilder {
         String filename = Paths.get(props.getFiles().get(fileId)).getFileName().toString();
         if (filename.contains(MANUAL_PREFIX)) {
             filename = filename.replace(MANUAL_PREFIX, "");
+        } else if (filename.contains(SCRIPT_PREFIX)) {
+            filename = filename.split("@")[1];
         }
         Path filePath = targetPath.resolve(filename);
         if (!Files.exists(filePath)) {
@@ -187,5 +199,14 @@ public abstract class CellBaseBuilder {
             }
         }
         return indexFastaPath;
+    }
+
+    public static boolean existFiles(List<Path> paths) {
+        for (Path path : paths) {
+            if (!Files.exists(path)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

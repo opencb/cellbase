@@ -32,7 +32,7 @@ import java.util.zip.ZipInputStream;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class RevelScoreBuilder extends CellBaseBuilder {
+public class RevelScoreBuilder extends AbstractBuilder {
 
     private Path revelDownloadPath = null;
 

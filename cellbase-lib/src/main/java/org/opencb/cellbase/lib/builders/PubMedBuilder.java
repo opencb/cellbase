@@ -32,7 +32,7 @@ import java.util.List;
 import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.getDataName;
 
-public class PubMedBuilder extends CellBaseBuilder {
+public class PubMedBuilder extends AbstractBuilder {
 
     private Path pubMedDownloadPath;
     private CellBaseConfiguration configuration;
