@@ -30,6 +30,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.api.key.ApiKeyManager;
+import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
@@ -101,6 +102,22 @@ public class GenericRestWSServer implements IWSServer {
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
+    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws CellBaseServerException {
+
+        this.version = version;
+        this.uriInfo = uriInfo;
+        this.httpServletRequest = hsr;
+
+        try {
+            if (!INITIALIZED.get()) {
+                init();
+            }
+        } catch (Exception e) {
+            throw new CellBaseServerException(e);
+        }
+    }
+
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
                                @PathParam("assembly") String assembly, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
@@ -124,7 +141,7 @@ public class GenericRestWSServer implements IWSServer {
 
             initQuery();
         } catch (Exception e) {
-            throw new CellBaseServerException(e.getMessage());
+            throw new CellBaseServerException(e);
         }
     }
 
@@ -178,7 +195,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void initQuery() throws CellBaseException {
+    protected void initQuery() throws CellBaseException {
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
@@ -195,17 +212,17 @@ public class GenericRestWSServer implements IWSServer {
             uriParams.put(API_KEY_PARAM, apiKey);
         }
 
-        checkLimit();
-
-        // Check version, species is validated later
-        checkVersion();
-
         // Set default data release if necessary
         if (defaultDataRelease == null) {
             DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
             // getDefault launches an exception if no data release is found for that CellBase version
             defaultDataRelease = releaseManager.getDefault(version);
         }
+
+        checkLimit();
+
+        // Check version, species is validated later
+        checkVersion();
 
         // Check API key (expiration date, quota,...)
         checkApiKey();
@@ -247,7 +264,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected String getApiKey() {
-        return uriParams.get(API_KEY_PARAM);
+        return (uriParams != null) ? uriParams.get(API_KEY_PARAM) : null;
     }
 
     /**
@@ -266,14 +283,16 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void checkVersion() throws CellBaseException {
+    protected void checkVersion() throws CellBaseException {
         if (version == null) {
-            throw new CellBaseException("Version not valid: '" + version + "'");
+            throw new CellBaseException("Missing API version");
         }
 
-        if (!uriInfo.getPath().contains("health") && !version.startsWith(cellBaseConfiguration.getVersion())) {
-            logger.error("URL version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-            throw new CellBaseException("URL version not valid: '" + version + "'");
+        if (!version.startsWith(cellBaseConfiguration.getVersion())) {
+            String msg = "API version " + version + " incompatible with CellBase " + cellBaseConfiguration.getVersion()
+                    + " (build " + GitRepositoryState.get().getBuildVersion() + ")";
+            logger.error(msg);
+            throw new CellBaseException(msg);
         }
     }
 
@@ -294,7 +313,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
+    protected Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
         Map<String, String> convertedMap = new HashMap<String, String>();
         if (multivaluedMap == null) {
             return convertedMap;
@@ -361,10 +380,14 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setApiVersion(version);
         try {
             queryResponse.setDataRelease(getDataRelease());
-        } catch (CellBaseException ex) {
-            logger.warn("Impossible to set the data release used in the query response", e);
+        } catch (Exception ex) {
+            logger.warn("Impossible to set the data release in the query response", ex);
         }
-        queryResponse.setApiKey(getApiKey());
+        try {
+            queryResponse.setApiKey(getApiKey());
+        } catch (Exception ex) {
+            logger.warn("Impossible to set the API key in the query response", ex);
+        }
 //        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
@@ -374,7 +397,12 @@ public class GenericRestWSServer implements IWSServer {
         events.add(new Event(Event.Type.ERROR, e.toString()));
         queryResponse.setEvents(events);
         queryResponse.setResponses(Arrays.asList(result));
-        logQuery(ERROR);
+
+        try {
+            logQuery(ERROR);
+        } catch (Exception ex) {
+            logger.warn("Impossible to log ERROR when creating error response", ex);
+        }
 
         return Response
                 .fromResponse(createJsonResponse(queryResponse))

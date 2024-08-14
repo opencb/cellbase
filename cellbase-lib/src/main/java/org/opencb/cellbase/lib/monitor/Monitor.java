@@ -18,6 +18,8 @@ package org.opencb.cellbase.lib.monitor;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Databases;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.commons.monitor.DatastoreStatus;
 import org.opencb.commons.monitor.HealthCheckDependencies;
@@ -53,7 +55,10 @@ public class Monitor {
     public HealthCheckResponse run(String requestUri, CellBaseConfiguration configuration, String species,
                                    String assembly, String token) {
         HealthCheckResponse healthCheckResponse = new HealthCheckResponse();
-        healthCheckResponse.setServiceName(CELLBASE);
+        SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
+        String serviceName = CELLBASE + configuration.getVersion() + " (" + speciesConfiguration.getScientificName() + ", "
+                + assembly + ")";
+        healthCheckResponse.setServiceName(serviceName);
         healthCheckResponse.setDatetime();
         healthCheckResponse.setComponents(Collections.singletonList(COMPONENT));
         HealthCheckResponse.Status mongoStatus = checkMongoStatus(species, assembly);

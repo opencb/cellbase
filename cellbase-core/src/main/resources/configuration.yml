@@ -428,17 +428,6 @@ species:
         - genome
         - genome_info
         - gene
-    - id: sscrofa
-      scientificName: Sus scrofa
-      assemblies:
-        - ensemblVersion: '82_102'
-          name: Sscrofa10.2
-      data:
-        - genome
-        - genome_info
-        - gene
-        - variation
-        - protein
     - id: cfamiliaris
       scientificName: Canis familiaris
       assemblies:
