@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli.admin;
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
 import org.opencb.cellbase.core.api.key.ApiKeyQuota;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +75,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.addCommand("validate", validationCommandOptions);
     }
 
+    @Override
     public void parse(String[] args) throws ParameterException {
         jCommander.parse(args);
     }
@@ -87,9 +89,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
-                + "variation, variation_functional_score, regulation, protein, conservation, "
-                + "clinical_variants, repeats, svs, pubmed and 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download:"
+                + EtlCommons.GENOME_DATA + ", " + EtlCommons.GENE_DATA + ", " + EtlCommons.VARIATION_DATA + ", "
+                + EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA + ", " + EtlCommons.MISSENSE_VARIATION_SCORE_DATA + ", "
+                + EtlCommons.REGULATION_DATA + ", " + EtlCommons.PROTEIN_DATA + ", " + EtlCommons.CONSERVATION_DATA + ", "
+                + EtlCommons.CLINICAL_VARIANTS_DATA + ", " + EtlCommons.REPEATS_DATA + ", " + EtlCommons.OBO_DATA + ", "
+                + EtlCommons.PUBMED_DATA + ", " + EtlCommons.PHARMACOGENOMICS_DATA + "; and 'all' to download everything",
+                required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)

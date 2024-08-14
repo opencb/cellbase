@@ -17,11 +17,11 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.OntologyTerm;
-import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.OntologyQuery;
+import org.opencb.biodata.models.core.Snp;
+import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -37,48 +37,51 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 
-    private static final GenericDocumentComplexConverter<OntologyTerm> CONVERTER;
+public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<SnpQuery, Snp> {
+
+    private static final GenericDocumentComplexConverter<Snp> CONVERTER;
 
     static {
-        CONVERTER = new GenericDocumentComplexConverter<>(OntologyTerm.class);
+        CONVERTER = new GenericDocumentComplexConverter<>(Snp.class);
     }
 
-    public OntologyMongoDBAdaptor(MongoDataStore mongoDataStore) {
+    public SnpMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
 
         this.init();
     }
 
     private void init() {
-        logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
+        logger.debug("SnpMongoDBAdaptor: in 'constructor'");
 
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("ontology");
+        mongoDBCollectionByRelease = buildCollectionByReleaseMap("snp");
     }
 
     @Override
-    public CellBaseIterator<OntologyTerm> iterator(OntologyQuery query) throws CellBaseException {
+    public CellBaseIterator<Snp> iterator(SnpQuery query) throws CellBaseException {
         Bson bson = parseQuery(query);
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
 
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
+        MongoDBIterator<Snp> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
 
     @Override
-    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease,
-                                                       String apiKey) throws CellBaseException {
-        List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
+    public List<CellBaseDataResult<Snp>> info(List<String> ids, ProjectionQueryOptions queryOptions, int dataRelease, String apiKey)
+            throws CellBaseException {
+        List<CellBaseDataResult<Snp>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
         for (String id : ids) {
-            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(Filters.eq("id", id));
-            orBsonList.add(Filters.eq("name", id));
             Bson bson = Filters.or(orBsonList);
             results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, CONVERTER, new QueryOptions())));
         }
@@ -86,51 +89,70 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
-        Bson bsonDocument = parseQuery(query);
+    public CellBaseDataResult<String> distinct(SnpQuery query) throws CellBaseException {
+        Bson bsonQuery = parseQuery(query);
+        logger.info("snpQuery distinct: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonQuery, String.class));
     }
 
     @Override
-    public CellBaseDataResult<OntologyTerm> aggregationStats(OntologyQuery query) {
+    public CellBaseDataResult<Snp> aggregationStats(SnpQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult groupBy(OntologyQuery query) throws CellBaseException {
+    public CellBaseDataResult groupBy(SnpQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
+        logger.info("snpQuery groupBy: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
-    public Bson parseQuery(OntologyQuery query) {
+    public CellBaseDataResult<Snp> startsWith(String id, QueryOptions options, int dataRelease) throws CellBaseException {
+        Bson regex = Filters.regex("id", Pattern.compile("^" + id));
+        Bson projection = null;
+        if (options.containsKey(QueryOptions.INCLUDE)) {
+            projection = Projections.include(options.getAsStringList(QueryOptions.INCLUDE));
+        } else if (options.containsKey(QueryOptions.EXCLUDE)) {
+            projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
+        }
+
+        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
+    }
+
+    public Bson parseQuery(SnpQuery query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
                 switch (dotNotationName) {
-                    case ParamConstants.DATA_RELEASE_PARAM:
-                    case ParamConstants.API_KEY_PARAM:
-                        // Nothing to do
+                    case "position": {
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.INTEGER, andBsonList);
                         break;
+                    }
+                    case DATA_RELEASE_PARAM:
+                    case API_KEY_PARAM:  {
+                        // Do nothing
+                        break;
+                    }
                     default: {
-                        Object value = entry.getValue();
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
                     }
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new CellBaseException("Error parsing SNP query: " + query, e);
         }
 
-        logger.info("ontology parsed query: " + andBsonList.toString());
-        if (andBsonList.size() > 0) {
+        logger.info("SnpMongoDBAdaptor parsed query: {}", andBsonList);
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
     }
-
 }
