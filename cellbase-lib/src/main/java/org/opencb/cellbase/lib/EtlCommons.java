@@ -56,9 +56,9 @@ public class EtlCommons {
     public static final String PHARMGKB_VERSION_FILENAME = "pharmgkbVersion.json";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
-    public static final String CLINVAR_VERSION = "2022.11";
-    public static final String CLINVAR_DATE = "2022-11";
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2022-11.xml.gz";
+    public static final String CLINVAR_VERSION = "2024-05";
+    public static final String CLINVAR_DATE = "2024-05";
+    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2024-05.xml.gz";
     public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";

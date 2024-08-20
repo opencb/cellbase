@@ -210,7 +210,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private boolean updateRocksDB(SequenceLocation sequenceLocation, String variationId, String[] lineFields,
-                               String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
+                                  String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
             throws RocksDBException, IOException {
         // More than one variant being returned from the normalisation process would mean it's and MNV which has been
         // decomposed
@@ -266,13 +266,34 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
 
                 // parse RCVs
-                String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
-                String clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
-                        .getClinicalSignificance()
-                        .getDescription();
-                String reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
-                        .getReviewStatus().name();
-                List<ObservationSet> getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
+                String accession = null;
+                try {
+                    accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+                } catch (Exception e) {
+                    logger.warn("Error getting accession. Ignore error and leave it as null.", e);
+                }
+                String clinicalSignficanceDescription = null;
+                try {
+                    clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
+                            .getClinicalSignificance()
+                            .getDescription();
+                } catch (Exception e) {
+                    logger.warn("Error getting clinical significance description. Ignore error and leave it as null.", e);
+                }
+                String reviewStatusName = null;
+                try {
+                    reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
+                            .getReviewStatus().name();
+                } catch (Exception e) {
+                    logger.warn("Error getting review status name. Ignore error and leave it as null.", e);
+                }
+                List<ObservationSet> getObservedIn = null;
+                try {
+                    getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
+                } catch (Exception e) {
+                    logger.warn("Error getting observed in. Ignore error and leave it as null.", e);
+                }
+
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
                         clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
                         reviewStatusName, getObservedIn);
@@ -388,7 +409,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                Map<String, EFO> traitsToEfoTermsMap, String accession,
                                String clinicalSignficanceDescription, String reviewStatusName,
                                List<ObservationSet> getObservedIn)
-        throws JsonProcessingException {
+            throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, CLINVAR_VERSION, CLINVAR_DATE);
@@ -544,7 +565,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private List<GenomicFeature> getGenomicFeature(PublicSetType publicSet, String alleleId) {
         if (publicSet.getReferenceClinVarAssertion().getMeasureSet() != null) {
             return getGenomicFeature(publicSet.getReferenceClinVarAssertion().getMeasureSet());
-        // No measureSet means there must be genotypeSet
+            // No measureSet means there must be genotypeSet
         } else if (publicSet.getReferenceClinVarAssertion().getGenotypeSet() != null) {
             for (MeasureSetType measureSet : publicSet.getReferenceClinVarAssertion().getGenotypeSet().getMeasureSet()) {
                 if (measureSet.getMeasure() != null) {
@@ -596,7 +617,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // root of the ReferenceClinvarAssertion rather than for each trait
         ModeOfInheritance modeOfInheritance
                 = getInheritanceModel(publicSet.getReferenceClinVarAssertion().getAttributeSet(),
-                        sourceInheritableTraitMap);
+                sourceInheritableTraitMap);
 
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
             String traitName = getTraitName(trait, publicSet);
@@ -649,14 +670,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // Found preferred name
         if (i < trait.getName().size()) {
             return trait.getName().get(i).getElementValue().getValue();
-        // No preferred name indicated (e.g. RCV000013735 version Jan 2020); arbitrarily return first one
+            // No preferred name indicated (e.g. RCV000013735 version Jan 2020); arbitrarily return first one
         } else if (trait.getName().size() > 0) {
             logger.warn("ClinVar record found "
                     + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
                     + " with no preferred trait provided. Arbitrarily selecting first one: {}", trait.getName()
                     .get(0).getElementValue().getValue());
             return trait.getName().get(0).getElementValue().getValue();
-        // No trait name provided at all
+            // No trait name provided at all
         } else {
             throw new IllegalArgumentException("ClinVar record found "
                     + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()

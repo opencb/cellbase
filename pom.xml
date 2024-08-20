@@ -25,6 +25,7 @@
         <pycellbase.version>${project.version}</pycellbase.version>
         <java-common-libs.version>5.2.1-SNAPSHOT</java-common-libs.version>
         <biodata.version>3.2.1-SNAPSHOT</biodata.version>
+
         <bionetdb.version>0.1.0</bionetdb.version>
         <jetty.version>9.4.51.v20230217</jetty.version>
 
