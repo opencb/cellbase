@@ -381,19 +381,18 @@ public class GenericRestWSServer implements IWSServer {
         try {
             queryResponse.setDataRelease(getDataRelease());
         } catch (Exception ex) {
-            logger.warn("Impossible to set the data release in the query response", ex);
+            logger.warn("Impossible to set the data release in the error response", ex);
         }
         try {
             queryResponse.setApiKey(getApiKey());
         } catch (Exception ex) {
-            logger.warn("Impossible to set the API key in the query response", ex);
+            logger.warn("Impossible to set the API key in the error response", ex);
         }
-//        queryResponse.setParams(new ObjectMap(queryOptions));
+
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
         CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
         List<Event> events = new ArrayList<>();
-//        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
         events.add(new Event(Event.Type.ERROR, e.toString()));
         queryResponse.setEvents(events);
         queryResponse.setResponses(Arrays.asList(result));
@@ -418,17 +417,21 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
+
         try {
             queryResponse.setDataRelease(getDataRelease());
-        } catch (CellBaseException e) {
-            logger.warn("Impossible to set the data release used in the query response", e);
+        } catch (Exception ex) {
+            logger.warn("Impossible to set the data release in the ok response", ex);
         }
-        queryResponse.setApiKey(getApiKey());
+
+        try {
+            queryResponse.setApiKey(getApiKey());
+        } catch (Exception ex) {
+            logger.warn("Impossible to set the API key in the ok response", ex);
+        }
 
         ObjectMap params = new ObjectMap();
         params.put("species", species);
-//        params.putAll(query);
-//        params.putAll(queryOptions);
         params.putAll(uriParams);
         queryResponse.setParams(params);
 
@@ -442,7 +445,12 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         queryResponse.setResponses(list);
-        logQuery(OK);
+
+        try {
+            logQuery(OK);
+        } catch (Exception ex) {
+            logger.warn("Impossible to log query when creating ok response", ex);
+        }
 
         Response jsonResponse = createJsonResponse(queryResponse);
 
@@ -454,8 +462,8 @@ public class GenericRestWSServer implements IWSServer {
                 long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
                 metaManager.incApiKeyStats(apiKey, 1, queryResponse.getTime(), bytes);
             }
-        } catch (CellBaseException e) {
-            return createErrorResponse(e);
+        } catch (CellBaseException ex) {
+            return createErrorResponse(ex);
         }
 
         return  jsonResponse;
