@@ -17,6 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.Snp;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.client.config.ClientConfiguration;
@@ -234,6 +235,14 @@ public final class VariantClient extends FeatureClient<Variant> {
 
     public CellBaseDataResponse<String> getAllConsequenceTypes(Query query) throws IOException {
         return execute("consequenceTypes", query, new QueryOptions(), String.class);
+    }
+
+    public CellBaseDataResponse<Snp> searchSnp(Query query, QueryOptions options) throws IOException {
+        return execute("snp/search", query, options, Snp.class);
+    }
+
+    public CellBaseDataResponse<Snp> startsWithSnp(Query query, QueryOptions options) throws IOException {
+        return execute("snp/startsWith", query, options, Snp.class);
     }
 
 //    public CellBaseDataResponse<String> getConsequenceTypeById(String id, QueryOptions options) throws IOException {

@@ -44,6 +44,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
 /**
  * Created by imedina on 03/02/15.
  */
@@ -372,30 +374,57 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException, CellBaseException {
+        Path variationPath = input.resolve(VARIATION_DATA);
         // First load data
-        // Common loading process from CellBase variation data models
         if (field == null) {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+            // Common loading process from CellBase variation data models
+            DirectoryStream<Path> stream = Files.newDirectoryStream(variationPath,
                     entry -> entry.getFileName().toString().startsWith("variation_chr"));
 
+            int numLoadings = 0;
             for (Path entry : stream) {
                 logger.info("Loading file '{}'", entry);
-                loadRunner.load(input.resolve(entry.getFileName()), "variation", dataRelease);
+                loadRunner.load(variationPath.resolve(entry.getFileName()), "variation", dataRelease);
+                numLoadings++;
             }
 
-            // Create index
-            createIndex("variation");
+            if (numLoadings > 0) {
+                // Create index
+                createIndex("variation");
 
-            // Update release (collection and sources)
-            List<Path> sources = new ArrayList<>(Arrays.asList(
-                    input.resolve("ensemblVariationVersion.json")
-            ));
-            dataReleaseManager.update(dataRelease, "variation", EtlCommons.VARIATION_DATA, sources);
-
-            // Custom update required e.g. population freqs loading
+                // Update release (collection and sources)
+                List<Path> sources = new ArrayList<>(Arrays.asList(
+                        variationPath.resolve("ensemblVariationVersion.json")
+                ));
+                dataReleaseManager.update(dataRelease, "variation", EtlCommons.VARIATION_DATA, sources);
+            } else {
+                logger.info("Any variation file 'variation_chr...' found within folder '{}'", variationPath);
+            }
         } else {
-            logger.info("Loading file '{}'", input);
-            loadRunner.load(input, "variation", dataRelease, field, innerFields);
+            // Custom update required e.g. population freqs loading
+            logger.info("Loading file '{}'", variationPath);
+            loadRunner.load(variationPath, "variation", dataRelease, field, innerFields);
+        }
+
+        // Load dbSNP
+        Path dbSnpFilePath = variationPath.resolve(DBSNP_NAME + ".json.gz");
+        if (dbSnpFilePath.toFile().exists()) {
+            if (variationPath.resolve(DBSNP_VERSION_FILENAME).toFile().exists()) {
+                logger.info("Loading dbSNP file '{}'", dbSnpFilePath);
+                loadRunner.load(dbSnpFilePath, SNP_COLLECTION_NAME, dataRelease);
+
+                // Create index
+                createIndex(SNP_COLLECTION_NAME);
+
+                // Update release (collection and sources)
+                List<Path> sources = Collections.singletonList(variationPath.resolve(DBSNP_VERSION_FILENAME));
+                dataReleaseManager.update(dataRelease, SNP_COLLECTION_NAME, EtlCommons.VARIATION_DATA, sources);
+            } else {
+                logger.warn("In order to load the dbSNP file you need the version file {} within the folder '{}'", DBSNP_VERSION_FILENAME,
+                        variationPath);
+            }
+        } else {
+            logger.warn("Any dbSNP file found within the folder '{}'", variationPath);
         }
     }
 

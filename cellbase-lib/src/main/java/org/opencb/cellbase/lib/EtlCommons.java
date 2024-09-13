@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class EtlCommons {
 
+    public static final String HOMO_SAPIENS_NAME ="Homo sapiens";
+
     public static final String GENOME_DATA = "genome";
     public static final String GENE_DATA = "gene";
     public static final String REFSEQ_DATA = "refseq";
@@ -54,16 +56,20 @@ public class EtlCommons {
     public static final String PHARMGKB_VERSION_FILENAME = "pharmgkbVersion.json";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
-    public static final String CLINVAR_VERSION = "2022.11";
-    public static final String CLINVAR_DATE = "2022-11";
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2022-11.xml.gz";
+    public static final String CLINVAR_VERSION = "2024-05";
+    public static final String CLINVAR_DATE = "2024-05";
+    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2024-05.xml.gz";
     public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
     public static final String IARCTP53_FILE = "IARC-TP53.zip";
     public static final String GWAS_FILE = "gwas_catalog.tsv";
     public static final String COSMIC_FILE = "CosmicMutantExport.tsv.gz";
-    public static final String DBSNP_FILE = "All.vcf.gz";
+    @Deprecated
+    public static final String DBSNP_FILE = "GCF_000001405.40.gz";
+    public static final String DBSNP_NAME = "dbSNP";
+    public static final String DBSNP_VERSION_FILENAME = DBSNP_NAME + "Version.json";
+    public static final String SNP_COLLECTION_NAME = "snp";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
