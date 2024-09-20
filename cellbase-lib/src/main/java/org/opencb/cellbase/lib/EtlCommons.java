@@ -78,7 +78,6 @@ public class EtlCommons {
     public static final String HPO_FILE = "hp.obo";
     public static final String GO_FILE = "go-basic.obo";
     public static final String DOID_FILE = "doid.obo";
-    public static final String MONDO_FILE = "mondo.obo";
     public static final String PFM_DATA = "regulatory_pfm";
 
     public static final String REGULATORY_REGION_DATA = "regulatory_region";
