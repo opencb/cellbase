@@ -32,7 +32,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private final Path cosmicFile;
     private final String assembly;
 
-    private static final String COSMIC_VERSION = "v95";
+    private static final String COSMIC_VERSION = "v99";
 
     public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);

@@ -22,7 +22,7 @@ public class CellBaseException extends Exception {
         super(msg);
     }
 
-    public CellBaseException(String msg,  Throwable cause) {
+    public CellBaseException(String msg, Throwable cause) {
         super(msg, cause);
     }
 

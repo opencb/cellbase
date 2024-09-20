@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -55,6 +56,9 @@ import java.lang.reflect.Parameter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.opencb.cellbase.lib.EtlCommons.COSMIC_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.HGMD_DATA;
 
 /**
  * Created by imedina on 04/08/15.
@@ -84,13 +88,17 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
-            + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
+            + "data files were downloaded.", response = DataReleaseSource.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
                                        defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
                                @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
-                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly) {
+                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
+                               @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION) @QueryParam("dataRelease")
+                                           int dataRelease) {
         try {
+            long dbTimeStart;
+            dbTimeStart = System.currentTimeMillis();
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
                 if (assemblyObject != null) {
@@ -98,12 +106,24 @@ public class MetaWSServer extends GenericRestWSServer {
                 }
             }
             if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
-                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                return createErrorResponse("/versions", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
-            logger.error("species " + species);
-            CellBaseDataResult queryResult = metaManager.getVersions(species, assembly);
-            return createOkResponse(queryResult);
+            DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            DataRelease dr = dataReleaseManager.get(dataRelease);
+            if (dr == null) {
+                return createErrorResponse("/versions", "Could not find data release '" + dataRelease + "'");
+            }
+            // Remove some sources
+            List<DataReleaseSource> sources = new ArrayList<>();
+            for (DataReleaseSource source : dr.getSources()) {
+                if (!COSMIC_DATA.equalsIgnoreCase(source.getName()) && !HGMD_DATA.equalsIgnoreCase(source.getName())) {
+                    sources.add(source);
+                }
+            }
+            int dbTime = Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue();
+            return createOkResponse(new CellBaseDataResult<>("versions", dbTime, Collections.emptyList(), sources.size(), sources,
+                    sources.size()));
         } catch (CellBaseException e) {
             return createErrorResponse(e);
         }
@@ -135,7 +155,7 @@ public class MetaWSServer extends GenericRestWSServer {
                 }
             }
             if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
-                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                return createErrorResponse("/dataReleases", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);

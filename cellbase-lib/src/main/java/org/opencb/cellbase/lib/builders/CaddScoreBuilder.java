@@ -42,7 +42,7 @@ public class CaddScoreBuilder extends CellBaseBuilder {
         super(serializer);
         this.caddFilePath = caddFilePath;
 
-        logger = LoggerFactory.getLogger(ConservationBuilder.class);
+        logger = LoggerFactory.getLogger(CaddScoreBuilder.class);
     }
 
     /* Example:
