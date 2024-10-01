@@ -114,6 +114,8 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
     private static final String DOSAGE_1_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
     private static final String DOSAGE_2_WEIGHT_KEY = "Effect weight with 1 copy of the effect allele";
 
+    private static final String PARSING_FILE = "Parsing file ";
+
     public static final String PGS_COMMON_OUTPUT_FILENAME = PGS_COMMON_COLLECTION + JSON_GZ_EXTENSION;
     public static final String PGS_VARIANT_OUTPUT_FILENAME = PGS_VARIANT_COLLECTION + JSON_GZ_EXTENSION;
 
@@ -215,7 +217,7 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                                 pgsId = line.split("=")[1].trim();
                                 // Sanity check
                                 if (!file.getName().startsWith(pgsId)) {
-                                    throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id mismatch");
+                                    throw new CellBaseException(PARSING_FILE + file.getName() + ": pgs_id mismatch");
                                 }
                                 // Add PGS ID to the set
                                 pgsIdSet.add(pgsId);
@@ -228,7 +230,7 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                         } else {
                             // Sanity check
                             if (pgsId == null) {
-                                throw new CellBaseException("Error parsing file " + file.getName() + ": pgs_id is null");
+                                throw new CellBaseException(PARSING_FILE + file.getName() + ": pgs_id is null");
                             }
                             saveVariantPolygenicScore(line, columnPos, pgsId);
                         }
@@ -261,6 +263,7 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
     }
 
     private void processPgsMetadataFile(File metadataFile, BufferedWriter bw) throws CellBaseException {
+        String suffix;
         String pgsId = metadataFile.getName().split("_")[0];
 
         Path tmp = serializer.getOutdir().resolve("tmp");
@@ -273,7 +276,11 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
             logger.info("Executing: {}", command);
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new CellBaseException("Exception raised when executing: " + command, e);
+        } catch (InterruptedException e) {
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
             throw new CellBaseException("Exception raised when executing: " + command, e);
         }
 
@@ -285,10 +292,10 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
         pgs.setVersion(dataSource.getVersion());
 
         String line;
-        String[] field;
 
         // PGSxxxxx_metadata_publications.csv
-        filename = pgsId + "_metadata_publications.csv";
+        suffix = "_metadata_publications.csv";
+        filename = pgsId + suffix;
         try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(filename))) {
             // Skip first line
             br.readLine();
@@ -303,11 +310,12 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                 pgs.getPubmedRefs().add(new PubmedReference(strings.get(8), strings.get(2), strings.get(3), strings.get(4), null));
             }
         } catch (IOException e) {
-            throw new CellBaseException("Parsing file " + filename, e);
+            throw new CellBaseException(PARSING_FILE + filename, e);
         }
 
         // PGSxxxxx_metadata_efo_traits.csv
-        filename = pgsId + "_metadata_efo_traits.csv";
+        suffix = "_metadata_efo_traits.csv";
+        filename = pgsId + suffix;
         try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(filename))) {
             // Skip first line
             br.readLine();
@@ -321,11 +329,12 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                         new HashMap<>()));
             }
         } catch (IOException e) {
-            throw new CellBaseException("Parsing file " + filename, e);
+            throw new CellBaseException(PARSING_FILE + filename, e);
         }
 
         // PGSxxxxx_metadata_scores.csv
-        filename = pgsId + "_metadata_scores.csv";
+        suffix = "_metadata_scores.csv";
+        filename = pgsId + suffix;
         try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(filename))) {
             // Skip first line
             br.readLine();
@@ -347,15 +356,15 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                 CSVRecord strings = csvParser.getRecords().get(0);
                 // Sanity check
                 if (!pgsId.equals(strings.get(0))) {
-                    throw new CellBaseException("Mismatch PGS ID when parsing file " + pgsId + "_metadata_scores.csv");
+                    throw new CellBaseException(PARSING_FILE + filename + ": mismatch PGS ID");
                 }
                 if (StringUtils.isNotEmpty(pgs.getName())) {
-                    throw new CellBaseException("More than one PGS in file " + pgsId + "_metadata_scores.csv");
+                    throw new CellBaseException("More than one PGS in file " + filename);
                 }
                 pgs.setName(strings.get(1));
             }
         } catch (IOException e) {
-            throw new CellBaseException("Parsing file " + filename, e);
+            throw new CellBaseException(PARSING_FILE + filename, e);
         }
 
         // TODO: PGSxxxxx_metadata_score_development_samples.csv
@@ -369,7 +378,8 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
         // GWAS Catalog Study ID (GCST...)   Source PubMed ID (PMID)   Source DOI   Cohort(s)   Additional Sample/Cohort Information
 
         // PGSxxxxx_metadata_performance_metrics.csv
-        filename = pgsId + "_metadata_performance_metrics.csv";
+        suffix = "_metadata_performance_metrics.csv";
+        filename = pgsId + suffix;
         try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(filename))) {
             // Skip first line
             br.readLine();
@@ -417,7 +427,7 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                 pgs.getValues().add(values);
             }
         } catch (IOException e) {
-            throw new CellBaseException("Parsing file " + filename, e);
+            throw new CellBaseException(PARSING_FILE + filename, e);
         }
 
         // TODO: PGSxxxxx_metadata_evaluation_sample_sets.csv
@@ -431,7 +441,8 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
         // GWAS Catalog Study ID (GCST...)   Source PubMed ID (PMID)   Source DOI   Cohort(s)   Additional Sample/Cohort Information
 
         // PGSxxxxx_metadata_cohorts.csv
-        filename = pgsId + "_metadata_cohorts.csv";
+        suffix = "_metadata_cohorts.csv";
+        filename = pgsId + suffix;
         try (BufferedReader br = FileUtils.newBufferedReader(tmp.resolve(filename))) {
             // Skip first line
             line = br.readLine();
@@ -444,7 +455,7 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
                 pgs.getCohorts().add(new PgsCohort(strings.get(0), strings.get(1), strings.get(2)));
             }
         } catch (IOException e) {
-            throw new CellBaseException("Parsing file " + filename, e);
+            throw new CellBaseException(PARSING_FILE + filename, e);
         }
 
         // Create PGS object, with the common fields
@@ -457,12 +468,15 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
 
         // Clean tmp folder
         for (File tmpFile : tmp.toFile().listFiles()) {
-            tmpFile.delete();
+            try {
+                Files.delete(tmpFile.toPath());
+            } catch (IOException e) {
+                logger.warn("Return false when deleting file: " + tmpFile, e);
+            }
         }
     }
 
-    private void saveVariantPolygenicScore(String line, Map<String, Integer> columnPos, String pgsId)
-            throws RocksDBException, IOException, CellBaseException {
+    private void saveVariantPolygenicScore(String line, Map<String, Integer> columnPos, String pgsId) throws RocksDBException, IOException {
         String chrom;
         int position;
         String effectAllele;
@@ -570,13 +584,11 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
             varBatchCounter++;
             if (varBatchCounter >= MAX_BATCH_SIZE) {
                 // Write the batch to the database
-//                logger.info("Writing variant ID batch with {} items, {} KB", varBatch.count(), varBatchSize / 1024);
                 rdb.write(new WriteOptions(), varBatch);
                 // Reset batch
                 varBatch.clear();
                 varBatchCounter = 0;
            }
-//            rdb.put(key.getBytes(), ONE);
         }
 
         // Second, we store the polygenic scores
@@ -584,9 +596,8 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
         key = chrom + ":" + position + ":" + otherAllele + ":" + effectAllele + ":" + pgsId;
         dbContent = rdb.get(key.getBytes());
         if (dbContent != null) {
-//            throw new CellBaseException("Error indexing PGS key " + key + ": it must be unique");
             duplicatedKeys++;
-            logger.warn("Warning: the indexing PGS key " + key + ": it should be unique");
+            logger.warn("Warning: the indexing PGS key {}: it should be unique", key);
         } else {
             VariantPolygenicScore varPgs = new VariantPolygenicScore(chrom, position, otherAllele, effectAllele,
                     Collections.singletonList(new PolygenicScore(pgsId, values)));
@@ -597,13 +608,11 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
             varPgsBatchCounter++;
             if (varPgsBatchCounter >= MAX_BATCH_SIZE) {
                 // Write the batch to the database
-//                logger.info("Writing PGS batch with {} items, {} KB", varPgsBatch.count(), varPgsBatchSize / 1024);
                 rdb.write(new WriteOptions(), varPgsBatch);
                 // Reset batch
                 varPgsBatch.clear();
                 varPgsBatchCounter = 0;
             }
-//            rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(varPgs));
         }
     }
 
@@ -670,25 +679,17 @@ public class PolygenicScoreBuilder extends AbstractBuilder {
 
         Options options = new Options()
                 .setCreateIfMissing(true)
-                .setWriteBufferSize(256 * 1024 * 1024) // 256 MB
+                .setWriteBufferSize(1L * 256 * 1024 * 1024) // 256 MB
                 .setMaxWriteBufferNumber(4)
                 .setMinWriteBufferNumberToMerge(2)
                 .setIncreaseParallelism(4)
                 .setMaxBackgroundCompactions(4)
                 .setMaxBackgroundFlushes(2)
                 .setLevelCompactionDynamicLevelBytes(true)
-                .setTargetFileSizeBase(64 * 1024 * 1024) // 64 MB
-                .setMaxBytesForLevelBase(512 * 1024 * 1024) // 512 MB
+                .setTargetFileSizeBase(1L * 64 * 1024 * 1024) // 64 MB
+                .setMaxBytesForLevelBase(1L * 512 * 1024 * 1024) // 512 MB
                 .setTableFormatConfig(tableConfig)
                 .setCompressionType(CompressionType.LZ4_COMPRESSION);
-
-//        options.setMaxBackgroundCompactions(4);
-//        options.setMaxBackgroundFlushes(1);
-//        options.setCompressionType(CompressionType.NO_COMPRESSION);
-//        options.setMaxOpenFiles(-1);
-//        options.setIncreaseParallelism(4);
-//        options.setCompactionStyle(CompactionStyle.LEVEL);
-//        options.setLevelCompactionDynamicLevelBytes(true);
 
         RocksDB db = null;
         try {
