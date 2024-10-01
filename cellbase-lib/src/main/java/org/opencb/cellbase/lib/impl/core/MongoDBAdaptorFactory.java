@@ -99,6 +99,10 @@ public class MongoDBAdaptorFactory {
         return new SnpMongoDBAdaptor(mongoDatastore);
     }
 
+    public PolygenicScoreMongoDBAdaptor getPolygenicScoreMongoDBAdaptor() {
+        return new PolygenicScoreMongoDBAdaptor(mongoDatastore);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MongoDBAdaptorFactory{");

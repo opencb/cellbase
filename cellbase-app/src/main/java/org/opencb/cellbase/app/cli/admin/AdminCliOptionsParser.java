@@ -19,15 +19,12 @@ package org.opencb.cellbase.app.cli.admin;
 import com.beust.jcommander.*;
 import org.opencb.cellbase.app.cli.CliOptionsParser;
 import org.opencb.cellbase.core.api.key.ApiKeyQuota;
-import org.opencb.cellbase.lib.EtlCommons;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by imedina on 03/02/15.
- */
+
 public class AdminCliOptionsParser extends CliOptionsParser {
 
     private final CommonCommandOptions commonCommandOptions;
@@ -35,13 +32,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
+    private DataListCommandOptions dataListCommandOptions;
     private DataReleaseCommandOptions dataReleaseCommandOptions;
     private ApiKeyCommandOptions apiKeyCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private ExportCommandOptions exportCommandOptions;
     private CustomiseCommandOptions customiseCommandOptions;
     private IndexCommandOptions indexCommandOptions;
-    private InstallCommandOptions installCommandOptions;
     private ServerCommandOptions serverCommandOptions;
     private ValidationCommandOptions validationCommandOptions;
 
@@ -52,25 +49,25 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
+        dataListCommandOptions = new DataListCommandOptions();
         dataReleaseCommandOptions = new DataReleaseCommandOptions();
         apiKeyCommandOptions = new ApiKeyCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         exportCommandOptions = new ExportCommandOptions();
         customiseCommandOptions = new CustomiseCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
-        installCommandOptions = new InstallCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
         validationCommandOptions = new ValidationCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
+        jCommander.addCommand("data-list", dataListCommandOptions);
         jCommander.addCommand("data-release", dataReleaseCommandOptions);
         jCommander.addCommand("api-key", apiKeyCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("export", exportCommandOptions);
         jCommander.addCommand("customise", customiseCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
-        jCommander.addCommand("install", installCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
         jCommander.addCommand("validate", validationCommandOptions);
     }
@@ -80,7 +77,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.parse(args);
     }
 
-    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml file")
+    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml"
+            + " file")
     public class DownloadCommandOptions {
 
         @ParametersDelegate
@@ -89,16 +87,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download:"
-                + EtlCommons.GENOME_DATA + ", " + EtlCommons.GENE_DATA + ", " + EtlCommons.VARIATION_DATA + ", "
-                + EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA + ", " + EtlCommons.MISSENSE_VARIATION_SCORE_DATA + ", "
-                + EtlCommons.REGULATION_DATA + ", " + EtlCommons.PROTEIN_DATA + ", " + EtlCommons.CONSERVATION_DATA + ", "
-                + EtlCommons.CLINICAL_VARIANTS_DATA + ", " + EtlCommons.REPEATS_DATA + ", " + EtlCommons.OBO_DATA + ", "
-                + EtlCommons.PUBMED_DATA + ", " + EtlCommons.PHARMACOGENOMICS_DATA + "; and 'all' to download everything",
-                required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to download"
+                + " everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)
+        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
+                arity = 1)
         public String outputDirectory;
     }
 
@@ -108,18 +103,21 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, genome_info, "
-                + "gene, variation, variation_functional_score, regulation, protein, ppi, conservation, drug, "
-                + "clinical_variants, repeats, svs, splice_score, pubmed. 'all' builds everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to build"
+                + " everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or"
+                + " 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml"
+                + " will be used", arity = 1)
         public String assembly;
 
-        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)
+        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
+                arity = 1)
         public String outputDirectory;
 
         @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of clinical variants. Normalization"
@@ -135,6 +133,17 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "requires more memory and is less efficient.", required = false, arity = 0)
         public boolean flexibleGTFParsing = false;
 
+    }
+
+    @Parameters(commandNames = {"data-list"}, commandDescription = "List the data supported by the given species")
+    public class DataListCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to list the data, valid formats include 'Homo sapiens'"
+                + " or 'hsapiens'", arity = 1)
+        public String species = "Homo sapiens";
     }
 
     @Parameters(commandNames = {"data-release"}, commandDescription = "Manage data releases in order to support multiple versions of data")
@@ -155,11 +164,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--update"}, description = "Data release to be updated by adding CellBase vesions", arity = 1)
         public int update;
 
-        @Parameter(names = {"--add-versions"}, description = "CellBase versions separated by commas, e.g.: v5.2,v5.3. This parameter has to be used together to the parameter --update", arity = 1)
+        @Parameter(names = {"--add-versions"}, description = "CellBase versions separated by commas, e.g.: v5.2,v5.3. This parameter has"
+                + " to be used together to the parameter --update", arity = 1)
         public String versions;
     }
 
-    @Parameters(commandNames = {"api-key"}, commandDescription = "Manage API keys in order to access to restricted/licensed data sources and set quota")
+    @Parameters(commandNames = {"api-key"}, commandDescription = "Manage API keys in order to access to restricted/licensed data sources"
+            + " and set quota")
     public class ApiKeyCommandOptions {
 
         @ParametersDelegate
@@ -168,9 +179,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--create-api-key"}, description = "Create an API key", arity = 0)
         public boolean createApiKey;
 
-        @Parameter(names = {"--licensed-data-sources"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
-                + " licensed data sources separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.:"
-                + " cosmic:31/01/2025,hgmd", arity = 1)
+        @Parameter(names = {"--licensed-data-sources"}, description = "Use this parameter in conjunction with --create-api-key to"
+                +" specify the licensed data sources separated by commas and optionally the expiration date: source[:dd/mm/yyyy]. e.g.:"
+                + " spliceai:31/01/2025,hgmd", arity = 1)
         public String dataSources;
 
         @Parameter(names = {"--expiration"}, description = "Use this parameter in conjunction with --create-api-key to specify the"
@@ -195,9 +206,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation,"
-                + " conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed, pharmacogenomics."
-                + " 'all' loads everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to load, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to load"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, required = true, arity = 1,
@@ -242,9 +253,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm, splice_score, pubmed. 'all' "
-                + " loads everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to export, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to export"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"--db", "--database"}, description = "Database name, e.g., cellbase_hsapiens_grch38_v5", required = true,
@@ -304,10 +315,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
-                + "regulation, protein, ontology, clinical_variants, repeats, refseq and missense_variation_functional_score. 'all' "
-                + "indexes everything", required = true,
-                arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to index, it depends on the species; use the"
+                + " command 'cellbase-admin.sh data-list' to know the data list available for each species; or use 'all' to index"
+                + " everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"--db", "--database"}, description = "Database name.", required = true, arity = 1)
@@ -319,16 +329,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--validate"}, description = "Compare the existing indexes in specified database with the index JSON file",
                 arity = 0)
         public boolean validate;
-    }
-
-    @Parameters(commandNames = {"install"}, commandDescription = "Set up sharding for CellBase")
-    public class InstallCommandOptions {
-
-        @ParametersDelegate
-        public CommonCommandOptions commonOptions = commonCommandOptions;
-
-        @ParametersDelegate
-        public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
     }
 
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
@@ -353,16 +353,20 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens'"
+                + " or 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json"
+                + " will be used", arity = 1)
         public String assembly = "GRCh38";
 
-        @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter to 0", required = false, arity = 1)
+        @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter"
+                + " to 0", arity = 1)
         public int dataRelease = 0;
 
-        @Parameter(names = {"--api-key"}, description = "API key to get access to licensed/restricted data sources such as COSMIC or HGMD", required = false, arity = 1)
+        @Parameter(names = {"--api-key"}, description = "API key to get access to licensed/restricted data sources such as SpliceAI or"
+                + " HGMD", arity = 1)
         public String apiKey;
 
         @Parameter(names = {"-i", "--input-file"}, description = "Full path to VCF", required = true, arity = 1)
@@ -371,8 +375,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-V", "--vep-file"}, description = "Full path to VEP annotation JSON file", required = true, arity = 1)
         public String vepFile;
 
-        @Parameter(names = {"-o", "--output-dir"}, description = "Output directory where the comparison report is saved", required = false,
-                arity = 1)
+        @Parameter(names = {"-o", "--output-dir"}, description = "Output directory where the comparison report is saved", arity = 1)
         public String outputDirectory = "/tmp";
 
         @Parameter(names = {"-t", "--type"}, description = "Which type to analyse: 'Protein', 'Transcript' or 'Both'", required =
@@ -410,6 +413,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         return buildCommandOptions;
     }
 
+    public DataListCommandOptions getDataListCommandOptions() {
+        return dataListCommandOptions;
+    }
+
     public DataReleaseCommandOptions getDataReleaseCommandOptions() {
         return dataReleaseCommandOptions;
     }
@@ -423,8 +430,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public IndexCommandOptions getIndexCommandOptions() {
         return indexCommandOptions;
     }
-
-    public InstallCommandOptions getInstallCommandOptions() { return installCommandOptions; }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 

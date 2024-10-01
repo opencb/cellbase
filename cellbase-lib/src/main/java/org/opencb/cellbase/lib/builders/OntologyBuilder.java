@@ -19,60 +19,84 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.models.core.OntologyTerm;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
-public class OntologyBuilder extends CellBaseBuilder {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private Path hpoFile;
-    private Path goFile;
-    private Path doidFile;
-    private Path mondoFile;
+public class OntologyBuilder extends AbstractBuilder {
 
-    public OntologyBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
+    private Path oboDownloadPath;
+    private SpeciesConfiguration speciesConfiguration;
+
+    public static final String OBO_OUTPUT_BASENAME = "ontology";
+    public static final String OBO_OUTPUT_FILENAME = OBO_OUTPUT_BASENAME + ".json.gz";
+
+    public OntologyBuilder(Path oboDownloadPath, SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
-        hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
-        goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
-        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
-        mondoFile = oboDirectoryPath.resolve(EtlCommons.MONDO_FILE);
+
+        this.oboDownloadPath = oboDownloadPath;
+        this.speciesConfiguration = speciesConfiguration;
     }
 
     @Override
     public void parse() throws Exception {
-        BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFile);
-        OboParser parser = new OboParser();
-        List<OntologyTerm> terms = parser.parseOBO(bufferedReader, "Human Phenotype Ontology");
-        for (OntologyTerm term : terms) {
-            term.setSource("HP");
-            serializer.serialize(term);
-        }
+        // Sanity check
+        checkDirectory(oboDownloadPath, getDataName(ONTOLOGY_DATA));
 
-        bufferedReader = FileUtils.newBufferedReader(goFile);
-        terms = parser.parseOBO(bufferedReader, "Gene Ontology");
-        for (OntologyTerm term : terms) {
-            term.setSource("GO");
-            serializer.serialize(term);
+        // Check ontology files
+        List<File> hpoFiles = Collections.emptyList();
+        List<File> doidFiles = Collections.emptyList();
+        List<File> mondoFiles = Collections.emptyList();
+        if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+            hpoFiles = checkOboFiles(HPO_OBO_DATA);
+            doidFiles = checkOboFiles(DOID_OBO_DATA);
+            mondoFiles = checkOboFiles(MONDO_OBO_DATA);
         }
+        List<File> goFiles = checkOboFiles(GO_OBO_DATA);
 
-        bufferedReader = FileUtils.newBufferedReader(doidFile);
-        terms = parser.parseOBO(bufferedReader, "Human Disease Ontology");
-        for (OntologyTerm term : terms) {
-            term.setSource("DOID");
-            serializer.serialize(term);
+        // Parse OBO files and build
+        if (speciesConfiguration.getScientificName().equalsIgnoreCase(HOMO_SAPIENS)) {
+            parseOboFile(hpoFiles.get(0), HPO_OBO_DATA);
+            parseOboFile(doidFiles.get(0), DOID_OBO_DATA);
+            parseOboFile(mondoFiles.get(0), MONDO_OBO_DATA);
         }
+        parseOboFile(goFiles.get(0), GO_OBO_DATA);
 
-        bufferedReader = FileUtils.newBufferedReader(mondoFile);
-        terms = parser.parseOBO(bufferedReader, "Mondo Ontology");
-        for (OntologyTerm term : terms) {
-            term.setSource("MONDO");
-            serializer.serialize(term);
-        }
-
+        // Close serializer
         serializer.close();
+    }
+
+    private void parseOboFile(File oboFile, String data) throws IOException {
+        logger.info(PARSING_LOG_MESSAGE, oboFile);
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(oboFile.toPath())) {
+            OboParser parser = new OboParser();
+            List<OntologyTerm> terms = parser.parseOBO(bufferedReader, data);
+            for (OntologyTerm term : terms) {
+                serializer.serialize(term);
+            }
+        }
+        logger.info(PARSING_DONE_LOG_MESSAGE, oboFile);
+    }
+
+    private List<File> checkOboFiles(String data) throws IOException, CellBaseException {
+        Path versionFilePath = oboDownloadPath.resolve(data).resolve(getDataVersionFilename(data));
+        String name = getDataName(data);
+
+        List<File> files = checkFiles(dataSourceReader.readValue(versionFilePath.toFile()), oboDownloadPath.resolve(data),
+                getDataName(ONTOLOGY_DATA) + "/" + name);
+        if (files.size() != 1) {
+            throw new CellBaseException("One " + name + " file is expected, but currently there are " + files.size() + " files");
+        }
+        return files;
     }
 }

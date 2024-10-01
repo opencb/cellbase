@@ -28,7 +28,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
-import org.opencb.cellbase.core.models.DataReleaseSource;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -75,9 +75,14 @@ public class MetaWSServer extends GenericRestWSServer {
     public MetaWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                        @PathParam("species")
+                        @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                        @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
             metaManager = cellBaseManagerFactory.getMetaManager();
         } catch (Exception e) {
@@ -88,7 +93,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
-            + "data files were downloaded.", response = DataReleaseSource.class, responseContainer = "QueryResponse")
+            + "data files were downloaded.", response = DataSource.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
                                        defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
@@ -115,8 +120,8 @@ public class MetaWSServer extends GenericRestWSServer {
                 return createErrorResponse("/versions", "Could not find data release '" + dataRelease + "'");
             }
             // Remove some sources
-            List<DataReleaseSource> sources = new ArrayList<>();
-            for (DataReleaseSource source : dr.getSources()) {
+            List<DataSource> sources = new ArrayList<>();
+            for (DataSource source : dr.getSources()) {
                 if (!COSMIC_DATA.equalsIgnoreCase(source.getName()) && !HGMD_DATA.equalsIgnoreCase(source.getName())) {
                     sources.add(source);
                 }
