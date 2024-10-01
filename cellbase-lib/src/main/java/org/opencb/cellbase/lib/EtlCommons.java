@@ -38,6 +38,7 @@ public class EtlCommons {
     public static final String HOMO_SAPIENS_NAME ="Homo sapiens";
 
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_SEQUENCE_DATA = "genome_sequence";
     public static final String GENE_DATA = "gene";
     public static final String REFSEQ_DATA = "refseq";
     public static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
@@ -69,7 +70,7 @@ public class EtlCommons {
     public static final String DBSNP_FILE = "GCF_000001405.40.gz";
     public static final String DBSNP_NAME = "dbSNP";
     public static final String DBSNP_VERSION_FILENAME = DBSNP_NAME + "Version.json";
-    public static final String SNP_COLLECTION_NAME = "snp";
+    public static final String SNP_DATA = "snp";
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
@@ -78,6 +79,8 @@ public class EtlCommons {
     public static final String GO_FILE = "go-basic.obo";
     public static final String DOID_FILE = "doid.obo";
     public static final String PFM_DATA = "regulatory_pfm";
+
+    public static final String REGULATORY_REGION_DATA = "regulatory_region";
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";

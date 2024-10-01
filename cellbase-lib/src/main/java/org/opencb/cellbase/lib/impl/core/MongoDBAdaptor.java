@@ -715,4 +715,8 @@ public class MongoDBAdaptor {
 //    public void setAssembly(String assembly) {
 //        this.assembly = assembly;
 //    }
+
+    public MongoDataStore getMongoDataStore() {
+        return mongoDataStore;
+    }
 }

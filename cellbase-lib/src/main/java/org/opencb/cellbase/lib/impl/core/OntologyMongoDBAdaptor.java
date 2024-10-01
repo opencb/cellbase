@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.OBO_DATA;
+
 public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
     private static final GenericDocumentComplexConverter<OntologyTerm> CONVERTER;
@@ -48,14 +50,6 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
 
     public OntologyMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        this.init();
-    }
-
-    private void init() {
-        logger.debug("OntologyMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("ontology");
     }
 
     @Override
@@ -64,7 +58,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(OBO_DATA, query.getDataRelease());
         MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -74,7 +68,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
                                                        String apiKey) throws CellBaseException {
         List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(OBO_DATA, dataRelease);
         for (String id : ids) {
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
@@ -88,7 +82,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     @Override
     public CellBaseDataResult<String> distinct(OntologyQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(OBO_DATA, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
@@ -101,7 +95,7 @@ public class OntologyMongoDBAdaptor extends CellBaseDBAdaptor implements CellBas
     public CellBaseDataResult groupBy(OntologyQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(OBO_DATA, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 

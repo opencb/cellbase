@@ -66,7 +66,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws CellBaseException {
         checkFilesExist();
 
         VariantAnnotationCalculator variantAnnotationCalculator;

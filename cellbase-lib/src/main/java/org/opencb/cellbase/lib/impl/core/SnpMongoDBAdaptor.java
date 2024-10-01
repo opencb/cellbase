@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
+import static org.opencb.cellbase.lib.EtlCommons.SNP_DATA;
 
 public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<SnpQuery, Snp> {
 
@@ -52,14 +53,6 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
 
     public SnpMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        this.init();
-    }
-
-    private void init() {
-        logger.debug("SnpMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("snp");
     }
 
     @Override
@@ -68,7 +61,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SNP_DATA, query.getDataRelease());
         MongoDBIterator<Snp> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -78,7 +71,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
             throws CellBaseException {
         List<CellBaseDataResult<Snp>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SNP_DATA, dataRelease);
         for (String id : ids) {
             List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(Filters.eq("id", id));
@@ -92,7 +85,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
     public CellBaseDataResult<String> distinct(SnpQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("snpQuery distinct: {}", bsonQuery.toBsonDocument().toJson());
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SNP_DATA, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonQuery, String.class));
     }
 
@@ -105,7 +98,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
     public CellBaseDataResult groupBy(SnpQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("snpQuery groupBy: {}", bsonQuery.toBsonDocument().toJson());
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SNP_DATA, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 
@@ -118,7 +111,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
             projection = Projections.exclude(options.getAsStringList(QueryOptions.EXCLUDE));
         }
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(SNP_DATA, dataRelease);
         return new CellBaseDataResult<>(mongoDBCollection.find(regex, projection, CONVERTER, options));
     }
 

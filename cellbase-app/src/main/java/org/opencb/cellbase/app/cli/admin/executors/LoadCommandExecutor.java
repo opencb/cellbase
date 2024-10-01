@@ -411,14 +411,14 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (dbSnpFilePath.toFile().exists()) {
             if (variationPath.resolve(DBSNP_VERSION_FILENAME).toFile().exists()) {
                 logger.info("Loading dbSNP file '{}'", dbSnpFilePath);
-                loadRunner.load(dbSnpFilePath, SNP_COLLECTION_NAME, dataRelease);
+                loadRunner.load(dbSnpFilePath, SNP_DATA, dataRelease);
 
                 // Create index
-                createIndex(SNP_COLLECTION_NAME);
+                createIndex(SNP_DATA);
 
                 // Update release (collection and sources)
                 List<Path> sources = Collections.singletonList(variationPath.resolve(DBSNP_VERSION_FILENAME));
-                dataReleaseManager.update(dataRelease, SNP_COLLECTION_NAME, EtlCommons.VARIATION_DATA, sources);
+                dataReleaseManager.update(dataRelease, SNP_DATA, EtlCommons.VARIATION_DATA, sources);
             } else {
                 logger.warn("In order to load the dbSNP file you need the version file {} within the folder '{}'", DBSNP_VERSION_FILENAME,
                         variationPath);
