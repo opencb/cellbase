@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GwasIndexer extends ClinicalIndexer {
 
@@ -46,6 +47,8 @@ public class GwasIndexer extends ClinicalIndexer {
     private int gwasLinesNotFoundInDbsnp;
     private int invalidVariantRecords;
 
+    private int lineCounter = 0;
+
     public GwasIndexer(Path gwasFile, Path dbSnpTabixFile, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
 
@@ -56,36 +59,31 @@ public class GwasIndexer extends ClinicalIndexer {
     }
 
     public void index() throws RocksDBException, IOException {
-        logger.info("Parsing GWAS catalog file ...");
-
-        BufferedReader inputReader = null;
-        TabixReader dbsnpTabixReader = null;
-
-        try {
-            logger.info("Opening GWAS catalog file " + gwasFile + " ...");
-            inputReader = new BufferedReader(new FileReader(gwasFile.toFile()));
+        try (BufferedReader inputReader = new BufferedReader(new FileReader(gwasFile.toFile()));
+             TabixReader dbsnpTabixReader = new TabixReader(dbSnpTabixFile.toString())) {
 
             logger.info("Ignoring GWAS catalog file header line ...");
-            String line = inputReader.readLine();
+            inputReader.readLine();
+            ++lineCounter;
 
+            Map<String, String> chromosomeMap = buildChromosomeMap(dbsnpTabixReader);
             Map<String, GwasAssociation> gwasMap = new HashMap<>();
-            logger.info("Opening dbSNP tabix file " + dbSnpTabixFile + " ...");
-            dbsnpTabixReader = new TabixReader(dbSnpTabixFile.toString());
 
             long processedGwasLines = 0;
 
-            logger.info("Parsing GWAS catalog file ...");
+            logger.info("Parsing GWAS catalog file {} ...", gwasFile);
+            String line;
             while ((line = inputReader.readLine()) != null) {
+                ++lineCounter;
                 if (!line.isEmpty()) {
                     processedGwasLines++;
                     if (processedGwasLines % 10000 == 0) {
                         logger.info("{} lines parsed", processedGwasLines);
                     }
 
-                    processGwasCatalogLine(line.split("\t"), dbsnpTabixReader, gwasMap);
+                    processGwasCatalogLine(line.split("\t"), dbsnpTabixReader, gwasMap, chromosomeMap);
                 }
             }
-            dbsnpTabixReader.close();
 
             logger.info("Updating clinical variant annotation...");
             long counter = 0;
@@ -118,16 +116,9 @@ public class GwasIndexer extends ClinicalIndexer {
                 rdb.put(entry.getKey().getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
             this.printSummary(processedGwasLines, gwasMap);
-        } catch (RocksDBException | IOException  e) {
+        } catch (RocksDBException | IOException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing GWAS catalog file");
             throw e;
-        } finally {
-            if (inputReader != null) {
-                inputReader.close();
-            }
-            if (dbsnpTabixReader != null) {
-                dbsnpTabixReader.close();
-            }
         }
     }
 
@@ -184,13 +175,14 @@ public class GwasIndexer extends ClinicalIndexer {
     37 GENOTYPING_TECHNOLOGY* +: Genotyping technology/ies used in this study, with additional array information (ex. Immunochip or Exome
        array) in brackets.
 */
-    private void processGwasCatalogLine(String[] values, TabixReader dbsnpTabixReader, Map<String, GwasAssociation> gwasMap) {
+    private void processGwasCatalogLine(String[] values, TabixReader dbsnpTabixReader, Map<String, GwasAssociation> gwasMap,
+                                        Map<String, String> chromosomeMap) throws IOException {
         Integer start = parseStart(values);
         if (start != null) {
             String chromosome = parseChromosome(values[11]);
             if (StringUtils.isNotEmpty(chromosome)) {
                 String snpId = "rs" + values[23].trim();
-                String[] refAndAlt = getRefAndAltFromDbsnp(chromosome, start, snpId, dbsnpTabixReader);
+                String[] refAndAlt = getRefAndAltFromDbsnp(chromosome, start, snpId, dbsnpTabixReader, chromosomeMap);
                 if (refAndAlt != null) {
                     // Create variant
                     Variant variant;
@@ -270,21 +262,27 @@ public class GwasIndexer extends ClinicalIndexer {
 
                     // Scores management
                     GwasAssociationStudyTraitScores scores = new GwasAssociationStudyTraitScores();
-                    try {
-                        scores.setPValue(Double.parseDouble(values[27]));
-                    } catch (NumberFormatException e) {
-//                        logger.warn(e.getMessage() + ". Parsing pValue: " + values[27]);
+                    if (StringUtils.isNotEmpty(values[27])) {
+                        try {
+                            scores.setPValue(Double.parseDouble(values[27]));
+                        } catch (NumberFormatException e) {
+                            logger.warn(e.getMessage() + ". Parsing pValue: " + values[27]);
+                        }
                     }
-                    try {
-                        scores.setPValueMlog(Double.parseDouble(values[28]));
-                    } catch (NumberFormatException e) {
-//                        logger.warn(e.getMessage() + ". Parsing pValue mlog: " + values[28]);
+                    if (StringUtils.isNotEmpty(values[28])) {
+                        try {
+                            scores.setPValueMlog(Double.parseDouble(values[28]));
+                        } catch (NumberFormatException e) {
+                            logger.warn(e.getMessage() + ". Parsing pValue mlog: " + values[28]);
+                        }
                     }
                     scores.setPValueText(values[29]);
-                    try {
-                        scores.setOrBeta(Double.parseDouble(values[30]));
-                    } catch (NumberFormatException e) {
-//                        logger.warn(e.getMessage() + ". Parsing Odd or beta: " + values[30]);
+                    if (StringUtils.isNotEmpty(values[30])) {
+                        try {
+                            scores.setOrBeta(Double.parseDouble(values[30]));
+                        } catch (NumberFormatException e) {
+                            logger.warn(e.getMessage() + ". Parsing Odd or beta: " + values[30]);
+                        }
                     }
                     scores.setPercentCI(values[31]);
 
@@ -301,15 +299,15 @@ public class GwasIndexer extends ClinicalIndexer {
                         gwasMap.put(key, gwas);
                     }
                 } else {
-//                    logger.warn("Variant not found in dbSNP " + snpId + ". Line: " + StringUtils.join(values, "\t\t\t"));
+                    logger.warn("dbSNP {} not found. Line: {}", snpId, lineCounter);
                     gwasLinesNotFoundInDbsnp++;
                 }
             } else {
-//                logger.warn("Invalid chromosome " + chromosome + ". Line: " + StringUtils.join(values, "\t\t\t"));
+                logger.warn("Invalid chromosome {}. Line: {}", chromosome, lineCounter);
                 invalidChromosome++;
             }
         } else {
-//            logger.warn("Invalid position " + start + ". Line: " + StringUtils.join(values, "\t\t\t"));
+            logger.warn("Invalid position {}. Line: {}", start, lineCounter);
             invalidStartRecords++;
         }
     }
@@ -342,6 +340,39 @@ public class GwasIndexer extends ClinicalIndexer {
         return transformedChromosome;
     }
 
+    private Map<String, String> buildChromosomeMap(TabixReader dbsnpTabixReader) {
+        List<String> chroms = dbsnpTabixReader.getChromosomes().stream().filter(name -> name.startsWith("NC_"))
+                .collect(Collectors.toList());
+
+        Map<String, String> chromMap = new HashMap<>();
+        for (int i = 1; i < 22; i++) {
+            chromMap.put(Integer.toString(i), Integer.toString(i));
+        }
+        chromMap.put("X", "X");
+        chromMap.put("Y", "Y");
+        chromMap.put("MT", "MT");
+
+        for (String chrom : chroms) {
+            String[] split = chrom.split("[_\\.]");
+            int value = Integer.parseInt(split[1]);
+            switch (value) {
+                case 23:
+                    chromMap.put("X", chrom);
+                    break;
+                case 24:
+                    chromMap.put("Y", chrom);
+                    break;
+                case 12920:
+                    chromMap.put("MT", chrom);
+                    break;
+                default:
+                    chromMap.put(Integer.toString(value), chrom);
+                    break;
+            }
+        }
+        return chromMap;
+    }
+
     private Float parseFloat(String value) {
         Float riskAlleleFrequency = null;
         if (NumberUtils.isNumber(value)) {
@@ -350,29 +381,33 @@ public class GwasIndexer extends ClinicalIndexer {
         return riskAlleleFrequency;
     }
 
-    private String[] getRefAndAltFromDbsnp(String chromosome, Integer start, String snpId, TabixReader dbsnpTabixReader) {
+    private String[] getRefAndAltFromDbsnp(String chromosome, Integer start, String snpId, TabixReader dbsnpTabixReader,
+                                           Map<String, String> chromosomeMap) throws IOException {
+        boolean found = false;
+        Set<String> foundSnpIds = new HashSet<>();
         String[] refAndAlt = null;
 
-        TabixReader.Iterator dbsnpIterator = dbsnpTabixReader.query(chromosome + ":" + start + "-" + start);
-        try {
-            String dbSnpRecord = dbsnpIterator.next();
-            boolean found = false;
-            while (dbSnpRecord != null && !found) {
-                String[] dbsnpFields = dbSnpRecord.split("\t");
+        String query = chromosomeMap.get(chromosome) + ":" + start + "-" + start;
+        TabixReader.Iterator dbsnpIterator = dbsnpTabixReader.query(query);
+        String dbSnpRecord = null;
+        dbSnpRecord = dbsnpIterator.next();
+        while (dbSnpRecord != null && !found) {
+            String[] dbsnpFields = dbSnpRecord.split("\t");
 
-                if (snpId.equalsIgnoreCase(dbsnpFields[2])) {
-                    refAndAlt = new String[2];
-                    refAndAlt[REF] = dbsnpFields[3];
-                    refAndAlt[ALT] = dbsnpFields[4];
-                    found = true;
-                }
-
-                dbSnpRecord = dbsnpIterator.next();
+            if (snpId.equalsIgnoreCase(dbsnpFields[2])) {
+                refAndAlt = new String[2];
+                refAndAlt[REF] = dbsnpFields[3];
+                refAndAlt[ALT] = dbsnpFields[4];
+                found = true;
+            } else {
+                foundSnpIds.add(dbsnpFields[2]);
             }
-        } catch (IOException e) {
-            logger.warn("Error reading position '" + chromosome + ":" + start + "' in dbSNP: " + e.getMessage());
-        }
 
+            dbSnpRecord = dbsnpIterator.next();
+        }
+        if (!found) {
+            logger.warn("dbSNP {} not found from query {}. Found: {}", snpId, query, foundSnpIds);
+        }
         return refAndAlt;
     }
 

@@ -82,8 +82,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadRefSeq(refseqFolder));
         downloadFiles.add(downloadMane(geneFolder));
         downloadFiles.add(downloadLrg(geneFolder));
-        downloadFiles.add(downloadHgnc(geneFolder));
-        downloadFiles.add(downloadCancerHotspot(geneFolder));
         downloadFiles.add(downloadDrugData(geneFolder));
         downloadFiles.addAll(downloadGeneUniprotXref(geneFolder));
         downloadFiles.add(downloadGeneExpressionAtlas(geneFolder));
@@ -204,30 +202,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             String url = configuration.getDownload().getLrg().getHost();
             saveVersionData(EtlCommons.GENE_DATA, "LRG", configuration.getDownload().getLrg().getVersion(),
                     getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("lrgVersion.json"));
-            String[] array = url.split("/");
-            return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
-        }
-        return null;
-    }
-
-    private DownloadFile downloadHgnc(Path geneFolder) throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading HGNC ...");
-            String url = configuration.getDownload().getHgnc().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, "HGNC_GENE", configuration.getDownload().getHgnc().getVersion(),
-                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("hgncVersion.json"));
-            String[] array = url.split("/");
-            return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
-        }
-        return null;
-    }
-
-    private DownloadFile downloadCancerHotspot(Path geneFolder) throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading Cancer Hotspot ...");
-            String url = configuration.getDownload().getCancerHotspot().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, "CANCER_HOTSPOT", configuration.getDownload().getHgnc().getVersion(),
-                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("cancerHotspotVersion.json"));
             String[] array = url.split("/");
             return downloadFile(url, geneFolder.resolve(array[array.length - 1]).toString());
         }

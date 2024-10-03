@@ -81,8 +81,10 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             url = configuration.getDownload().getClinvarVariationAllele().getHost();
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString()));
             clinvarUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
-                    clinicalFolder.resolve("clinvarVersion.json"));
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, configuration.getDownload().getClinvar()
+                            .getVersion(), getTimeStamp(), clinvarUrls, clinicalFolder.resolve("clinvarVersion.json"));
+
+            logger.info("\t\tDone");
 
             // Gwas catalog
             logger.info("\t\tDownloading GWAS catalog file ...");
@@ -91,6 +93,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString()));
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, gwasCatalog.getVersion(), getTimeStamp(),
                     Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
+            logger.info("\t\tDone");
 
 //            List<String> hgvsList = getDocmHgvsList();
 //            if (!hgvsList.isEmpty()) {
@@ -236,10 +239,4 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 
         return hgvsList;
     }
-
-    private String getClinVarVersion() {
-        // ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz
-        return configuration.getDownload().getClinvar().getHost().split("_")[1].split("\\.")[0];
-    }
-
 }
