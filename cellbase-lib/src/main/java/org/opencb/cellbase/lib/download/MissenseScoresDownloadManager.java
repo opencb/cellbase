@@ -18,13 +18,15 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class MissenseScoresDownloadManager extends AbstractDownloadManager {
 
@@ -34,23 +36,42 @@ public class MissenseScoresDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadRevel());
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), MISSENSE_VARIATION_SCORE_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        logger.info(DOWNLOADING_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        DownloadFile downloadFile = downloadRevel();
+
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(MISSENSE_VARIATION_SCORE_DATA));
+
+        return Collections.singletonList(downloadFile);
     }
 
-    public DownloadFile downloadRevel() throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading Revel data ...");
+    public DownloadFile downloadRevel() throws IOException, InterruptedException, CellBaseException {
+        DownloadFile downloadFile = null;
 
-            Path missensePredictionScore = downloadFolder.resolve(EtlCommons.MISSENSE_VARIATION_SCORE_DATA);
-            Files.createDirectories(missensePredictionScore);
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
 
-            String url = configuration.getDownload().getRevel().getHost();
+        // Check if the species is supported
+        if (configuration.getDownload().getRevel().getFiles().containsKey(prefixId + REVEL_FILE_ID)) {
+            logger.info(DOWNLOADING_MSG, getDataName(REVEL_DATA));
 
-            saveVersionData(EtlCommons.MISSENSE_VARIATION_SCORE_DATA, "Revel", null, getTimeStamp(),
-                    Collections.singletonList(url), missensePredictionScore.resolve("revelVersion.json"));
-            return downloadFile(url, missensePredictionScore.resolve("revel_grch38_all_chromosomes.csv.zip").toString());
+            // Create the REVEL download path
+            Path revelDownloadPath = downloadFolder.resolve(MISSENSE_VARIATION_SCORE_DATA).resolve(REVEL_DATA);
+            Files.createDirectories(revelDownloadPath);
+
+            // Download REVEL and save data source
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), prefixId + REVEL_FILE_ID, REVEL_DATA,
+                    revelDownloadPath);
+
+            logger.info(DOWNLOADING_MSG, getDataName(REVEL_DATA));
         }
-        return null;
+
+        return downloadFile;
     }
 }

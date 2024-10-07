@@ -97,7 +97,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease.getRelease());
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
@@ -121,7 +121,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                  DataRelease dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
 
 
         // Set decompose MNV behaviour
@@ -196,7 +196,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, apiKey, cellbaseManagerFactory);
+                dataRelease, apiKey, cellbaseManagerFactory, configuration);
         List<CellBaseDataResult<VariantAnnotation>> queryResults = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
                 queryOptions);
         return queryResults;

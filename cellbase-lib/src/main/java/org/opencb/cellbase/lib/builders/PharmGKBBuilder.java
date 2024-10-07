@@ -23,22 +23,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.pharma.*;
 import org.opencb.biodata.models.pharma.guideline.BasicObject;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class PharmGKBBuilder extends CellBaseBuilder {
+public class PharmGKBBuilder extends AbstractBuilder {
 
-    private final Path inputDir;
-    private final Path pharmGKBDir;
+    private final Path pharmGkbDownloadPath;
 
     private static final String CHEMICALS_BASENAME = "chemicals";
     private static final String CHEMICALS_TSV_FILENAME = "chemicals.tsv";
@@ -88,21 +91,25 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private static final String PHARMGKB_LAST_UPDATE_DATE_KEY = "PHARMGKB_LAST_UPDATE_DATE";
     private static final String PHARMGKB_IS_VIP_KEY = "PHARMGKB_IS_VIP";
 
-    public PharmGKBBuilder(Path inputDir, CellBaseFileSerializer serializer) {
+    public PharmGKBBuilder(Path parmGkbDownloadPath, CellBaseFileSerializer serializer) {
         super(serializer);
-
-        this.inputDir = inputDir;
-        this.pharmGKBDir = inputDir.resolve(PHARMGKB_DATA);
+        this.pharmGkbDownloadPath = parmGkbDownloadPath;
     }
 
     @Override
     public void parse() throws Exception {
-        // Check input folder
-        FileUtils.checkDirectory(inputDir);
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
 
-        // PharmGKB
-        FileUtils.checkDirectory(pharmGKBDir);
-        logger.info("Parsing {} files and building the data models...", PHARMGKB_NAME);
+        // Sanity check
+        checkDirectory(pharmGkbDownloadPath, getDataName(PHARMGKB_DATA));
+
+        // Check PharmGKB files
+        DataSource dataSource = dataSourceReader.readValue(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA)).toFile());
+        List<File> pharmGkbFiles = checkFiles(dataSource, pharmGkbDownloadPath, getDataCategory(PHARMGKB_DATA) + "/"
+                + getDataName(PHARMGKB_DATA));
+
+        // Unzip downloaded file
+        unzipDownloadedFiles(pharmGkbFiles);
 
         // Parse chemical file
         Map<String, PharmaChemical> chemicalsMap = parseChemicalFile();
@@ -112,8 +119,6 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
         // Parse gene file
         parseGeneFile(chemicalsMap);
-
-        logger.info("Parsing {} files finished.", PHARMGKB_NAME);
 
         // Generation the pharmacogenomics JSON file
         logger.info("Writing {} JSON file to {} ...", PHARMACOGENOMICS_DATA, serializer.getOutdir());
@@ -125,11 +130,14 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         serializer.close();
-        logger.info("Writing {} JSON file done!", PHARMACOGENOMICS_DATA);
+
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
     }
 
     private Map<String, PharmaChemical> parseChemicalFile() throws IOException {
-        Path chemicalsFile = pharmGKBDir.resolve(CHEMICALS_BASENAME).resolve(CHEMICALS_TSV_FILENAME);
+        Path chemicalsFile = serializer.getOutdir().resolve(CHEMICALS_BASENAME).resolve(CHEMICALS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, chemicalsFile);
+
         Map<String, PharmaChemical> chemicalsMap = new HashMap<>();
         try (BufferedReader br = FileUtils.newBufferedReader(chemicalsFile)) {
             // Skip first line, i.e. the header line
@@ -146,7 +154,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 // Label Has Dosing Info  Has Rx Annotation  RxNorm Identifiers  ATC Identifiers  PubChem Compound Identifiers
                 PharmaChemical pharmaChemical = new PharmaChemical()
                         .setId(fields[0])
-                        .setSource(PHARMGKB_NAME)
+                        .setSource(PHARMGKB_DATA)
                         .setName(fields[1])
                         .setSmiles(fields[7])
                         .setInChI(fields[8]);
@@ -177,6 +185,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
         logger.info("Number of Chemical items read {}", chemicalsMap.size());
 
+        logger.info(PARSING_DONE_LOG_MESSAGE, chemicalsFile);
         return chemicalsMap;
     }
 
@@ -192,8 +201,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         Map<String, Map<String, Object>> variantMap = parseVariantFile();
 
         // clinical_annotations.tsv
-        try (BufferedReader br = FileUtils.newBufferedReader(pharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME)
-                .resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME))) {
+        Path clinAnnotPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, clinAnnotPath);
+        try (BufferedReader br = FileUtils.newBufferedReader(clinAnnotPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
@@ -278,6 +288,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 }
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, clinAnnotPath);
 
         // Update the clinical annotation map by parsing the clinical annotation evidences
         parseClinicalAnnotationEvidenceFile(variantAnnotationMap);
@@ -300,7 +311,9 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private Map<String, Map<String, Object>> parseVariantFile() throws IOException {
         Map<String, Map<String, Object>> variantMap = new HashMap<>();
         // Parse the variant file (i.e., variants.tsv)
-        Path varPath = pharmGKBDir.resolve(VARIANTS_BASENAME).resolve(VARIANTS_TSV_FILENAME);
+        Path varPath = serializer.getOutdir().resolve(VARIANTS_BASENAME).resolve(VARIANTS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, varPath);
+
         try (BufferedReader br = FileUtils.newBufferedReader(varPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -367,6 +380,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
         logger.info("Number of variants = {}", variantMap.size());
 
+        logger.info(PARSING_DONE_LOG_MESSAGE, varPath);
         return variantMap;
     }
 
@@ -385,7 +399,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         parseStudyParameterFile(variantAssociationMap);
 
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
-        Path evidencesPath = pharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_EVIDENCE_TSV_FILENAME);
+        Path evidencesPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_EVIDENCE_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, evidencesPath);
         try (BufferedReader br = FileUtils.newBufferedReader(evidencesPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -440,12 +455,14 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                         break;
                     }
                     default: {
-                        logger.warn("Unknown evidence type '{}': this evidence is skipped. Valid evidence types are: {}",
-                                evidenceType,
-                                StringUtils.join(
-                                        Arrays.asList(VARIANT_ANNOTATION_EVIDENCE_TYPE, GUIDELINE_ANNOTATION_EVIDENCE_TYPE,
-                                                DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE,
-                                                PHENOTYPE_ANNOTATION_EVIDENCE_TYPE), ","));
+                        if (logger.isWarnEnabled()) {
+                            logger.warn("Unknown evidence type '{}': this evidence is skipped. Valid evidence types are: {}",
+                                    evidenceType,
+                                    StringUtils.join(
+                                            Arrays.asList(VARIANT_ANNOTATION_EVIDENCE_TYPE, GUIDELINE_ANNOTATION_EVIDENCE_TYPE,
+                                                    DRUG_LABEL_ANNOTATION_EVIDENCE_TYPE, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE,
+                                                    PHENOTYPE_ANNOTATION_EVIDENCE_TYPE), ","));
+                        }
                         break;
                     }
                 }
@@ -463,11 +480,14 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 }
             }
         }
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, evidencesPath);
     }
 
     private void parseClinicalAnnotationAlleleFile(Map<String, PharmaVariantAnnotation> variantAnnotationMap) throws IOException {
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
-        Path allelesPath = pharmGKBDir.resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_ALLELES_TSV_FILENAME);
+        Path allelesPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_ALLELES_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, allelesPath);
         try (BufferedReader br = FileUtils.newBufferedReader(allelesPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -502,12 +522,14 @@ public class PharmGKBBuilder extends CellBaseBuilder {
                 }
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, allelesPath);
     }
 
     private void parseVariantAnnotationFile(Map<String, PharmaVariantAssociation> variantAssociationMap) throws IOException {
         // For CellBase, variant association corresponds to PharmGKB variant annotation
         // Parse the variant annotation file (i.e., var_drug_ann.tsv)
-        Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(VARIANT_ANNOTATIONS_TSV_FILENAME);
+        Path varDrugPath = serializer.getOutdir().resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(VARIANT_ANNOTATIONS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, varDrugPath);
         int counter = 0;
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
             // Skip first line, i.e. the header line
@@ -562,6 +584,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         logger.info("Number of variant annotations = {}", counter);
+        logger.info(PARSING_DONE_LOG_MESSAGE, varDrugPath);
     }
 
     private Map<String, PharmaGuidelineAnnotation> parseGuidelineAnnotationFiles() throws IOException {
@@ -571,7 +594,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         ObjectReader objectReader = mapper.readerFor(PharmaGuidelineAnnotation.class);
 
         // Parse the guideline annotations JSON files
-        Path guidelinesPath = pharmGKBDir.resolve(GUIDELINE_ANNOTATIONS_BASENAME);
+        Path guidelinesPath = serializer.getOutdir().resolve(GUIDELINE_ANNOTATIONS_BASENAME);
         FileUtils.checkDirectory(guidelinesPath);
         for (File file : Objects.requireNonNull(guidelinesPath.toFile().listFiles())) {
             if (file.getName().endsWith("json")) {
@@ -593,7 +616,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     private Map<String, PharmaDrugLabelAnnotation> parseDrugLabelAnnotationFile() throws IOException {
         Map<String, PharmaDrugLabelAnnotation> drugLabelAnnotationMap = new HashMap<>();
         // Parse the drug labels annotations file (i.e., drugLabels.tsv)
-        Path drugLabelPath = pharmGKBDir.resolve(DRUG_LABELS_BASENAME).resolve(DRUG_LABELS_TSV_FILENAME);
+        Path drugLabelPath = serializer.getOutdir().resolve(DRUG_LABELS_BASENAME).resolve(DRUG_LABELS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, drugLabelPath);
         try (BufferedReader br = FileUtils.newBufferedReader(drugLabelPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -631,12 +655,15 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
         logger.info("Number of drug label annotations = {}", drugLabelAnnotationMap.size());
 
+        logger.info(PARSING_DONE_LOG_MESSAGE, drugLabelPath);
         return drugLabelAnnotationMap;
     }
 
     private void parsePhenotypeAnnotationFile(Map<String, PharmaVariantAssociation> variantAssociationMap) throws IOException {
         // Parse the variant annotation file (i.e., var_pheno_ann.tsv)
-        Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(PHENOTYPE_ANNOTATIONS_TSV_FILENAME);
+        Path varDrugPath = serializer.getOutdir().resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(PHENOTYPE_ANNOTATIONS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, varDrugPath);
+
         int counter = 0;
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
             // Skip first line, i.e. the header line
@@ -691,11 +718,13 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         logger.info("Number of phenotype annotations = {}", counter);
+        logger.info(PARSING_DONE_LOG_MESSAGE, varDrugPath);
     }
 
     private void parseFunctionalAnnotationFile(Map<String, PharmaVariantAssociation> variantAssociationMap) throws IOException {
         // Parse the variant annotation file (i.e., var_fa_ann.tsv)
-        Path varDrugPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(FUNCTIONAL_ANNOTATIONS_TSV_FILENAME);
+        Path varDrugPath = serializer.getOutdir().resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(FUNCTIONAL_ANNOTATIONS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, varDrugPath);
         int counter = 0;
         try (BufferedReader br = FileUtils.newBufferedReader(varDrugPath)) {
             // Skip first line, i.e. the header line
@@ -751,12 +780,14 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         logger.info("Number of variant annotations = {}", counter);
+        logger.info(PARSING_DONE_LOG_MESSAGE, varDrugPath);
     }
 
     private void parseStudyParameterFile(Map<String, PharmaVariantAssociation> variantAssociationMap) throws IOException {
         Map<String, List<PharmaStudyParameters>> studyParametersMap = new HashMap<>();
         // Parse the study parameters file (i.e., study_parameters.tsv)
-        Path studyParamsPath = pharmGKBDir.resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(STUDY_PARAMETERS_TSV_FILENAME);
+        Path studyParamsPath = serializer.getOutdir().resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(STUDY_PARAMETERS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, studyParamsPath);
         try (BufferedReader br = FileUtils.newBufferedReader(studyParamsPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -807,6 +838,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         logger.info("Number of study parameters lines = {}", studyParametersMap.size());
+        logger.info(PARSING_DONE_LOG_MESSAGE, studyParamsPath);
 
         for (Map.Entry<String, List<PharmaStudyParameters>> entry : studyParametersMap.entrySet()) {
             if (variantAssociationMap.containsKey(entry.getKey())) {
@@ -861,7 +893,8 @@ public class PharmGKBBuilder extends CellBaseBuilder {
 
         // Parse the genes file (i.e., genes.tsv)
         Map<String, PharmaGeneAnnotation> geneAnnotationMapByPgkbGeneId = new HashMap<>();
-        Path genesPath = pharmGKBDir.resolve(GENES_BASENAME).resolve(GENES_TSV_FILENAME);
+        Path genesPath = serializer.getOutdir().resolve(GENES_BASENAME).resolve(GENES_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, genesPath);
         try (BufferedReader br = FileUtils.newBufferedReader(genesPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -940,13 +973,15 @@ public class PharmGKBBuilder extends CellBaseBuilder {
         }
 
         logger.info("Number of parsed genes = {}", geneAnnotationMapByPgkbGeneId.size());
+        logger.info(PARSING_DONE_LOG_MESSAGE, genesPath);
     }
 
     private void parseChemicalGeneRelationships(Map<String, Set<String>> pgkbGeneIdMapByChemicalName,
                                                 Map<String, PharmaGeneAnnotation> geneAnnotationMapByPgkbGeneId) throws IOException {
         int counter = 0;
         // Parse the genes file (i.e., relationships.tsv)
-        Path relationshipsPath = pharmGKBDir.resolve(RELATIONSHIPS_BASENAME).resolve(RELATIONSHIPS_TSV_FILENAME);
+        Path relationshipsPath = serializer.getOutdir().resolve(RELATIONSHIPS_BASENAME).resolve(RELATIONSHIPS_TSV_FILENAME);
+        logger.info(PARSING_LOG_MESSAGE, relationshipsPath);
         try (BufferedReader br = FileUtils.newBufferedReader(relationshipsPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
@@ -986,6 +1021,7 @@ public class PharmGKBBuilder extends CellBaseBuilder {
             }
         }
         logger.info("Number of parsed {}-{} relationships = {}", GENE_ENTITY, CHEMICAL_ENTITY, counter);
+        logger.info(PARSING_DONE_LOG_MESSAGE, relationshipsPath);
     }
 
     private List<String> stringFieldToList(String field) {
@@ -1011,6 +1047,29 @@ public class PharmGKBBuilder extends CellBaseBuilder {
     }
 
     private List<String> getHaplotypeList(String value) {
-        return Arrays.stream(value.split(",")).map(s -> s.trim()).collect(Collectors.toList());
+        return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
+    }
+
+    private void unzipDownloadedFiles(List<File> pharmGkbFiles) throws CellBaseException {
+        // Unzip
+        for (File pharmGgkFile : pharmGkbFiles) {
+            logger.info("Unzip file: {}", pharmGgkFile);
+            try {
+                String outPath = serializer.getOutdir().resolve(pharmGgkFile.getName().split("\\.")[0]).toString();
+                List<String> params = Arrays.asList("-d", outPath, "-o", pharmGgkFile.toString());
+                EtlCommons.runCommandLineProcess(null, "unzip", params, Paths.get(outPath + ".log"));
+            } catch (CellBaseException e) {
+                if (pharmGgkFile.getName().contains(GUIDELINE_ANNOTATIONS_BASENAME)) {
+                    // It fails because of long filenames, so it does not raise any exception
+                    logger.warn(e.getMessage());
+                }
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing unzip in file " + pharmGgkFile, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("Error executing unzip in file " + pharmGgkFile, e);
+            }
+        }
     }
 }

@@ -30,16 +30,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static org.opencb.cellbase.lib.EtlCommons.DBSNP_NAME;
+import static org.opencb.cellbase.lib.EtlCommons.DBSNP_DATA;
 
 /**
  * Created by imedina on 06/11/15.
  */
-public class DbSnpBuilder extends CellBaseBuilder {
+public class DbSnpBuilder extends AbstractBuilder {
 
-    private final Path sourceVariationPath;
+    private final Path downloadPath;
     private final DownloadProperties.URLProperties dbSnpUrlProperties;
     private static final Map<String, String> CHROMOSOME_MAPPING;
+
+    public static final String DBSNP_OUTPUT_BASENAME = "dbsnp";
+    public static final String DBSNP_OUTPUT_FILENAME = DBSNP_OUTPUT_BASENAME + ".json.gz";
 
     static {
         CHROMOSOME_MAPPING = new HashMap<>();
@@ -69,9 +72,9 @@ public class DbSnpBuilder extends CellBaseBuilder {
         CHROMOSOME_MAPPING.put("NC_000024", "Y");
     }
 
-    public DbSnpBuilder(Path sourceVariationPath, DownloadProperties.URLProperties dbSnpUrlProperties, CellBaseSerializer serializer) {
+    public DbSnpBuilder(Path downloadPath, DownloadProperties.URLProperties dbSnpUrlProperties, CellBaseSerializer serializer) {
         super(serializer);
-        this.sourceVariationPath = sourceVariationPath;
+        this.downloadPath = downloadPath;
         this.dbSnpUrlProperties = dbSnpUrlProperties;
 
         logger = LoggerFactory.getLogger(DbSnpBuilder.class);
@@ -99,7 +102,7 @@ public class DbSnpBuilder extends CellBaseBuilder {
     */
     @Override
     public void parse() throws Exception {
-        Path dbSnpFilePath = sourceVariationPath.resolve(Paths.get(dbSnpUrlProperties.getHost()).getFileName());
+        Path dbSnpFilePath = downloadPath.resolve(Paths.get(dbSnpUrlProperties.getHost()).getFileName());
         FileUtils.checkPath(dbSnpFilePath);
 
         CellBaseFileSerializer fileSerializer = (CellBaseFileSerializer) serializer;
@@ -120,6 +123,7 @@ public class DbSnpBuilder extends CellBaseBuilder {
 
         SnpAnnotation snpAnnotation;
 
+        logger.info(PARSING_LOG_MESSAGE, dbSnpFilePath);
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(dbSnpFilePath)) {
             while ((line = bufferedReader.readLine()) != null) {
                 if (!line.startsWith("#")) {
@@ -209,11 +213,11 @@ public class DbSnpBuilder extends CellBaseBuilder {
                     snpAnnotation.setFlags(flags);
                     snpAnnotation.setAdditionalAttributes(additionalAttributes);
 
-                    Snp snp = new Snp(id, chromosome, position, ref, Arrays.asList(alt), type, DBSNP_NAME, version, snpAnnotation);
-                    fileSerializer.serialize(snp, DBSNP_NAME);
+                    Snp snp = new Snp(id, chromosome, position, ref, Arrays.asList(alt), type, DBSNP_DATA, version, snpAnnotation);
+                    fileSerializer.serialize(snp, DBSNP_DATA);
                 }
             }
         }
-        logger.info("Parsing finished.");
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 }

@@ -35,17 +35,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * Created by imedina on 03/02/15.
- */
+
 public abstract class CommandExecutor {
 
     protected String logLevel;
-//    protected boolean verbose;
     protected String conf;
-
-    @Deprecated
-    protected String configFile;
 
     protected String appHome;
 
@@ -55,35 +49,13 @@ public abstract class CommandExecutor {
     protected Logger logger;
 
     public CommandExecutor() {
-
     }
 
     public CommandExecutor(String logLevel, String conf) {
         this.logLevel = logLevel;
         this.conf = conf;
 
-        /**
-         * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
-         * then CELLBASE_HOME environment variable is used instead.
-         */
-        this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
-
-        if (StringUtils.isEmpty(conf)) {
-            this.conf = this.appHome + "/conf";
-        }
-
-        if (logLevel != null && !logLevel.isEmpty()) {
-            // We must call to this method
-            setLogLevel(logLevel);
-        }
-    }
-
-    public CommandExecutor(String logLevel, boolean verbose, String conf) {
-        this.logLevel = logLevel;
-//        this.verbose = verbose;
-        this.conf = conf;
-
-        /**
+        /*
          * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
          * then CELLBASE_HOME environment variable is used instead.
          */
@@ -124,29 +96,16 @@ public abstract class CommandExecutor {
         this.logLevel = logLevel;
     }
 
-//    public boolean isVerbose() {
-//        return verbose;
-//    }
-//
-//    public void setVerbose(boolean verbose) {
-//        this.verbose = verbose;
-//    }
-
-    public String getConfigFile() {
-        return configFile;
-    }
-
-    public void setConfigFile(String configFile) {
-        this.configFile = configFile;
-    }
-
     public Logger getLogger() {
         return logger;
     }
 
-    /*
+    /**
      * This method attempts to first data configuration from CLI parameter, if not present then uses
      * the configuration from installation directory, if not exists then loads JAR configuration.json or yml.
+     *
+     * @throws URISyntaxException If any URI problem occurs
+     * @throws IOException If any IO problem occurs
      */
     public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
         Path confPath = Paths.get(this.conf);
@@ -154,11 +113,13 @@ public abstract class CommandExecutor {
 
         if (Files.exists(confPath.resolve("configuration.json"))) {
             logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
-            this.configuration = CellBaseConfiguration.load(new FileInputStream(confPath.resolve("configuration.json").toFile()),
-                    CellBaseConfiguration.ConfigurationFileFormat.JSON);
+            this.configuration = CellBaseConfiguration
+                    .load(Files.newInputStream(confPath.resolve("configuration.json").toFile().toPath()),
+                            CellBaseConfiguration.ConfigurationFileFormat.JSON);
         } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
             logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
-            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));
+            this.configuration = CellBaseConfiguration
+                    .load(Files.newInputStream(new File(this.appHome + "/conf/configuration.yml").toPath()));
         } else {
             InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
             String configurationFilePath = "conf/configuration.json";
@@ -196,12 +157,6 @@ public abstract class CommandExecutor {
             } else {
                 throw new RuntimeException("Invalid configuration file, expecting client-configuration.json or client-configuration.yml");
             }
-        }
-    }
-
-    protected void makeDir(Path folderPath) throws IOException {
-        if (!Files.exists(folderPath)) {
-            Files.createDirectories(folderPath);
         }
     }
 }

@@ -19,14 +19,11 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.commons.exec.Command;
-import org.opencb.commons.utils.FileUtils;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,48 +38,41 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading PharmGKB files...");
-        DownloadProperties.URLProperties pharmGKB = configuration.getDownload().getPharmGKB();
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PHARMACOGENOMICS_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PHARMACOGENOMICS_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
+
+        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+
         Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
         Files.createDirectories(pharmgkbDownloadFolder);
 
-        List<String> urls = new ArrayList<>();
+        DownloadProperties.URLProperties pharmGKBConfig = configuration.getDownload().getPharmGKB();
+
+        DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
-        for (String url : pharmGKB.getFiles()) {
+
+        List<String> urls = new ArrayList<>();
+        for (String fileName : pharmGKBConfig.getFiles().values()) {
+            String url = pharmGKBConfig.getHost() + fileName;
             urls.add(url);
 
-            Path downloadedFileName = Paths.get(new URL(url).getPath()).getFileName();
-            Path downloadedFilePath = pharmgkbDownloadFolder.resolve(downloadedFileName);
-            logger.info("Downloading file {} to {}", url, downloadedFilePath);
-            DownloadFile downloadFile = downloadFile(url, downloadedFilePath.toString());
+            Path downloadedFilePath = pharmgkbDownloadFolder.resolve(getFilenameFromUrl(url));
+            logger.info(DOWNLOADING_FROM_TO_MSG, url, downloadedFilePath);
+            downloadFile = downloadFile(url, downloadedFilePath);
+            logger.info(OK_MSG);
             downloadFiles.add(downloadFile);
-
-            // Unzip downloaded file
-            unzip(downloadedFilePath.getParent(), downloadedFileName.toString(), Collections.emptyList(),
-                    pharmgkbDownloadFolder.resolve(downloadedFileName.toString().split("\\.")[0]));
         }
 
-        // Save versions
-        saveVersionData(PHARMACOGENOMICS_DATA, PHARMGKB_NAME, pharmGKB.getVersion(), getTimeStamp(), urls,
-                pharmgkbDownloadFolder.resolve(PHARMGKB_VERSION_FILENAME));
+        // Save data source
+        saveDataSource(PHARMGKB_DATA, pharmGKBConfig.getVersion(), getTimeStamp(), urls,
+                pharmgkbDownloadFolder.resolve(getDataVersionFilename(PHARMGKB_DATA)));
+
+        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
 
         return downloadFiles;
-    }
-
-    private void unzip(Path inPath, String zipFilename, List<String> outFilenames, Path outPath) throws IOException {
-        // Check zip file exists
-        FileUtils.checkFile(inPath.resolve(zipFilename));
-
-        // Unzip files if output dir does NOT exist
-        if (!outPath.toFile().exists()) {
-            logger.info("Unzipping {} into {}", zipFilename, outPath);
-            Command cmd = new Command("unzip -d " + outPath + " " + inPath.resolve(zipFilename));
-            cmd.run();
-            // Check if expected files exist
-            for (String outFilename : outFilenames) {
-                FileUtils.checkFile(outPath.resolve(outFilename));
-            }
-        }
     }
 }

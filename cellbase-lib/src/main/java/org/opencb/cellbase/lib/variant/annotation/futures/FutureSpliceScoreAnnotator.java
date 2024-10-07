@@ -26,7 +26,9 @@ import org.opencb.biodata.models.variant.avro.SpliceScores;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.VariantManager;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,22 +36,21 @@ import java.util.concurrent.*;
 
 public class FutureSpliceScoreAnnotator implements Callable<List<CellBaseDataResult<SpliceScore>>> {
     private List<Variant> variantList;
+
+    private QueryOptions queryOptions;
     private int dataRelease;
     private String apiKey;
-
     private VariantManager variantManager;
 
-    private Logger logger;
+    private static Logger logger = LoggerFactory.getLogger(FutureSpliceScoreAnnotator.class);
 
-    public FutureSpliceScoreAnnotator(List<Variant> variantList, int dataRelease, String apiKey, VariantManager variantManager,
-                                      Logger logger) {
+    public FutureSpliceScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions, int dataRelease, String apiKey,
+                               VariantManager variantManager) {
         this.variantList = variantList;
+        this.queryOptions = queryOptions;
         this.dataRelease = dataRelease;
         this.apiKey = apiKey;
-
         this.variantManager = variantManager;
-
-        this.logger = logger;
     }
 
     @Override

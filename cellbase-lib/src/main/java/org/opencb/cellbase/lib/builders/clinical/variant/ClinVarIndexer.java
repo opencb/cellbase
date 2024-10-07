@@ -41,11 +41,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.opencb.cellbase.lib.EtlCommons.CLINVAR_DATE;
-import static org.opencb.cellbase.lib.EtlCommons.CLINVAR_VERSION;
-
-//import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
-
 /**
  * Created by fjlopez on 28/09/16.
  */
@@ -78,11 +73,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String DIPLOTYPE = "Diplotype";
     private static final String VARIANT = "Variant";
     private static final char CLINICAL_SIGNIFICANCE_SEPARATOR = '/';
+
     private final Path clinvarXMLFiles;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
+
+    private final String version;
     private final String assembly;
+
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
     private int numberNoDiseaseTrait = 0;
@@ -94,15 +93,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final Set<ModeOfInheritance> RECESSIVE_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
-    public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
-                          Path clinvarEFOFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
-                          RocksDB rdb) throws IOException {
+    public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile, Path clinvarEFOFile,
+                          String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.clinvarXMLFiles = clinvarXMLFiles;
         this.clinvarSummaryFile = clinvarSummaryFile;
         this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
+        this.version = version;
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
@@ -310,7 +309,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, String clinicalHaplotypeString,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, CLINVAR_VERSION, CLINVAR_DATE);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, null);
         // Create a set to avoid situations like germline;germline;germline
         List<AlleleOrigin> alleleOrigin = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
@@ -391,7 +390,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, CLINVAR_VERSION, CLINVAR_DATE);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, null);
 //        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(

@@ -24,33 +24,38 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class AbstractDownloadManager {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private static final String DGV_NAME = "DGV";
+public abstract class AbstractDownloadManager {
 
-    private static final String GNOMAD_NAME = "gnomAD";
+    protected static final String DOWNLOADING_MSG = "Downloading {} ...";
+    protected static final String DOWNLOADING_DONE_MSG = "Downloading {} done.";
+    protected static final String CATEGORY_DOWNLOADING_MSG = "Downloading {}/{} ...";
+    protected static final String CATEGORY_DOWNLOADING_DONE_MSG = "Downloading {}/{} done.";
+    protected static final String DOWNLOADING_FROM_TO_MSG = "Downloading {} to {} ...";
+    protected static final String DATA_ALREADY_DOWNLOADED_MSG = "The file {} already exists, indicating that the data {} has already been"
+            + " downloaded.";
 
     protected String species;
     protected String assembly;
@@ -66,14 +71,22 @@ public class AbstractDownloadManager {
     protected Path downloadFolder;
     protected Path downloadLogFolder; // /download/log
     protected Path buildFolder; // <output>/<species>_<assembly>/generated-json
+
+    protected ObjectReader dataSourceReader;
+    protected ObjectWriter dataSourceWriter;
+
     protected Logger logger;
 
-    public AbstractDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
+    protected AbstractDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         this.species = species;
         this.assembly = assembly;
         this.outdir = outdir;
         this.configuration = configuration;
+
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        this.dataSourceReader = jsonObjectMapper.readerFor(DataSource.class);
+        this.dataSourceWriter = jsonObjectMapper.writerFor(DataSource.class);
 
         this.init();
     }
@@ -104,83 +117,130 @@ public class AbstractDownloadManager {
         // Prepare outdir
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
-        logger.info("Creating download dir " + downloadFolder.toString());
+        logger.info("Creating download dir: {}", downloadFolder);
         Files.createDirectories(downloadFolder);
 
         downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
-        logger.info("Creating download log dir " + downloadLogFolder.toString());
+        logger.info("Creating download log dir: {}", downloadLogFolder);
         Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
         buildFolder = outdir.resolve(speciesFolder + "/generated_json");
-        logger.info("Creating build dir " + buildFolder.toString());
+        logger.info("Creating build dir: {}", buildFolder);
         Files.createDirectories(buildFolder);
 
-        logger.info("Processing species " + speciesConfiguration.getScientificName());
+        logger.info("Processing species {}", speciesConfiguration.getScientificName());
     }
 
-    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
-        return null;
-    }
+    public abstract List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException;
 
-//    public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
-//        if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
-//             return null;
-//        }
-//        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            logger.info("Downloading DGV data ...");
-//
-//            Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
-//            Files.createDirectories(structuralVariantsFolder);
-//            String sourceFilename = (assemblyConfiguration.getName().equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
-//                    + "_variants_2016-05-15.txt";
-//            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
-//            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
-//                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
-//            return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
-//        }
-//        return null;
-//    }
-
-//    private String getDGVVersion(String sourceFilename) {
-//        return sourceFilename.split("\\.")[0].split("_")[3];
-//    }
-
-    protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
+    protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String data) {
         boolean hasInfo = true;
-        if (sp.getData() == null || !sp.getData().contains(info)) {
-            logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), info);
+        if (sp.getData() == null || !sp.getData().contains(data)) {
+            logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), data);
             hasInfo = false;
         }
         return hasInfo;
+    }
+
+    protected String getConfigurationFileIdPrefix(String scientificSpecies) {
+        String prefix = "";
+        if (StringUtils.isNotEmpty(scientificSpecies) && !scientificSpecies.equals("Homo sapiens") && scientificSpecies.contains(" ")) {
+            char c = scientificSpecies.charAt(0);
+            prefix = (c + scientificSpecies.split(" ")[1] + "_").toUpperCase();
+        }
+        return prefix;
+    }
+
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveDataSource(props, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveDataSource(DownloadProperties.URLProperties props, String fileId, String data, String chromosome,
+                                                     Path outPath) throws IOException, InterruptedException, CellBaseException {
+        String versionFilename = getDataVersionFilename(data);
+
+        // Download file
+        DownloadFile downloadFile = downloadDataSource(props, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, props.getVersion(), getTimeStamp(), Collections.singletonList(downloadFile.getUrl()),
+                outPath.resolve(versionFilename));
+
+        return downloadFile;
+    }
+
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            Path outPath) throws IOException, InterruptedException, CellBaseException {
+        return downloadAndSaveEnsemblDataSource(ensemblProps, fileId, data, null, outPath);
+    }
+
+    protected DownloadFile downloadAndSaveEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String data,
+                                                            String chromosome, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        // Download file
+        DownloadFile downloadFile = downloadEnsemblDataSource(ensemblProps, fileId, chromosome, outPath);
+
+        // Save data source
+        saveDataSource(data, "(" + getDataName(ENSEMBL_DATA) + " " + ensemblVersion + ")", getTimeStamp(),
+                Collections.singletonList(downloadFile.getUrl()), outPath.resolve(getDataVersionFilename(data)));
+
+        return downloadFile;
+    }
+
+    protected DownloadFile downloadDataSource(DownloadProperties.URLProperties props, String fileId, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadDataSource(props, fileId, null, outPath);
+    }
+
+    protected DownloadFile downloadDataSource(DownloadProperties.URLProperties props, String fileId,
+                                              String chromosome, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        String url = EtlCommons.getUrl(props, fileId, species, assembly, chromosome);
+        Path outFile = outPath.resolve(getFilenameFromUrl(url));
+        return downloadFile(url, outFile);
+    }
+
+    protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, Path outPath)
+            throws IOException, InterruptedException, CellBaseException {
+        return downloadEnsemblDataSource(ensemblProps, fileId, null, outPath);
+    }
+
+    protected DownloadFile downloadEnsemblDataSource(DownloadProperties.EnsemblProperties ensemblProps, String fileId, String chromosome,
+                                                     Path outPath) throws IOException, InterruptedException, CellBaseException {
+        String url = EtlCommons.getEnsemblUrl(ensemblProps, ensemblRelease, fileId, speciesShortName, assemblyConfiguration.getName(),
+                chromosome);
+        Path outFile = outPath.resolve(getFilenameFromUrl(url));
+        return downloadFile(url, outFile);
+    }
+
+    protected void saveDataSource(String data, String version, String date, List<String> urls, Path versionFilePath)
+            throws IOException, CellBaseException {
+        String name = getDataName(data);
+        String category = getDataCategory(data);
+        DataSource dataSource = new DataSource(data, name, category, version, date, urls);
+
+        if (StringUtils.isEmpty(version)) {
+            logger.warn("Version missing for data source {}/{}, using the date as version: {}", category, name, date);
+            dataSource.setVersion(date);
+        }
+
+        dataSourceWriter.writeValue(versionFilePath.toFile(), dataSource);
+        logger.info("Created the {} version file {} at {}", getDataName(data), versionFilePath.getFileName(), versionFilePath.getParent());
     }
 
     protected String getTimeStamp() {
         return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
     }
 
-    protected void saveVersionData(String data, String name, String version, String date, List<String> url, Path outputFilePath)
-            throws IOException {
-        Map<String, Object> versionDataMap = new HashMap<>();
-        versionDataMap.put("data", data);
-        versionDataMap.put("name", name);
-        versionDataMap.put("version", version);
-        versionDataMap.put("date", date);
-        versionDataMap.put("url", url);
-
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);
-    }
-
     protected String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
-        try {
-            BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
+        try (BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset())) {
             String line = null;
             for (int i = 0; i < lineNumber; i++) {
                 line = reader.readLine();
             }
-            reader.close();
             return line;
         } catch (IOException e) {
             e.printStackTrace();
@@ -216,115 +276,107 @@ public class AbstractDownloadManager {
         }
     }
 
-
-
-    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
-        return downloadFile(url, outputFileName, null);
+    protected DownloadFile downloadFile(String url, Path outputFile) throws IOException, InterruptedException, CellBaseException {
+        return downloadFile(url, outputFile, null);
     }
 
-    protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
-            throws IOException, InterruptedException {
-        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
+    protected DownloadFile downloadFile(String url, Path outputFile, List<String> wgetAdditionalArgs)
+            throws IOException, InterruptedException, CellBaseException {
+        DownloadFile downloadFile = new DownloadFile(url, outputFile.toAbsolutePath().toString(),
+                Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
-        if (Paths.get(outputFileName).toFile().exists()) {
-            logger.warn("File '{}' is already downloaded", outputFileName);
-            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, "File '" + outputFileName + "' is already downloaded", true);
+        final Path outputLog = downloadLogFolder.resolve(outputFile.getFileName().toString() + ".log");
+        if (Files.exists(outputFile)) {
+            logger.warn("File '{}' is already downloaded", outputFile);
+            setDownloadStatusAndMessage(outputFile, downloadFile, outputLog, true);
+            downloadFile.setMessage("File is already downloaded");
         } else {
-            final String outputLog = downloadLogFolder + "/" + Paths.get(outputFileName).toFile().getName() + ".log";
-            List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
+            logger.info(DOWNLOADING_FROM_TO_MSG, url, outputFile);
+            List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url,
+                    "-O", outputFile.toAbsolutePath().toString(),
+                    "-o", outputLog.toAbsolutePath().toString()));
             if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
                 wgetArgs.addAll(wgetAdditionalArgs);
             }
             boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
-            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
+            setDownloadStatusAndMessage(outputFile, downloadFile, outputLog, downloaded);
+            logger.info(OK_MSG);
         }
-        downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
-        return downloadFileInfo;
+        downloadFile.setElapsedTime(startTime, System.currentTimeMillis());
+        return downloadFile;
     }
 
-    private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded) {
+    private void setDownloadStatusAndMessage(Path outputFile, DownloadFile downloadFile, Path logFile, boolean downloaded) {
         if (downloaded) {
-            boolean validFileSize = validateDownloadFile(downloadFile, outputFileName, outputLog);
+            boolean validFileSize = validateDownloadFile(downloadFile, outputFile, logFile);
             if (validFileSize) {
                 downloadFile.setStatus(DownloadFile.Status.OK);
                 downloadFile.setMessage("File downloaded successfully");
             } else {
                 downloadFile.setStatus(DownloadFile.Status.ERROR);
                 downloadFile.setMessage("Expected downloaded file size " + downloadFile.getExpectedFileSize()
-                + ", Actual file size " + downloadFile.getActualFileSize());
+                        + ", actual file size " + downloadFile.getActualFileSize());
             }
         } else {
-            downloadFile.setMessage("See full error message in " + outputLog);
+            downloadFile.setMessage("See full error message in " + logFile);
             downloadFile.setStatus(DownloadFile.Status.ERROR);
-            // because we use the -O flag, a file will be written, even on error. See #467
-//            Files.deleteIfExists((new File(outputFileName)).toPath());
         }
     }
 
-    public static void writeDownloadLogFile(Path downloadFolder, List<DownloadFile> downloadFiles) throws IOException {
+    public void writeDownloadLogFile(Map<String, Object> params, List<DownloadFile> downloadFiles) throws IOException {
+        // Get current date and time
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        Path summaryPath = downloadLogFolder.resolve(timeStamp + "_summary.json");
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("params", params);
+        summary.put("downloadFiles", downloadFiles);
+
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
-        writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);
+        writer.writeValue(summaryPath.toFile(), summary);
     }
 
-    private boolean validateDownloadFile(DownloadFile downloadFile, String outputFileName, String outputFileLog) {
-        long expectedFileSize = getExpectedFileSize(outputFileLog);
-        long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
+    public boolean isAlreadyDownloaded(Path path, String dataName) {
+        if (Files.exists(path)) {
+            logger.info(DATA_ALREADY_DOWNLOADED_MSG, path.getFileName(), dataName);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean validateDownloadFile(DownloadFile downloadFile, Path outputFile, Path logFile) {
+        long expectedFileSize = getExpectedFileSize(logFile);
+        long actualFileSize = FileUtils.sizeOf(outputFile.toFile());
         downloadFile.setActualFileSize(actualFileSize);
         downloadFile.setExpectedFileSize(expectedFileSize);
         return expectedFileSize == actualFileSize;
     }
 
-    private long getExpectedFileSize(String outputFileLog) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(outputFileLog))) {
-            String line = null;
+    private long getExpectedFileSize(Path path) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {
+            String line;
             while ((line = reader.readLine()) != null) {
                 // looking for: Length: 13846591 (13M)
                 if (line.startsWith("Length:")) {
                     String[] parts = line.split("\\s");
-                    return Long.valueOf(parts[1]);
+                    return Long.parseLong(parts[1]);
                 }
             }
         } catch (Exception e) {
-            logger.info("Error getting expected file size " + e.getMessage());
+            logger.info("Error getting expected file size: {}. Stack trace: {}", e.getMessage(), Arrays.toString(e.getStackTrace()));
         }
         return -1;
-    }
-
-    protected String getVersionFromVersionLine(Path path, String tag) {
-        Files.exists(path);
-        try {
-            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
-            String line = reader.readLine();
-            // There shall be a line at the README.txt containing the version.
-            // e.g. The files in the current directory contain the data corresponding to the latest release
-            // (version 4.0, April 2016). ...
-            while (line != null) {
-                // tag specifies a certain string that must be found within the line supposed to contain the version
-                // info
-                if (line.contains(tag)) {
-                    String version = line.split("\\(")[1].split("\\)")[0];
-                    reader.close();
-                    return version;
-                }
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private String getEnsemblURL(SpeciesConfiguration sp) {
         // We need to find which is the correct Ensembl host URL.
         // This can different depending on if is a vertebrate species.
-        String ensemblHostUrl;
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            ensemblHostUrl = configuration.getDownload().getEnsembl().getUrl().getHost();
+            return configuration.getDownload().getEnsembl().getUrl().getHost();
         } else {
-            ensemblHostUrl = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
+            return configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
         }
-        return ensemblHostUrl;
     }
 }
 

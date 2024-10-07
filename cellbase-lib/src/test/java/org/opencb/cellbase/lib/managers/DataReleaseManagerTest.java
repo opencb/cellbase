@@ -152,7 +152,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
 
         DataRelease dataRelease = dataReleaseManager.get(1);
         VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey,
-                cellBaseManagerFactory);
+                cellBaseManagerFactory, cellBaseConfiguration);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
