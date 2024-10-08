@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
@@ -99,7 +100,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
         this.assembly = assembly;
     }
 
-    public void parse() throws IOException, RocksDBException {
+    public void parse() throws IOException, RocksDBException, CellBaseException {
 
         RocksDB rdb = null;
         Options dbOption = null;
