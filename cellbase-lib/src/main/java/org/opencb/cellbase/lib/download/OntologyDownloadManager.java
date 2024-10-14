@@ -36,7 +36,7 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
 
 
     public List<DownloadFile> download() throws IOException, InterruptedException {
-        logger.info("Downloading OBO files ...");
+        logger.info("Downloading obo files ...");
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
         Path oboFolder = downloadFolder.resolve("ontology");
@@ -44,22 +44,20 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
 
         String url = configuration.getDownload().getHpoObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("hp.obo").toString()));
+
         saveVersionData(EtlCommons.OBO_DATA, "HPO", getTimeStamp(), getTimeStamp(),
                 Collections.singletonList(url), buildFolder.resolve(EtlCommons.HPO_VERSION_FILE));
 
         url = configuration.getDownload().getGoObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("go-basic.obo").toString()));
+
         saveVersionData(EtlCommons.OBO_DATA, "GO", getTimeStamp(), getTimeStamp(),
                 Collections.singletonList(url), buildFolder.resolve(EtlCommons.GO_VERSION_FILE));
 
         url = configuration.getDownload().getDoidObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("doid.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "DO", getTimeStamp(), getTimeStamp(),
-                Collections.singletonList(url), buildFolder.resolve(EtlCommons.DO_VERSION_FILE));
 
-        url = configuration.getDownload().getMondoObo().getHost();
-        downloadFiles.add(downloadFile(url, oboFolder.resolve("mondo.obo").toString()));
-        saveVersionData(EtlCommons.OBO_DATA, "MONDO", getTimeStamp(), getTimeStamp(),
+        saveVersionData(EtlCommons.OBO_DATA, "DO", getTimeStamp(), getTimeStamp(),
                 Collections.singletonList(url), buildFolder.resolve(EtlCommons.DO_VERSION_FILE));
 
         return downloadFiles;
