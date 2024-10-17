@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
+import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.lib.EtlCommons;
