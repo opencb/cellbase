@@ -1,4 +1,4 @@
-basename: Manual Junit test the project
+name: Manual Junit test the project
 
 on:
   workflow_dispatch:
