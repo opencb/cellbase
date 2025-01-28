@@ -139,42 +139,41 @@
                 <version>3.2.3</version>
                 <executions>
                     <execution>
-                        <id>make-a-war</id>
-                        <phase>compile</phase>
+                        <id>generate-war</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>war</goal>
                         </goals>
+                        <configuration>
+                            <outputFileNameMapping>cellbase.war</outputFileNameMapping>
+                            <warName>cellbase</warName> <!-- Force the WAR name -->
+                            <webResources>
+                                <resource>
+                                    <directory>src/main/webapp/WEB-INF/</directory>
+                                    <targetPath>WEB-INF</targetPath>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </webResources>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <warName>${CELLBASE.WAR.NAME}</warName>
-                    <webResources>
-                        <resource>
-                            <directory>src/main/webapp/WEB-INF/</directory>
-                            <targetPath>WEB-INF</targetPath>
-                            <filtering>true</filtering>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
+
+            <!-- Plugin to package the main JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-<!--                <version>3.1.1</version>-->
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
                 <executions>
                     <execution>
-                        <phase>install</phase>
+                        <id>generate-jar</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>install-file</goal>
+                            <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <file>
-                                ${project.build.directory}/${project.artifactId}-${project.version}.jar
-                            </file>
+                            <!-- Dynamic name based on the version -->
+                            <finalName>${project.artifactId}-${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
