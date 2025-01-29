@@ -138,7 +138,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.3</version>
                 <configuration>
-                    <warName>cellbase</warName>
+                    <warName>${CELLBASE.WAR.NAME}</warName>
                     <webResources>
                         <resource>
                             <directory>src/main/webapp/WEB-INF/</directory>
