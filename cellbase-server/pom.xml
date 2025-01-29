@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cellbase-server</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
@@ -133,52 +133,66 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
-                <executions>
-                    <execution>
-                        <id>make-a-war</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <warName>${CELLBASE.WAR.NAME}</warName>
-                    <webResources>
-                        <resource>
-                            <directory>src/main/webapp/WEB-INF/</directory>
-                            <targetPath>WEB-INF</targetPath>
-                            <filtering>true</filtering>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-<!--                <version>3.1.1</version>-->
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <packaging>jar</packaging>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>${project.artifactId}</artifactId>
-                            <version>${project.version}</version>
-                            <file>
-                                ${project.build.directory}/${project.artifactId}-${project.version}.jar
-                            </file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.2.3</version>
+            <configuration>
+                <warName>cellbase</warName>
+                <webResources>
+                    <resource>
+                        <directory>src/main/webapp/WEB-INF/</directory>
+                        <targetPath>WEB-INF</targetPath>
+                        <filtering>true</filtering>
+                    </resource>
+                </webResources>
+            </configuration>
+        </plugin>
+
+        <!-- Plugin para generar el JAR -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+                <execution>
+                    <id>make-a-jar</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                    <configuration>
+                        <classifier>${project.version}</classifier>
+                        <finalName>${project.artifactId}</finalName>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+
+        <!-- Plugin para instalar el JAR -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>3.1.1</version>
+            <executions>
+                <execution>
+                    <id>install-jar</id>
+                    <phase>install</phase>
+                    <goals>
+                        <goal>install-file</goal>
+                    </goals>
+                    <configuration>
+                        <packaging>jar</packaging>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>${project.artifactId}</artifactId>
+                        <version>${project.version}</version>
+                        <file>
+                            ${project.build.directory}/${project.artifactId}-${project.version}.jar
+                        </file>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
         </plugins>
     </build>
 
