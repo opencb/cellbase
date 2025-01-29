@@ -148,26 +148,20 @@
                     </webResources>
                 </configuration>
             </plugin>
-
-            <!-- Plugin to generate the JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>make-a-jar</id>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
-                        <configuration>
-                            <classifier>${project.version}</classifier>
-                            <finalName>${project.artifactId}</finalName>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
 
             <!-- Plugin to install the JAR -->
             <plugin>
