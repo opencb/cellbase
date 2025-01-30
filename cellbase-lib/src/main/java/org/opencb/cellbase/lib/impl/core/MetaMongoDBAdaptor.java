@@ -50,11 +50,6 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     public MetaMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
 
-        init();
-    }
-
-
-    private void init() {
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
         mongoDBCollection = mongoDataStore.getCollection("metadata");
         apiKeyStatsMongoDBCollection = mongoDataStore.getCollection("apikey_stats", WriteConcern.ACKNOWLEDGED, ReadPreference.primary());

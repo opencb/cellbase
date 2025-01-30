@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
+
 public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCoreDBAdaptor<PublicationQuery, PubmedArticle> {
 
     private static final GenericDocumentComplexConverter<PubmedArticle> CONVERTER;
@@ -50,14 +52,6 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
 
     public PublicationMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        this.init();
-    }
-
-    private void init() {
-        logger.debug("PublicationMongoDBAdaptor: in 'constructor'");
-
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("pubmed");
     }
 
     @Override
@@ -66,7 +60,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
         Bson projection = getProjection(query);
         QueryOptions queryOptions = query.toQueryOptions();
 
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PUBMED_DATA, query.getDataRelease());
         MongoDBIterator<PubmedArticle> iterator = mongoDBCollection.iterator(null, bson, projection, CONVERTER, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
@@ -76,7 +70,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
                                                         String apiKey) throws CellBaseException {
         List<CellBaseDataResult<PubmedArticle>> results = new ArrayList<>();
         Bson projection = getProjection(queryOptions);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PUBMED_DATA, dataRelease);
         for (String id : ids) {
             List<Bson> orBsonList = new ArrayList<>(ids.size());
             orBsonList.add(Filters.eq("id", id));
@@ -89,7 +83,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
     @Override
     public CellBaseDataResult<String> distinct(PublicationQuery query) throws CellBaseException {
         Bson bsonDocument = parseQuery(query);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PUBMED_DATA, query.getDataRelease());
         return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument, String.class));
     }
 
@@ -102,7 +96,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
     public CellBaseDataResult groupBy(PublicationQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(PUBMED_DATA, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
 

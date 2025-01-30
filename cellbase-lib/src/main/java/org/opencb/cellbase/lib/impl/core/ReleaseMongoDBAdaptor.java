@@ -47,7 +47,7 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     private MongoDBCollection mongoDBCollection;
 
-    private final String DATA_RELEASE_COLLECTION_NAME = "data_release";
+    public static final String DATA_RELEASE_COLLECTION_NAME = "data_release";
 
     public ReleaseMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
