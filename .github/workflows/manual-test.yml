@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Opencga branch to run the tests'
+        description: 'Cellbase branch to run the tests'
         default: 'develop'
         required: true
       fail-never:

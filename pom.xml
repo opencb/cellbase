@@ -25,6 +25,7 @@
         <pycellbase.version>${project.version}</pycellbase.version>
         <java-common-libs.version>6.0.0-SNAPSHOT</java-common-libs.version>
         <biodata.version>4.0.0-SNAPSHOT</biodata.version>
+
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.11.4</jackson.version>
         <jackson-asl.version>1.9.13</jackson-asl.version>
@@ -39,7 +40,7 @@
         <swagger-annotations.version>1.6.5</swagger-annotations.version>
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <poi.version>4.1.2</poi.version>
-        <mongodb.version>4.8.2</mongodb.version>
+        <mongodb.version>4.11.4</mongodb.version>
         <junit.version>4.12</junit.version>
         <commons-codec.version>1.13</commons-codec.version>
         <jakarta.xml.bind-api.version>2.3.3</jakarta.xml.bind-api.version>
