@@ -2129,6 +2129,33 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         }
     }
 
+    @Test
+    public void testCaddApiKeyAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setApiKey(HGMD_CADD_ACCESS_API_KEY);
+
+        Variant variant = Variant.parseVariant("X:32896535:A:T");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertTrue(variantAnnotation.getFunctionalScore().size() > 0);
+    }
+
+    @Test
+    public void testNoCaddApiKeyAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("exclude", "pharmacogenomics");
+        queryOptions.put("normalize", true);
+
+        variantAnnotationCalculator.setApiKey(SPLICEAI_ACCESS_API_KEY);
+
+        Variant variant = Variant.parseVariant("X:32896535:A:T");
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        VariantAnnotation variantAnnotation = cellBaseDataResult.first();
+        assertTrue(CollectionUtils.isEmpty(variantAnnotation.getFunctionalScore()));
+    }
 
     private boolean containTraitAssociation(VariantAnnotation variantAnnotation, String source) {
         if (variantAnnotation == null) {
