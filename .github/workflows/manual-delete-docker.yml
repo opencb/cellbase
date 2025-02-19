@@ -1,0 +1,13 @@
+name: Manual Delete Docker Image
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  call-delete-docker:
+    name: Call Reusable Delete Docker Workflow
+    uses: opencb/cellbase/.github/workflows/reusable-delete-docker.yml@develop
+    with:
+      task: ${{ inputs.task }}
+    secrets: inherit
