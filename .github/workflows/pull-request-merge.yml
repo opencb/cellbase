@@ -9,8 +9,9 @@ on:
       - closed
 
 jobs:
-  delete-docker:
-    uses: opencb/java-common-libs/.github/workflows/delete-docker-hub-workflow.yml@develop
+  call-delete-docker:
+    name: Call Reusable Delete Docker Workflow
+    uses: opencb/cellbase/.github/workflows/reusable-delete-docker.yml@develop
     with:
-      cli: python3 ./build/cloud/docker/docker-build.py delete --images base --tag ${{ github.head_ref }}
+      task: ${{ github.head_ref }}
     secrets: inherit
