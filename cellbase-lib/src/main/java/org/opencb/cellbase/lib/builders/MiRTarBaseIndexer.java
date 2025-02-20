@@ -17,8 +17,6 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.models.core.MirnaTarget;
 import org.opencb.biodata.models.core.TargetGene;
 import org.opencb.commons.utils.FileUtils;
@@ -26,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,11 +49,6 @@ public class MiRTarBaseIndexer {
         logger.info(PARSING_LOG_MESSAGE, miRTarBaseFile);
 
         Map<String, List<MirnaTarget>> geneToMirna = new HashMap<>();
-
-//        String currentMiRTarBaseId = null;
-//        String currentMiRNA = null;
-//        String currentGene = null;
-        List<TargetGene> targetGenes = new ArrayList<>();
 
         try (BufferedReader br = FileUtils.newBufferedReader(miRTarBaseFile)) {
             // Skip first line, i.e. the header line
@@ -111,7 +101,8 @@ public class MiRTarBaseIndexer {
                 if (StringUtils.isNotEmpty(experiment) || StringUtils.isNotEmpty(supportType) || StringUtils.isNotEmpty(pubmed)) {
                     boolean found = false;
                     for (TargetGene targetGene : target.getTargets()) {
-                        if (targetGene.getExperiment().equals(experiment) && targetGene.getEvidence().equals(supportType) && targetGene.getPubmed().equals(pubmed)) {
+                        if (targetGene.getExperiment().equals(experiment) && targetGene.getEvidence().equals(supportType)
+                                && targetGene.getPubmed().equals(pubmed)) {
                             found = true;
                             break;
                         }
