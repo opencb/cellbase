@@ -172,6 +172,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "refseq":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
                     break;
+                case "conservation":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
+                    break;
                 case "variation":  // TODO: why are we using different chunk sizes??
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
                             10 * MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, };
