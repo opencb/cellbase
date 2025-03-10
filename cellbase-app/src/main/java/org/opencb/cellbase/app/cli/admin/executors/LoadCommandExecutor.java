@@ -484,7 +484,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve("clinvarVersion.json"),
+                        input.resolve(CLINVAR_VERSION_FILENAME),
                         input.resolve("cosmicVersion.json"),
                         input.resolve("gwasVersion.json")
                 ));
