@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>cellbase-server</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
