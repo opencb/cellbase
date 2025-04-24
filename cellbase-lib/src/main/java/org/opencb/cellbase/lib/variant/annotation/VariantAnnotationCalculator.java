@@ -18,13 +18,15 @@ package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.clinical.ClinicalAcmg;
+import org.opencb.biodata.models.clinical.interpretation.VariantClassification;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
-import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
@@ -679,6 +681,16 @@ public class VariantAnnotationCalculator {
 
         // Not needed with newCachedThreadPool
         // fixedThreadPool.shutdown();
+
+        // ACMG
+        for (VariantAnnotation variantAnnotation : variantAnnotationList) {
+            for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+                List<ClinicalAcmg> acmgs = VariantClassification.calculateAcmgClassification(consequenceType, variantAnnotation, null);
+                if (CollectionUtils.isNotEmpty(acmgs)) {
+                    consequenceType.setAcmg(acmgs.stream().map(ClinicalAcmg::getClassification).collect(Collectors.toList()));
+                }
+            }
+        }
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
