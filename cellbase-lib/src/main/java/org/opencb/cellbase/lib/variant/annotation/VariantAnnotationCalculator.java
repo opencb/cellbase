@@ -41,6 +41,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.futures.FutureGenomicSequenceContextAnnotator;
 import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
 import org.opencb.cellbase.lib.variant.annotation.futures.FutureSnpAnnotator;
 import org.opencb.cellbase.lib.variant.annotation.futures.FutureSpliceScoreAnnotator;
@@ -534,6 +535,10 @@ public class VariantAnnotationCalculator {
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
+        FutureGenomicSequenceContextAnnotator contextAnnotator = new FutureGenomicSequenceContextAnnotator(normalizedVariantList,
+                dataRelease.getRelease(), genomeManager);
+        Future<List<GenomicSequenceContext>> contextFuture = CACHED_THREAD_POOL.submit(contextAnnotator);
+
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
         long startTime = System.currentTimeMillis();
@@ -678,16 +683,22 @@ public class VariantAnnotationCalculator {
         if (futurePharmacogenomicsAnnotator != null) {
             futurePharmacogenomicsAnnotator.processResults(pharmacogenomicsFuture, variantAnnotationList);
         }
+        contextAnnotator.processResults(contextFuture, variantAnnotationList);
 
         // Not needed with newCachedThreadPool
         // fixedThreadPool.shutdown();
 
-        // ACMG
-        for (VariantAnnotation variantAnnotation : variantAnnotationList) {
-            for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
-                List<ClinicalAcmg> acmgs = VariantClassification.calculateAcmgClassification(consequenceType, variantAnnotation, null);
-                if (CollectionUtils.isNotEmpty(acmgs)) {
-                    consequenceType.setAcmg(acmgs.stream().map(ClinicalAcmg::getClassification).collect(Collectors.toList()));
+        // ACMG, only if consequence type is required
+        if (annotatorSet.contains("consequenceType")) {
+            for (VariantAnnotation variantAnnotation : variantAnnotationList) {
+                if (variantAnnotation != null && CollectionUtils.isNotEmpty(variantAnnotation.getConsequenceTypes())) {
+                    for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+                        List<ClinicalAcmg> acmgs = VariantClassification.calculateAcmgClassification(consequenceType, variantAnnotation,
+                                null);
+                        if (CollectionUtils.isNotEmpty(acmgs)) {
+                            consequenceType.setAcmg(acmgs.stream().map(ClinicalAcmg::getClassification).collect(Collectors.toList()));
+                        }
+                    }
                 }
             }
         }
