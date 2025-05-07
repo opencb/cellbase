@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.rcv.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.*;
+import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.lib.EtlCommons;

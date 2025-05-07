@@ -16,26 +16,24 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
+<<<<<<< HEAD
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.models.DataReleaseSource;
+=======
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.formats.variant.cosmic.CosmicParser;
+import org.opencb.cellbase.core.exception.CellBaseException;
+>>>>>>> release-6.x.x
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
-import org.opencb.commons.ProgressLogger;
-import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.lib.EtlCommons.COSMIC_VERSION_FILENAME;
 
@@ -44,9 +42,8 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private final Path cosmicFile;
     private final String assembly;
-    private Pattern mutationGRCh37GenomePositionPattern;
-    private Pattern snvPattern;
 
+<<<<<<< HEAD
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
     private static final int PRIMARY_SITE_COLUMN = 7;
@@ -90,6 +87,9 @@ public class CosmicIndexer extends ClinicalIndexer {
     private long normaliseTime = 0;
     private int rocksDBNewVariants = 0;
     private int rocksDBUpdateVariants = 0;
+=======
+    private static final String COSMIC_VERSION = "v99";
+>>>>>>> release-6.x.x
 
     public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
@@ -98,10 +98,9 @@ public class CosmicIndexer extends ClinicalIndexer {
         this.normalize = normalize;
         this.assembly = assembly;
         this.rdb = rdb;
-
-        this.init();
     }
 
+<<<<<<< HEAD
     private void init() {
         mutationGRCh37GenomePositionPattern = Pattern.compile("(?<" + CHROMOSOME + ">\\S+):(?<" + START + ">\\d+)-(?<" + END + ">\\d+)");
         snvPattern = Pattern.compile("c\\.\\d+((\\+|\\-|_)\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
@@ -602,4 +601,16 @@ public class CosmicIndexer extends ClinicalIndexer {
         }
     }
 
+=======
+    public void index() throws RocksDBException, CellBaseException {
+        // Call COSMIC parser
+        try {
+            logger.info("Parsing cosmic file ...");
+            CosmicIndexerCallback callback = new CosmicIndexerCallback(rdb, this);
+            CosmicParser.parse(cosmicFile, COSMIC_VERSION, EtlCommons.COSMIC_DATA, assembly, callback);
+        } catch (IOException | FileFormatException e) {
+            throw new CellBaseException("Error parsing COSMIC file " + cosmicFile, e);
+        }
+    }
+>>>>>>> release-6.x.x
 }
