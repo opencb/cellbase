@@ -29,4 +29,4 @@ jobs:
         if: ${{ startsWith(inputs.task, 'TASK') }}
         run: |
           echo "Deleting docker image ${{ inputs.task }}"
-          python3 ./cellbase-app/app/cloud/docker/docker-build.py delete --images base --tag ${{ inputs.task }} --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD }} --org zettagenomics
+          python3 ./cellbase-app/app/cloud/docker/docker-build.py delete --images base --tag ${{ inputs.task }} --username ${{ secrets.ZETTA_DOCKER_HUB_USER }} --password ${{ secrets.ZETTA_DOCKER_HUB_PASSWORD }} --org zettagenomics
