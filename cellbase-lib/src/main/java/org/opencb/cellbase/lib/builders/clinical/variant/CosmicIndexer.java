@@ -16,8 +16,11 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.ProgressLogger;
@@ -27,11 +30,14 @@ import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.opencb.cellbase.lib.EtlCommons.COSMIC_VERSION_FILENAME;
 
 
 public class CosmicIndexer extends ClinicalIndexer {
@@ -40,8 +46,6 @@ public class CosmicIndexer extends ClinicalIndexer {
     private final String assembly;
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
-
-    private static final String COSMIC_VERSION = "v99";
 
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
@@ -79,6 +83,9 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
+    private String date;
+    private String version;
+
     private int ignoredCosmicLines = 0;
     private long normaliseTime = 0;
     private int rocksDBNewVariants = 0;
@@ -101,9 +108,20 @@ public class CosmicIndexer extends ClinicalIndexer {
     }
 
     public void index() throws RocksDBException {
-        logger.info("Parsing cosmic file ...");
-
         try {
+            Path cosmicVersionPath = cosmicFile.getParent().resolve(COSMIC_VERSION_FILENAME);
+            if (!Files.exists(cosmicVersionPath)) {
+                throw new IOException("COSMIC version file " + cosmicVersionPath + " does not exist");
+            }
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
+            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(cosmicVersionPath.toFile());
+
+            this.date = dataReleaseSource.getDate();
+            this.version = dataReleaseSource.getVersion();
+
+            logger.info("Parsing cosmic file ...");
+
             ProgressLogger progressLogger = new ProgressLogger("Parsed COSMIC lines:",
                     () -> EtlCommons.countFileLines(cosmicFile), 200).setBatchSize(10000);
 
@@ -168,11 +186,9 @@ public class CosmicIndexer extends ClinicalIndexer {
                     rocksDBUpdateVariants = numberVariantUpdates;
                 }
             }
-        } catch (RocksDBException e) {
-            logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
-            throw e;
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (RocksDBException | IOException e) {
+            logger.error("Error indexing Cosmic", e);
+            throw new RocksDBException(e.getMessage());
         } finally {
             logger.info("Done");
             this.printSummary();
@@ -469,7 +485,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         String id = fields[ID_COLUMN];
         String url = "https://cancer.sanger.ac.uk/cosmic/search?q=" + id;
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, COSMIC_VERSION, null);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, version, date);
         SomaticInformation somaticInformation = getSomaticInformation(fields);
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
