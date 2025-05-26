@@ -85,9 +85,9 @@ download:
       BTAURUS_RNA_FNA: B_taurus/annotation_releases/GCF_002263795.3-RS_2023_09/GCF_002263795.3_ARS-UCD2.0_rna.fna.gz
   maneSelect:
     host: https://ftp.ncbi.nlm.nih.gov/refseq/
-    version: "1.3"
+    version: "1.4"
     files:
-      MANE_SELECT: MANE/MANE_human/release_1.3/MANE.GRCh38.v1.3.summary.txt.gz
+      MANE_SELECT: MANE/MANE_human/release_1.4/MANE.GRCh38.v1.4.summary.txt.gz
   lrg:
     host: http://ftp.ebi.ac.uk/
     version: "2021-03-30"
@@ -95,9 +95,9 @@ download:
       LRG: pub/databases/lrgex/list_LRGs_transcripts_xrefs.txt
   hgnc:
     host: https://ftp.ebi.ac.uk/
-    version: "2024-06-04"
+    version: "2024-08-23"
     files:
-      HGNC: pub/databases/genenames/out_of_date_hgnc/archive/monthly/tsv/hgnc_complete_set_2024-06-04.txt
+      HGNC: pub/databases/genenames/out_of_date_hgnc/archive/monthly/tsv/hgnc_complete_set_2024-08-23.txt
   cancerHotspot:
     host: https://www.cancerhotspots.org/
     version: "v2"
@@ -105,12 +105,12 @@ download:
       CANCER_HOTSPOT: files/hotspots_v2.xls
   dgidb:
     host: https://dgidb.org/
-    version: "DGIdb v.5.0 (01/06/2024)"
+    version: "DGIdb v.5.0 (01/12/2024)"
     files:
-      DGIDB: data/2024-Jun/interactions.tsv
+      DGIDB: data/2024-Dec/interactions.tsv
   geneUniprotXref:
     host: http://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/
-    version: "2024-11-27"
+    version: "2025-04-23"
     files:
       UNIPROT_XREF: HUMAN_9606_idmapping_selected.tab.gz
       MMUSCULUS_UNIPROT_XREF: MOUSE_10090_idmapping_selected.tab.gz
@@ -127,24 +127,25 @@ download:
   hpo:
     ## NOTE: Download manually from here now
     host: https://hpo.jax.org/app/data/annotations/
-    version: "2025-01-16"
+    version: "2025-05-01"
     files:
       HPO: "manual@phenotype_to_genes.txt"
   gnomadConstraints:
     host: https://storage.googleapis.com/
-    version: "2.1.1"
+    version: "4.1"
     files:
-      GNOMAD_CONSTRAINTS: gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
+#      GNOMAD_CONSTRAINTS: gcp-public-data--gnomad/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
+      GNOMAD_CONSTRAINTS: gcp-public-data--gnomad/release/4.1/constraint/gnomad.v4.1.constraint_metrics.tsv
   goAnnotation:
     host: https://geneontology.org/
-    version: "2024-10-20"
+    version: "2025-03-16"
     files:
       GO_ANNOTATION: gene-associations/goa_human.gaf.gz
       MMUSCULUS_GO_ANNOTATION: gene-associations/mgi.gaf.gz
   cancerGeneCensus:
     ## To be downloaded manually
     host: https://cancer.sanger.ac.uk/census/
-    version: "v101"
+    version: "v102"
     files:
       CANCER_GENE_CENSUS: "manual@cancer-gene-census.tsv"
 
@@ -167,19 +168,19 @@ download:
   ## Protein Data
   uniprot:
     host: https://ftp.uniprot.org/
-    version: "2024_06"
+    version: "2025_03"
     files:
       UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
     host: https://ftp.ebi.ac.uk/
-    version: "103.0"
+    version: "105.0"
     files:
-      INTERPRO: pub/databases/interpro/releases/103.0/protein2ipr.dat.gz
+      INTERPRO: pub/databases/interpro/releases/105.0/protein2ipr.dat.gz
   intact:
     host: https://ftp.ebi.ac.uk/
-    version: "2024-11-29"
+    version: "2025-03-28"
     files:
-      INTACT: pub/databases/intact/2024-11-29/psimitab/intact.txt
+      INTACT: pub/databases/intact/2025-03-28/psimitab/intact.txt
 
   ## Conservation Scores
   phastCons:
@@ -198,28 +199,28 @@ download:
       MMUSCULUS_PHYLOP: goldenPath/mm39/phyloP35way/mm39.35way.phyloP/
   gerp:
     host: https://ftp.ensembl.org/
-    version: "2023-10-10"
+    version: "2025-03-13"
     files:
-      GERP: pub/release-112/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
-      MMUSCULUS_GERP: pub/release-112/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.mus_musculus.GRCm39.bw
+      GERP: pub/release-114/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
+      MMUSCULUS_GERP: pub/release-114/compara/conservation_scores/91_mammals.gerp_conservation_score/gerp_conservation_scores.mus_musculus.GRCm39.bw
 
   ## Clinical Variant
   clinvar:
     host: https://ftp.ncbi.nlm.nih.gov/
-    version: "2025-01"
+    version: "2025-05"
     files:
       ## https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2025-01.xml.gz
-      FULL_RELEASE: pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2025-01.xml.gz
+      FULL_RELEASE: pub/clinvar/xml/RCV_xml_old_format/ClinVarFullRelease_2025-05.xml.gz
       SUMMARY: pub/clinvar/tab_delimited/variant_summary.txt.gz
       ALLELE: pub/clinvar/tab_delimited/variation_allele.txt.gz
       EFO_TERMS: ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv
   cosmic:
     ## To be downloaded manually
     host: https://cancer.sanger.ac.uk/cosmic/
-    version: "v101"
+    version: "v102"
     files:
-      COSMIC: Cosmic_GenomeScreensMutant_v101_GRCh38.tsv.gz
-      COSMIC_CLASSIFICATION: Cosmic_Classification_v101_GRCh38.tsv.gz
+      COSMIC: Cosmic_GenomeScreensMutant_v102_GRCh38.tsv.gz
+      COSMIC_CLASSIFICATION: Cosmic_Classification_v102_GRCh38.tsv.gz
   hgmd:
     ## To be downloaded manually
     host: https://www.hgmd.cf.ac.uk/
@@ -229,9 +230,9 @@ download:
   gwasCatalog:
     ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
     host: https://ftp.ebi.ac.uk/
-    version: "2025-01-10"
+    version: "2025-05-16"
     files:
-      GWAS: pub/databases/gwas/releases/2025/01/10/gwas-catalog-associations_ontology-annotated.tsv
+      GWAS: pub/databases/gwas/releases/2025/05/15/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
   dbSNP:
@@ -240,7 +241,7 @@ download:
 
   pharmGKB:
     host: https://api.pharmgkb.org/v1/download/file/data/
-    version: "2025-02-01"
+    version: "2025-05-01"
     files:
       GENES: genes.zip
       CHEMICALS: chemicals.zip
@@ -288,22 +289,22 @@ download:
   ## The version is retrieved from the OBO file
   hpoObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2025-01-16"
+    version: "2025-05-06"
     files:
       HPO: hp.obo
   goObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2024-10-27"
+    version: "2025-03-16"
     files:
       GO: go/go-basic.obo
   doidObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2025-01-31"
+    version: "2025-04-29"
     files:
       DOID: doid.obo
   mondoObo:
     host: http://purl.obolibrary.org/obo/
-    version: "2025-01-07"
+    version: "2025-05-06"
     files:
       MONDO: mondo.obo
 
@@ -329,7 +330,7 @@ species:
     - id: "hsapiens"
       scientificName: "Homo sapiens"
       assemblies:
-        - ensemblVersion: '112_38'
+        - ensemblVersion: '114_38'
           name: "GRCh38"
       data:
         - genome
@@ -349,7 +350,7 @@ species:
     - id: "mmusculus"
       scientificName: "Mus musculus"
       assemblies:
-        - ensemblVersion: '112_39'
+        - ensemblVersion: '114_39'
           name: "GRCm39"
       data:
         - genome
