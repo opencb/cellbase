@@ -217,6 +217,7 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
+
     // Simple repeats
     public static final String TRF_DATA = "trf";
     // Must match the configuration file
@@ -248,7 +249,6 @@ public final class EtlCommons {
     public static final String MONDO_OBO_DATA = "mondo";
     // Must match the configuration file
     public static final String MONDO_OBO_FILE_ID = "MONDO";
-
 
     public static final String PFM_DATA = "regulatory_pfm";
 

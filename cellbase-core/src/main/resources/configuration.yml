@@ -62,7 +62,7 @@ download:
       password: ""
     libs: "${CELLBASE.ENSEMBL.LIBS}"
     url:
-      host: "ftp://ftp.ensemblgenomes.org/pub"
+      host: ftp://ftp.ensemblgenomes.org/pub
   refSeq:
     host: "https://ftp.ncbi.nih.gov/refseq/"
     version: "2024-08-27"
@@ -332,6 +332,8 @@ species:
       assemblies:
         - ensemblVersion: '114_38'
           name: "GRCh38"
+        - ensemblVersion: '82_37'
+          name: GRCh37
       data:
         - genome
         - conservation

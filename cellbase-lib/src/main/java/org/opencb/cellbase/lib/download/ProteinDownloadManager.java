@@ -81,5 +81,17 @@ public class ProteinDownloadManager extends AbstractDownloadManager {
         logger.info(DOWNLOADING_DONE_MSG, getDataName(PROTEIN_DATA));
 
         return downloadFiles;
+
+//        url = configuration.getDownload().getIntact().getHost();
+//        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
+//        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
+//                proteinFolder.resolve("intactVersion.json"));
+//
+//        url = configuration.getDownload().getInterpro().getHost();
+//        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
+//        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
+//        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
+//        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+//                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
     }
 }
