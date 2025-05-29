@@ -690,22 +690,26 @@ public class VariantAnnotationCalculator {
 
         // ACMG, only if consequence type is required
         if (annotatorSet.contains("consequenceType")) {
-            for (VariantAnnotation variantAnnotation : variantAnnotationList) {
-                if (variantAnnotation != null && CollectionUtils.isNotEmpty(variantAnnotation.getConsequenceTypes())) {
-                    for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
-                        List<ClinicalAcmg> acmgs = VariantClassification.calculateAcmgClassification(consequenceType, variantAnnotation,
-                                null);
-                        if (CollectionUtils.isNotEmpty(acmgs)) {
-                            consequenceType.setAcmg(acmgs.stream().map(ClinicalAcmg::getClassification).collect(Collectors.toList()));
-                        }
-                    }
-                }
-            }
+            setAcmdPredictions(variantAnnotationList);
         }
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationList;
+    }
+
+    private static void setAcmdPredictions(List<VariantAnnotation> variantAnnotationList) {
+        for (VariantAnnotation variantAnnotation : variantAnnotationList) {
+            if (variantAnnotation != null && CollectionUtils.isNotEmpty(variantAnnotation.getConsequenceTypes())) {
+                for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+                    List<ClinicalAcmg> acmgs = VariantClassification.calculateAcmgClassification(consequenceType, variantAnnotation,
+                            null);
+                    if (CollectionUtils.isNotEmpty(acmgs)) {
+                        consequenceType.setAcmg(acmgs.stream().map(ClinicalAcmg::getClassification).collect(Collectors.toList()));
+                    }
+                }
+            }
+        }
     }
 
     public List<Gene> getBatchGeneList(List<Variant> variantList)
