@@ -367,7 +367,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildClinicalVariants() {
         Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
-        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve(CLINVAR_VERSION_FILENAME)));
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
