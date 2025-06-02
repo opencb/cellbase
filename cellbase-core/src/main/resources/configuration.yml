@@ -321,7 +321,7 @@ download:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/
     version: "2025-02-01"
     files:
-      PUBMED_REGEX: pubmed24n[1..1219..4].xml.gz
+      PUBMED_REGEX: pubmed25n[1..1274..4].xml.gz
   reactome:
     host: http://www.reactome.org/download/current/biopax.zip
 
