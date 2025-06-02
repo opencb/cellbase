@@ -168,7 +168,7 @@ download:
   ## Protein Data
   uniprot:
     host: https://ftp.uniprot.org/
-    version: "2025_03"
+    version: "2025_02"
     files:
       UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
