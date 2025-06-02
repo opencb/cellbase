@@ -402,10 +402,10 @@ public class BuildCommandExecutor extends CommandExecutor {
             return null;
         }
 
-        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(
-                INTERPRO_DATA)), proteinDownloadPath.resolve(INTACT_DATA).resolve(getDataVersionFilename(
-                INTACT_DATA)), proteinDownloadPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(
-                UNIPROT_DATA))), proteinBuildPath);
+        copyVersionFiles(Arrays.asList(
+                proteinDownloadPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(INTERPRO_DATA)),
+                proteinDownloadPath.resolve(INTACT_DATA).resolve(getDataVersionFilename(INTACT_DATA)),
+                proteinDownloadPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(UNIPROT_DATA))), proteinBuildPath);
 
         // Create the file serializer and the protein builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);

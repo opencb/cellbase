@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
-import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.*;
+import org.opencb.biodata.formats.protein.uniprot.v202502jaxb.*;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opencb.biodata.formats.protein.uniprot.UniProtParser.UNIPROT_202502_CONTEXT;
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
 public class ProteinBuilder extends AbstractBuilder {
@@ -100,7 +101,7 @@ public class ProteinBuilder extends AbstractBuilder {
 
             for (File file : files) {
                 logger.info(PARSING_LOG_MESSAGE, file);
-                Uniprot uniprot = (Uniprot) UniProtParser.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
+                Uniprot uniprot = (Uniprot) UniProtParser.loadXMLInfo(file.toString(), UNIPROT_202502_CONTEXT);
 
                 for (Entry entry : uniprot.getEntry()) {
                     String entryOrganism;
