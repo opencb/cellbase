@@ -162,7 +162,6 @@
                 </executions>
             </plugin>
 
-
             <!-- Plugin to install the JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
