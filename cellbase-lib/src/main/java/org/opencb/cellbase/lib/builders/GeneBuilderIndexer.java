@@ -28,6 +28,7 @@ import org.opencb.biodata.models.core.CancerHotspot;
 import org.opencb.biodata.models.core.CancerHotspotVariant;
 import org.opencb.biodata.models.core.GeneCancerAssociation;
 import org.opencb.biodata.models.core.MirnaTarget;
+import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
@@ -37,15 +38,14 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
-import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
-import static org.opencb.cellbase.lib.EtlCommons.HPO_DISEASE_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
@@ -69,6 +69,7 @@ public class GeneBuilderIndexer {
     protected static final String DRUGS_SUFFIX = "_drug";
     protected static final String DISEASE_SUFFIX = "_disease";
     protected static final String MIRTARBASE_SUFFIX = "_mirtarbase";
+    private static final String CONSTRAINT_SUFFIX = "_constraint";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -592,5 +593,83 @@ public class GeneBuilderIndexer {
     protected List<MirnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
         String key = geneName + MIRTARBASE_SUFFIX;
         return rocksDbManager.getMirnaTargets(rocksdb, key);
+    }
+
+    protected void indexConstraints(Path gnomadFile, String source) throws IOException, RocksDBException {
+        if (gnomadFile == null) {
+            return;
+        }
+
+        if (Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+            logger.info("Loading oe, oe ci upper, z scores for mis, syn and lof from '{}'", gnomadFile);
+            InputStream inputStream = Files.newInputStream(gnomadFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
+            // Skip header.
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+                String transcriptIdentifier = parts[2];
+                if (StringUtils.isEmpty(transcriptIdentifier)
+                        || (ENSEMBL_DATA.equals(source) && !transcriptIdentifier.startsWith("ENST"))
+                        || (REFSEQ_DATA.equals(source) && transcriptIdentifier.startsWith("ENST"))) {
+                    // Skip this line if transcriptIdentifier is empty or does not match the source
+                    continue;
+                }
+
+                String canonical = parts[3];
+                String geneIdentifier = parts[1];
+
+                String misOe = parts[30];
+                String misOeCiUpper = parts[33];
+                String misZScore = parts[35];
+                String synOe = parts[43];
+                String synOeCiUpper = parts[46];
+                String synZScore = parts[48];
+                String lofOe = parts[16];
+                String lofOeCiUpper = parts[22];
+                String lofZScore = parts[26];
+                String lofPLi = parts[18];
+
+                List<Constraint> constraints = new ArrayList<>();
+                addConstraint(constraints, "mis.oe", misOe);
+                addConstraint(constraints, "mis.oe_ci.upper", misOeCiUpper);
+                addConstraint(constraints, "mis.z_score", misZScore);
+                addConstraint(constraints, "syn.oe", synOe);
+                addConstraint(constraints, "syn.oe_ci.upper", synOeCiUpper);
+                addConstraint(constraints, "syn.z_score", synZScore);
+                addConstraint(constraints, "lof.oe", lofOe);
+                addConstraint(constraints, "lof.oe_ci.upper", lofOeCiUpper);
+                addConstraint(constraints, "lof.z_score", lofZScore);
+                addConstraint(constraints, "lof.pLi", lofPLi);
+                rocksDbManager.update(rocksdb, transcriptIdentifier + CONSTRAINT_SUFFIX, constraints);
+
+                if ("TRUE".equalsIgnoreCase(canonical)) {
+                    rocksDbManager.update(rocksdb, geneIdentifier + CONSTRAINT_SUFFIX, constraints);
+                }
+            }
+            br.close();
+        } else {
+            logger.error("gnomad constraints file not found");
+        }
+    }
+
+    protected List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
+        String key = id + CONSTRAINT_SUFFIX;
+        return rocksDbManager.getConstraints(rocksdb, key);
+    }
+
+    private void addConstraint(List<Constraint> constraints, String name, String value) {
+        Constraint constraint = new Constraint();
+        constraint.setMethod("LOFTEE");
+        constraint.setSource("gnomAD");
+        constraint.setName(name);
+        try {
+            constraint.setValue(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            // invalid number (e.g. NA), discard.
+            return;
+        }
+        constraints.add(constraint);
     }
 }
