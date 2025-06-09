@@ -17,6 +17,7 @@ parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
 parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
 parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
 parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
+parser.add_argument('--org', help="Docker organization", default="opencb")
 
 ## Some ANSI colors to print shell output
 shell_colors = {
@@ -62,31 +63,31 @@ def build():
     print_header('Building docker images: ' + ', '.join(images))
     for image in images:
         print()
-        print(shell_colors['blue'] + "Building opencb/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
+        print(shell_colors['blue'] + "Building " + org + "/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
         if image == "base":
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
+            run("docker build -t " + org + "/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
         else:
-            run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile --build-arg TAG=" + tag + " " + build_folder)
+            run("docker build -t " + org + "/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile --build-arg TAG=" + tag + " " + build_folder)
 
 
 def tag_latest(image):
-    latest_tag = os.popen(("curl -s https://registry.hub.docker.com/v1/repositories/opencb/cellbase-" + image + "/tags"
+    latest_tag = os.popen(("curl -s https://registry.hub.docker.com/v1/repositories/" + org + "/cellbase-" + image + "/tags"
                            + " | jq -r .[].name"
                            + " | grep -v latest"
                            + " | sort -h"
                            + " | head"))
     if tag >= latest_tag.read():
-        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + image + ":latest" + shell_colors['reset'])
-        run("docker tag opencb/cellbase-" + image + ":" + tag + " opencb/cellbase-" + image + ":latest")
-        run("docker push opencb/cellbase-" + image + ":latest")
+        print(shell_colors['blue'] + "Pushing " + org + "/cellbase-" + image + ":latest" + shell_colors['reset'])
+        run("docker tag " + org + "/cellbase-" + image + ":" + tag + " " + org + "/cellbase-" + image + ":latest")
+        run("docker push " + org + "/cellbase-" + image + ":latest")
 
 
 def push():
     print_header('Pushing to DockerHub: ' + ', '.join(images))
     for i in images:
         print()
-        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + i + ":" + tag + " ..." + shell_colors['reset'])
-        run("docker push opencb/cellbase-" + i + ":" + tag)
+        print(shell_colors['blue'] + "Pushing " + org + "/cellbase-" + i + ":" + tag + " ..." + shell_colors['reset'])
+        run("docker push " + org + "/cellbase-" + i + ":" + tag)
         tag_latest(i)
 
 
@@ -104,11 +105,11 @@ def delete():
         error("dockerhub login failed")
     for i in images:
         print()
-        print(shell_colors['blue'] + 'Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag + shell_colors['reset'])
+        print(shell_colors['blue'] + 'Deleting image on Docker hub for ' + org + '/cellbase-' + i + ':' + tag + shell_colors['reset'])
         headers = {
             'Authorization': 'JWT ' + json_response["token"]
         }
-        requests.delete('https://hub.docker.com/v2/repositories/opencb/cellbase-' + i + '/tags/' + tag + '/', headers=headers)
+        requests.delete('https://hub.docker.com/v2/repositories/' + org + '/cellbase-' + i + '/tags/' + tag + '/', headers=headers)
 
 
 ## Parse command-line parameters and init basedir, tag and build_folder
@@ -144,6 +145,11 @@ if args.images is None:
 else:
     images = args.images.split(",")
 
+# 5. Set docker org to default value if not set
+if args.org is not None:
+    org = args.org
+else:
+    org = "opencb"
 
 ## Execute the action
 if args.action == "build":
