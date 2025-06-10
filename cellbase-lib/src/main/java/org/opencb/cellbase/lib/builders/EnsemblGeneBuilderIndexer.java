@@ -67,7 +67,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneGensusFile,
-                      Path cancerHostpotFile, Path canonicalFile)
+                      Path cancerHostpotFile, Path canonicalFile, Path geneImprintFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
@@ -86,6 +86,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
+        indexImprintedGenes(geneImprintFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

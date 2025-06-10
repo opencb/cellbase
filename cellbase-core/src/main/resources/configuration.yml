@@ -149,6 +149,14 @@ download:
     files:
       CANCER_GENE_CENSUS: "manual@cancer-gene-census.tsv"
 
+  ## Imprinted genes
+  geneImprint:
+    ## NOTE: Download manually from here now
+    host: https://www.geneimprint.com/site/genes-by-species
+    version: "2025-06-01"
+    files:
+      GENEIMPRINT: "manual@geneimprint.tsv"
+
   ## Regulation
   mirbase:
     host: https://www.mirbase.org/

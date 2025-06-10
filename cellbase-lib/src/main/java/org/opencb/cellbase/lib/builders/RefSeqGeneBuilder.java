@@ -57,6 +57,8 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     private Path miRTarBaseFile = null;
     private Path cancerGeneCensusFile = null;
     private Path cancerHotspot = null;
+    private Path geneImprintFile = null;
+
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private static final String KNOWN_STATUS = "KNOWN";
@@ -159,6 +161,11 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_GENE_CENSUS_DATA, speciesConfiguration.getScientificName());
         }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
+            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
+        }
 
         // Check regulation files
         // mirtarbase
@@ -186,7 +193,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, gnomadFile, miRTarBaseFile,
-                cancerGeneCensusFile, cancerHotspot);
+                cancerGeneCensusFile, cancerHotspot, geneImprintFile);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);
@@ -292,7 +299,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
         GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
                 indexer.getConstraints(geneName), indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName),
-                indexer.getCancerHotspot(geneName));
+                indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
                 KNOWN_STATUS, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);

@@ -162,6 +162,11 @@ public final class EtlCommons {
     public static final String CANCER_GENE_CENSUS_DATA = "cancer_gene_census";
     // Must match the configuration file
     public static final String CANCER_GENE_CENSUS_FILE_ID = "CANCER_GENE_CENSUS";
+    //   - Imprented genes: only one source geneimprint
+    public static final String IMPRINTED_GENE_DATA = "imprinted_gene";
+    public static final String GENEIMPRINT_DATA = "geneimprint";
+    // Must match the configuration file
+    public static final String GENEIMPRINT_FILE_ID = "GENEIMPRINT";
 
     // Variation
     public static final String VARIATION_DATA = "variation";
@@ -408,6 +413,8 @@ public final class EtlCommons {
         dataNamesMap.put(VARIATION_DATA, "Variation");
         dataNamesMap.put(SNP_DATA, "SNP");
         dataNamesMap.put(DBSNP_DATA, "dbSNP");
+        dataNamesMap.put(IMPRINTED_GENE_DATA, "Imprented Gened");
+        dataNamesMap.put(GENEIMPRINT_DATA, "GeneImprint");
 
 
         // Populate data categories map
@@ -456,6 +463,8 @@ public final class EtlCommons {
         dataCategoriesMap.put(VARIATION_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(SNP_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(DBSNP_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(IMPRINTED_GENE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(IMPRINTED_GENE_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -502,6 +511,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(VARIATION_DATA, "variation" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(DBSNP_DATA, "dbSnp" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GENEIMPRINT_DATA, "geneimprint" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
@@ -777,5 +787,4 @@ public final class EtlCommons {
         }
         return false;
     }
-
 }

@@ -74,6 +74,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
     private Path cancerGeneCensusFile = null;
     private Path cancerHostpotFile = null;
     private Path ensemblCanonicalFile = null;
+    private Path geneImprintFile = null;
 
     // source for genes is either ensembl or refseq
     private final String SOURCE = ParamConstants.QueryParams.ENSEMBL.key();
@@ -196,6 +197,11 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_GENE_CENSUS_DATA), speciesConfiguration.getScientificName());
         }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
+            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
+        }
 
         // Check regulation files
         // Motif features
@@ -249,7 +255,8 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile,
                     cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
+                    geneImprintFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -294,7 +301,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName),
-                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
+                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),
