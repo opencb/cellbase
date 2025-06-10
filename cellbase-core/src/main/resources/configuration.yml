@@ -152,7 +152,7 @@ download:
   ## Imprinted genes
   geneImprint:
     ## NOTE: Download manually from here now
-    host: https://www.geneimprint.com/site/genes-by-species
+    host: https://www.geneimprint.com/site/genes-by-species/
     version: "2025-06-01"
     files:
       GENEIMPRINT: "manual@geneimprint.tsv"
