@@ -256,7 +256,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     versionFile = downloadFolder.resolve(REGULATION_DATA).resolve(MIRBASE_DATA).resolve(getDataVersionFilename(data));
                     break;
                 default:
-                    versionFile = downloadFolder.resolve(GERP_DATA).resolve(getDataVersionFilename(data));
+                    versionFile = geneDownloadPath.resolve(getDataVersionFilename(data));
                     break;
             }
             versionFiles.add(versionFile);
