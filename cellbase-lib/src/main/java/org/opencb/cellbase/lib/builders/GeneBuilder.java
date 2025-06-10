@@ -114,6 +114,9 @@ public class GeneBuilder extends AbstractBuilder {
         if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
             dataList.add(MIRBASE_DATA);
         }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
+            dataList.add(GENEIMPRINT_DATA);
+        }
 
         return dataList;
     }

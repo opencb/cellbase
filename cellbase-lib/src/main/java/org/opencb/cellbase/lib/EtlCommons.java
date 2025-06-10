@@ -464,7 +464,7 @@ public final class EtlCommons {
         dataCategoriesMap.put(SNP_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(DBSNP_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(IMPRINTED_GENE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
-        dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(IMPRINTED_GENE_DATA));
+        dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
