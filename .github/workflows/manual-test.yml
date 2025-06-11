@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Opencga branch to run the tests'
+        description: 'Cellbase branch to run the tests'
         default: 'develop'
         required: true
       fail-never:
@@ -16,7 +16,7 @@ on:
 jobs:
   test:
     name: JUnit Test
-    runs-on: ubuntu-22.04
+    runs-on: ${{ vars.UBUNTU_VERSION }}
     steps:
       - uses: actions/checkout@v4
         with:
