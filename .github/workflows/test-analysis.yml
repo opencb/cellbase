@@ -49,3 +49,7 @@ jobs:
           report_paths: './**/surefire-reports/TEST-*.xml'
           commit: '${{ github.sha }}'
           fail_on_test_failures: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "build-folder"
+          path: build
