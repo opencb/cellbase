@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Test and push Sonar analysis
-    runs-on: ubuntu-22.04
+    runs-on: ${{ vars.UBUNTU_VERSION }}
     steps:
       - uses: actions/checkout@v4
         with:
