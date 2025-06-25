@@ -231,9 +231,9 @@ download:
   gwasCatalog:
     ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
     host: https://ftp.ebi.ac.uk/
-    version: "2024-04-22"
+    version: "2025-05-16"
     files:
-      GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
+      GWAS: pub/databases/gwas/releases/2025/05/16/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
   dbSNP:

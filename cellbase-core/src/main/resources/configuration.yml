@@ -240,7 +240,7 @@ download:
     host: https://ftp.ebi.ac.uk/
     version: "2025-05-16"
     files:
-      GWAS: pub/databases/gwas/releases/2025/05/15/gwas-catalog-associations_ontology-annotated.tsv
+      GWAS: pub/databases/gwas/releases/2025/05/16/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
   dbSNP:
