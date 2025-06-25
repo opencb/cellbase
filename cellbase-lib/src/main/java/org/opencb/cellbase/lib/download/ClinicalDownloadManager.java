@@ -81,14 +81,17 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         // COSMIC
         logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
         props = configuration.getDownload().getCosmic();
-        String url = props.getHost() + props.getFiles().get(COSMIC_FILE_ID);
-        saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
-                clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA)));
+        urls = new ArrayList<>();
+        for (String fileId : Arrays.asList(COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, COSMIC_CLASSIFICATION_FILE_ID)) {
+            // Save URLs to be written in the version file
+            urls.add(props.getHost() + props.getFiles().get(fileId));
+        }
+        saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), urls, clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA)));
 
         // HGMD
         logger.warn("{} files must be downloaded manually !", getDataName(HGMD_DATA));
         props = configuration.getDownload().getHgmd();
-        url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
+        String url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
         saveDataSource(HGMD_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
                 clinicalPath.resolve(getDataVersionFilename(HGMD_DATA)));
 

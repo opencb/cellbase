@@ -209,7 +209,9 @@ public final class EtlCommons {
     // COSMIC
     public static final String COSMIC_DATA = "cosmic";
     // Must match the configuration file
-    public static final String COSMIC_FILE_ID = "COSMIC";
+    public static final String COSMIC_GENOME_SCREENS_MUTANT_FILE_ID = "GENOME_SCREENS_MUTANT";
+    public static final String COSMIC_CLASSIFICATION_FILE_ID = "CLASSIFICATION";
+
     // HGMD
     public static final String HGMD_DATA = "hgmd";
     // Must match the configuration file

@@ -227,8 +227,8 @@ download:
     host: https://cancer.sanger.ac.uk/cosmic/
     version: "v102"
     files:
-      COSMIC: Cosmic_GenomeScreensMutant_v102_GRCh38.tsv.gz
-      COSMIC_CLASSIFICATION: Cosmic_Classification_v102_GRCh38.tsv.gz
+      GENOME_SCREENS_MUTANT: Cosmic_GenomeScreensMutant_v102_GRCh38.tsv.gz
+      CLASSIFICATION: Cosmic_Classification_v102_GRCh38.tsv.gz
   hgmd:
     ## To be downloaded manually
     host: https://www.hgmd.cf.ac.uk/
