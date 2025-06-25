@@ -41,7 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
@@ -604,75 +603,76 @@ public class GeneBuilderIndexer {
         }
 
         if (Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
-            logger.info("Loading oe, oe ci upper, z scores for mis, syn and lof from '{}'", gnomadFile);
+            logger.info("Loading oe, oe ci upper, z scores for mis, syn and lof from gnomAD file: '{}'", gnomadFile);
             InputStream inputStream = Files.newInputStream(gnomadFile);
-            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-            // Skip header.
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
-                String transcriptIdentifier = parts[2];
-                if (StringUtils.isEmpty(transcriptIdentifier)
-                        || (ENSEMBL_DATA.equals(source) && !transcriptIdentifier.startsWith("ENST"))
-                        || (REFSEQ_DATA.equals(source) && transcriptIdentifier.startsWith("ENST"))) {
-                    // Skip this line if transcriptIdentifier is empty or does not match the source
-                    continue;
-                }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                // Skip header.
+                String line = br.readLine();
+                logger.info("gnomAD header line: {}", line);
+                while ((line = br.readLine()) != null) {
+                    String[] parts = line.split("\t");
+                    String transcriptIdentifier = parts[2];
+                    if (StringUtils.isEmpty(transcriptIdentifier)
+                            || (ENSEMBL_DATA.equals(source) && !transcriptIdentifier.startsWith("ENST"))
+                            || (REFSEQ_DATA.equals(source) && transcriptIdentifier.startsWith("ENST"))) {
+                        // Skip this line if transcriptIdentifier is empty or does not match the source
+                        continue;
+                    }
 
-                String canonical = parts[3];
-                String geneIdentifier = parts[1];
+                    String canonical = parts[3];
+                    String geneIdentifier = parts[1];
 
-                String misObs = parts[27];
-                String misExp = parts[28];
-                String misOe = parts[30];
-                String misOeCiLower = parts[32];
-                String misOeCiUpper = parts[33];
-                String misZScore = parts[35];
-                String synObs = parts[40];
-                String synExp = parts[41];
-                String synOe = parts[43];
-                String synOeCiLower = parts[45];
-                String synOeCiUpper = parts[46];
-                String synZScore = parts[48];
-                String lofObs = parts[13];
-                String lofExp = parts[14];
-                String lofOe = parts[16];
-                String lofOeCiLower = parts[21];
-                String lofOeCiUpper = parts[22];
-                String lofZScore = parts[26];
-                String lofPLi = parts[18];
+                    String misObs = parts[27];
+                    String misExp = parts[28];
+                    String misOe = parts[30];
+                    String misOeCiLower = parts[32];
+                    String misOeCiUpper = parts[33];
+                    String misZScore = parts[35];
+                    String synObs = parts[40];
+                    String synExp = parts[41];
+                    String synOe = parts[43];
+                    String synOeCiLower = parts[45];
+                    String synOeCiUpper = parts[46];
+                    String synZScore = parts[48];
+                    String lofObs = parts[13];
+                    String lofExp = parts[14];
+                    String lofOe = parts[16];
+                    String lofOeCiLower = parts[21];
+                    String lofOeCiUpper = parts[22];
+                    String lofZScore = parts[26];
+                    String lofPLi = parts[18];
 
-                List<Constraint> constraints = new ArrayList<>();
-                addConstraint(constraints, "mis.obs", misObs);
-                addConstraint(constraints, "mis.exp", misExp);
-                addConstraint(constraints, "mis.oe", misOe);
-                addConstraint(constraints, "mis.oe_ci.lower", misOeCiLower);
-                addConstraint(constraints, "mis.oe_ci.upper", misOeCiUpper);
-                addConstraint(constraints, "mis.z_score", misZScore);
-                addConstraint(constraints, "syn.obs", synObs);
-                addConstraint(constraints, "syn.exp", synExp);
-                addConstraint(constraints, "syn.oe", synOe);
-                addConstraint(constraints, "syn.oe_ci.lower", synOeCiLower);
-                addConstraint(constraints, "syn.oe_ci.upper", synOeCiUpper);
-                addConstraint(constraints, "syn.z_score", synZScore);
-                addConstraint(constraints, "lof.obs", lofObs);
-                addConstraint(constraints, "lof.exp", lofExp);
-                addConstraint(constraints, "lof.oe", lofOe);
-                addConstraint(constraints, "lof.pLi", lofPLi);
-                addConstraint(constraints, "lof.oe_ci.lower", lofOeCiLower);
-                addConstraint(constraints, "lof.oe_ci.upper", lofOeCiUpper);
-                addConstraint(constraints, "lof.z_score", lofZScore);
+                    List<Constraint> constraints = new ArrayList<>();
+                    addConstraint(constraints, "mis.obs", misObs);
+                    addConstraint(constraints, "mis.exp", misExp);
+                    addConstraint(constraints, "mis.oe", misOe);
+                    addConstraint(constraints, "mis.oe_ci.lower", misOeCiLower);
+                    addConstraint(constraints, "mis.oe_ci.upper", misOeCiUpper);
+                    addConstraint(constraints, "mis.z_score", misZScore);
+                    addConstraint(constraints, "syn.obs", synObs);
+                    addConstraint(constraints, "syn.exp", synExp);
+                    addConstraint(constraints, "syn.oe", synOe);
+                    addConstraint(constraints, "syn.oe_ci.lower", synOeCiLower);
+                    addConstraint(constraints, "syn.oe_ci.upper", synOeCiUpper);
+                    addConstraint(constraints, "syn.z_score", synZScore);
+                    addConstraint(constraints, "lof.obs", lofObs);
+                    addConstraint(constraints, "lof.exp", lofExp);
+                    addConstraint(constraints, "lof.oe", lofOe);
+                    addConstraint(constraints, "lof.pLi", lofPLi);
+                    addConstraint(constraints, "lof.oe_ci.lower", lofOeCiLower);
+                    addConstraint(constraints, "lof.oe_ci.upper", lofOeCiUpper);
+                    addConstraint(constraints, "lof.z_score", lofZScore);
 
-                rocksDbManager.update(rocksdb, transcriptIdentifier + CONSTRAINT_SUFFIX, constraints);
+                    rocksDbManager.update(rocksdb, transcriptIdentifier + CONSTRAINT_SUFFIX, constraints);
 
-                if ("TRUE".equalsIgnoreCase(canonical)) {
-                    rocksDbManager.update(rocksdb, geneIdentifier + CONSTRAINT_SUFFIX, constraints);
+                    if ("TRUE".equalsIgnoreCase(canonical)) {
+                        rocksDbManager.update(rocksdb, geneIdentifier + CONSTRAINT_SUFFIX, constraints);
+                    }
                 }
             }
-            br.close();
+            inputStream.close();
         } else {
-            logger.error("gnomad constraints file not found");
+            logger.error("gnomAD constraints file not found");
         }
     }
 
