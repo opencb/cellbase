@@ -539,9 +539,13 @@ public class GeneBuilderIndexer {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
             // Skip first header line
             line = bufferedReader.readLine();
+            logger.info("HPO header line: {}", line);
+            // 0           1              2             3            4
+            // hpo_id      hpo_name       ncbi_gene_id  gene_symbol  disease_id
+            // HP:0025700  Anhydramnios   26281         FGF20        OMIM:615721
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t");
-                String omimId = fields[6];
+                String omimId = fields[4];
                 String geneSymbol = fields[3];
                 String hpoId = fields[0];
                 String diseaseName = fields[1];
