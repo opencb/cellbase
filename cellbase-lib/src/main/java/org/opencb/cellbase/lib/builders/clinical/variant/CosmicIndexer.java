@@ -50,7 +50,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         try {
             logger.info("Parsing cosmic file ...");
             CosmicIndexerCallback callback = new CosmicIndexerCallback(rdb, this);
-            CosmicParser101.parse(cosmicGenomeScreensMutantFilePath, cosmicGenomeScreensMutantFilePath, version, EtlCommons.COSMIC_DATA,
+            CosmicParser101.parse(cosmicGenomeScreensMutantFilePath, cosmicClassificationFilePath, version, EtlCommons.COSMIC_DATA,
                     assembly, callback);
         } catch (IOException | FileFormatException e) {
             throw new CellBaseException("Error parsing COSMIC files: " + cosmicGenomeScreensMutantFilePath + ", "
