@@ -696,65 +696,75 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexImprintedGenes(Path imprintedGeneFile) throws IOException, RocksDBException {
-        // IMPORTANT: Only imprinted genes from geneimprint.com are supported
-
+        // IMPORTANT: Only imprinted genes from geneimprint are supported
         if (imprintedGeneFile != null && Files.exists(imprintedGeneFile) && Files.size(imprintedGeneFile) > 0) {
             logger.info("Loading imprinted genes from '{}'", imprintedGeneFile);
             InputStream inputStream = Files.newInputStream(imprintedGeneFile);
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            // Skip header: #Gene Aliases Location Status ExpressedAllele
-            //                 0    1         2        3       4
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                // Skip header: #Gene Aliases Location Status ExpressedAllele
+                //                 0    1         2        3       4
+                String line = br.readLine();
+                logger.info("Imprinted gene header line: {}", line);
+                while ((line = br.readLine()) != null) {
+                    String[] parts = line.split("\t");
 
-                String gene = parts[0];
-                String aliases = parts[1];
-                String status = parts[3];
-                String expressedAllele = parts[4];
+                    String gene = parts[0];
+                    String aliases = parts[1];
+                    String status = parts[3];
+                    String expressedAllele = parts[4];
 
-                ImprintedGene imprintedGene = new ImprintedGene()
-                        .setGeneName(gene)
-                        .setSource(status)
-                        .setExpressedAllele(expressedAllele)
-                        .setSource("geneimprint.com");
+                    ImprintedGene imprintedGene = new ImprintedGene()
+                            .setGeneName(gene)
+                            .setSource(status)
+                            .setExpressedAllele(expressedAllele)
+                            .setSource(GENEIMPRINT_DATA);
 
-                // Add aliases as attributes
-                List<String> aliasesList = null;
-                if (StringUtils.isNotEmpty(aliases)) {
-                    String[] aliasesSplit = aliases.split(",");
-                    aliasesList = Arrays.stream(aliasesSplit).map(String::trim).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(aliasesList)) {
-                        imprintedGene.getAttributes().put("aliases", aliasesList);
+                    // Add aliases as attributes
+                    List<String> aliasesList = null;
+                    if (StringUtils.isNotEmpty(aliases)) {
+                        String[] aliasesSplit = aliases.split(",");
+                        aliasesList = Arrays.stream(aliasesSplit).map(String::trim).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(aliasesList)) {
+                            imprintedGene.getAttributes().put("aliases", aliasesList);
+                        }
                     }
-                }
 
-                // Add imprinted gene to the database
-                rocksDbManager.update(rocksdb, gene + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
+                    // Add imprinted gene to the database
+                    rocksDbManager.update(rocksdb, gene + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
 
-                // If the gene has aliases, add them to the database as well
-                if (CollectionUtils.isNotEmpty(aliasesList)) {
-                    for (String alias : aliasesList) {
-                        rocksDbManager.update(rocksdb, alias + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
+                    // If the gene has aliases, add them to the database as well
+                    if (CollectionUtils.isNotEmpty(aliasesList)) {
+                        for (String alias : aliasesList) {
+                            rocksDbManager.update(rocksdb, alias + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
+                        }
                     }
                 }
             }
-            br.close();
+            inputStream.close();
         } else {
             logger.warn("Imprinted gene file {} does not exist or is empty", imprintedGeneFile);
         }
     }
 
     protected List<ImprintedGene> getGeneImprinting(String id) throws RocksDBException, IOException {
+        // Sanity check
+        if (StringUtils.isEmpty(id)) {
+            return Collections.emptyList();
+        }
+
         String key = id + IMPRINTED_GENE_SUFFIX;
         List<ImprintedGene> imprintedGeneList = rocksDbManager.getImprintedGene(rocksdb, key);
-        ImprintedGene imprintedGene = imprintedGeneList.get(0);
+        if (CollectionUtils.isEmpty(imprintedGeneList)) {
+            // No imprinted gene found for the given id
+            return Collections.emptyList();
+        }
 
         // Check if the gene name matches the id
-        if (imprintedGene.getGeneName().equals(id)) {
-            // Not an alias, attributes are not required
-            imprintedGene.setAttributes(null);
+        for (ImprintedGene imprintedGene : imprintedGeneList) {
+            if (GENEIMPRINT_DATA.equalsIgnoreCase(imprintedGene.getSource()) && id.equalsIgnoreCase(imprintedGene.getGeneName())) {
+                // Not an alias, attributes are not required
+                imprintedGene.setAttributes(null);
+            }
         }
 
         return imprintedGeneList;
