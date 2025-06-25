@@ -20,12 +20,12 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.commons.utils.FileUtils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static org.opencb.cellbase.lib.EtlCommons.CLINVAR_VERSION_FILENAME;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
@@ -82,7 +84,7 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString()));
             clinvarUrls.add(url);
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, configuration.getDownload().getClinvar()
-                            .getVersion(), getTimeStamp(), clinvarUrls, clinicalFolder.resolve("clinvarVersion.json"));
+                            .getVersion(), getTimeStamp(), clinvarUrls, clinicalFolder.resolve(CLINVAR_VERSION_FILENAME));
 
             logger.info("\t\tDone");
 
@@ -137,56 +139,9 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
 //                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
 //            }
 
-            if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
-                Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));
-                splitClinvar(clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE), clinicalFolder.resolve("clinvar_chunks"));
-            }
-
             return downloadFiles;
         }
         return null;
-    }
-
-    private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath);
-        PrintWriter pw = null;
-        StringBuilder header = new StringBuilder();
-        boolean beforeEntry = true;
-        boolean inEntry = false;
-        int count = 0;
-        int chunk = 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.trim().startsWith("<ClinVarSet ")) {
-                inEntry = true;
-                beforeEntry = false;
-                if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
-                    pw.println(header.toString().trim());
-                }
-                count++;
-            }
-
-            if (beforeEntry) {
-                header.append(line).append("\n");
-            }
-
-            if (inEntry) {
-                pw.println(line);
-            }
-
-            if (line.trim().startsWith("</ClinVarSet>")) {
-                inEntry = false;
-                if (count % 10000 == 0) {
-                    pw.print("</ReleaseSet>");
-                    pw.close();
-                    chunk++;
-                }
-            }
-        }
-        pw.print("</ReleaseSet>");
-        pw.close();
-        br.close();
     }
 
     private String getDocmVersion(Path docmIndexHtml) {
