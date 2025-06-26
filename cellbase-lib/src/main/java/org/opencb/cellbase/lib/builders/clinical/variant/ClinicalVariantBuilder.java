@@ -23,13 +23,13 @@ import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
+import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -125,8 +125,17 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
                     && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
-                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
+
+                Path chunksPaths = clinvarXMLFile.getParent().resolve("clinvar_chunks");
+                if (Files.notExists(chunksPaths)) {
+                    logger.info("Splitting ClinVar XML file in multiple ClinVar chunk files at {} ...", chunksPaths);
+                    Files.createDirectories(chunksPaths);
+                    splitClinvar(this.clinvarXMLFile, chunksPaths);
+                    logger.info("Done");
+                }
+
+              ClinVarIndexer clinvarIndexer = new ClinVarIndexer(chunksPaths, clinvarSummaryFile, clinvarVariationAlleleFile,
+                      clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 clinvarIndexer.index();
             } else {
                 logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
@@ -188,6 +197,48 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             throw e;
         }
 
+    }
+
+    private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
+        BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath);
+        PrintWriter pw = null;
+        StringBuilder header = new StringBuilder();
+        boolean beforeEntry = true;
+        boolean inEntry = false;
+        int count = 0;
+        int chunk = 0;
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.trim().startsWith("<ClinVarSet ")) {
+                inEntry = true;
+                beforeEntry = false;
+                if (count % 10000 == 0) {
+                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                    pw.println(header.toString().trim());
+                }
+                count++;
+            }
+
+            if (beforeEntry) {
+                header.append(line).append("\n");
+            }
+
+            if (inEntry) {
+                pw.println(line);
+            }
+
+            if (line.trim().startsWith("</ClinVarSet>")) {
+                inEntry = false;
+                if (count % 10000 == 0) {
+                    pw.print("</ReleaseSet>");
+                    pw.close();
+                    chunk++;
+                }
+            }
+        }
+        pw.print("</ReleaseSet>");
+        pw.close();
+        br.close();
     }
 
     private void serializeRDB(RocksDB rdb) throws IOException {

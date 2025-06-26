@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.opencb.biodata.models.variant.Variant;
@@ -23,13 +25,17 @@ import org.opencb.biodata.models.variant.VariantFileMetadata;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
+import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+
+import static org.opencb.cellbase.lib.EtlCommons.HGMD_VERSION_FILENAME;
 
 /**
  * Created by jtarraga on 23/02/22.
@@ -37,6 +43,9 @@ import java.util.*;
 public class HGMDIndexer extends ClinicalIndexer {
     private final Path hgmdFile;
     private final String assembly;
+
+    private String date;
+    private String version;
 
     public HGMDIndexer(Path hgmdFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
             throws IOException {
@@ -51,6 +60,18 @@ public class HGMDIndexer extends ClinicalIndexer {
         logger.info("Parsing HGMD file ...");
 
         try {
+
+            Path hgmdVersionPath = hgmdFile.getParent().resolve(HGMD_VERSION_FILENAME);
+            if (!Files.exists(hgmdVersionPath)) {
+                throw new IOException("HGMD version file " + hgmdVersionPath + " does not exist");
+            }
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
+            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(hgmdVersionPath.toFile());
+
+            this.date = dataReleaseSource.getDate();
+            this.version = dataReleaseSource.getVersion();
+
             VariantStudyMetadata metadata = new VariantFileMetadata(null, hgmdFile.toString()).toVariantStudyMetadata("study");
             VariantVcfHtsjdkReader reader = new VariantVcfHtsjdkReader(hgmdFile.toAbsolutePath(), metadata);
             for (Variant variant : reader) {
@@ -74,7 +95,6 @@ public class HGMDIndexer extends ClinicalIndexer {
             throw e;
         } finally {
             logger.info("Done");
-
 //            this.printSummary();
         }
     }
@@ -93,7 +113,7 @@ public class HGMDIndexer extends ClinicalIndexer {
             }
 
             // Source
-            entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, "2020.3", "2020"));
+            entry.setSource(new EvidenceSource(EtlCommons.HGMD_DATA, version, date));
 
             // Assembly
             entry.setAssembly(assembly);
