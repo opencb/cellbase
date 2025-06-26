@@ -38,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify surefire-report:report --fail-never -Dcheckstyle.skip org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=opencb_cellbase
+        run: mvn clean install -B verify surefire-report:report --fail-never -Dcheckstyle.skip org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=opencb_cellbase -DCELLBASE.WAR.NAME=cellbase -P default-config-test
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
         ## Skip cancelled()
@@ -49,3 +49,7 @@ jobs:
           report_paths: './**/surefire-reports/TEST-*.xml'
           commit: '${{ github.sha }}'
           fail_on_test_failures: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-folder
+          path: ./build
