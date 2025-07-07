@@ -67,6 +67,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadMotifFeatures());
         downloadFiles.add(downloadMiRTarBase());
         downloadFiles.add(downloadMirna());
+        downloadFiles.add(downloadMiRTarBase());
 
         logger.info(DOWNLOADING_DONE_MSG, getDataName(REGULATION_DATA));
 

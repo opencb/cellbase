@@ -261,7 +261,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     versionFile = downloadFolder.resolve(REGULATION_DATA).resolve(MIRBASE_DATA).resolve(getDataVersionFilename(data));
                     break;
                 default:
-                    versionFile = downloadFolder.resolve(GERP_DATA).resolve(getDataVersionFilename(data));
+                    versionFile = geneDownloadPath.resolve(getDataVersionFilename(data));
                     break;
             }
             versionFiles.add(versionFile);
@@ -407,10 +407,10 @@ public class BuildCommandExecutor extends CommandExecutor {
             return null;
         }
 
-        copyVersionFiles(Arrays.asList(proteinDownloadPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(
-                INTERPRO_DATA)), proteinDownloadPath.resolve(INTACT_DATA).resolve(getDataVersionFilename(
-                INTACT_DATA)), proteinDownloadPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(
-                UNIPROT_DATA))), proteinBuildPath);
+        copyVersionFiles(Arrays.asList(
+                proteinDownloadPath.resolve(INTERPRO_DATA).resolve(getDataVersionFilename(INTERPRO_DATA)),
+                proteinDownloadPath.resolve(INTACT_DATA).resolve(getDataVersionFilename(INTACT_DATA)),
+                proteinDownloadPath.resolve(UNIPROT_DATA).resolve(getDataVersionFilename(UNIPROT_DATA))), proteinBuildPath);
 
         // Create the file serializer and the protein builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(proteinBuildPath, PROTEIN_DATA);

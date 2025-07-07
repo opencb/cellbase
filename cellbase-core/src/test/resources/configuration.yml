@@ -219,9 +219,10 @@ download:
   cosmic:
     ## To be downloaded manually
     host: https://cancer.sanger.ac.uk/cosmic/
-    version: "v99"
+    version: "v102"
     files:
-      COSMIC: CosmicMutantExport.tsv.gz
+      GENOME_SCREENS_MUTANT: Cosmic_GenomeScreensMutant_v102_GRCh38.tsv.gz
+      CLASSIFICATION: Cosmic_Classification_v102_GRCh38.tsv.gz
   hgmd:
     ## To be downloaded manually
     host: https://www.hgmd.cf.ac.uk/
@@ -231,9 +232,9 @@ download:
   gwasCatalog:
     ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
     host: https://ftp.ebi.ac.uk/
-    version: "2024-04-22"
+    version: "2025-05-16"
     files:
-      GWAS: pub/databases/gwas/releases/2024/04/22/gwas-catalog-associations_ontology-annotated.tsv
+      GWAS: pub/databases/gwas/releases/2025/05/16/gwas-catalog-associations_ontology-annotated.tsv
       DBSNP: All.vcf.gz
 
   dbSNP:
@@ -334,13 +335,15 @@ species:
         - conservation
         - repeats
         - gene
-        - regulation
         - protein
-        - clinical_variant
-        - missense_variation_functional_score
-        - ontology
+        - regulation
+        - variation
         - variation_functional_score
+        - missense_variation_functional_score
+        - clinical_variants
         - splice_score
+        - ontology
+        - pubmed
         - pharmacogenomics
     - id: mmusculus
       scientificName: Mus musculus
@@ -430,17 +433,6 @@ species:
         - genome
         - genome_info
         - gene
-    - id: sscrofa
-      scientificName: Sus scrofa
-      assemblies:
-        - ensemblVersion: '82_102'
-          name: Sscrofa10.2
-      data:
-        - genome
-        - genome_info
-        - gene
-        - variation
-        - protein
     - id: cfamiliaris
       scientificName: Canis familiaris
       assemblies:

@@ -108,8 +108,24 @@ public class RegulatoryFeatureBuilder extends AbstractBuilder {
 
         // Serialize and save results
         for (Gff2 feature : regulatoryFeatureSet) {
-            // In order to get the ID we split the attribute format: ID=TF_binding_site:ENSR00000243312; ....
-            String id = feature.getAttribute().split(";")[0].split(":")[1];
+            // Previously, attribute format: ID=TF_binding_site:ENSR00000243312; ....
+            // They change the attribute format to ID=ENSR1_986;color=#faca00
+            if (StringUtils.isEmpty(feature.getAttribute())) {
+                logger.warn("Skipping regulatory feature with no attributes: {}", feature);
+                continue;
+            }
+            String[] attributes = feature.getAttribute().split(";");
+            String id = null;
+            for (String attribute : attributes) {
+                if (attribute.startsWith("ID=")) {
+                    id = attribute.substring(3);
+                    break;
+                }
+            }
+            if (StringUtils.isEmpty(id)) {
+                logger.warn("Skipping regulatory feature with no ID attribute: {}", feature);
+                continue;
+            }
             RegulatoryFeature regulatoryFeature = new RegulatoryFeature(id, feature.getSequenceName(), feature.getFeature(),
                     feature.getStart(), feature.getEnd());
             serializer.serialize(regulatoryFeature);

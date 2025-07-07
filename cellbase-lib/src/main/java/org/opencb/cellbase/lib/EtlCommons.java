@@ -165,6 +165,11 @@ public final class EtlCommons {
     public static final String CANCER_GENE_CENSUS_DATA = "cancer_gene_census";
     // Must match the configuration file
     public static final String CANCER_GENE_CENSUS_FILE_ID = "CANCER_GENE_CENSUS";
+    //   - Imprented genes: only one source geneimprint
+    public static final String IMPRINTED_GENE_DATA = "imprinted_gene";
+    public static final String GENEIMPRINT_DATA = "geneimprint";
+    // Must match the configuration file
+    public static final String GENEIMPRINT_FILE_ID = "GENEIMPRINT";
 
     // Variation
     public static final String VARIATION_DATA = "variation";
@@ -216,7 +221,9 @@ public final class EtlCommons {
     // COSMIC
     public static final String COSMIC_DATA = "cosmic";
     // Must match the configuration file
-    public static final String COSMIC_FILE_ID = "COSMIC";
+    public static final String COSMIC_GENOME_SCREENS_MUTANT_FILE_ID = "GENOME_SCREENS_MUTANT";
+    public static final String COSMIC_CLASSIFICATION_FILE_ID = "CLASSIFICATION";
+
     // HGMD
     public static final String HGMD_DATA = "hgmd";
     // Must match the configuration file
@@ -229,6 +236,7 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
+
     // Simple repeats
     public static final String TRF_DATA = "trf";
     // Must match the configuration file
@@ -260,7 +268,6 @@ public final class EtlCommons {
     public static final String MONDO_OBO_DATA = "mondo";
     // Must match the configuration file
     public static final String MONDO_OBO_FILE_ID = "MONDO";
-
 
     public static final String PFM_DATA = "regulatory_pfm";
 
@@ -422,6 +429,9 @@ public final class EtlCommons {
         dataNamesMap.put(DBSNP_DATA, "dbSNP");
         dataNamesMap.put(PGS_DATA, "Polygenic Score");
         dataNamesMap.put(PGS_CATALOG_DATA, "PGS Catalog");
+        dataNamesMap.put(IMPRINTED_GENE_DATA, "Imprented Gened");
+        dataNamesMap.put(GENEIMPRINT_DATA, "GeneImprint");
+
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -470,6 +480,8 @@ public final class EtlCommons {
         dataCategoriesMap.put(SNP_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(DBSNP_DATA, dataNamesMap.get(VARIATION_DATA));
         dataCategoriesMap.put(PGS_CATALOG_DATA, dataNamesMap.get(PGS_DATA));
+        dataCategoriesMap.put(IMPRINTED_GENE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -517,6 +529,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(VARIATION_DATA, "variation" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(DBSNP_DATA, "dbSnp" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(PGS_CATALOG_DATA, "pgsCatalog" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GENEIMPRINT_DATA, "geneimprint" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
@@ -792,5 +805,4 @@ public final class EtlCommons {
         }
         return false;
     }
-
 }

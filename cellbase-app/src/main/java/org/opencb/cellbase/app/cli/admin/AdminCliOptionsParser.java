@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS;
+import static org.opencb.cellbase.lib.EtlCommons.HSAPIENS;
+
 
 public class AdminCliOptionsParser extends CliOptionsParser {
 
@@ -41,6 +44,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private IndexCommandOptions indexCommandOptions;
     private ServerCommandOptions serverCommandOptions;
     private ValidationCommandOptions validationCommandOptions;
+
+    private static final String SPECIES_DESCRIPTION = "Name of the species. For instance, valid formats include '" + HOMO_SAPIENS
+            + "' or '" + HSAPIENS + "'.";
+    private static final String ASSEMBLY_DESCRIPTION =  "Name of the assembly, if empty the first assembly in configuration.json"
+            + " will be used.";
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -108,12 +116,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or"
-                + " 'hsapiens'", arity = 1)
-        public String species = "Homo sapiens";
+        @Parameter(names = {"-s", "--species"}, description = SPECIES_DESCRIPTION, arity = 1)
+        public String species = HOMO_SAPIENS;
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml"
-                + " will be used", arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = ASSEMBLY_DESCRIPTION, arity = 1)
         public String assembly;
 
         @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true,
@@ -141,9 +147,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to list the data, valid formats include 'Homo sapiens'"
-                + " or 'hsapiens'", arity = 1)
-        public String species = "Homo sapiens";
+        @Parameter(names = {"-s", "--species"}, description = SPECIES_DESCRIPTION, arity = 1)
+        public String species = HOMO_SAPIENS;
     }
 
     @Parameters(commandNames = {"data-release"}, commandDescription = "Manage data releases in order to support multiple versions of data")
@@ -353,12 +358,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens'"
-                + " or 'hsapiens'", arity = 1)
-        public String species = "Homo sapiens";
+        @Parameter(names = {"-s", "--species"}, description = SPECIES_DESCRIPTION, arity = 1)
+        public String species = HOMO_SAPIENS;
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json"
-                + " will be used", arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = ASSEMBLY_DESCRIPTION, arity = 1)
         public String assembly = "GRCh38";
 
         @Parameter(names = {"--data-release"}, description = "Data release. To use the default data release, please, set this parameter"

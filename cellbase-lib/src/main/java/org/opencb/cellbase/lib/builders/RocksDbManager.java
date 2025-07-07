@@ -153,6 +153,14 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, CancerHotspot[].class));
     }
 
+    public List<ImprintedGene> getImprintedGene(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, ImprintedGene[].class));
+    }
+
     /**
      * Add an entry to specified rocksdb. Overwrites any existing entry.
      *

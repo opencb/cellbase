@@ -52,10 +52,13 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     private Path maneFile = null;
     private Path lrgFile = null;
     private Path hpoFile = null;
+    private Path gnomadFile = null;
     private Path geneDrugFile = null;
     private Path miRTarBaseFile = null;
     private Path cancerGeneCensusFile = null;
     private Path cancerHotspot = null;
+    private Path geneImprintFile = null;
+
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
     private static final String KNOWN_STATUS = "KNOWN";
@@ -148,10 +151,20 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, HPO_DISEASE_DATA, speciesConfiguration.getScientificName());
         }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGnomadConstraints(), prefixId)) {
+            gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA), speciesConfiguration.getScientificName());
+        }
         if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
             cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_GENE_CENSUS_DATA, speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
+            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
         }
 
         // Check regulation files
@@ -179,8 +192,8 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         // Index protein sequences for later
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
-        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, miRTarBaseFile, cancerGeneCensusFile,
-                cancerHotspot);
+        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, gnomadFile, miRTarBaseFile,
+                cancerGeneCensusFile, cancerHotspot, geneImprintFile);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);
@@ -285,15 +298,16 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         String geneBiotype = gtf.getAttributes().get("gene_biotype");
 
         GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
-                null, indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
+                indexer.getConstraints(geneName), indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName),
+                indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
                 KNOWN_STATUS, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);
         geneDbxrefs = parseXrefs(gtf);
     }
 
-    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex, RefSeqGeneBuilderIndexer indexer) throws RocksDBException,
-            CellBaseException {
+    private void parseExon(Gtf gtf, String chromosome, FastaIndex fastaIndex, RefSeqGeneBuilderIndexer indexer)
+            throws RocksDBException, CellBaseException, IOException {
         String transcriptId = gtf.getAttributes().get(TRANSCRIPT_ID);
 
         // new transcript
@@ -612,7 +626,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     }
 
     private Transcript getTranscript(Gtf gtf, String chromosome, String transcriptId, String version, RefSeqGeneBuilderIndexer indexer)
-            throws RocksDBException {
+            throws RocksDBException, IOException {
         Map<String, String> gtfAttributes = gtf.getAttributes();
 
         String name = gene.getName();
@@ -620,10 +634,11 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         if ("mRNA".equals(biotype)) {
             biotype = "protein_coding";
         }
+        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(null, indexer.getConstraints(transcriptId));
         transcript = new Transcript(transcriptId, name, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), biotype, KNOWN_STATUS,
                 0, 0, 0, 0, 0,
                 indexer.getCdnaFasta(transcriptId), "", "", "", version, SOURCE,
-                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), new TranscriptAnnotation());
+                new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new HashSet<>(), transcriptAnnotation);
 
         // Add MANE Select mappings, with this we can know which Ensembl and Refseq transcripts match according to MANE
         for (String suffix: Arrays.asList(ENSEMBL, "ensembl_protein")) {

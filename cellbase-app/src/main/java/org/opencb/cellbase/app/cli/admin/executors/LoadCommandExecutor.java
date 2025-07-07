@@ -403,9 +403,10 @@ public class LoadCommandExecutor extends CommandExecutor {
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve("clinvarVersion.json"),
-                        input.resolve("cosmicVersion.json"),
-                        input.resolve("gwasVersion.json")
+                        input.resolve(EtlCommons.getDataVersionFilename(CLINVAR_DATA)),
+                        input.resolve(EtlCommons.getDataVersionFilename(COSMIC_DATA)),
+                        input.resolve(EtlCommons.getDataVersionFilename(HGMD_DATA)),
+                        input.resolve(EtlCommons.getDataVersionFilename(GWAS_DATA))
                 ));
                 dataReleaseManager.update(dataRelease, CLINICAL_VARIANT_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException

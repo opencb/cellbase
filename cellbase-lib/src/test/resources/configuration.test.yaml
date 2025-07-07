@@ -321,13 +321,15 @@ species:
         - conservation
         - repeats
         - gene
-        - regulation
         - protein
-        - clinical_variant
-        - missense_variation_functional_score
-        - ontology
+        - regulation
+        - variation
         - variation_functional_score
+        - missense_variation_functional_score
+        - clinical_variants
         - splice_score
+        - ontology
+        - pubmed
         - pharmacogenomics
     - id: mmusculus
       scientificName: Mus musculus

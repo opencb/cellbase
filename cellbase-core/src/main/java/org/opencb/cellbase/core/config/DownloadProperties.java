@@ -54,6 +54,7 @@ public class DownloadProperties {
     private URLProperties hpo;
     private URLProperties dgidb;
     private URLProperties cancerGeneCensus;
+    private URLProperties geneImprint;
     private URLProperties gwasCatalog;
     private URLProperties dbsnp;
     private URLProperties cadd;
@@ -307,6 +308,15 @@ public class DownloadProperties {
 
     public DownloadProperties setCancerGeneCensus(URLProperties cancerGeneCensus) {
         this.cancerGeneCensus = cancerGeneCensus;
+        return this;
+    }
+
+    public URLProperties getGeneImprint() {
+        return geneImprint;
+    }
+
+    public DownloadProperties setGeneImprint(URLProperties geneImprint) {
+        this.geneImprint = geneImprint;
         return this;
     }
 

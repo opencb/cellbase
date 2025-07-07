@@ -1,0 +1,50 @@
+miRTarBase ID,miRNA,Species (miRNA),Target Gene,Target Gene (Entrez ID),Species (Target Gene),Experiments,Support Type,References (PMID)
+MIRT003135,mmu-miR-122-5p,mmu,Cd320,54219.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003135,mmu-miR-122-5p,mmu,Cd320,54219.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003134,mmu-miR-122-5p,mmu,Ndrg3,29812.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003134,mmu-miR-122-5p,mmu,Ndrg3,29812.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003134,mmu-miR-122-5p,mmu,Ndrg3,29812.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003133,mmu-miR-122-5p,mmu,Aldoa,11674.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003132,mmu-miR-122-5p,mmu,Bckdk,12041.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003132,mmu-miR-122-5p,mmu,Bckdk,12041.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003132,mmu-miR-122-5p,mmu,Bckdk,12041.0,mmu,Luciferase reporter assay//qRT-PCR//Western blot,Functional MTI,18158304.0
+MIRT003133,mmu-miR-122-5p,mmu,Aldoa,11674.0,mmu,Luciferase reporter assay,Functional MTI,16258535.0
+MIRT003134,mmu-miR-122-5p,mmu,Ndrg3,29812.0,mmu,Luciferase reporter assay,Functional MTI,16258535.0
+MIRT003129,mmu-miR-122-5p,mmu,Tmed3,66111.0,mmu,Luciferase reporter assay,Functional MTI,16258535.0
+MIRT003127,mmu-miR-122-5p,mmu,Slc35a4,67843.0,mmu,Luciferase reporter assay,Functional MTI,16258535.0
+MIRT003133,mmu-miR-122-5p,mmu,Aldoa,11674.0,mmu,qRT-PCR,Functional MTI (Weak),16459310.0
+MIRT003126,mmu-miR-122-5p,mmu,Gys1,14936.0,mmu,qRT-PCR,Functional MTI (Weak),16459310.0
+MIRT003125,mmu-miR-122-5p,mmu,Slc7a1,11987.0,mmu,qRT-PCR,Functional MTI (Weak),16459310.0
+MIRT003124,mmu-miR-122-5p,mmu,Ccng1,12450.0,mmu,qRT-PCR,Functional MTI (Weak),16459310.0
+MIRT003123,mmu-miR-122-5p,mmu,P4ha1,18451.0,mmu,qRT-PCR,Functional MTI (Weak),16459310.0
+MIRT003122,mmu-miR-122-5p,mmu,Apob,238055.0,mmu,Western blot,Functional MTI,16459310.0
+MIRT003121,mmu-miR-122-5p,mmu,Bach1,12013.0,mmu,qRT-PCR,Functional MTI (Weak),17919492.0
+MIRT003120,mmu-miR-122-5p,mmu,Rell1,100532.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003724,mmu-miR-122-5p,mmu,Smarcd1,83797.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003118,mmu-miR-122-5p,mmu,Ddc,13195.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003725,mmu-miR-122-5p,mmu,Rcan1,54720.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003726,mmu-miR-122-5p,mmu,Gde1,56209.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003114,mmu-miR-122-5p,mmu,Sbk1,104175.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003113,mmu-miR-122-5p,mmu,Tgfbr1,21812.0,mmu, Hist1h1c,Functional MTI (Weak),19487572.0
+MIRT003125,mmu-miR-122-5p,mmu,Slc7a1,11987.0,mmu,qRT-PCR,Functional MTI (Weak),17179747.0
+MIRT003133,mmu-miR-122-5p,mmu,Aldoa,11674.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003077,mmu-miR-122-5p,mmu,Gpx7,67305.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003076,mmu-miR-122-5p,mmu,Cers6,241447.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003127,mmu-miR-122-5p,mmu,Slc35a4,67843.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003129,mmu-miR-122-5p,mmu,Tmed3,66111.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003075,mmu-miR-122-5p,mmu,Tmem50b,77975.0,mmu,Branched DNA probe assay,Functional MTI (Weak),18438401.0
+MIRT003037,mmu-let-7e-5p,mmu,Tlr4,21898.0,mmu,Luciferase reporter assay//qRT-PCR,Functional MTI,19699171.0
+MIRT003034,mmu-miR-155-5p,mmu,Socs1,12703.0,mmu,Luciferase reporter assay//qRT-PCR,Functional MTI,19699171.0
+MIRT002978,mmu-miR-92a-3p,mmu,Mylip,218203.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002327,mmu-miR-19b-3p,mmu,Mylip,218203.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002976,mmu-miR-106a-5p,mmu,Mylip,218203.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002975,mmu-miR-20b-5p,mmu,Mylip,218203.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002974,mmu-miR-20b-5p,mmu,Hipk3,15259.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002973,mmu-miR-106a-5p,mmu,Hipk3,15259.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002326,mmu-miR-19b-3p,mmu,Hipk3,15259.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT002971,mmu-miR-92a-3p,mmu,Hipk3,15259.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT003749,mmu-miR-19b-3p,mmu,Arid4b,94246.0,mmu,Luciferase reporter assay,Non-Functional MTI,17575136.0
+MIRT003750,mmu-miR-106a-5p,mmu,Arid4b,94246.0,mmu,Luciferase reporter assay//Western blot,Functional MTI,17575136.0
+MIRT003750,mmu-miR-106a-5p,mmu,Arid4b,94246.0,mmu,Luciferase reporter assay//Western blot,Functional MTI,17575136.0
+MIRT003751,mmu-miR-20b-5p,mmu,Arid4b,94246.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0
+MIRT003751,mmu-miR-20b-5p,mmu,Arid4b,94246.0,mmu,Luciferase reporter assay,Functional MTI,17575136.0

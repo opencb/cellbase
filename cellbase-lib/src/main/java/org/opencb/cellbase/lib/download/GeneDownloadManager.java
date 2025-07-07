@@ -80,7 +80,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadGeneExpressionAtlas(geneDownloadPath));
         downloadFiles.add(downloadGnomadConstraints(geneDownloadPath));
         downloadFiles.add(downloadGO(geneDownloadPath));
-        logger.info(DOWNLOADING_DONE_MSG, getDataName(GENE_ANNOTATION_DATA));
 
         // Save data sources manually downloaded
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
@@ -105,7 +104,20 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                 logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
                         getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
             }
+
+            // Gene imprint
+            if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(GENEIMPRINT_DATA)))) {
+                logger.warn("The version file {} already exists", getDataVersionFilename(GENEIMPRINT_DATA));
+            } else {
+                saveDataSource(GENEIMPRINT_DATA, configuration.getDownload().getGeneImprint().getVersion(), getTimeStamp(),
+                        Collections.singletonList(getManualUrl(configuration.getDownload().getGeneImprint(),
+                                GENEIMPRINT_FILE_ID)), geneDownloadPath.resolve(getDataVersionFilename(GENEIMPRINT_DATA)));
+                logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(GENEIMPRINT_DATA),
+                        getDataVersionFilename(GENEIMPRINT_DATA), geneDownloadPath);
+            }
         }
+
+        logger.info(DOWNLOADING_DONE_MSG, getDataName(GENE_ANNOTATION_DATA));
 
         logger.info(DOWNLOADING_DONE_MSG, getDataName(GENE_DATA));
         return downloadFiles;

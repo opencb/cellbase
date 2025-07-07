@@ -29,6 +29,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
+import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,7 +51,8 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
     private Path clinvarSummaryFilePath;
     private Path clinvarVariationAlleleFilePath;
     private Path clinvarEFOFilePath;
-    private Path cosmicFilePath;
+    private Path cosmicGenomeScreensMutantFilePath;
+    private Path cosmicClassificationFilePath;
     private Path hgmdFilePath;
     private Path gwasFilePath;
     private Path gwasDbSnpFilePath;
@@ -105,7 +107,10 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
                 clinicalVariantPath).toPath();
 
         // Check COSMIC file
-        cosmicFilePath = checkFiles(COSMIC_DATA, clinicalVariantPath, 1).get(0).toPath();
+        cosmicGenomeScreensMutantFilePath = checkFile(COSMIC_DATA, configuration.getDownload().getCosmic(),
+                COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, clinicalVariantPath).toPath();
+        cosmicClassificationFilePath = checkFile(COSMIC_DATA, configuration.getDownload().getCosmic(), COSMIC_CLASSIFICATION_FILE_ID,
+                clinicalVariantPath).toPath();
 
         // Check HGMD file
         hgmdFilePath = checkFiles(HGMD_DATA, clinicalVariantPath, 1).get(0).toPath();
@@ -128,7 +133,7 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
         checked = true;
     }
 
-    public void parse() throws IOException, RocksDBException, CellBaseException {
+    public void parse() throws IOException, RocksDBException, CellBaseException, JAXBException {
         check();
 
         // Prepare ClinVar chunk files before building (if necessary)
@@ -152,8 +157,8 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
 
             // COSMIC
             // IMPORTANT: COSMIC must be indexed first (before ClinVar, HGMD,...)!!!
-            CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFilePath, configuration.getDownload().getCosmic().getVersion(),
-                    normalize, genomeSequenceFilePath, assembly, rdb);
+            CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicGenomeScreensMutantFilePath, cosmicClassificationFilePath,
+                    configuration.getDownload().getCosmic().getVersion(), normalize, genomeSequenceFilePath, assembly, rdb);
             cosmicIndexer.index();
 
             // ClinVar
@@ -173,12 +178,9 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
 
             // Serialize
             serializeRDB(rdb);
+        } finally {
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();
-        } catch (Exception e) {
-            closeIndex(rdb, dbOption, dbLocation);
-            serializer.close();
-            throw e;
         }
     }
 
