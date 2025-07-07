@@ -29,6 +29,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
+import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -132,7 +133,7 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
         checked = true;
     }
 
-    public void parse() throws IOException, RocksDBException, CellBaseException {
+    public void parse() throws IOException, RocksDBException, CellBaseException, JAXBException {
         check();
 
         // Prepare ClinVar chunk files before building (if necessary)
@@ -177,12 +178,9 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
 
             // Serialize
             serializeRDB(rdb);
+        } finally {
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();
-        } catch (Exception e) {
-            closeIndex(rdb, dbOption, dbLocation);
-            serializer.close();
-            throw e;
         }
     }
 
