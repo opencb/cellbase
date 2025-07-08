@@ -26,7 +26,6 @@ import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
 import org.opencb.biodata.models.core.MiRnaGene;
 import org.opencb.biodata.models.core.MirnaTarget;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.cellbase.core.exception.CellBaseException;
@@ -38,8 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,11 +44,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_DONE_LOG_MESSAGE;
-import static org.opencb.cellbase.lib.builders.CellBaseBuilder.PARSING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
 public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
 
@@ -59,7 +55,6 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     private static final String XREF_SUFFIX = "_xref";
     private static final String PROTEIN_XREF_SUFFIX = "_protein_xref";
     private static final String EXPRESSION_SUFFIX = "_expression";
-    private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String ONTOLOGY_SUFFIX = "_ontology";
     private static final String OBO_SUFFIX = "_obo";
     private static final String MIRBASE_SUFFIX = "_mirbase";
@@ -71,11 +66,11 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
 
     public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
-                      Path disgenetFile, Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile,
-                      Path cancerGeneGensusFile, Path cancerHostpotFile, Path canonicalFile, Path tso500File, Path eglhHaemOncFile)
+                      Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneGensusFile,
+                      Path cancerHostpotFile, Path canonicalFile, Path geneImprintFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
-//        indexDescriptions(geneDescriptionFile);
-//        indexXrefs(xrefsFile, uniprotIdMappingFile);
+        indexDescriptions(geneDescriptionFile);
+        indexXrefs(xrefsFile, uniprotIdMappingFile);
         indexHgncIdMapping(hgncFile);
         indexManeMapping(maneFile, ENSEMBL_DATA);
         indexLrgMapping(lrgFile, ENSEMBL_DATA);
@@ -83,20 +78,19 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         indexCdnaSequences(cDnaFastaFile);
         indexExpression(species, geneExpressionFile);
         indexDrugs(geneDrugFile);
-        indexDiseases(hpoFile, disgenetFile);
-        indexConstraints(gnomadFile);
+        indexDiseases(hpoFile);
+        indexConstraints(gnomadFile, ENSEMBL_DATA);
         indexOntologyAnnotations(geneOntologyAnnotationFile);
         indexMiRBase(species, miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
-//        indexCancerGeneCensus(cancerGeneGensusFile);
+        indexCancerGeneCensus(cancerGeneGensusFile);
         indexCancerHotspot(cancerHostpotFile);
-//        indexCanonical(canonicalFile);
-//        indexTSO500(tso500File);
-//        indexEGLHHaemOnc(eglhHaemOncFile);
+        indexCanonical(canonicalFile);
+        indexImprintedGenes(geneImprintFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
-        logger.info("Loading gene description data...");
+        logger.info(PARSING_LOG_MESSAGE, geneDescriptionFile);
         String[] fields;
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, StandardCharsets.ISO_8859_1);
@@ -108,6 +102,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
             logger.warn("Gene description file " + geneDescriptionFile + " not found");
             logger.warn("Gene description data not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     public String getDescription(String id) throws RocksDBException {
@@ -120,7 +115,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexXrefs(Path xrefsFile, Path uniprotIdMappingFile) throws IOException, RocksDBException {
-        logger.info("Loading xref data...");
+        logger.info(PARSING_LOG_MESSAGE, xrefsFile);
         String[] fields;
         if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
             List<String> lines = Files.readAllLines(xrefsFile, StandardCharsets.ISO_8859_1);
@@ -182,6 +177,7 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
             logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
             logger.warn("Protein mapping into xref data not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     public List<Xref> getXrefs(String id) throws RocksDBException, IOException {
@@ -200,6 +196,10 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexExpression(String species, Path geneExpressionFile) throws IOException, RocksDBException {
+        if (geneExpressionFile == null) {
+            return;
+        }
+
         Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
         if (geneExpressionFile != null && Files.exists(geneExpressionFile) && Files.size(geneExpressionFile) > 0
                 && species != null) {
@@ -250,63 +250,11 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         return rocksDbManager.getExpression(rocksdb, key);
     }
 
-    private void indexConstraints(Path gnomadFile) throws IOException, RocksDBException {
-        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
-            logger.info("Loading OE scores from '{}'", gnomadFile);
-            InputStream inputStream = Files.newInputStream(gnomadFile);
-            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-            // Skip header.
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
-                String transcriptIdentifier = parts[1];
-                String canonical = parts[2];
-                String oeMis = parts[5];
-                String oeSyn = parts[14];
-                String oeLof = parts[24];
-                String exacPLI = parts[70];
-                String exacLof = parts[73];
-                String geneIdentifier = parts[64];
-
-                List<Constraint> constraints = new ArrayList<>();
-                addConstraint(constraints, "oe_mis", oeMis);
-                addConstraint(constraints, "oe_syn", oeSyn);
-                addConstraint(constraints, "oe_lof", oeLof);
-                addConstraint(constraints, "exac_pLI", exacPLI);
-                addConstraint(constraints, "exac_oe_lof", exacLof);
-                rocksDbManager.update(rocksdb, transcriptIdentifier + CONSTRAINT_SUFFIX, constraints);
-
-                if ("TRUE".equalsIgnoreCase(canonical)) {
-                    rocksDbManager.update(rocksdb, geneIdentifier + CONSTRAINT_SUFFIX, constraints);
-                }
-            }
-            br.close();
-        } else {
-            logger.error("gnomad constraints file not found");
-        }
-    }
-
-    public List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
-        String key = id + CONSTRAINT_SUFFIX;
-        return rocksDbManager.getConstraints(rocksdb, key);
-    }
-
-    private void addConstraint(List<Constraint> constraints, String name, String value) {
-        Constraint constraint = new Constraint();
-        constraint.setMethod("pLoF");
-        constraint.setSource("gnomAD");
-        constraint.setName(name);
-        try {
-            constraint.setValue(Double.parseDouble(value));
-        } catch (NumberFormatException e) {
-            // invalid number (e.g. NA), discard.
+    private void indexOntologyAnnotations(Path goaFile) throws IOException, RocksDBException {
+        if (goaFile == null) {
             return;
         }
-        constraints.add(constraint);
-    }
 
-    private void indexOntologyAnnotations(Path goaFile) throws IOException, RocksDBException {
         Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
         if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
             logger.info("Loading GO annotation from '{}'", goaFile);
@@ -327,6 +275,10 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     }
 
     private void indexMiRBase(String species, Path miRBaseFile) throws IOException {
+        if (miRBaseFile == null) {
+            return;
+        }
+
         logger.info(PARSING_LOG_MESSAGE, miRBaseFile);
 
         MirBaseCallback callback = new MirBaseCallback(rocksdb, rocksDbManager);

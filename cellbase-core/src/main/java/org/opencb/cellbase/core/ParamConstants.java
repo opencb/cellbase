@@ -113,12 +113,12 @@ public class ParamConstants {
     public static final String VERSION_DESCRIPTION = "API version, e.g.: " + DEFAULT_VERSION;
 
     public static final String DATA_RELEASE_PARAM = "dataRelease";
-    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To use the default data release, set this to 0. To get the list"
-            + " of available data release, please call the endpoint 'meta/dataReleases'";
+    public static final String DATA_RELEASE_DESCRIPTION = "Data release. To get the list of available data releases, please call the"
+        + " endpoint 'meta/dataReleases'";
 
     public static final String API_KEY_PARAM = "apiKey";
     public static final String API_KEY_DESCRIPTION = "API key to allow access to licensed/restricted data sources such as"
-            + " Cosmic or HGMD";
+            + " SpliceAI or HGMD";
     // For backward-compatibility, from v5.7 "token" is not used anymore
     public static final String TOKEN_PARAM = "token";
 

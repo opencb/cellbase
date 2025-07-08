@@ -46,14 +46,15 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties cosmic;
     private URLProperties hgmd;
+    private URLProperties dbSNP;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
     private URLProperties genomicSuperDups;
     private URLProperties hpo;
-    private URLProperties disgenet;
-    private URLProperties disgenetReadme;
     private URLProperties dgidb;
+    private URLProperties cancerGeneCensus;
+    private URLProperties geneImprint;
     private URLProperties gwasCatalog;
     private URLProperties dbsnp;
     private URLProperties cadd;
@@ -65,10 +66,12 @@ public class DownloadProperties {
     private URLProperties mondoObo;
     private URLProperties goAnnotation;
     private URLProperties revel;
+    private URLProperties mmSplice;
+    private URLProperties spliceAi;
     private URLProperties pubmed;
     private URLProperties pharmGKB;
     private URLProperties alphaMissense;
-    private URLProperties pgs;
+    private URLProperties pgsCatalog;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -241,6 +244,15 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getDbSNP() {
+        return dbSNP;
+    }
+
+    public DownloadProperties setDbSNP(URLProperties dbSNP) {
+        this.dbSNP = dbSNP;
+        return this;
+    }
+
     public URLProperties getDgv() {
         return dgv;
     }
@@ -282,30 +294,30 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getDisgenet() {
-        return disgenet;
-    }
-
-    public DownloadProperties setDisgenet(URLProperties disgenet) {
-        this.disgenet = disgenet;
-        return this;
-    }
-
-    public URLProperties getDisgenetReadme() {
-        return disgenetReadme;
-    }
-
-    public DownloadProperties setDisgenetReadme(URLProperties disgenetReadme) {
-        this.disgenetReadme = disgenetReadme;
-        return this;
-    }
-
     public URLProperties getDgidb() {
         return dgidb;
     }
 
     public DownloadProperties setDgidb(URLProperties dgidb) {
         this.dgidb = dgidb;
+        return this;
+    }
+
+    public URLProperties getCancerGeneCensus() {
+        return cancerGeneCensus;
+    }
+
+    public DownloadProperties setCancerGeneCensus(URLProperties cancerGeneCensus) {
+        this.cancerGeneCensus = cancerGeneCensus;
+        return this;
+    }
+
+    public URLProperties getGeneImprint() {
+        return geneImprint;
+    }
+
+    public DownloadProperties setGeneImprint(URLProperties geneImprint) {
+        this.geneImprint = geneImprint;
         return this;
     }
 
@@ -408,6 +420,24 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getMmSplice() {
+        return mmSplice;
+    }
+
+    public DownloadProperties setMmSplice(URLProperties mmSplice) {
+        this.mmSplice = mmSplice;
+        return this;
+    }
+
+    public URLProperties getSpliceAi() {
+        return spliceAi;
+    }
+
+    public DownloadProperties setSpliceAi(URLProperties spliceAi) {
+        this.spliceAi = spliceAi;
+        return this;
+    }
+
     public URLProperties getPubmed() {
         return pubmed;
     }
@@ -435,12 +465,12 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getPgs() {
-        return pgs;
+    public URLProperties getPgsCatalog() {
+        return pgsCatalog;
     }
 
-    public DownloadProperties setPgs(URLProperties pgs) {
-        this.pgs = pgs;
+    public DownloadProperties setPgsCatalog(URLProperties pgsCatalog) {
+        this.pgsCatalog = pgsCatalog;
         return this;
     }
 

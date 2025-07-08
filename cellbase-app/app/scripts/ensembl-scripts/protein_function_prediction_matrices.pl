@@ -20,7 +20,7 @@ my $verbose = '0';
 my $help = '0';
 
 ####################################################################
-## Parsing command line options ####################################
+## Parsing command line options
 ####################################################################
 # USAGE: ./protein_function_prediction.pl --outdir ../../appl_db/ird_v1/hsa ...
 # Docker: docker run -it --mount type=bind,source=/home/imedina/cellbase/v5/homo_sapiens_grch38/,target=/output
@@ -43,7 +43,46 @@ if (-d $outdir){
 }
 
 ####################################################################
-## Ensembl APIs ####################################################
+## Sift and PolyPhen version files
+####################################################################
+
+# Get the current time
+my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+# Adjust the year and month values (year is years since 1900, and month is 0-based)
+
+$year += 1900;
+$mon += 1;
+
+# Format the date and time
+my $formatted_date = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+
+# Common JSON structure for Sift and PolyPhen versions
+my $jsonVersion = {};
+$jsonVersion->{"downloadDate"} = $formatted_date;
+$jsonVersion->{"category"} = "Protein Substitution Prediction";
+$jsonVersion->{"version"} = "Ensembl 114_38";
+my @urls = ();
+push @urls, "ensembldb.ensembl.org:3306";
+$jsonVersion->{"urls"} = \@urls;
+
+# Sift version file
+print "Generating the JSON file for the Sift version.\n";
+$jsonVersion->{"id"} = "sift";
+$jsonVersion->{"name"} = "Sift";
+open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
+
+# PolyPhen version file
+print "Generating the JSON file for the PolyPhen version\n";
+$jsonVersion->{"id"} = "polyphen";
+$jsonVersion->{"name"} = "PolyPhen";
+open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
+
+####################################################################
+## Ensembl APIs
 ####################################################################
 ## creating ensembl adaptors
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
@@ -93,41 +132,11 @@ my %effect_code = ("probably damaging" => 0,
 
 ##################################################################
 
-# Get the current time
-my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
-# Adjust the year and month values (year is years since 1900, and month is 0-based)
-
-$year += 1900;
-$mon += 1;
-
-# Format the date and time
-my $formatted_date = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
-
-my $jsonVersion = {};
-$jsonVersion->{"date"} = $formatted_date;
-$jsonVersion->{"data"} = "protein_substitution_predictions";
-$jsonVersion->{"version"} = "Ensembl 104";
-my @urls = ();
-push @urls, "ensembldb.ensembl.org:3306";
-$jsonVersion->{"url"} = \@urls;
-
-print "Generating the JSON file for the Sift version.\n";
-$jsonVersion->{"name"} = "sift";
-open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file\n";
-print FILE to_json($jsonVersion) . "\n";
-close(FILE);
-
-print "Generating the JSON file for the PolyPhen version\n";
-$jsonVersion->{"name"} = "polyphen";
-open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file\n";
-print FILE to_json($jsonVersion) . "\n";
-close(FILE);
-
 my ($translation, $seq, $md5seq, @preds, @all_predictions);
 #my @transcripts = @{$transcript_adaptor->fetch_all_by_biotype('protein_coding')};
 
 ##################################################################
-## selecting chromosomes	######################################
+## Selecting chromosomes
 ##################################################################
 my @chromosomes;
 if ($chrom eq 'all') {

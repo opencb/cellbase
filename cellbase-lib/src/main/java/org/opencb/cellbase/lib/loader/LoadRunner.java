@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 
+import static org.opencb.cellbase.lib.EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA;
+
 /**
  * Created by parce on 18/02/15.
  */
@@ -101,7 +103,7 @@ public class LoadRunner {
         // protein_functional_prediction documents are extremely big. Increasing the batch size will probably
         // lead to an OutOfMemory error for this collection. Batch size can be much higher for the rest of
         // collections though
-        if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)
+        if (data.equals(PROTEIN_SUBSTITUTION_PREDICTION_DATA)
                 || data.equals(EtlCommons.PHARMACOGENOMICS_DATA)
                 || data.equals(EtlCommons.PUBMED_DATA)) {
             batchSize = 50;
@@ -195,7 +197,7 @@ public class LoadRunner {
                     batch = new ArrayList<>(batchSize);
                 }
                 if (inputFileRecords % batchSize == 0) {
-                    logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
+                    logger.debug("{} records read from {}", inputFileRecords, inputFile);
                 }
             }
             br.close();

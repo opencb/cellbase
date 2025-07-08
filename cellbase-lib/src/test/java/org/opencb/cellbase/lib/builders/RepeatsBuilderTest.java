@@ -16,10 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.Test;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -30,8 +28,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 
 /**
@@ -47,13 +50,20 @@ public class RepeatsBuilderTest extends GenericBuilderTest<Repeat> {
 
     @Test
     public void testParse() throws Exception {
-        CellBaseConfiguration configuration = CellBaseConfiguration.load(getClass().getResourceAsStream("configuration.test.yaml"));
+        CellBaseConfiguration configuration = CellBaseConfiguration.load(getClass().getClassLoader().getResourceAsStream("configuration.test.yaml"));
         Path repeatsFilesDir = Paths.get(getClass().getResource("/repeats").getPath());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "repeats.test");
-        (new RepeatsBuilder(repeatsFilesDir, serializer, configuration)).parse();
+        (new RepeatsBuilder(Arrays.asList(WM_DATA, GSD_DATA, TRF_DATA), repeatsFilesDir, serializer, configuration)).parse();
         serializer.close();
-        assertEquals(loadRepeatSet(Paths.get(getClass().getResource("/repeats/repeats.test.json.gz").getFile())),
-                loadRepeatSet(Paths.get("/tmp/repeats.test.json.gz")));
+        Set<Repeat> expected = loadRepeatSet(Paths.get(getClass().getClassLoader().getResource("repeats/repeats.test.json.gz").getPath()));
+        Set<Repeat> current = loadRepeatSet(Paths.get("/tmp/repeats.test.json.gz"));
+        assertEquals(expected.size(), current.size());
+        for (Repeat repeat : expected) {
+            assertTrue(current.contains(repeat));
+        }
+        for (Repeat repeat : current) {
+            assertTrue(expected.contains(repeat));
+        }
     }
 
     private Set<Repeat> loadRepeatSet(Path path) throws IOException {

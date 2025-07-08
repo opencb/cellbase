@@ -23,7 +23,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.ProteinSubstitutionPrediction;
 import org.opencb.biodata.models.core.ProteinSubstitutionPredictionScore;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.utils.RocksDBUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
@@ -34,13 +36,17 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AlphaMissenseBuilder extends CellBaseBuilder {
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
-    private File alphaMissenseFile;
+public class AlphaMissenseBuilder extends AbstractBuilder {
+
+    private Path alphamissenseDownloadPath;
     private CellBaseFileSerializer fileSerializer;
 
     private RocksDB rdb;
@@ -52,8 +58,6 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
     private static ObjectReader predictionReader;
     private static ObjectWriter jsonObjectWriter;
 
-    private static final String SOURCE = "alphamissense";
-
     static {
         mapper = new ObjectMapper();
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -61,21 +65,31 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
         jsonObjectWriter = mapper.writer();
     }
 
-    public AlphaMissenseBuilder(File alphaMissenseFile, CellBaseFileSerializer serializer) {
+    public AlphaMissenseBuilder(Path alphamissenseDownloadPath, CellBaseFileSerializer serializer) {
         super(serializer);
 
         this.fileSerializer = serializer;
-        this.alphaMissenseFile = alphaMissenseFile;
+        this.alphamissenseDownloadPath = alphamissenseDownloadPath;
 
         logger = LoggerFactory.getLogger(AlphaMissenseBuilder.class);
     }
 
     @Override
     public void parse() throws Exception {
-        logger.info("Parsing AlphaMissense file: {} ...", alphaMissenseFile.getName());
+        String dataName = getDataName(ALPHAMISSENSE_DATA);
+        String dataCategory = getDataCategory(ALPHAMISSENSE_DATA);
 
-        // Sanity check
-        FileUtils.checkFile(alphaMissenseFile.toPath());
+        logger.info(CATEGORY_BUILDING_LOG_MESSAGE, dataCategory, dataName);
+
+        // Check REVEL files
+        List<File> alphamissenseFiles = checkFiles(dataSourceReader.readValue(alphamissenseDownloadPath.resolve(
+                getDataVersionFilename(ALPHAMISSENSE_DATA)).toFile()), alphamissenseDownloadPath, dataName);
+        if (alphamissenseFiles.size() != 1) {
+            throw new CellBaseException("One " + dataName + " file is expected, but currently there are " + alphamissenseFiles.size()
+                    + " files");
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, alphamissenseFiles.get(0));
 
         Object[] dbConnection = RocksDBUtils.getDBConnection(serializer.getOutdir().resolve("alphamissense-rdb.idx").toString(), true);
         rdb = (RocksDB) dbConnection[0];
@@ -83,98 +97,99 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
         String dbLocation = (String) dbConnection[2];
 
         // AlphaMissense file reader
-        BufferedReader br = FileUtils.newBufferedReader(alphaMissenseFile.toPath());
-        String line;
-        int counter = 0;
-        while ((line = br.readLine()) != null) {
-            if (!line.startsWith("#")) {
-                // 0        1   2   3   4       5           6               7               8                   9
-                // CHROM    POS REF ALT genome  uniprot_id  transcript_id   protein_variant am_pathogenicity    am_class
-                String[] split = line.split("\t", -1);
+        try (BufferedReader br = FileUtils.newBufferedReader(alphamissenseFiles.get(0).toPath())) {
+            String line;
+            int counter = 0;
+            while ((line = br.readLine()) != null) {
+                if (!line.startsWith("#")) {
+                    // 0        1   2   3   4       5           6               7               8                   9
+                    // CHROM    POS REF ALT genome  uniprot_id  transcript_id   protein_variant am_pathogenicity    am_class
+                    String[] split = line.split("\t", -1);
 
-                String chrom = null;
-                int position;
-                String reference;
-                String alternate = null;
-                String transcriptId;
-                String uniprotId;
-                int aaPosition;
-                String aaReference;
-                String aaAlternate;
+                    String chrom = null;
+                    int position;
+                    String reference;
+                    String alternate = null;
+                    String transcriptId;
+                    String uniprotId;
+                    int aaPosition;
+                    String aaReference;
+                    String aaAlternate;
 
-                if (StringUtils.isNotEmpty(split[0])) {
-                    chrom = split[0].replace("chr", "");
-                }
-                if (StringUtils.isNotEmpty(split[1])) {
-                    position = Integer.parseInt(split[1]);
-                } else {
-                    logger.warn("Missing field 'position', skipping line: {}", line);
-                    continue;
-                }
-                if (StringUtils.isNotEmpty(split[2])) {
-                    reference = split[2];
-                } else {
-                    logger.warn("Missing field 'reference', skipping line: {}", line);
-                    continue;
-                }
-                if (StringUtils.isNotEmpty(split[3])) {
-                    alternate = split[3];
-                }
-                if (StringUtils.isNotEmpty(split[6])) {
-                    transcriptId = split[6].split("\\.")[0];
-                } else {
-                    logger.warn("Missing field 'transcript_id', skipping line: {}", line);
-                    continue;
-                }
-                if (StringUtils.isNotEmpty(split[5])) {
-                    uniprotId = split[5];
-                } else {
-                    logger.warn("Missing field 'uniprot_id', skipping line: {}", line);
-                    continue;
-                }
-                if (StringUtils.isNotEmpty(split[7])) {
-                    Matcher matcher = aaChangePattern.matcher(split[7]);
-                    if (matcher.matches()) {
-                        aaReference = matcher.group(1);
-                        aaPosition = Integer.parseInt(matcher.group(2));
-                        aaAlternate = matcher.group(3);
+                    if (StringUtils.isNotEmpty(split[0])) {
+                        chrom = split[0].replace("chr", "");
+                    }
+                    if (StringUtils.isNotEmpty(split[1])) {
+                        position = Integer.parseInt(split[1]);
                     } else {
-                        logger.warn("Error parsing field 'protein_variant' = {}, skipping line: {}", split[7], line);
+                        logger.warn("Missing field 'position', skipping line: {}", line);
                         continue;
                     }
-                } else {
-                    logger.warn("Missing field 'protein_variant', skipping line: {}", line);
-                    continue;
-                }
+                    if (StringUtils.isNotEmpty(split[2])) {
+                        reference = split[2];
+                    } else {
+                        logger.warn("Missing field 'reference', skipping line: {}", line);
+                        continue;
+                    }
+                    if (StringUtils.isNotEmpty(split[3])) {
+                        alternate = split[3];
+                    }
+                    if (StringUtils.isNotEmpty(split[6])) {
+                        transcriptId = split[6].split("\\.")[0];
+                    } else {
+                        logger.warn("Missing field 'transcript_id', skipping line: {}", line);
+                        continue;
+                    }
+                    if (StringUtils.isNotEmpty(split[5])) {
+                        uniprotId = split[5];
+                    } else {
+                        logger.warn("Missing field 'uniprot_id', skipping line: {}", line);
+                        continue;
+                    }
+                    if (StringUtils.isNotEmpty(split[7])) {
+                        Matcher matcher = aaChangePattern.matcher(split[7]);
+                        if (matcher.matches()) {
+                            aaReference = matcher.group(1);
+                            aaPosition = Integer.parseInt(matcher.group(2));
+                            aaAlternate = matcher.group(3);
+                        } else {
+                            logger.warn("Error parsing field 'protein_variant' = {}, skipping line: {}", split[7], line);
+                            continue;
+                        }
+                    } else {
+                        logger.warn("Missing field 'protein_variant', skipping line: {}", line);
+                        continue;
+                    }
 
-                // Create protein substitution score
-                ProteinSubstitutionPredictionScore score = new ProteinSubstitutionPredictionScore();
-                score.setAlternate(alternate);
-                score.setAaAlternate(aaAlternate);
-                if (StringUtils.isNotEmpty(split[8])) {
-                    score.setScore(Double.parseDouble(split[8]));
-                }
-                if (StringUtils.isNotEmpty(split[9])) {
-                    score.setEffect(split[9]);
-                }
+                    // Create protein substitution score
+                    ProteinSubstitutionPredictionScore score = new ProteinSubstitutionPredictionScore();
+                    score.setAlternate(alternate);
+                    score.setAaAlternate(aaAlternate);
+                    if (StringUtils.isNotEmpty(split[8])) {
+                        score.setScore(Double.parseDouble(split[8]));
+                    }
+                    if (StringUtils.isNotEmpty(split[9])) {
+                        score.setEffect(split[9]);
+                    }
 
-                // Creating and/or updating protein substitution prediction
-                ProteinSubstitutionPrediction prediction;
-                String key = transcriptId + "_" + uniprotId + "_" + position + "_" + reference + "_" + aaPosition + "_" + aaReference;
-                byte[] dbContent = rdb.get(key.getBytes());
-                if (dbContent == null) {
-                    prediction = new ProteinSubstitutionPrediction(chrom, position, reference, transcriptId, uniprotId, aaPosition,
-                            aaReference, SOURCE, null, Collections.singletonList(score));
-                } else {
-                    prediction = predictionReader.readValue(dbContent);
-                    prediction.getScores().add(score);
-                }
-                rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(prediction));
+                    // Creating and/or updating protein substitution prediction
+                    ProteinSubstitutionPrediction prediction;
+                    String key = transcriptId + "_" + uniprotId + "_" + position + "_" + reference + "_" + aaPosition + "_" + aaReference;
+                    byte[] dbContent = rdb.get(key.getBytes());
+                    if (dbContent == null) {
+                        prediction = new ProteinSubstitutionPrediction(chrom, position, reference, transcriptId, uniprotId, aaPosition,
+                                aaReference, ALPHAMISSENSE_DATA, null, Collections.singletonList(score));
+                    } else {
+                        prediction = predictionReader.readValue(dbContent);
+                        prediction.getScores().add(score);
+                    }
+                    rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(prediction));
 
-                // Log messages
-                counter++;
-                if (counter % 10000 == 0) {
-                    logger.info("{} AlphaMissense predictions parsed", counter);
+                    // Log messages
+                    counter++;
+                    if (counter % 10000 == 0) {
+                        logger.info("{} AlphaMissense predictions parsed", counter);
+                    }
                 }
             }
         }
@@ -184,7 +199,8 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
         RocksDBUtils.closeIndex(rdb, dbOption, dbLocation);
         serializer.close();
 
-        logger.info("Parsed AlphaMissense file: {}. Done!", alphaMissenseFile.getName());
+        logger.info(PARSING_DONE_LOG_MESSAGE);
+        logger.info(CATEGORY_BUILDING_DONE_LOG_MESSAGE);
     }
 
     private void serializeRDB(RocksDB rdb) throws IOException {
@@ -204,6 +220,6 @@ public class AlphaMissenseBuilder extends CellBaseBuilder {
             }
         }
         serializer.close();
-        logger.info("Done.");
+        logger.info(EtlCommons.DONE_MSG);
     }
 }

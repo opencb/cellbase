@@ -18,15 +18,20 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.Snp;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
@@ -40,6 +45,7 @@ import org.opencb.cellbase.lib.impl.core.converters.VariantConverter;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.cellbase.lib.iterator.CellBaseMongoDBIterator;
 import org.opencb.cellbase.lib.iterator.VariantMongoDBIterator;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -50,6 +56,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
 import static org.opencb.cellbase.lib.MongoDBCollectionConfiguration.VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE;
 
@@ -68,6 +75,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
 
     private Map<Integer, MongoDBCollection> caddDBCollectionByRelease;
+    private Map<Integer, MongoDBCollection> snpDBCollectionByRelease;
 
     public VariantMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
@@ -80,6 +88,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
         mongoDBCollectionByRelease = buildCollectionByReleaseMap("variation");
         caddDBCollectionByRelease = buildCollectionByReleaseMap("variation_functional_score");
+        snpDBCollectionByRelease = buildCollectionByReleaseMap("snp");
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -106,10 +115,10 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         CellBaseDataResult<Long> nLoadedObjects = null;
         switch (field) {
             case POP_FREQUENCIES_FIELD:
-                nLoadedObjects = updatePopulationFrequencies((List<Document>) objectList, dataRelease);
+                nLoadedObjects = updatePopulationFrequencies(objectList, dataRelease);
                 break;
             case ANNOTATION_FIELD:
-                nLoadedObjects = updateAnnotation((List<Document>) objectList, innerFields, dataRelease);
+                nLoadedObjects = updateAnnotation(objectList, innerFields, dataRelease);
                 break;
             default:
                 logger.error("Invalid field {}: no action implemented for updating this field.", field);
@@ -207,7 +216,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
     }
 
     @Deprecated
-    private Bson parseQuery(Query query) {
+    private Bson parseQuery(Query query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
 
         createOrQuery(query, ParamConstants.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
@@ -221,7 +230,12 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         }
         createRegionQuery(query, ParamConstants.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, ParamConstants.QueryParams.ID.key(), "id", andBsonList);
+
+        if (StringUtils.isNotEmpty(query.getString(ParamConstants.QueryParams.ID.key()))) {
+            List<String> variantIds = getVariantIds(query.getAsStringList(ParamConstants.QueryParams.ID.key()),
+                    query.getInt(DATA_RELEASE_PARAM));
+            createOrQuery(variantIds, "id", andBsonList);
+        }
 
         createImprecisePositionQuery(query, ParamConstants.QueryParams.CI_START_LEFT.key(),
                 ParamConstants.QueryParams.CI_START_RIGHT.key(),
@@ -236,23 +250,29 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         createGeneOrQuery(query, ParamConstants.QueryParams.GENE.key(), andBsonList);
 
-        if (andBsonList.size() > 0) {
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
     }
 
-    public Bson parseQuery(VariantQuery query) {
+    public Bson parseQuery(VariantQuery query) throws CellBaseException {
         List<Bson> andBsonList = new ArrayList<>();
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "id":
+                        // Both variant IDs and dbSNP IDs are allowed
+                        List<String> variantIds = getVariantIds(Arrays.asList(query.getId().split(",")), query.getDataRelease());
+                        createAndOrQuery(variantIds, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
                     case "region":
                         createRegionQuery(query, query.getRegions(), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
                         break;
+                    case API_KEY_PARAM:
                     case DATA_RELEASE_PARAM:
                     case "svType":
                         // don't do anything, this is parsed later
@@ -265,11 +285,13 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                         break;
                     case "ciStartLeft":
                         createImprecisePositionQueryStart(query, andBsonList);
+                        break;
                     case "ciEndRight":
                         // don't do anything, this is parsed later
                         break;
                     case "ciEndLeft":
                         createImprecisePositionQueryEnd(query, andBsonList);
+                        break;
                     case "gene":
                         createGeneOrQuery(query, andBsonList);
                         break;
@@ -283,11 +305,11 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 }
             }
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new CellBaseException("Error parsing variant query: " + query, e);
         }
 
-        logger.debug("variant parsed query: " + andBsonList.toString());
-        if (andBsonList.size() > 0) {
+        logger.debug("variant parsed query: {}", andBsonList);
+        if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
@@ -339,7 +361,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                 andBsonList.add(Filters.or(orBsonList));
                 // Inversion or just CNV (without subtype)
             } else {
-                andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
+                andBsonList.add(Filters.eq(typeMongoField, variantTypeString));
             }
         }
     }
@@ -430,7 +452,7 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         for (Document variantDBObject : variantDocumentList) {
             Document annotationDBObject = (Document) variantDBObject.get(ANNOTATION_FIELD);
             Document toOverwrite = new Document();
-            if (innerFields != null & innerFields.length > 0) {
+            if (innerFields != null && innerFields.length > 0) {
                 for (String field : innerFields) {
                     if (annotationDBObject.get(field) != null) {
                         toOverwrite.put(ANNOTATION_FIELD + "." + field, annotationDBObject.get(field));
@@ -569,21 +591,11 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             if (position >= chunkStart && position <= chunkEnd) {
                 int offset = (position - chunkStart);
                 ArrayList basicDBList = dbObject.get("values", ArrayList.class);
-
-//                long l1 = 0L; // TODO: delete
-//                try { // TODO: delete
                 long l1 = Long.parseLong(basicDBList.get(offset).toString());
-//                                 l1 = (Long) basicDBList.get(offset);
-//                } catch (Exception e) {  // TODO: delete
-//                    logger.error("problematic variant: {}", variant.toString());
-//                    throw e;
-//                }
-
                 if (dbObject.getString("source").equalsIgnoreCase("cadd_raw")) {
                     float value = 0f;
                     switch (alternate.toLowerCase()) {
                         case "a":
-//                            value = ((short) (l1 >> 48) - 10000) / DECIMAL_RESOLUTION;
                             value = (((short) (l1 >> 48)) / DECIMAL_RESOLUTION) - 10;
                             break;
                         case "c":
@@ -602,7 +614,6 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
                             .setScore(value)
                             .setSource(dbObject.getString("source"))
                             .setDescription(null)
-                            //                        .setDescription("")
                             .build());
                 }
 
@@ -745,13 +756,14 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             throws CellBaseException {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>();
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, dataRelease);
-        for (String id : ids) {
-            Bson projection = getProjection(queryOptions);
-            List<Bson> orBsonList = new ArrayList<>(ids.size());
-            orBsonList.add(Filters.eq("id", id));
-            Bson bson = Filters.or(orBsonList);
-            results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
+        Bson projection = getProjection(queryOptions);
+        List<String> variantIds = getVariantIds(ids, dataRelease);
+        List<Bson> orBsonList = new ArrayList<>(variantIds.size());
+        for (String variantId : variantIds) {
+            orBsonList.add(Filters.eq("id", variantId));
         }
+        Bson bson = Filters.or(orBsonList);
+        results.add(new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Variant.class, new QueryOptions())));
         return results;
     }
 
@@ -775,6 +787,60 @@ public class VariantMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         Bson bson = Filters.or(orBsonList);
 
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, GenomicScoreRegion.class, new QueryOptions()));
+    }
+
+    private List<String> getVariantIds(List<String> ids, int dataRelease) throws CellBaseException {
+        List<String> variantIds = new ArrayList<>(ids.size());
+        List<String> snpIds = new ArrayList<>();
+        // Split dbSNP IDs and variant IDs
+        for (String id : ids) {
+            if (id.startsWith("rs")) {
+                snpIds.add(id);
+            } else {
+                variantIds.add(id);
+            }
+        }
+
+        // Get the variant ID for the dbSNP ID
+        if (CollectionUtils.isNotEmpty(snpIds)) {
+            // 1. Prepare the query
+            List<Bson> orBsonList = new ArrayList<>();
+            for (String snpId : snpIds) {
+                orBsonList.add(Filters.eq("id", snpId));
+            }
+            Bson query = Filters.or(orBsonList);
+
+            // 2. We must exclude as much information as possible to improve performance
+            MongoDBCollection mongoDBCollection = getCollectionByRelease(snpDBCollectionByRelease, dataRelease);
+            DataResult<Snp> snpDataResult = mongoDBCollection.find(query, Projections.exclude(ANNOTATION_FIELD), Snp.class,
+                    new QueryOptions());
+
+            // 3. Build the variant IDs
+            Set<String> results = new HashSet<>();
+            if (snpDataResult.getNumResults() > 0) {
+                // Create variant normalizer
+                VariantNormalizer variantNormalizer = new VariantNormalizer();
+
+                for (Snp snp : snpDataResult.getResults()) {
+                    for (String alternate : snp.getAlternates()) {
+                        Variant inputVariant = new Variant(snp.getChromosome(), snp.getPosition(), snp.getReference(), alternate);
+                        try {
+                            Variant normalizedVariant = variantNormalizer.normalize(Collections.singletonList(inputVariant), true).get(0);
+                            results.add(normalizedVariant.toString());
+                        } catch (NonStandardCompliantSampleField e) {
+                            throw new CellBaseException("Error normalizing variant " + inputVariant, e);
+                        }
+                    }
+                }
+            }
+
+            // 4. Add new variant IDs, if necessary
+            if (CollectionUtils.isNotEmpty(results)) {
+                variantIds.addAll(results);
+            }
+        }
+
+        return variantIds;
     }
 }
 

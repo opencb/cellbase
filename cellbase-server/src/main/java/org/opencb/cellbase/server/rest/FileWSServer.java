@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -47,9 +48,14 @@ public class FileWSServer extends GenericRestWSServer {
     public FileWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                        @PathParam("species")
+                        @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                        @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-        super(apiVersion, uriInfo, hsr);
+        super(apiVersion, species, assembly, uriInfo, hsr);
         try {
             fileManager = cellBaseManagerFactory.getFileManager();
         } catch (Exception e) {

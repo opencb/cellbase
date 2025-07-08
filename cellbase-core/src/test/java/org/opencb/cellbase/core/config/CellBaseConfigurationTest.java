@@ -41,7 +41,7 @@ public class CellBaseConfigurationTest {
 
     @Test
     public void vertebrates() {
-        Assertions.assertEquals(9, cellBaseConfiguration.getSpecies().getVertebrates().size());
+        Assertions.assertEquals(11, cellBaseConfiguration.getSpecies().getVertebrates().size());
     }
 
     @Test

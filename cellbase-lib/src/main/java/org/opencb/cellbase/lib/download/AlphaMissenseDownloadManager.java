@@ -37,16 +37,17 @@ public class AlphaMissenseDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ALPHAMISSENSE_DATA));
+        String dataName = getDataName(ALPHAMISSENSE_DATA);
+        logger.info(DOWNLOADING_MSG, dataName);
 
-        Path alphaMissensePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Path alphaMissensePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(ALPHAMISSENSE_DATA);
         Files.createDirectories(alphaMissensePath);
 
         // Download AlphaMissense file
         DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getAlphaMissense(), ALPHAMISSENSE_FILE_ID,
                 ALPHAMISSENSE_DATA, alphaMissensePath);
 
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(ALPHAMISSENSE_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, dataName);
 
         return Collections.singletonList(downloadFile);
     }

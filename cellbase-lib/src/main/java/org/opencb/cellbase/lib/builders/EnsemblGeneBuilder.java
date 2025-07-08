@@ -26,6 +26,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
@@ -38,45 +39,42 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class EnsemblGeneBuilder extends CellBaseBuilder {
+public class EnsemblGeneBuilder extends AbstractBuilder {
 
     private Path downloadPath;
     private SpeciesConfiguration speciesConfiguration;
     private boolean flexibleGTFParsing;
     private CellBaseConfiguration configuration;
 
-    private Map<String, Integer> transcriptDict;
-    private Map<String, Exon> exonDict;
+    private final Map<String, Integer> transcriptDict;
+    private final Map<String, Exon> exonDict;
 
-    private Path gtfFile;
-    private Path proteinFastaFile;
-    private Path cDnaFastaFile;
-    private Path geneDescriptionFile;
-    private Path xrefsFile;
-    private Path hgncFile;
-    private Path maneFile;
-    private Path lrgFile;
-    private Path uniprotIdMappingFile;
-    private Path tfbsFile;
-    private Path tabixFile;
-    private Path geneExpressionFile;
-    private Path geneDrugFile;
-    private Path hpoFile;
-    private Path disgenetFile;
-    private Path genomeSequenceFilePath;
-    private Path gnomadFile;
-    private Path geneOntologyAnnotationFile;
-    private Path miRBaseFile;
-    private Path miRTarBaseFile;
-    private Path cancerGeneCensusFile;
-    private Path cancerHostpotFile;
-    private Path ensemblCanonicalFile;
-    private Path tso500File;
-    private Path eglhHaemOncFile;
+    private Path gtfFile = null;
+    private Path proteinFastaFile = null;
+    private Path cDnaFastaFile = null;
+    private Path geneDescriptionFile = null;
+    private Path xrefsFile = null;
+    private Path hgncFile = null;
+    private Path maneFile = null;
+    private Path lrgFile = null;
+    private Path uniprotIdMappingFile = null;
+    private Path tfbsFile = null;
+    private Path tabixFile = null;
+    private Path geneExpressionFile = null;
+    private Path geneDrugFile = null;
+    private Path hpoFile = null;
+    private Path genomeSequenceFilePath = null;
+    private Path gnomadFile = null;
+    private Path geneOntologyAnnotationFile = null;
+    private Path miRBaseFile = null;
+    private Path miRTarBaseFile = null;
+    private Path cancerGeneCensusFile = null;
+    private Path cancerHostpotFile = null;
+    private Path ensemblCanonicalFile = null;
+    private Path geneImprintFile = null;
 
     // source for genes is either ensembl or refseq
     private final String SOURCE = ParamConstants.QueryParams.ENSEMBL.key();
@@ -91,16 +89,26 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
     private String feature;
     private Gtf nextGtfToReturn;
 
+    private boolean isHSapiens = false;
+
+    public static final String ENSEMBL_GENE_BASENAME = "ensemblGene";
+    public static final String ENSEMBL_GENE_OUTPUT_FILENAME = ENSEMBL_GENE_BASENAME + ".json.gz";
+
     public EnsemblGeneBuilder(Path downloadPath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                              CellBaseSerializer serializer) {
+                              CellBaseConfiguration configuration, CellBaseSerializer serializer) {
         super(serializer);
 
         this.downloadPath = downloadPath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
+        this.configuration = configuration;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
+
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
+            isHSapiens = true;
+        }
     }
 
     public void check() throws Exception {
@@ -122,33 +130,83 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         }
 
         // Check Ensembl files
-        List<File> files = checkFiles(ensemblGeneLabel, ENSEMBL_DATA, downloadPath, 3);
-        gtfFile = files.stream().filter(f -> f.getName().contains(".gtf")).findFirst().get().toPath();
-        proteinFastaFile = files.stream().filter(f -> f.getName().contains(".pep.all.fa")).findFirst().get().toPath();
-        cDnaFastaFile = files.stream().filter(f -> f.getName().contains(".cdna.all.fa")).findFirst().get().toPath();
+        DownloadProperties.URLProperties props = configuration.getDownload().getEnsembl().getUrl();
+        gtfFile = checkFile(props, ENSEMBL_GTF_FILE_ID, downloadPath, "Ensembl GTF").toPath();
+        proteinFastaFile = checkFile(props, ENSEMBL_PEP_FA_FILE_ID, downloadPath, "Ensembl Protein Fasta").toPath();
+        cDnaFastaFile = checkFile(props, ENSEMBL_CDNA_FA_FILE_ID, downloadPath, "Ensembl CDNA Fasta").toPath();
+
+        // Commons
+        geneDescriptionFile = checkFile(props, ENSEMBL_DESCRIPTION_FILE_ID, downloadPath.getParent(), "Ensembl Description").toPath();
+        xrefsFile = checkFile(props, ENSEMBL_XREFS_FILE_ID, downloadPath.getParent(), "Ensembl Xrefs").toPath();
+        ensemblCanonicalFile = checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical").toPath();
 
         // Check common files
-        // geneDescriptionFile =
-        // xrefsFile =
-        maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        cancerHostpotFile = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // hpoFile = checkFiles(HPO_DATA, downloadPath.getParent(), 1);
-        disgenetFile = checkFiles(DISGENET_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        // ensemblCanonicalFile = ;
-        // cancerGeneCensus =
-        // tso500File =
-        // eglhHaemOncFile =
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
+            maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MANE_SELECT_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
+            lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(LRG_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getHgnc(), prefixId)) {
+            hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HGNC_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+            cancerHostpotFile = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_HOTSPOT_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
+            geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(DGIDB_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneUniprotXref(), prefixId)) {
+            uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneExpressionAtlas(), prefixId)) {
+            geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
+            hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HPO_DISEASE_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGnomadConstraints(), prefixId)) {
+            gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGoAnnotation(), prefixId)) {
+            geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GO_ANNOTATION_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+            cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_GENE_CENSUS_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
+            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
+        }
 
         // Check regulation files
         // Motif features
-        files = checkFiles(ensemblGeneLabel, MOTIF_FEATURES_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 2);
+        List<File> files = checkFiles(ensemblGeneLabel, MOTIF_FEATURES_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                        .resolve(MOTIF_FEATURES_DATA), 2);
         if (files.get(0).getName().endsWith("tbi")) {
             tabixFile = files.get(0).toPath();
             tfbsFile = files.get(1).toPath();
@@ -156,32 +214,28 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
             tabixFile = files.get(1).toPath();
             tfbsFile = files.get(0).toPath();
         }
+
         // mirbase
-        miRBaseFile = checkFiles(MIRBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA), 1).get(0).toPath();
+        if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
+            miRBaseFile = checkFiles(MIRBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                    .resolve(MIRBASE_DATA), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
+        }
 
         // mirtarbase
-        // The downloaded .xlsx file contains errors and it has to be fixed manually
-        logger.info("Checking {} folder and files", getDataName(MIRTARBASE_DATA));
-        Path downloadRegulationPath = downloadPath.getParent().getParent().resolve(REGULATION_DATA);
-        List<String> mirTarBaseFiles = ((DataSource) dataSourceReader.readValue(downloadRegulationPath.resolve(
-                getDataVersionFilename(MIRTARBASE_DATA)).toFile())).getUrls().stream().map(u -> Paths.get(u).getFileName().toString())
-                .collect(Collectors.toList());
-        if (mirTarBaseFiles.size() != 1) {
-            throw new CellBaseException("One " + getDataName(MIRTARBASE_DATA) + " file is expected at " + downloadRegulationPath
-                    + ", but currently there are " + mirTarBaseFiles.size() + " files");
-        }
-        // The hsa_MIT.xlsx is fixed and converted to hsa_MIT.csv manually
-        if (!mirTarBaseFiles.get(0).endsWith(XLSX_EXTENSION)) {
-            throw new CellBaseException("A " + XLSX_EXTENSION + " " + getDataName(MIRTARBASE_DATA) + " file is expected at "
-                    + downloadRegulationPath + ", but currently it is named " + mirTarBaseFiles.get(0));
-        }
-        miRTarBaseFile = downloadRegulationPath.resolve(mirTarBaseFiles.get(0).replace(XLSX_EXTENSION, CSV_EXTENSION));
-        if (!Files.exists(miRTarBaseFile)) {
-            throw new CellBaseException("The " + getDataName(MIRTARBASE_DATA) + " fixed file " + miRTarBaseFile + " does not exist");
+        if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
+            miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                    .resolve(MIRTARBASE_DATA), 1).get(0).toPath();
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
         }
 
-        // Check genome fasta file
-        genomeSequenceFilePath = checkFiles(GENOME_DATA, downloadPath.getParent().getParent().resolve(GENOME_DATA), 1).get(0).toPath();
+        // Check genome FASTA file
+        Path genomeDownloadPath = downloadPath.getParent().getParent().resolve(GENOME_DATA);
+        String genomeGzFilename = Paths.get(((DataSource) dataSourceReader.readValue(genomeDownloadPath
+                .resolve(getDataVersionFilename(GENOME_DATA)).toFile())).getUrls().get(0)).getFileName().toString();
+        genomeSequenceFilePath = getFastaPath(genomeDownloadPath.resolve(genomeGzFilename));
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, ensemblGeneLabel);
         checked = true;
@@ -197,14 +251,12 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         int cds = 1;
 
         EnsemblGeneBuilderIndexer indexer = new EnsemblGeneBuilderIndexer(serializer.getOutdir());
-
         try {
             // process files and put values in rocksdb
-            indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile,
-                    proteinFastaFile, cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile,
-                    geneDrugFile, hpoFile, disgenetFile, gnomadFile, geneOntologyAnnotationFile, miRBaseFile,
-                    miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
-                    tso500File, eglhHaemOncFile);
+            indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile,
+                    cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, gnomadFile,
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
+                    geneImprintFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -214,7 +266,6 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
             }
 
             // Preparing the fasta file for fast accessing
-//            System.out.println("genomeSequenceFilePath.toString() = " + genomeSequenceFilePath.toString());
             FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
             // Empty transcript and exon dictionaries
@@ -250,7 +301,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName),
-                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName));
+                            indexer.getCancerGeneCensus(geneName), indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName));
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_version"),
@@ -462,6 +513,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         if (StringUtils.isNotEmpty(tags)) {
             transcript.getFlags().addAll(Arrays.asList(tags.split(",")));
         }
+
         // 2. TSL
         String supportLevel = gtfAttributes.get("transcript_support_level");
         if (StringUtils.isNotEmpty(supportLevel)) {
@@ -469,11 +521,13 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
             String truncatedSupportLevel = supportLevel.split(" ")[0];
             transcript.getFlags().add("TSL:" + truncatedSupportLevel);
         }
+
         // 3. MANE Flag
         String maneFlag = indexer.getMane(transcriptIdWithVersion, "flag");
         if (StringUtils.isNotEmpty(maneFlag)) {
             transcript.getFlags().add(maneFlag);
         }
+
         // 4. LRG Flag
         String lrg = indexer.getLrg(transcriptIdWithVersion, "ensembl");
         if (StringUtils.isNotEmpty(lrg)) {
@@ -485,6 +539,7 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
                 }
             }
         }
+
         // 5. Ensembl Canonical
         String canonicalFlag = indexer.getCanonical(transcriptIdWithVersion);
         if (StringUtils.isNotEmpty(canonicalFlag)) {
@@ -492,18 +547,18 @@ public class EnsemblGeneBuilder extends CellBaseBuilder {
         }
 
         // 6. TSO500 and EGLH HaemOnc
-        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
-        if (StringUtils.isNotEmpty(maneRefSeq)) {
-            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
-            if (StringUtils.isNotEmpty(tso500Flag)) {
-                transcript.getFlags().add(tso500Flag);
-            }
-
-            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
-            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
-                transcript.getFlags().add(eglhHaemOncFlag);
-            }
-        }
+//        String maneRefSeq = indexer.getMane(transcriptIdWithVersion, "refseq");
+//        if (StringUtils.isNotEmpty(maneRefSeq)) {
+//            String tso500Flag = indexer.getTSO500(maneRefSeq.split("\\.")[0]);
+//            if (StringUtils.isNotEmpty(tso500Flag)) {
+//                transcript.getFlags().add(tso500Flag);
+//            }
+//
+//            String eglhHaemOncFlag = indexer.getEGLHHaemOnc(maneRefSeq.split("\\.")[0]);
+//            if (StringUtils.isNotEmpty(eglhHaemOncFlag)) {
+//                transcript.getFlags().add(eglhHaemOncFlag);
+//            }
+//        }
 
         gene.getTranscripts().add(transcript);
 

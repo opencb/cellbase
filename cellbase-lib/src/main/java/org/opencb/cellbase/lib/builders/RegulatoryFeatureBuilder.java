@@ -42,11 +42,15 @@ import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
+public class RegulatoryFeatureBuilder extends AbstractBuilder {
 
     private Path regulationPath;
-
     private Set<Gff2> regulatoryFeatureSet;
+
+    public static final String REGULATORY_REGION_BASENAME = "regulatory_region";
+    public static final String REGULATORY_REGION_OUTPUT_FILENAME = REGULATORY_REGION_BASENAME + ".json.gz";
+    public static final String REGULATORY_PFM_BASENAME = "regulatory_pfm";
+    public static final String REGULATORY_PFM_OUTPUT_FILENAME = REGULATORY_PFM_BASENAME + ".json.gz";
 
     public RegulatoryFeatureBuilder(Path regulationPath, CellBaseSerializer serializer) {
         super(serializer);
@@ -55,14 +59,17 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(REGULATION_DATA));
-
         // Sanity check
         checkDirectory(regulationPath, getDataName(REGULATION_DATA));
 
+        DataSource dataSource;
+        List<File> regulatoryFiles;
+        List<File> motifFeaturesFiles;
+
         // Check build regulatory files
-        DataSource dataSource = dataSourceReader.readValue(regulationPath.resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)).toFile());
-        List<File> regulatoryFiles = checkFiles(dataSource, regulationPath, getDataCategory(REGULATORY_BUILD_DATA) + "/"
+        dataSource = dataSourceReader.readValue(regulationPath.resolve(REGULATORY_BUILD_DATA)
+                .resolve(getDataVersionFilename(REGULATORY_BUILD_DATA)).toFile());
+        regulatoryFiles = checkFiles(dataSource, regulationPath.resolve(REGULATORY_BUILD_DATA), getDataCategory(REGULATORY_BUILD_DATA) + "/"
                 + getDataName(REGULATORY_BUILD_DATA));
         if (regulatoryFiles.size() != 1) {
             throw new CellBaseException("One " + getDataName(REGULATORY_BUILD_DATA) + " file is expected, but currently there are "
@@ -70,8 +77,9 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
         }
 
         // Check motif features files
-        dataSource = dataSourceReader.readValue(regulationPath.resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)).toFile());
-        List<File> motifFeaturesFiles = checkFiles(dataSource, regulationPath, getDataCategory(MOTIF_FEATURES_DATA) + "/"
+        dataSource = dataSourceReader.readValue(regulationPath.resolve(MOTIF_FEATURES_DATA)
+                .resolve(getDataVersionFilename(MOTIF_FEATURES_DATA)).toFile());
+        motifFeaturesFiles = checkFiles(dataSource, regulationPath.resolve(MOTIF_FEATURES_DATA), getDataCategory(MOTIF_FEATURES_DATA) + "/"
                 + getDataName(MOTIF_FEATURES_DATA));
         if (motifFeaturesFiles.size() != 2) {
             throw new CellBaseException("Two " + getDataName(MOTIF_FEATURES_DATA) + " files are expected, but currently there are "
@@ -84,8 +92,6 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
         // Parse regulatory build features
         parseGffFile(regulatoryFiles.get(0).toPath());
-
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(REGULATION_DATA));
     }
 
     protected void parseGffFile(Path regulatoryFeatureFile) throws IOException, NoSuchMethodException, FileFormatException {
@@ -102,20 +108,36 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
 
         // Serialize and save results
         for (Gff2 feature : regulatoryFeatureSet) {
-            // In order to get the ID we split the attribute format: ID=TF_binding_site:ENSR00000243312; ....
-            String id = feature.getAttribute().split(";")[0].split(":")[1];
+            // Previously, attribute format: ID=TF_binding_site:ENSR00000243312; ....
+            // They change the attribute format to ID=ENSR1_986;color=#faca00
+            if (StringUtils.isEmpty(feature.getAttribute())) {
+                logger.warn("Skipping regulatory feature with no attributes: {}", feature);
+                continue;
+            }
+            String[] attributes = feature.getAttribute().split(";");
+            String id = null;
+            for (String attribute : attributes) {
+                if (attribute.startsWith("ID=")) {
+                    id = attribute.substring(3);
+                    break;
+                }
+            }
+            if (StringUtils.isEmpty(id)) {
+                logger.warn("Skipping regulatory feature with no ID attribute: {}", feature);
+                continue;
+            }
             RegulatoryFeature regulatoryFeature = new RegulatoryFeature(id, feature.getSequenceName(), feature.getFeature(),
                     feature.getStart(), feature.getEnd());
             serializer.serialize(regulatoryFeature);
         }
         serializer.close();
 
-        logger.info(PARSING_DONE_LOG_MESSAGE, regulatoryFeatureFile);
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
     private void loadPfmMatrices(Path motifGffFile, Path buildFolder) throws IOException, NoSuchMethodException, FileFormatException,
             InterruptedException {
-        Path regulatoryPfmPath = buildFolder.resolve(REGULATORY_PFM_BASENAME + ".json.gz");
+        Path regulatoryPfmPath = buildFolder.resolve(REGULATORY_PFM_OUTPUT_FILENAME);
         logger.info("Downloading and building PFM matrices in {} from {} ...", regulatoryPfmPath, motifGffFile);
         if (Files.exists(regulatoryPfmPath)) {
             logger.info("{} is already built", regulatoryPfmPath);
@@ -123,6 +145,7 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
         }
 
         Set<String> motifIds = new HashSet<>();
+        logger.info(PARSING_LOG_MESSAGE, motifGffFile);
         try (Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile)) {
             Gff2 tfbsMotifFeature;
             Pattern filePattern = Pattern.compile("ENSPFM(\\d+)");
@@ -133,6 +156,7 @@ public class RegulatoryFeatureBuilder extends CellBaseBuilder  {
                 }
             }
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
 
         ObjectMapper mapper = new ObjectMapper();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, REGULATORY_PFM_BASENAME, true);

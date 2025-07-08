@@ -78,7 +78,7 @@ public class ValidationCommandExecutor extends CommandExecutor {
             DataRelease dataRelease = dataReleaseManager.get(validationCommandOptions.dataRelease);
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
                     validationCommandOptions.assembly, dataRelease, validationCommandOptions.apiKey,
-                    cellBaseManagerFactory);
+                    cellBaseManagerFactory, configuration);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;

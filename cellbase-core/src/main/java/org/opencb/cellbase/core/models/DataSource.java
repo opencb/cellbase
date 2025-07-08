@@ -21,6 +21,7 @@ import java.util.List;
 
 public class DataSource {
 
+    private String id;
     private String name;
     private String category;
     private String version;
@@ -31,7 +32,8 @@ public class DataSource {
         this.urls = new ArrayList<>();
     }
 
-    public DataSource(String name, String category, String version, String downloadDate, List<String> urls) {
+    public DataSource(String id, String name, String category, String version, String downloadDate, List<String> urls) {
+        this.id = id;
         this.name = name;
         this.category = category;
         this.version = version;
@@ -41,14 +43,24 @@ public class DataSource {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataSourceDescr{");
-        sb.append("name='").append(name).append('\'');
+        final StringBuilder sb = new StringBuilder("DataSource{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", name='").append(name).append('\'');
         sb.append(", category='").append(category).append('\'');
         sb.append(", version='").append(version).append('\'');
         sb.append(", downloadDate='").append(downloadDate).append('\'');
         sb.append(", urls=").append(urls);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public DataSource setId(String id) {
+        this.id = id;
+        return this;
     }
 
     public String getName() {
@@ -82,8 +94,8 @@ public class DataSource {
         return downloadDate;
     }
 
-    public DataSource setDownloadDate(String downloadedDate) {
-        this.downloadDate = downloadedDate;
+    public DataSource setDownloadDate(String downloadDate) {
+        this.downloadDate = downloadDate;
         return this;
     }
 

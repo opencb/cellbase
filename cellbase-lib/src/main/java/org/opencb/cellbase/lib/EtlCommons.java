@@ -17,9 +17,9 @@
 package org.opencb.cellbase.lib;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.download.DownloadFile;
 import org.opencb.commons.utils.FileUtils;
@@ -33,10 +33,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,12 +42,35 @@ import java.util.stream.Collectors;
 public final class EtlCommons {
 
     // Commons
+    public static final String HOMO_SAPIENS = "Homo sapiens";
+    public static final String HSAPIENS = "hsapiens";
+    public static final String MUS_MUSCULUS = "Mus musculus";
+    public static final String RATTUS_NORVEGICUS = "Rattus norvegicus";
+    public static final String BOS_TAURUS = "Bos taurus";
+    public static final String DANIO_RERIO = "Danio rerio";
+
+    public static final String GRCH38_NAME = "GRCh38";
+    public static final String GRCH37_NAME = "GRCh37";
+    public static final String HG38_NAME = "hg38";
+    public static final String HG19_NAME = "hg19";
+
+    public static final String MANUAL_PREFIX = "manual@";
+    public static final String SCRIPT_PREFIX = "script:";
+
+    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+
     public static final String XLSX_EXTENSION = ".xlsx";
     public static final String CSV_EXTENSION = ".csv";
     public static final String TBI_EXTENSION = ".tbi";
     public static final String FAI_EXTENSION = ".fai";
+    public static final String GZ_EXTENSION = ".gz";
+    public static final String TXT_GZ_EXTENSION = ".txt.gz";
+    public static final String TAR_GZ_EXTENSION = ".tar.gz";
+    public static final String JSON_GZ_EXTENSION = ".json.gz";
 
-    public static final String OK_LOG_MESSAGE = "Ok.";
+    public static final String OK_MSG = "Ok.";
+    public static final String DONE_MSG = "Done.";
+    public static final String DATA_NOT_SUPPORTED_MSG = "Data '{}' not supported for species '{}'";
 
     // Ensembl
     public static final String ENSEMBL_DATA = "ensembl";
@@ -67,29 +87,25 @@ public final class EtlCommons {
     public static final String ENSEMBL_REGULATORY_BUILD_FILE_ID = "REGULATORY_BUILD";
     public static final String ENSEMBL_MOTIF_FEATURES_FILE_ID = "MOTIF_FEATURES";
     public static final String ENSEMBL_MOTIF_FEATURES_INDEX_FILE_ID = "MOTIF_FEATURES_INDEX";
-
-    public static final String HOMO_SAPIENS_NAME= "Homo sapiens";
-    public static final String HSAPIENS_NAME= "hsapiens";
-
-    public static final String GRCH38_NAME = "GRCh38";
-    public static final String GRCH37_NAME = "GRCh37";
-    public static final String HG38_NAME = "hg38";
-    public static final String HG19_NAME = "hg19";
-
-    public static final String SUFFIX_VERSION_FILENAME = "Version.json";
+    public static final String ENSEMBL_DESCRIPTION_FILE_ID = "DESCRIPTION";
+    public static final String ENSEMBL_XREFS_FILE_ID = "XREFS";
+    public static final String ENSEMBL_CANONICAL_FILE_ID = "CANONICAL";
+    public static final String GENOME_INFO_FILE_ID = "GENOME_INFO";
+    public static final String VARIATION_FILE_ID = "VARIATION";
+    public static final String STRUCTURAL_VARIATIONS_FILE_ID = "STRUCTURAL_VARIATIONS";
 
     // Genome
     public static final String GENOME_DATA = "genome";
+    public static final String GENOME_SEQUENCE_COLLECTION_NAME = "genome_sequence";
+    public static final String GENOME_INFO_DATA = "genome_info";
 
     // Gene
     public static final String GENE_DATA = "gene";
-    public static final String ENSEMBL_GENE_BASENAME = "ensemblGene";
     public static final String GENE_ANNOTATION_DATA = "gene_annotation";
     public static final String GENE_DISEASE_ANNOTATION_DATA = "gene_disease_annotation";
 
     // RefSeq
     public static final String REFSEQ_DATA = "refseq";
-    public static final String REFSEQ_GENE_BASENAME = "refSeqGene";
     // Must match the configuration file
     public static final String REFSEQ_GENOMIC_GTF_FILE_ID = "GENOMIC_GTF";
     public static final String REFSEQ_GENOMIC_FNA_FILE_ID = "GENOMIC_FNA";
@@ -97,6 +113,8 @@ public final class EtlCommons {
     public static final String REFSEQ_RNA_FNA_FILE_ID = "RNA_FNA";
 
     // Gene annotation
+    public static final String ENSEMBL_CANONICAL_DATA = "ensembl_canonical";
+    public static final String GENE_EXTRA_INFO_DATA = "gene_extra_info";
     //   - MANE Select
     public static final String MANE_SELECT_DATA = "MANE Select";
     // Must match the configuration file
@@ -128,7 +146,9 @@ public final class EtlCommons {
     //   - Gene Disease Annotation
     public static final String GENE_DISEASE_ANNOTATION_NAME = "Gene Disease Annotation";
     //     - HPO
-    public static final String HPO_DATA = "hpo";
+    public static final String HPO_DISEASE_DATA = "hpo_disease";
+    // Must match the configuration file
+    public static final String HPO_FILE_ID = "HPO";
     //     - DISGENET
     public static final String DISGENET_DATA = "disgenet";
     // Must match the configuration file
@@ -141,20 +161,29 @@ public final class EtlCommons {
     public static final String GO_ANNOTATION_DATA = "go_annotation";
     // Must match the configuration file
     public static final String GO_ANNOTATION_FILE_ID = "GO_ANNOTATION";
+    //   - Cancer Gene Census
+    public static final String CANCER_GENE_CENSUS_DATA = "cancer_gene_census";
+    // Must match the configuration file
+    public static final String CANCER_GENE_CENSUS_FILE_ID = "CANCER_GENE_CENSUS";
+    //   - Imprented genes: only one source geneimprint
+    public static final String IMPRINTED_GENE_DATA = "imprinted_gene";
+    public static final String GENEIMPRINT_DATA = "geneimprint";
+    // Must match the configuration file
+    public static final String GENEIMPRINT_FILE_ID = "GENEIMPRINT";
 
+    // Variation
     public static final String VARIATION_DATA = "variation";
-    public static final String SPLICE_SCORE_DATA = "splice_score";
+    public static final String DBSNP_DATA = "dbsnp";
+    public static final String SNP_DATA = "snp";
 
     // PGS (polygenic scores)
-    public static final String PGS_NAME = "Polygenic Scores";
     public static final String PGS_DATA = "polygenic_score";
-    public static final String PGS_COMMON_COLLECTION = "common_polygenic_scores";
-    public static final String PGS_VARIANT_COLLECTION = "variant_polygenic_scores";
+    public static final String PGS_COMMON_COLLECTION = "common_polygenic_score";
+    public static final String PGS_VARIANT_COLLECTION = "variant_polygenic_score";
     // PGS Catalog
-    public static final String PGS_CATALOG_NAME = "PGS Catalog";
-    public static final String PGS_CATALOG_VERSION_FILENAME = "pgsCatalog" + SUFFIX_VERSION_FILENAME;
+    public static final String PGS_CATALOG_DATA = "pgs_catalog";
     // Must match the configuration file
-    public static final String PGS_CATALOG_METADATA_FILE_ID = "PGS_METADATA";
+    public static final String PGS_CATALOG_FILE_ID = "PGS_CATALOG";
 
     // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
@@ -175,8 +204,8 @@ public final class EtlCommons {
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
 
     // Clinical variants data
-    public static final String CLINICAL_VARIANT_DATA = "clinical_variant";
-    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariant";
+    public static final String CLINICAL_VARIANT_DATA = "clinical_variants";
+    public static final String CLINICAL_VARIANTS_BASENAME = "clinicalVariants";
     // ClinVar
     public static final String CLINVAR_DATA = "clinvar";
     public static final String CLINVAR_CHUNKS_SUBDIRECTORY = "clinvar_chunks";
@@ -188,7 +217,9 @@ public final class EtlCommons {
     // COSMIC
     public static final String COSMIC_DATA = "cosmic";
     // Must match the configuration file
-    public static final String COSMIC_FILE_ID = "COSMIC";
+    public static final String COSMIC_GENOME_SCREENS_MUTANT_FILE_ID = "GENOME_SCREENS_MUTANT";
+    public static final String COSMIC_CLASSIFICATION_FILE_ID = "CLASSIFICATION";
+
     // HGMD
     public static final String HGMD_DATA = "hgmd";
     // Must match the configuration file
@@ -201,12 +232,7 @@ public final class EtlCommons {
 
     // Repeats
     public static final String REPEATS_DATA = "repeats";
-    public static final String REPEATS_BASENAME = "repeats";
-    /**
-     * @deprecated (when refactoring downloaders, builders and loaders)
-     */
-    @Deprecated
-    public static final String REPEATS_JSON = "repeats";
+
     // Simple repeats
     public static final String TRF_DATA = "trf";
     // Must match the configuration file
@@ -222,7 +248,6 @@ public final class EtlCommons {
 
     // Ontology
     public static final String ONTOLOGY_DATA = "ontology";
-    public static final String OBO_BASENAME = "ontology";
     // HPO
     public static final String HPO_OBO_DATA = "hpo";
     // Must match the configuration file
@@ -240,7 +265,6 @@ public final class EtlCommons {
     // Must match the configuration file
     public static final String MONDO_OBO_FILE_ID = "MONDO";
 
-
     public static final String PFM_DATA = "regulatory_pfm";
 
     // Variation functional score
@@ -254,8 +278,6 @@ public final class EtlCommons {
 
     // Regulation
     public static final String REGULATION_DATA = "regulation";
-    public static final String REGULATORY_PFM_BASENAME = "regulatory_pfm";
-    public static final String REGULATORY_REGION_BASENAME = "regulatory_region";
     // Regulatory build and motif features (see Ensembl files: regulatory build and motif features files)
     public static final String REGULATORY_BUILD_DATA = "regulatory_build";
     // Motif features (see Ensembl files)
@@ -270,35 +292,19 @@ public final class EtlCommons {
     public static final String MIRTARBASE_FILE_ID = "MIRTARBASE";
 
     // Protein substitution predictions consist of sift, polyphen, revel and alphamissense
-    public static final String PROTEIN_SUBSTITUTION_PREDICTION_DATA = "protein_substitution_predictions";
+    public static final String PROTEIN_SUBSTITUTION_PREDICTION_DATA = "protein_substitution_prediction";
     // Sift and polyphen
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
-    public static final String SIFT_SOURCE_NAME = "Sift";
-    public static final String POLYPHEN_SOURCE_NAME = "PolyPhen";
-    public static final String SIFT_VERSION_FILENAME = "siftVersion.json";
-    public static final String POLYPHEN_VERSION_FILENAME = "polyphenVersion.json";
+    public static final String SIFT_DATA = "sift";
+    public static final String POLYPHEN_DATA = "polyphen";
     // Revel
     public static final String REVEL_DATA = "revel";
     // Must match the configuration file
     public static final String REVEL_FILE_ID = "REVEL";
-    @Deprecated
-    public static final String MISSENSE_VARIATION_SCORE_JSON_FILENAME = "missense_variation_functional_score.json.gz";
-    @Deprecated
-    public static final String REVEL_RAW_FILENAME = "revel-v1.3_all_chromosomes.zip";
-    @Deprecated
-    public static final String REVEL_JSON_FILENAME = "revel-v1.3_all_chromosomes.json.gz";
-    @Deprecated
-    public static final String REVEL_VERSION_FILENAME = "revelVersion.json";
     // AlphaMissense
     public static final String ALPHAMISSENSE_DATA = "alphamissense";
     // Must match the configuration file
     public static final String ALPHAMISSENSE_FILE_ID = "ALPHAMISSENSE";
-    @Deprecated
-    public static final String ALPHAMISSENSE_RAW_FILENAME = "AlphaMissense_hg38.tsv.gz";
-    @Deprecated
-    public static final String ALPHAMISSENSE_JSON_FILENAME = "alphamissense_hg38.json.gz";
-    @Deprecated
-    public static final String ALPHAMISSENSE_VERSION_FILENAME = "alphamissenseVersion.json";
 
     // Protein
     public static final String PROTEIN_DATA = "protein";
@@ -332,10 +338,11 @@ public final class EtlCommons {
     public static final String PHYLOP_FILE_ID = "PHYLOP";
 
     // Splice scores
-    public static final String MMSPLICE_SUBDIRECTORY = "mmsplice";
-    public static final String MMSPLICE_VERSION_FILENAME = MMSPLICE_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
-    public static final String SPLICEAI_SUBDIRECTORY = "spliceai";
-    public static final String SPLICEAI_VERSION_FILENAME = SPLICEAI_SUBDIRECTORY + SUFFIX_VERSION_FILENAME;
+    public static final String SPLICE_SCORE_DATA = "splice_score";
+    // MMSplice
+    public static final String MMSPLICE_DATA = "mmsplice";
+    // SpliceAI
+    public static final String SPLICEAI_DATA = "spliceai";
 
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
@@ -362,15 +369,19 @@ public final class EtlCommons {
     private static Map<String, String> dataCategoriesMap = new HashMap<>();
     private static Map<String, String> dataVersionFilenamesMap = new HashMap<>();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EtlCommons.class);
+
     static {
 
         // Populate data names map
         dataNamesMap.put(ENSEMBL_DATA, "Ensembl");
         dataNamesMap.put(REFSEQ_DATA, "RefSeq");
         dataNamesMap.put(GENOME_DATA, "Genome");
+        dataNamesMap.put(GENOME_INFO_DATA, "Genome Info");
         dataNamesMap.put(GENE_DATA, "Gene");
+        dataNamesMap.put(ENSEMBL_CANONICAL_DATA, "Ensembl canonical");
+        dataNamesMap.put(GENE_EXTRA_INFO_DATA, "Gene extra info");
         dataNamesMap.put(GENE_ANNOTATION_DATA, "Gene Annotation");
-        dataCategoriesMap.put(REFSEQ_DATA, "Gene");
         dataNamesMap.put(MANE_SELECT_DATA, "MANE Select");
         dataNamesMap.put(LRG_DATA, "LRG");
         dataNamesMap.put(HGNC_DATA, "HGNC Gene");
@@ -379,10 +390,11 @@ public final class EtlCommons {
         dataNamesMap.put(UNIPROT_XREF_DATA, "UniProt Xref");
         dataNamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "Gene Expression Atlas");
         dataNamesMap.put(GENE_DISEASE_ANNOTATION_DATA, "Gene Disease Annotation");
-        dataNamesMap.put(HPO_DATA, "HPO");
+        dataNamesMap.put(HPO_DISEASE_DATA, "HPO Disease");
         dataNamesMap.put(DISGENET_DATA, "DisGeNet");
         dataNamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomAD Constraint");
         dataNamesMap.put(GO_ANNOTATION_DATA, "EBI Gene Ontology Annotation");
+        dataNamesMap.put(CANCER_GENE_CENSUS_DATA, "Cancer Gene Census");
         dataNamesMap.put(PROTEIN_DATA, "Protein");
         dataNamesMap.put(UNIPROT_DATA, "UniProt");
         dataNamesMap.put(INTERPRO_DATA, "InterPro");
@@ -411,12 +423,26 @@ public final class EtlCommons {
         dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Score");
         dataNamesMap.put(CADD_DATA, "CADD");
         dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Score");
-        dataNamesMap.put(REVEL_DATA, "Revel");
+        dataNamesMap.put(PROTEIN_SUBSTITUTION_PREDICTION_DATA, "Protein Substitution Prediction");
+        dataNamesMap.put(SIFT_DATA, "Sift");
+        dataNamesMap.put(POLYPHEN_DATA, "PolyPhen");
+        dataNamesMap.put(REVEL_DATA, "REVEL");
+        dataNamesMap.put(ALPHAMISSENSE_DATA, "AlphaMissense");
         dataNamesMap.put(CLINICAL_VARIANT_DATA, "Clinical Variant");
         dataNamesMap.put(CLINVAR_DATA, "ClinVar");
         dataNamesMap.put(COSMIC_DATA, "Cosmic");
         dataNamesMap.put(HGMD_DATA, "HGMD");
         dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
+        dataNamesMap.put(SPLICE_SCORE_DATA, "Splice Score");
+        dataNamesMap.put(MMSPLICE_DATA, "MMSplice");
+        dataNamesMap.put(SPLICEAI_DATA, "SpliceAI");
+        dataNamesMap.put(VARIATION_DATA, "Variation");
+        dataNamesMap.put(SNP_DATA, "SNP");
+        dataNamesMap.put(DBSNP_DATA, "dbSNP");
+        dataNamesMap.put(PGS_DATA, "Polygenic Score");
+        dataNamesMap.put(PGS_CATALOG_DATA, "PGS Catalog");
+        dataNamesMap.put(IMPRINTED_GENE_DATA, "Imprented Gened");
+        dataNamesMap.put(GENEIMPRINT_DATA, "GeneImprint");
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -429,10 +455,11 @@ public final class EtlCommons {
         dataCategoriesMap.put(DGIDB_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(UNIPROT_XREF_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GENE_EXPRESSION_ATLAS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
-        dataCategoriesMap.put(HPO_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(HPO_DISEASE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(DISGENET_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GNOMAD_CONSTRAINTS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GO_ANNOTATION_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(CANCER_GENE_CENSUS_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(UNIPROT_DATA, dataNamesMap.get(PROTEIN_DATA));
         dataCategoriesMap.put(INTERPRO_DATA, dataNamesMap.get(PROTEIN_DATA));
         dataCategoriesMap.put(INTACT_DATA, dataNamesMap.get(PROTEIN_DATA));
@@ -452,12 +479,23 @@ public final class EtlCommons {
         dataCategoriesMap.put(MONDO_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
         dataCategoriesMap.put(PUBMED_DATA, "Publication");
         dataCategoriesMap.put(PHARMGKB_DATA, dataNamesMap.get(PHARMACOGENOMICS_DATA));
+        dataCategoriesMap.put(SIFT_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
+        dataCategoriesMap.put(POLYPHEN_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
         dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
-        dataCategoriesMap.put(REVEL_DATA, dataNamesMap.get(MISSENSE_VARIATION_SCORE_DATA));
+        dataCategoriesMap.put(REVEL_DATA, dataNamesMap.get(PROTEIN_SUBSTITUTION_PREDICTION_DATA));
+        dataCategoriesMap.put(ALPHAMISSENSE_DATA, dataNamesMap.get(PROTEIN_SUBSTITUTION_PREDICTION_DATA));
         dataCategoriesMap.put(CLINVAR_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(MMSPLICE_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
+        dataCategoriesMap.put(SPLICEAI_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
+        dataCategoriesMap.put(VARIATION_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(SNP_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(DBSNP_DATA, dataNamesMap.get(VARIATION_DATA));
+        dataCategoriesMap.put(PGS_CATALOG_DATA, dataNamesMap.get(PGS_DATA));
+        dataCategoriesMap.put(IMPRINTED_GENE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -470,10 +508,11 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DGIDB_DATA, "dgidb" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(UNIPROT_XREF_DATA, "uniProtXref" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GENE_EXPRESSION_ATLAS_DATA, "geneExpressionAtlas" + SUFFIX_VERSION_FILENAME);
-        dataVersionFilenamesMap.put(HPO_DATA, "hpo" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(HPO_DISEASE_DATA, "hpoDisease" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(DISGENET_DATA, "disGeNet" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GNOMAD_CONSTRAINTS_DATA, "gnomadConstraints" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GO_ANNOTATION_DATA, "goAnnotation" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CANCER_GENE_CENSUS_DATA, "cancerGeneCensus" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(UNIPROT_DATA, "uniProt" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(INTERPRO_DATA, "interPro" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(INTACT_DATA, "intAct" + SUFFIX_VERSION_FILENAME);
@@ -492,47 +531,49 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DOID_OBO_DATA, "doidObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(MONDO_OBO_DATA, "mondoObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
-        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGKB" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGkb" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(SIFT_DATA, "sift" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(POLYPHEN_DATA, "polyPhen" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(REVEL_DATA, "revel" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(ALPHAMISSENSE_DATA, "alphaMissense" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CLINVAR_DATA, "clinVar" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(MMSPLICE_DATA, "mmSplice" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(VARIATION_DATA, "variation" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(DBSNP_DATA, "dbSnp" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(PGS_CATALOG_DATA, "pgsCatalog" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(GENEIMPRINT_DATA, "geneimprint" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {
         throw new IllegalStateException("Utility class");
     }
 
-    public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
+    public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, Path logFile)
             throws IOException, InterruptedException, CellBaseException {
 
-        Configurator.setRootLevel(Level.INFO);
+        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFile);
 
-        Logger logger = LoggerFactory.getLogger("EtlCommons");
-
-        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executing command: {}", StringUtils.join(builder.command(), " "));
-        }
+        LOGGER.info("Executing command: {}", StringUtils.join(builder.command(), " "));
         Process process = builder.start();
         process.waitFor();
 
         // Check process output
-        if (process.exitValue() != 0) {
-            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
-                    + ". More info in log file: " + logFilePath;
-            logger.error(msg);
-            throw new CellBaseException(msg);
-        }
+//        if (process.exitValue() != 0) {
+//            String msg = "Error executing command '" + binPath + "'; args = " + args + ", error code = " + process.exitValue()
+//                    + ". More info in log file: " + logFilePath;
+//            logger.error(msg);
+//            throw new CellBaseException(msg);
+//        }
 
         return true;
     }
 
-    private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
+    private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, Path logFile) {
         List<String> commandArgs = new ArrayList<>();
         commandArgs.add(binPath);
         commandArgs.addAll(args);
@@ -543,11 +584,39 @@ public final class EtlCommons {
             builder.directory(workingDirectory);
         }
         builder.redirectErrorStream(true);
-        if (logFilePath != null) {
-            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+        if (logFile != null) {
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile.toFile()));
         }
 
         return builder;
+    }
+
+    public static Path getFastaPath(Path gzFastaPath) throws CellBaseException {
+        // Sanity check
+        if (!Files.exists(gzFastaPath)) {
+            throw new CellBaseException("Gzipped FASTA file " + gzFastaPath + " does not exist");
+        }
+
+        // Check FASTA and unzip if necessary
+        Path fastaPath = gzFastaPath.getParent().resolve(gzFastaPath.getFileName().toString().replace(GZ_EXTENSION, ""));
+        if (!fastaPath.toFile().exists()) {
+            // Gunzip
+            LOGGER.info("Gunzip file {}", gzFastaPath);
+            try {
+                List<String> params = Arrays.asList("--keep", gzFastaPath.toString());
+                EtlCommons.runCommandLineProcess(null, "gunzip", params, null);
+            } catch (IOException e) {
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
+            } catch (InterruptedException e) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+                throw new CellBaseException("Error executing gunzip in FASTA file " + gzFastaPath, e);
+            }
+        }
+        if (!fastaPath.toFile().exists()) {
+            throw new CellBaseException("FASTA file " + fastaPath + " does not exist after executing gunzip");
+        }
+        return fastaPath;
     }
 
     public static boolean isMissing(String string) {
@@ -701,5 +770,56 @@ public final class EtlCommons {
 
     public static List<String> getUrls(List<DownloadFile> downloadFiles) {
         return downloadFiles.stream().map(DownloadFile::getUrl).collect(Collectors.toList());
+    }
+
+    public static String getManualUrl(DownloadProperties.URLProperties props, String fileId) {
+        return getManualUrl(props.getHost(), props.getFiles().get(fileId));
+    }
+
+    public static String getManualUrl(String host, String file) {
+        if (file.startsWith(MANUAL_PREFIX)) {
+            return MANUAL_PREFIX + host + file.replace(MANUAL_PREFIX, "");
+        }
+        return null;
+    }
+
+    public static List<String> getDataList(String data, CellBaseConfiguration configuration, SpeciesConfiguration speciesConfiguration)
+            throws CellBaseException {
+        switch (data) {
+            case REPEATS_DATA: {
+                return getRepeatsDataList(configuration, speciesConfiguration);
+            }
+            default: {
+                throw new CellBaseException("Unknown data " + data);
+            }
+        }
+    }
+
+    private static List<String> getRepeatsDataList(CellBaseConfiguration configuration, SpeciesConfiguration speciesConfiguration) {
+        List<String> dataList = new ArrayList<>();
+        String speciesId = speciesConfiguration.getId().toUpperCase(Locale.ROOT);
+        if (speciesId.equalsIgnoreCase(HSAPIENS)) {
+            return Arrays.asList(TRF_DATA, WM_DATA, GSD_DATA);
+        }
+
+        if (isDataSupported(configuration.getDownload().getSimpleRepeats(), speciesId)) {
+            dataList.add(TRF_DATA);
+        }
+        if (isDataSupported(configuration.getDownload().getWindowMasker(), speciesId)) {
+            dataList.add(WM_DATA);
+        }
+        if (isDataSupported(configuration.getDownload().getGenomicSuperDups(), speciesId)) {
+            dataList.add(GSD_DATA);
+        }
+        return dataList;
+    }
+
+    public static boolean isDataSupported(DownloadProperties.URLProperties props, String prefix) {
+        for (String key : props.getFiles().keySet()) {
+            if (key.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -95,6 +95,10 @@ public class MongoDBAdaptorFactory {
         return new PharmacogenomicsMongoDBAdaptor(mongoDatastore);
     }
 
+    public SnpMongoDBAdaptor getSnpDBAdaptor() {
+        return new SnpMongoDBAdaptor(mongoDatastore);
+    }
+
     public PolygenicScoreMongoDBAdaptor getPolygenicScoreMongoDBAdaptor() {
         return new PolygenicScoreMongoDBAdaptor(mongoDatastore);
     }

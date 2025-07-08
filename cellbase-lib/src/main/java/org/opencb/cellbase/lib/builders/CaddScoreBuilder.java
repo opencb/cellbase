@@ -34,7 +34,7 @@ import static org.opencb.cellbase.lib.EtlCommons.*;
 /**
  * Created by imedina on 06/11/15.
  */
-public class CaddScoreBuilder extends CellBaseBuilder {
+public class CaddScoreBuilder extends AbstractBuilder {
 
     private Path caddDownloadPath;
 

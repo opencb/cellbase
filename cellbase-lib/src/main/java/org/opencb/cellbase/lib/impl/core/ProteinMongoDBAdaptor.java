@@ -53,7 +53,6 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
 
     private static final int NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS = 2;
 
-    @Deprecated
     private static Map<String, String> aaShortNameMap;
 
     static {

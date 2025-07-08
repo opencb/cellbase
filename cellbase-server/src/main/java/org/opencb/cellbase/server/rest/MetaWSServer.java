@@ -25,9 +25,9 @@ import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -56,6 +56,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.opencb.cellbase.core.ParamConstants.API_KEY_DESCRIPTION;
+import static org.opencb.cellbase.lib.EtlCommons.COSMIC_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.HGMD_DATA;
+
 /**
  * Created by imedina on 04/08/15.
  */
@@ -71,26 +75,40 @@ public class MetaWSServer extends GenericRestWSServer {
     public MetaWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
+                        /*@PathParam("species")
+                        @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                        @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,*/
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         super(apiVersion, uriInfo, hsr);
         try {
             metaManager = cellBaseManagerFactory.getMetaManager();
         } catch (Exception e) {
-            throw new CellBaseServerException(e.getMessage());
+            throw new CellBaseServerException(e);
         }
     }
 
     @GET
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
-            + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
+            + "data files were downloaded.", response = DataSource.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
                                        defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
                                @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
-                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly) {
+                                       defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
+                               @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION) @QueryParam("dataRelease")
+                                       int dataRelease) {
         try {
+            this.species = species;
+            this.assembly = assembly;
+
+            initQuery();
+
+            long dbTimeStart;
+            dbTimeStart = System.currentTimeMillis();
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
                 if (assemblyObject != null) {
@@ -98,12 +116,27 @@ public class MetaWSServer extends GenericRestWSServer {
                 }
             }
             if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
-                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                return createErrorResponse("/versions", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
-            logger.error("species " + species);
-            CellBaseDataResult queryResult = metaManager.getVersions(species, assembly);
-            return createOkResponse(queryResult);
+            DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            if (dataRelease == 0) {
+                dataRelease = defaultDataRelease.getRelease();
+            }
+            DataRelease dr = dataReleaseManager.get(dataRelease);
+            if (dr == null) {
+                return createErrorResponse("/versions", "Could not find data release '" + dataRelease + "'");
+            }
+            // Remove some sources
+            List<DataSource> sources = new ArrayList<>();
+            for (DataSource source : dr.getSources()) {
+                if (!COSMIC_DATA.equalsIgnoreCase(source.getName()) && !HGMD_DATA.equalsIgnoreCase(source.getName())) {
+                    sources.add(source);
+                }
+            }
+            int dbTime = Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue();
+            return createOkResponse(new CellBaseDataResult<>("versions", dbTime, Collections.emptyList(), sources.size(), sources,
+                    sources.size()));
         } catch (CellBaseException e) {
             return createErrorResponse(e);
         }
@@ -111,22 +144,47 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/species")
-    @ApiOperation(httpMethod = "GET", value = "Returns all potentially available species. Please note that not all of "
-            + " them may be available in this particular CellBase installation.",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse")
-    public Response getSpecies() {
-        return getAllSpecies();
+    @ApiOperation(httpMethod = "GET", value = "Returns all available species/assemblies in this particular CellBase installation.",
+            response = Map.class, responseContainer = "QueryResponse")
+    public Response getSpecies(
+            @DefaultValue("") @QueryParam("apiKey") @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) String apiKey) {
+        try {
+            uriParams = convertMultiToMap(uriInfo.getQueryParameters());
+            checkVersion();
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
+        }
+
+        Map<String, List<String>> speciesAsseblyMap = new HashMap<>();
+        for (SpeciesConfiguration speciesConfig : getSpeciesConfigurationList()) {
+            String speciesHealthCheck = speciesConfig.getId();
+            for (SpeciesConfiguration.Assembly speciesConfigAssembly : speciesConfig.getAssemblies()) {
+                String assemblyHealthcheck = speciesConfigAssembly.getName();
+
+                HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
+                        assemblyHealthcheck, apiKey);
+                if (health.getStatus() == HealthCheckResponse.Status.OK) {
+                    if (!speciesAsseblyMap.containsKey(speciesHealthCheck)) {
+                        speciesAsseblyMap.put(speciesHealthCheck, new ArrayList<>());
+                    }
+                    speciesAsseblyMap.get(speciesHealthCheck).add(assemblyHealthcheck);
+                }
+            }
+        }
+
+        CellBaseDataResult queryResult = new CellBaseDataResult();
+        queryResult.setId("species");
+        queryResult.setTime(0);
+        queryResult.setResults(Collections.singletonList(speciesAsseblyMap));
+        return createOkResponse(queryResult);
     }
 
     @GET
-    @Path("/{species}/dataReleases")
+    @Path("/dataReleases")
     @ApiOperation(httpMethod = "GET", value = "Returns data releases stored in the database. Each data release contains the source names,"
             + " versions and urls from which data files were downloaded.", response = DataRelease.class,
             responseContainer = "QueryResponse")
-    public Response getDataRelease(@PathParam("species")
-                                   @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
-                                   @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                                           String assembly) {
+    public Response getDataReleases() {
         try {
             if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
@@ -135,7 +193,7 @@ public class MetaWSServer extends GenericRestWSServer {
                 }
             }
             if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
-                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                return createErrorResponse("/dataReleases", "Invalid species: '" + species + "' or assembly: '"
                         + assembly + "'");
             }
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
@@ -149,7 +207,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @Path("/getLicensedData")
     @ApiOperation(httpMethod = "GET", value = "Display the licensed data sources of the input API key and their expiration date",
             response = Map.class, responseContainer = "QueryResponse")
-    public Response getLicensedData(@ApiParam(name = "apiKey", required = true, value = ParamConstants.API_KEY_DESCRIPTION)
+    public Response getLicensedData(@ApiParam(name = "apiKey", required = true, value = API_KEY_DESCRIPTION)
                                     @QueryParam("apiKey") String apiKey) {
         try {
             ApiKeyManager datManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
@@ -173,7 +231,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Create a new API key by removing the expired licensed data sources from the input API key",
             response = String.class, responseContainer = "QueryResponse")
     public Response removeExpiredLicensedData(@ApiParam(name = "apiKey", required = true,
-            value = ParamConstants.API_KEY_DESCRIPTION) @QueryParam("apiKey") String apiKey) {
+            value = API_KEY_DESCRIPTION) @QueryParam("apiKey") String apiKey) {
         try {
             ApiKeyManager dataManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
 
@@ -274,19 +332,6 @@ public class MetaWSServer extends GenericRestWSServer {
         return getCategory(category);
     }
 
-    private Response getAllSpecies() {
-        try {
-            CellBaseDataResult queryResult = new CellBaseDataResult();
-            queryResult.setId("species");
-            queryResult.setTime(0);
-            queryResult.setResults(Arrays.asList(cellBaseConfiguration.getSpecies()));
-            return createOkResponse(queryResult);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @GET
     @Path("/about")
     @ApiOperation(httpMethod = "GET", value = "Returns info about current CellBase code.",
@@ -301,7 +346,6 @@ public class MetaWSServer extends GenericRestWSServer {
         info.put("Git commit", GitRepositoryState.get().getCommitId());
 
         // Get default data releases
-        species = "hsapiens";
         SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, species);
         List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (CollectionUtils.isNotEmpty(assemblies)) {
@@ -341,22 +385,11 @@ public class MetaWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{species}/status")
+    @Path("/status")
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
-    public Response status(
-            @PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                    String species,
-            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
-                    String assembly,
-            @DefaultValue("")
-            @QueryParam("apiKey")
-            @ApiParam(name = "apiKey",
-                    value = "API key for health check. When passed all of the "
-                            + "dependencies and their status will be displayed. The dependencies will be checked if "
-                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
-
+    public Response status(@DefaultValue("") @QueryParam("apiKey") @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) String apiKey) {
         if (StringUtils.isEmpty(assembly)) {
             try {
                 assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -380,23 +413,28 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other APIs.",
             response = HealthCheckResponse.class)
-    public Response status(
-            @DefaultValue("")
-            @QueryParam("apiKey")
-            @ApiParam(name = "apiKey",
-                    value = "API key for health check. When passed all of the "
-                            + "dependencies and their status will be displayed. The dependencies will be checked if "
-                            + "this parameter is not used, but they won't be part of the response") String apiKey) {
+    public Response health(@DefaultValue("") @QueryParam("apiKey") @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) String apiKey) {
+        try {
+            uriParams = convertMultiToMap(uriInfo.getQueryParameters());
+            checkVersion();
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
+        }
 
-        /**
-         * Hardcode the species and assembly for required heath check. This is fine and will not cause problems in the future.
-         */
-        String speciesHealthCheck = "hsapiens";
-        String assemblyHealthcheck = "grch38";
+        for (SpeciesConfiguration speciesConfig : getSpeciesConfigurationList()) {
+            String speciesHealthCheck = speciesConfig.getId();
+            for (SpeciesConfiguration.Assembly speciesConfigAssembly : speciesConfig.getAssemblies()) {
+                String assemblyHealthcheck = speciesConfigAssembly.getName();
 
-        HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
-                assemblyHealthcheck, apiKey);
-        return createJsonResponse(health);
+                HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
+                        assemblyHealthcheck, apiKey);
+                if (health.getStatus() == HealthCheckResponse.Status.OK) {
+                    return createJsonResponse(health);
+                }
+            }
+        }
+
+        return createErrorResponse("health", "All species/assembly databases are down for CellBase " + version);
     }
 
     @GET
@@ -534,4 +572,15 @@ public class MetaWSServer extends GenericRestWSServer {
         return map;
     }
 
+    private List<SpeciesConfiguration> getSpeciesConfigurationList() {
+        List<SpeciesConfiguration> speciesConfigurationList = new ArrayList<>();
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getVertebrates());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getFungi());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getMetazoa());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getPlants());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getBacteria());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getVirus());
+        speciesConfigurationList.addAll(cellBaseConfiguration.getSpecies().getProtist());
+        return speciesConfigurationList;
+    }
 }

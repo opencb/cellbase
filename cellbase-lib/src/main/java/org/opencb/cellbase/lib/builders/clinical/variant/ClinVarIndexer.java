@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.rcv.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.*;
+import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
@@ -96,7 +97,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile, Path clinvarEFOFile,
                           String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
-        this.rdb = rdb;
+
         this.clinvarXMLFiles = clinvarXMLFiles;
         this.clinvarSummaryFile = clinvarSummaryFile;
         this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
@@ -105,66 +106,56 @@ public class ClinVarIndexer extends ClinicalIndexer {
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
+
+        this.rdb = rdb;
     }
 
-    public void index() throws RocksDBException {
-        try {
-            Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
-            Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
+    public void index() throws RocksDBException, IOException, JAXBException {
+        Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
+        Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
 
-            File[] files = clinvarXMLFiles.toFile().listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".xml") || name.endsWith(".xml.gz");
-                }
-            });
-
-            Arrays.sort(files);
-
-            ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000,
-                    200).setBatchSize(10000);
-
-            for (File clinvarXMLFile : files) {
-
-                logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
-                JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile.toPath());
-                logger.info("Done");
-
-                logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
-
-
-                for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
-                    List<AlleleLocationData> alleleLocationDataList =
-                            rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
-                    if (alleleLocationDataList != null) {
-                        boolean success = false;
-                        // Actually this list is currently not allowed to be > 2
-                        for (int i = 0; i < alleleLocationDataList.size(); i++) {
-                            String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
-                            // updateRocksDB may fail (false) if normalisation process fails
-                            success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
-                                    traitsToEfoTermsMap) || success;
-                        }
-                        if (success) {
-                            numberIndexedRecords++;
-                        }
-                    }
-                    progressLogger.increment(1);
-                    totalNumberRecords++;
-                }
+        File[] files = clinvarXMLFiles.toFile().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".xml") || name.endsWith(".xml.gz");
             }
-            logger.info("Done");
-            printSummary();
-        } catch (RocksDBException e) {
-            logger.error("Error reading/writing from/to the RocksDB index while indexing ClinVar");
-            throw e;
-        } catch (JAXBException e) {
-            logger.error("Error unmarshalling clinvar Xml file: " + e.getMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            logger.error("Error indexing clinvar Xml file: " + e.getMessage());
-            e.printStackTrace();
+        });
+
+        Arrays.sort(files);
+
+        ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000, 200).setBatchSize(10000);
+
+        for (File clinvarXMLFile : files) {
+
+            logger.info("Unmarshalling clinvar file {} ...", clinvarXMLFile);
+            JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile.toPath());
+            logger.info(EtlCommons.DONE_MSG);
+
+            logger.info("Serializing clinvar records that have Sequence Location for Assembly {} ...", assembly);
+
+
+            for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
+                List<AlleleLocationData> alleleLocationDataList =
+                        rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+                if (alleleLocationDataList != null) {
+                    boolean success = false;
+                    // Actually this list is currently not allowed to be > 2
+                    for (int i = 0; i < alleleLocationDataList.size(); i++) {
+                        String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
+                        // updateRocksDB may fail (false) if normalisation process fails
+                        success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
+                                traitsToEfoTermsMap) || success;
+                    }
+                    if (success) {
+                        numberIndexedRecords++;
+                    }
+                }
+                progressLogger.increment(1);
+                totalNumberRecords++;
+            }
         }
+        logger.info(EtlCommons.DONE_MSG);
+        printSummary();
     }
 
     private String getMateVariantStringByAlleleLocationData(int i, List<AlleleLocationData> alleleLocationDataList) {
@@ -209,7 +200,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private boolean updateRocksDB(SequenceLocation sequenceLocation, String variationId, String[] lineFields,
-                               String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
+                                  String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
             throws RocksDBException, IOException {
         // More than one variant being returned from the normalisation process would mean it's and MNV which has been
         // decomposed
@@ -265,13 +256,34 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
 
                 // parse RCVs
-                String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
-                String clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
-                        .getClinicalSignificance()
-                        .getDescription();
-                String reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
-                        .getReviewStatus().name();
-                List<ObservationSet> getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
+                String accession = null;
+                try {
+                    accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+                } catch (Exception e) {
+                    logger.warn("Error getting accession. Ignore error and leave it as null.", e);
+                }
+                String clinicalSignficanceDescription = null;
+                try {
+                    clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
+                            .getClinicalSignificance()
+                            .getDescription();
+                } catch (Exception e) {
+                    logger.warn("Error getting clinical significance description. Ignore error and leave it as null.", e);
+                }
+                String reviewStatusName = null;
+                try {
+                    reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
+                            .getReviewStatus().name();
+                } catch (Exception e) {
+                    logger.warn("Error getting review status name. Ignore error and leave it as null.", e);
+                }
+                List<ObservationSet> getObservedIn = null;
+                try {
+                    getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
+                } catch (Exception e) {
+                    logger.warn("Error getting observed in. Ignore error and leave it as null.", e);
+                }
+
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
                         clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
                         reviewStatusName, getObservedIn);
@@ -387,7 +399,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                Map<String, EFO> traitsToEfoTermsMap, String accession,
                                String clinicalSignficanceDescription, String reviewStatusName,
                                List<ObservationSet> getObservedIn)
-        throws JsonProcessingException {
+            throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, null);
@@ -543,7 +555,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private List<GenomicFeature> getGenomicFeature(PublicSetType publicSet, String alleleId) {
         if (publicSet.getReferenceClinVarAssertion().getMeasureSet() != null) {
             return getGenomicFeature(publicSet.getReferenceClinVarAssertion().getMeasureSet());
-        // No measureSet means there must be genotypeSet
+            // No measureSet means there must be genotypeSet
         } else if (publicSet.getReferenceClinVarAssertion().getGenotypeSet() != null) {
             for (MeasureSetType measureSet : publicSet.getReferenceClinVarAssertion().getGenotypeSet().getMeasureSet()) {
                 if (measureSet.getMeasure() != null) {
@@ -595,7 +607,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // root of the ReferenceClinvarAssertion rather than for each trait
         ModeOfInheritance modeOfInheritance
                 = getInheritanceModel(publicSet.getReferenceClinVarAssertion().getAttributeSet(),
-                        sourceInheritableTraitMap);
+                sourceInheritableTraitMap);
 
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
             String traitName = getTraitName(trait, publicSet);
@@ -648,14 +660,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // Found preferred name
         if (i < trait.getName().size()) {
             return trait.getName().get(i).getElementValue().getValue();
-        // No preferred name indicated (e.g. RCV000013735 version Jan 2020); arbitrarily return first one
+            // No preferred name indicated (e.g. RCV000013735 version Jan 2020); arbitrarily return first one
         } else if (trait.getName().size() > 0) {
             logger.warn("ClinVar record found "
                     + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
                     + " with no preferred trait provided. Arbitrarily selecting first one: {}", trait.getName()
                     .get(0).getElementValue().getValue());
             return trait.getName().get(0).getElementValue().getValue();
-        // No trait name provided at all
+            // No trait name provided at all
         } else {
             throw new IllegalArgumentException("ClinVar record found "
                     + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()

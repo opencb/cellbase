@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.DONE_MSG;
+
 /**
  * Created by jtarraga on 23/02/22.
  */
@@ -52,33 +54,25 @@ public class HGMDIndexer extends ClinicalIndexer {
     public void index() throws RocksDBException, IOException {
         logger.info("Parsing HGMD file ...");
 
-        try {
-            VariantStudyMetadata metadata = new VariantFileMetadata(null, hgmdFile.toString()).toVariantStudyMetadata("study");
-            VariantVcfHtsjdkReader reader = new VariantVcfHtsjdkReader(hgmdFile.toAbsolutePath(), metadata);
-            for (Variant variant : reader) {
-                if (variant != null) {
-                    // Parse VCF INFO field containing the HGMD data, and create trait association (i.e., evidence entries)
-                    parseHgmdInfo(variant);
+        VariantStudyMetadata metadata = new VariantFileMetadata(null, hgmdFile.toString()).toVariantStudyMetadata("study");
+        VariantVcfHtsjdkReader reader = new VariantVcfHtsjdkReader(hgmdFile.toAbsolutePath(), metadata);
+        for (Variant variant : reader) {
+            if (variant != null) {
+                // Parse VCF INFO field containing the HGMD data, and create trait association (i.e., evidence entries)
+                parseHgmdInfo(variant);
 
-                    boolean success = updateRocksDB(variant);
-                    // updateRocksDB may fail (false) if normalisation process fails
-                    if (success) {
-                        numberIndexedRecords++;
-                    }
-                }
-                totalNumberRecords++;
-                if (totalNumberRecords % 1000 == 0) {
-                    logger.info("{} records parsed", totalNumberRecords);
+                boolean success = updateRocksDB(variant);
+                // updateRocksDB may fail (false) if normalisation process fails
+                if (success) {
+                    numberIndexedRecords++;
                 }
             }
-        } catch (RocksDBException | IOException  e) {
-            logger.error("Error reading/writing from/to the RocksDB index while indexing HGMD");
-            throw e;
-        } finally {
-            logger.info("Done");
-
-//            this.printSummary();
+            totalNumberRecords++;
+            if (totalNumberRecords % 1000 == 0) {
+                logger.info("{} records parsed", totalNumberRecords);
+            }
         }
+        logger.info(DONE_MSG);
     }
 
     private void parseHgmdInfo(Variant variant) {

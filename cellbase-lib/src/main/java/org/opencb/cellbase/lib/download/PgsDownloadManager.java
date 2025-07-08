@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.download;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
@@ -41,17 +42,23 @@ public class PgsDownloadManager extends AbstractDownloadManager {
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, PGS_NAME);
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), PGS_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(PGS_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
+        }
 
-        DownloadProperties.URLProperties pgsUrlProperties = configuration.getDownload().getPgs();
+        String pgslabel = getDataCategory(PGS_CATALOG_DATA) + "/" + getDataName(PGS_CATALOG_DATA);
+        logger.info(DOWNLOADING_MSG, getDataName(PGS_DATA));
 
-        Path pgsFolder = downloadFolder.resolve(PGS_DATA);
-        Files.createDirectories(pgsFolder);
+        DownloadProperties.URLProperties pgsProps = configuration.getDownload().getPgsCatalog();
+
+        Path pgsPath = downloadFolder.resolve(PGS_DATA);
+        Files.createDirectories(pgsPath);
 
         List<String> urls = new ArrayList<>();
-        urls.add(pgsUrlProperties.getHost());
 
-        String urlAllMeta = pgsUrlProperties.getFiles().get(PGS_CATALOG_METADATA_FILE_ID);
+        String urlAllMeta = pgsProps.getFiles().get(PGS_CATALOG_FILE_ID);
         urls.add(urlAllMeta);
 
         String filename = new File(urlAllMeta).getName();
@@ -60,33 +67,35 @@ public class PgsDownloadManager extends AbstractDownloadManager {
         String url;
         Path outPath;
         List<DownloadFile> list = new ArrayList<>();
-        list.add(downloadFile(urlAllMeta, pgsFolder.resolve(filename).toString()));
+        list.add(downloadFile(urlAllMeta, pgsPath.resolve(filename)));
 
         String baseUrl = urlAllMeta.replace(filename, "").replace("metadata", "scores");
-        BufferedReader br = FileUtils.newBufferedReader(pgsFolder.resolve(filename));
-        // Skip first line
-        String line = br.readLine();
-        while ((line = br.readLine()) != null) {
-            String[] field = line.split(",");
-            String pgsId = field[0];
+        try (BufferedReader br = FileUtils.newBufferedReader(pgsPath.resolve(filename))) {
+            // Skip first line
+            String line = br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] field = line.split(",");
+                String pgsId = field[0];
 
-            url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
-            outPath = pgsFolder.resolve(new File(url).getName());
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-            list.add(downloadFile(url, outPath.toString()));
+                url = baseUrl + pgsId + "/Metadata/" + pgsId + "_metadata.tar.gz";
+                outPath = pgsPath.resolve(new File(url).getName());
+                logger.info(DOWNLOADING_FROM_TO_MSG, url, outPath);
+                list.add(downloadFile(url, outPath));
+                urls.add(url);
 
-            url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
-            outPath = pgsFolder.resolve(new File(url).getName());
-            logger.info(DOWNLOADING_FROM_TO_LOG_MESSAGE, url, outPath);
-            list.add(downloadFile(url, outPath.toString()));
+                url = baseUrl + pgsId + "/ScoringFiles/Harmonized/" + pgsId + "_hmPOS_GRCh38.txt.gz";
+                outPath = pgsPath.resolve(new File(url).getName());
+                logger.info(DOWNLOADING_FROM_TO_MSG, url, outPath);
+                list.add(downloadFile(url, outPath));
+                urls.add(url);
+            }
         }
-        br.close();
 
         // Save version file
-        saveDataSource(PGS_CATALOG_NAME, PGS_NAME, pgsUrlProperties.getVersion(), getTimeStamp(), urls,
-                pgsFolder.resolve(EtlCommons.PGS_CATALOG_VERSION_FILENAME));
+        saveDataSource(PGS_CATALOG_DATA, pgsProps.getVersion(), getTimeStamp(), urls,
+                pgsPath.resolve(getDataVersionFilename(PGS_CATALOG_DATA)));
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, PGS_NAME);
+        logger.info(DOWNLOADING_DONE_MSG, pgslabel);
 
         return list;
     }

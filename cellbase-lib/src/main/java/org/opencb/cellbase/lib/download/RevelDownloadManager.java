@@ -28,29 +28,25 @@ import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class RevelScoresDownloadManager extends AbstractDownloadManager {
+public class RevelDownloadManager extends AbstractDownloadManager {
 
-    public RevelScoresDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
+    public RevelDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
-        logger.info(DOWNLOADING_LOG_MESSAGE, getDataName(REVEL_DATA));
+        String dataName = getDataName(REVEL_DATA);
+        logger.info(DOWNLOADING_MSG, dataName);
 
-        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS_NAME)) {
-            logger.info("{} not supported for the species {}", getDataName(REVEL_DATA), speciesConfiguration.getScientificName());
-            return Collections.emptyList();
-        }
-
-        Path revelPath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA);
+        Path revelPath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(REVEL_DATA);
         Files.createDirectories(revelPath);
 
-        // Download REVEL file
+        // Download Revel file
         DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getRevel(), REVEL_FILE_ID, REVEL_DATA, revelPath);
 
-        logger.info(DOWNLOADING_DONE_LOG_MESSAGE, getDataName(REVEL_DATA));
+        logger.info(DOWNLOADING_DONE_MSG, dataName);
 
         return Collections.singletonList(downloadFile);
     }

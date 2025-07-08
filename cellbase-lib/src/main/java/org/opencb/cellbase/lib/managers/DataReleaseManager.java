@@ -126,7 +126,11 @@ public class DataReleaseManager extends AbstractManager {
         return releaseDBAdaptor.update(release, versions).first();
     }
 
-    public DataRelease update(int release, String collection, String data, List<Path> dataSourcePaths)
+    public DataRelease update(int release, String collection) throws CellBaseException {
+        return update(release, collection, Collections.emptyList());
+    }
+
+    public DataRelease update(int release, String collection, List<Path> dataSourcePaths)
             throws CellBaseException {
         DataRelease currDataRelease = get(release);
         if (currDataRelease != null) {
@@ -134,32 +138,8 @@ public class DataReleaseManager extends AbstractManager {
             currDataRelease.getCollections().put(collection, CellBaseDBAdaptor.buildCollectionName(collection, release));
 
             // Check sources
-            if (StringUtils.isNotEmpty(data) && CollectionUtils.isNotEmpty(dataSourcePaths)) {
-                List<DataSource> newSources = new ArrayList<>();
-
-                // First, add new data sources
-                Set<String> sourceSet = new HashSet<>();
-                ObjectMapper jsonObjectMapper = new ObjectMapper();
-                ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataSource.class);
-                for (Path dataSourcePath : dataSourcePaths) {
-                    if (dataSourcePath.toFile().exists()) {
-                        try {
-                            DataSource dataSource = jsonObjectReader.readValue(dataSourcePath.toFile());
-                            newSources.add(dataSource);
-                            sourceSet.add(dataSource.getCategory() + "__" + dataSource.getName());
-                        } catch (IOException e) {
-                            logger.warn("Something wrong happened when reading data release source {}: {}", dataSourcePath, e.getMessage());
-                        }
-                    }
-                }
-
-                // Second, add previous data sources if necessary (to avoid duplicated sources)
-                for (DataSource source : currDataRelease.getSources()) {
-                    String key = source.getCategory() + "__" + source.getName();
-                    if (!sourceSet.contains(key)) {
-                        newSources.add(source);
-                    }
-                }
+            if (CollectionUtils.isNotEmpty(dataSourcePaths)) {
+                List<DataSource> newSources = getDataSources(dataSourcePaths, currDataRelease.getSources());
 
                 if (CollectionUtils.isNotEmpty(newSources)) {
                     currDataRelease.setSources(newSources);
@@ -174,16 +154,41 @@ public class DataReleaseManager extends AbstractManager {
         throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
     }
 
-    public void update(DataRelease dataRelase) {
-        if (MapUtils.isNotEmpty(dataRelase.getCollections())) {
-            releaseDBAdaptor.update(dataRelase.getRelease(), "collections", dataRelase.getCollections());
+    public DataRelease updateSources(int release, List<Path> dataSourcePaths) throws CellBaseException {
+        DataRelease currDataRelease = get(release);
+        if (currDataRelease == null) {
+            throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
         }
 
-        if (CollectionUtils.isNotEmpty(dataRelase.getSources())) {
+        // Check sources
+        if (CollectionUtils.isNotEmpty(dataSourcePaths)) {
+            List<DataSource> newSources = getDataSources(dataSourcePaths, currDataRelease.getSources());
+
+            if (CollectionUtils.isNotEmpty(newSources)) {
+                currDataRelease.setSources(newSources);
+            }
+        }
+
+        // Update data release in the database
+        update(currDataRelease);
+
+        return currDataRelease;
+
+    }
+
+    public void update(DataRelease dataRelease) {
+        if (MapUtils.isNotEmpty(dataRelease.getCollections())) {
+            releaseDBAdaptor.update(dataRelease.getRelease(), "collections", dataRelease.getCollections());
+        }
+
+        if (CollectionUtils.isNotEmpty(dataRelease.getSources())) {
             // TODO: use native functions
             List<Map<String, Object>> tmp = new ArrayList<>();
-            for (DataSource source : dataRelase.getSources()) {
+            for (DataSource source : dataRelease.getSources()) {
                 Map<String, Object> map = new HashMap<>();
+                if (StringUtils.isNotEmpty(source.getId())) {
+                    map.put("id", source.getId());
+                }
                 if (StringUtils.isNotEmpty(source.getName())) {
                     map.put("name", source.getName());
                 }
@@ -201,7 +206,7 @@ public class DataReleaseManager extends AbstractManager {
                 }
                 tmp.add(map);
             }
-            releaseDBAdaptor.update(dataRelase.getRelease(), "sources", tmp);
+            releaseDBAdaptor.update(dataRelease.getRelease(), "sources", tmp);
         }
     }
 
@@ -242,5 +247,34 @@ public class DataReleaseManager extends AbstractManager {
 
     private String getSpeciesAssemblyMessage() {
         return " (species = " + species + ", assembly = " + assembly + ")";
+    }
+
+    private List<DataSource> getDataSources(List<Path> dataSourcePaths, List<DataSource> currDataSources) {
+        List<DataSource> newDataSources = new ArrayList<>();
+
+        // First, add new data sources
+        Set<String> sourceSet = new HashSet<>();
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataSource.class);
+        for (Path dataSourcePath : dataSourcePaths) {
+            if (dataSourcePath.toFile().exists()) {
+                try {
+                    DataSource dataSource = jsonObjectReader.readValue(dataSourcePath.toFile());
+                    newDataSources.add(dataSource);
+                    sourceSet.add(dataSource.getId());
+                } catch (IOException e) {
+                    logger.warn("Something wrong happened when reading data release source {}: {}", dataSourcePath, e.getMessage());
+                }
+            }
+        }
+
+        // Second, add previous data sources if necessary (to avoid duplicated sources)
+        for (DataSource source : currDataSources) {
+            if (!sourceSet.contains(source.getId())) {
+                newDataSources.add(source);
+            }
+        }
+
+        return newDataSources;
     }
 }

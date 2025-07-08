@@ -18,8 +18,10 @@ package org.opencb.cellbase.server.rest.genomic;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang.StringUtils;
+import org.opencb.biodata.models.core.Snp;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -50,9 +52,9 @@ public class VariantWSServer extends GenericRestWSServer {
             defaultValue = DEFAULT_VERSION) String apiVersion,
                            @PathParam("species") @ApiParam(name = "species", value = SPECIES_DESCRIPTION) String species,
                            @ApiParam(name = "assembly", value = ASSEMBLY_DESCRIPTION) @DefaultValue("") @QueryParam("assembly")
-                                   String assembly,
+                           String assembly,
                            @ApiParam(name = "dataRelease", value = DATA_RELEASE_DESCRIPTION) @DefaultValue("0") @QueryParam("dataRelease")
-                                   int dataRelease,
+                           int dataRelease,
                            @ApiParam(name = "apiKey", value = API_KEY_DESCRIPTION) @DefaultValue("") @QueryParam("apiKey") String apiKey,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
@@ -116,20 +118,6 @@ public class VariantWSServer extends GenericRestWSServer {
         }
 
     }
-
-    //    @GET
-//    @Path("/{phenotype}/phenotype")
-//    @ApiOperation(httpMethod = "GET",
-//            value = "Not implemented yet",
-//            response = CellBaseDataResponse.class, hidden = true)
-//    public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
-//        try {
-//            parseQueryParams();
-//            return Response.ok("Not implemented").build();
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
 
     @POST
     @Consumes("text/plain")
@@ -289,7 +277,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @QueryParam("checkAminoAcidChange")
                                                @ApiParam(name = "checkAminoAcidChange", value = "<DESCRIPTION GOES HERE>",
                                                        allowableValues = "false,true", defaultValue = "false", required = false)
-                                                       Boolean checkAminoAcidChange,
+                                               Boolean checkAminoAcidChange,
                                                @QueryParam("consequenceTypeSource")
                                                @ApiParam(name = "consequenceTypeSource", value = "Gene set, either ensembl (default) "
                                                        + "or refseq", allowableValues = "ensembl,refseq", allowMultiple = true,
@@ -357,29 +345,6 @@ public class VariantWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-//    @GET
-//    @Deprecated
-//    @Path("/{variants}/cadd")
-//    @ApiOperation(httpMethod = "GET", value = "Get CADD scores for a (list of) variant(s)", response = Score.class,
-//            responseContainer = "QueryResponse", hidden = true)
-//    public Response getCaddScoreByVariant(@PathParam("variants")
-//                                          @ApiParam(name = "variants", value = "Comma separated list of variants for"
-//                                                  + "which CADD socores will be returned, e.g. "
-//                                                  + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-//                                                  + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
-//                                                    required = true) String variants) {
-//        try {
-//            parseQueryParams();
-//            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//
-//            List<CellBaseDataResult<Score>> functionalScoreVariant =
-//                    variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
-//            return createOkResponse(functionalScoreVariant);
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
 
 //    @GET
 //    @Path("/stats")
@@ -493,58 +458,64 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-    // FIXME: 29/04/16 GET and POST web services to be fixed
-//    @GET
-//    @Path("/{variants}/consequenceType")
-//    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the variant(s)", response = String.class,
-//            responseContainer = "QueryResponse")
-//    public Response getConsequenceTypeByGetMethod(@PathParam("variants") String variants) {
-//        return getConsequenceType(variants);
-//    }
-//
-//    private Response getConsequenceType(String variants) {
-//        try {
-//            parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//            query.put(VariantDBAdaptor.QueryParams.ID.key(), variants);
-//            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
-//            CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
-//            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
-//                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
-//                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
-//            return createOkResponse(queryResult1);
-//        } catch (Exception e) {
-//            return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
-//        }
-//    }
+    //-------------------------------------------------------------------------
+    // S N P
+    //-------------------------------------------------------------------------
+    @GET
+    @Path("/snp/search")
+    @ApiOperation(httpMethod = "GET", value = "Get SNPs", response = Snp.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = SKIP_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_SKIP, dataType = "java.util.List", paramType = "query")
+    })
+    public Response searchSnp(@QueryParam("id") @ApiParam(name = "id", value = "SNP ID") String id,
+                            @QueryParam("chromosome") @ApiParam(name = "chromosome", value = "Chromosome") String chromosome,
+                            @QueryParam("position") @ApiParam(name = "position", value = "Position") Integer position,
+                            @QueryParam("reference") @ApiParam(name = "reference", value = "Reference") String reference) {
+        try {
+            SnpQuery query = new SnpQuery(uriParams);
+            CellBaseDataResult<Snp> queryResult = variantManager.searchSnp(query);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
-    // FIXME: 29/04/16 GET and POST methods to be fixed
-//    @GET
-//    @Path("/{variants}/regulatory")
-//    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the variant(s)", hidden = true)
-//    public Response getRegulatoryByGetMethod(@PathParam("variants") String variants) {
-//        return getRegulatoryType(variants);
-//    }
-//
-//    private Response getRegulatoryType(String variants) {
-//        try {
-//            parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//            return null;
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
-//    @GET
-//    @Path("/{variants}/sequence")
-//    @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s) - Not yet implemented",
-//            hidden = true)
-//    public Response getSequence(@PathParam("variants") String query) {
-//        try {
-//            return null;
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
+    @GET
+    @Path("/snp/startsWith")
+    @ApiOperation(httpMethod = "GET", value = "Get SNPs starting with the input SNP ID", response = Snp.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = LIMIT_DESCRIPTION,
+                    required = false, defaultValue = DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query")
+    })
+    public Response startsWithSnp(@QueryParam("id") @ApiParam(name = "id", value = "SNP ID, e.g.: rs15703916") String id) {
+        try {
+            try {
+                SnpQuery query = new SnpQuery(uriParams);
+                CellBaseDataResult<Snp> queryResult = variantManager.startsWithSnp(id, query.toQueryOptions(), getDataRelease());
+                return createOkResponse(queryResult);
+            } catch (Exception e) {
+                return createErrorResponse(e);
+            }
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 }
