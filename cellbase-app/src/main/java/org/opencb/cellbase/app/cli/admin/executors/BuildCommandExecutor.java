@@ -48,7 +48,6 @@ import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_O
 import static org.opencb.cellbase.lib.builders.GenomeSequenceFastaBuilder.GENOME_JSON_FILENAME;
 import static org.opencb.cellbase.lib.builders.OntologyBuilder.OBO_OUTPUT_BASENAME;
 import static org.opencb.cellbase.lib.builders.ProteinBuilder.PROTEIN_OUTPUT_FILENAME;
-import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.RegulatoryFeatureBuilder.*;
 import static org.opencb.cellbase.lib.builders.RepeatsBuilder.REPEATS_OUTPUT_FILENAME;
 import static org.opencb.cellbase.lib.builders.VariationBuilder.VARIATION_CHR_PREFIX;
@@ -253,8 +252,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path geneBuildPath = buildFolder.resolve(GENE_DATA);
 
         List<Path> versionFiles = new ArrayList<>(Arrays.asList(
-                geneDownloadPath.resolve(ENSEMBL_DATA).resolve(getDataVersionFilename(ENSEMBL_DATA)),
-                geneDownloadPath.resolve(REFSEQ_DATA).resolve(getDataVersionFilename(REFSEQ_DATA))));
+                geneDownloadPath.resolve(ENSEMBL_DATA).resolve(getDataVersionFilename(ENSEMBL_DATA))
+//                geneDownloadPath.resolve(REFSEQ_DATA).resolve(getDataVersionFilename(REFSEQ_DATA)))
+        ));
         List<String> dataList = GeneBuilder.getCommonDataSources(speciesConfiguration, configuration);
         for (String data : dataList) {
             Path versionFile;
@@ -272,8 +272,9 @@ public class BuildCommandExecutor extends CommandExecutor {
             versionFiles.add(versionFile);
         }
 
-        List<Path> filesToCheck = new ArrayList<>(Arrays.asList(geneBuildPath.resolve(ENSEMBL_GENE_OUTPUT_FILENAME),
-                geneBuildPath.resolve(REFSEQ_GENE_OUTPUT_FILENAME)));
+        List<Path> filesToCheck = new ArrayList<>(Arrays.asList(geneBuildPath.resolve(ENSEMBL_GENE_OUTPUT_FILENAME)//,
+//                geneBuildPath.resolve(REFSEQ_GENE_OUTPUT_FILENAME))
+        ));
         for (Path versionFile : versionFiles) {
             filesToCheck.add(geneBuildPath.resolve(versionFile.getFileName()));
         }

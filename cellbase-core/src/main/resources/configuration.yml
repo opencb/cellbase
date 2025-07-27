@@ -334,6 +334,13 @@ download:
     host: https://basespace.illumina.com/s/otSPW8hnhaZR
     version: "1.3.1"
 
+  ## Fusion gene
+  chimerDb:
+    host: https://www.kobic.re.kr/chimerdb/
+    version: "4.0"
+    files:
+      CHIMERKB_XLS: https://www.kobic.re.kr/chimerdb/downloads?name=ChimerKB4.xlsx
+
   ## Others
   pubmed:
     host: https://ftp.ncbi.nlm.nih.gov/pubmed/baseline/

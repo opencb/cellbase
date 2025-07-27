@@ -21,10 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
+import org.opencb.biodata.formats.feature.chimerdb.ChimerDbParser;
+import org.opencb.biodata.formats.feature.chimerdb.GeneFusionParserCallback;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
+import org.opencb.biodata.models.clinical.genefusion.GeneFusion;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
@@ -68,6 +71,7 @@ public class GeneBuilderIndexer {
     protected static final String MIRTARBASE_SUFFIX = "_mirtarbase";
     private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String IMPRINTED_GENE_SUFFIX = "_imprinted";
+    private static final String GENE_FUSION_SUFFIX = "_fusion";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -768,5 +772,91 @@ public class GeneBuilderIndexer {
         }
 
         return imprintedGeneList;
+    }
+
+    protected void indexChimerDb(Path chimerDbFile) throws IOException {
+        if (chimerDbFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, chimerDbFile);
+
+        GeneBuilderIndexer.ChemirDbCallback callback = new GeneBuilderIndexer.ChemirDbCallback(rocksdb, rocksDbManager);
+        ChimerDbParser.parse(chimerDbFile, callback);
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, chimerDbFile);
+    }
+
+    // Implementation of the MirBaseParserCallback function
+    public class ChemirDbCallback implements GeneFusionParserCallback {
+
+        private RocksDB rocksDB;
+        private RocksDbManager rocksDbManager;
+        private Logger logger;
+
+        public ChemirDbCallback(RocksDB rocksDB, RocksDbManager rocksDbManager) {
+            this.rocksDB = rocksDB;
+            this.rocksDbManager = rocksDbManager;
+            this.logger = LoggerFactory.getLogger(this.getClass());
+        }
+
+        @Override
+        public boolean processGeneFusion(GeneFusion geneFusion) {
+            try {
+                String key;
+                List<GeneFusion> updatedGeneFusion;
+
+                logger.info("Processing gene fusion: {}", geneFusion);
+
+                // Head gene fusion
+                if (geneFusion != null && geneFusion.getHeadGene() != null
+                        && StringUtils.isNotEmpty(geneFusion.getHeadGene().getGeneName())) {
+                    // Store the head gene fusion in the database
+                    key = geneFusion.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new ArrayList<>();
+                    }
+                    logger.info("Adding gene fusion (id = {}, pair = {}) to key '{}' (current size = {})", geneFusion.getId(),
+                            geneFusion.getPair(), key, updatedGeneFusion.size());
+                    updatedGeneFusion.add(geneFusion);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Tail gene fusion
+                if (geneFusion != null && geneFusion.getTailGene() != null
+                        && StringUtils.isNotEmpty(geneFusion.getTailGene().getGeneName())) {
+                    // Store the tail gene fusion in the database
+                    key = geneFusion.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new ArrayList<>();
+                    }
+                    updatedGeneFusion.add(geneFusion);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+            } catch (RocksDBException | IOException e) {
+                logger.warn("Something wrong happened when processing {} gene fusion {}: {}", CHIMERDB_DATA, geneFusion.getId(),
+                        StringUtils.join(e.getStackTrace(), "\t"));
+                return false;
+            }
+            return true;
+        }
+    }
+
+    protected List<GeneFusion> getGeneFusion(String id) throws RocksDBException, IOException {
+        // Sanity check
+        if (StringUtils.isEmpty(id)) {
+            return Collections.emptyList();
+        }
+
+        String key = id + GENE_FUSION_SUFFIX;
+        List<GeneFusion> geneFusionList = rocksDbManager.getGeneFusion(rocksdb, key);
+        if (CollectionUtils.isEmpty(geneFusionList)) {
+            // No gene fusion found for the given id
+            return Collections.emptyList();
+        }
+
+        return geneFusionList;
     }
 }

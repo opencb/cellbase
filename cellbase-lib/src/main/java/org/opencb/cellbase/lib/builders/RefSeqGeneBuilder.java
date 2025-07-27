@@ -58,6 +58,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
     private Path cancerGeneCensusFile = null;
     private Path cancerHotspot = null;
     private Path geneImprintFile = null;
+    private Path chemirdbFile = null;
 
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
@@ -193,7 +194,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
         RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
         indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, gnomadFile, miRTarBaseFile,
-                cancerGeneCensusFile, cancerHotspot, geneImprintFile);
+                cancerGeneCensusFile, cancerHotspot, geneImprintFile, chemirdbFile);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
         logger.info(PARSING_LOG_MESSAGE, gtfFile);
@@ -299,7 +300,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
         GeneAnnotation geneAnnotation = new GeneAnnotation(null, indexer.getDiseases(geneName), indexer.getDrugs(geneName),
                 indexer.getConstraints(geneName), indexer.getMirnaTargets(geneName), indexer.getCancerGeneCensus(geneName),
-                indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName));
+                indexer.getCancerHotspot(geneName), indexer.getGeneImprinting(geneName), indexer.getGeneFusion(geneName));
 
         gene = new Gene(geneId, geneName, chromosome, gtf.getStart(), gtf.getEnd(), gtf.getStrand(), "1", geneBiotype,
                 KNOWN_STATUS, SOURCE, geneDescription, new ArrayList<>(), null, geneAnnotation);

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.clinical.genefusion.GeneFusion;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -159,6 +161,14 @@ public class RocksDbManager {
             return null;
         }
         return Arrays.asList(mapper.readValue(dbContent, ImprintedGene[].class));
+    }
+
+    public List<GeneFusion> getGeneFusion(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return new ArrayList<>(Arrays.asList(mapper.readValue(dbContent, GeneFusion[].class)));
     }
 
     /**

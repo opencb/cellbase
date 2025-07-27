@@ -344,6 +344,13 @@ public final class EtlCommons {
     // SpliceAI
     public static final String SPLICEAI_DATA = "spliceai";
 
+    // Fusion gene
+    public static final String FUSION_GENE_DATA = "fusion_gene";
+    // ChimerDB
+    public static final String CHIMERDB_DATA = "chimerdb";
+    // Must match the configuration file
+    public static final String CHIMERKB_XLS_FILE_ID = "CHIMERKB_XLS";
+
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
      */
@@ -441,8 +448,10 @@ public final class EtlCommons {
         dataNamesMap.put(DBSNP_DATA, "dbSNP");
         dataNamesMap.put(PGS_DATA, "Polygenic Score");
         dataNamesMap.put(PGS_CATALOG_DATA, "PGS Catalog");
-        dataNamesMap.put(IMPRINTED_GENE_DATA, "Imprented Gened");
+        dataNamesMap.put(IMPRINTED_GENE_DATA, "Imprented Gene");
         dataNamesMap.put(GENEIMPRINT_DATA, "GeneImprint");
+        dataNamesMap.put(FUSION_GENE_DATA, "Fusion Gene");
+        dataNamesMap.put(CHIMERDB_DATA, "ChimerDB");
 
         // Populate data categories map
         dataCategoriesMap.put(ENSEMBL_DATA, "Gene");
@@ -496,6 +505,8 @@ public final class EtlCommons {
         dataCategoriesMap.put(PGS_CATALOG_DATA, dataNamesMap.get(PGS_DATA));
         dataCategoriesMap.put(IMPRINTED_GENE_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
         dataCategoriesMap.put(GENEIMPRINT_DATA, dataNamesMap.get(GENE_ANNOTATION_DATA));
+        dataCategoriesMap.put(FUSION_GENE_DATA, GENE_ANNOTATION_DATA);
+        dataCategoriesMap.put(CHIMERDB_DATA, GENE_ANNOTATION_DATA);
 
         // Populate data version filenames Map
         dataVersionFilenamesMap.put(ENSEMBL_DATA, "ensemblCore" + SUFFIX_VERSION_FILENAME);
@@ -547,6 +558,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DBSNP_DATA, "dbSnp" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(PGS_CATALOG_DATA, "pgsCatalog" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GENEIMPRINT_DATA, "geneimprint" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CHIMERDB_DATA, "chimerdb" + SUFFIX_VERSION_FILENAME);
     }
 
     private EtlCommons() {

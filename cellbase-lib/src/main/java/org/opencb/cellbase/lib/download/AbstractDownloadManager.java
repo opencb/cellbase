@@ -292,9 +292,12 @@ public abstract class AbstractDownloadManager {
             downloadFile.setMessage("File is already downloaded");
         } else {
             logger.info(DOWNLOADING_FROM_TO_MSG, url, outputFile);
+
             List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url,
                     "-O", outputFile.toAbsolutePath().toString(),
-                    "-o", outputLog.toAbsolutePath().toString()));
+                    "-o", outputLog.toAbsolutePath().toString(),
+                    "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                            + " Chrome/100.0.4896.127 Safari/537.36"));
             if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
                 wgetArgs.addAll(wgetAdditionalArgs);
             }

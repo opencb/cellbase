@@ -52,8 +52,8 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         Files.createDirectories(ensemblDownloadPath);
 
         // Create RefSeq folder
-        Path refSeqDownloadPath = geneDownloadPath.resolve(REFSEQ_DATA);
-        Files.createDirectories(refSeqDownloadPath);
+//        Path refSeqDownloadPath = geneDownloadPath.resolve(REFSEQ_DATA);
+//        Files.createDirectories(refSeqDownloadPath);
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
@@ -67,44 +67,45 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadGeneExtraInfo(geneDownloadPath);
 
         // RefSeq
-        downloadFiles.addAll(downloadRefSeq(refSeqDownloadPath));
+//        downloadFiles.addAll(downloadRefSeq(refSeqDownloadPath));
 
         // Gene annotation
         logger.info(DOWNLOADING_MSG, getDataName(GENE_ANNOTATION_DATA));
-        downloadFiles.add(downloadMane(geneDownloadPath));
-        downloadFiles.add(downloadLrg(geneDownloadPath));
-        downloadFiles.add(downloadHgnc(geneDownloadPath));
-        downloadFiles.add(downloadCancerHotspot(geneDownloadPath));
-        downloadFiles.add(downloadDrugData(geneDownloadPath));
-        downloadFiles.add(downloadGeneUniprotXref(geneDownloadPath));
-        downloadFiles.add(downloadGeneExpressionAtlas(geneDownloadPath));
-        downloadFiles.add(downloadGnomadConstraints(geneDownloadPath));
-        downloadFiles.add(downloadGO(geneDownloadPath));
+//        downloadFiles.add(downloadMane(geneDownloadPath));
+//        downloadFiles.add(downloadLrg(geneDownloadPath));
+//        downloadFiles.add(downloadHgnc(geneDownloadPath));
+//        downloadFiles.add(downloadCancerHotspot(geneDownloadPath));
+//        downloadFiles.add(downloadDrugData(geneDownloadPath));
+//        downloadFiles.add(downloadGeneUniprotXref(geneDownloadPath));
+//        downloadFiles.add(downloadGeneExpressionAtlas(geneDownloadPath));
+//        downloadFiles.add(downloadGnomadConstraints(geneDownloadPath));
+//        downloadFiles.add(downloadGO(geneDownloadPath));
+        downloadFiles.add(downloadChemirDb(geneDownloadPath));
 
         // Save data sources manually downloaded
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
-            // HPO
-            if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)))) {
-                logger.warn("The version file {} already exists", getDataVersionFilename(HPO_DISEASE_DATA));
-            } else {
-                saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
-                        Collections.singletonList(getManualUrl(configuration.getDownload().getHpo(), HPO_FILE_ID)),
-                        geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)));
-                logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(HPO_DISEASE_DATA),
-                        getDataVersionFilename(HPO_DISEASE_DATA), geneDownloadPath);
-            }
-
-            // Cancer gene census
-            if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)))) {
-                logger.warn("The version file {} already exists", getDataVersionFilename(CANCER_GENE_CENSUS_DATA));
-            } else {
-                saveDataSource(CANCER_GENE_CENSUS_DATA, configuration.getDownload().getCancerGeneCensus().getVersion(), getTimeStamp(),
-                        Collections.singletonList(getManualUrl(configuration.getDownload().getCancerGeneCensus(),
-                                CANCER_GENE_CENSUS_FILE_ID)), geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)));
-                logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
-                        getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
-            }
-
+//            // HPO
+//            if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)))) {
+//                logger.warn("The version file {} already exists", getDataVersionFilename(HPO_DISEASE_DATA));
+//            } else {
+//                saveDataSource(HPO_DISEASE_DATA, configuration.getDownload().getHpo().getVersion(), getTimeStamp(),
+//                        Collections.singletonList(getManualUrl(configuration.getDownload().getHpo(), HPO_FILE_ID)),
+//                        geneDownloadPath.resolve(getDataVersionFilename(HPO_DISEASE_DATA)));
+//                logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(HPO_DISEASE_DATA),
+//                        getDataVersionFilename(HPO_DISEASE_DATA), geneDownloadPath);
+//            }
+//
+//            // Cancer gene census
+//            if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)))) {
+//                logger.warn("The version file {} already exists", getDataVersionFilename(CANCER_GENE_CENSUS_DATA));
+//            } else {
+//                saveDataSource(CANCER_GENE_CENSUS_DATA, configuration.getDownload().getCancerGeneCensus().getVersion(), getTimeStamp(),
+//                        Collections.singletonList(getManualUrl(configuration.getDownload().getCancerGeneCensus(),
+//                                CANCER_GENE_CENSUS_FILE_ID)), geneDownloadPath.resolve(getDataVersionFilename(CANCER_GENE_CENSUS_DATA)));
+//                logger.warn("{} must be downloaded manually; the version file {} was created at {}", getDataName(CANCER_GENE_CENSUS_DATA),
+//                        getDataVersionFilename(CANCER_GENE_CENSUS_DATA), geneDownloadPath);
+//            }
+//
             // Gene imprint
             if (Files.exists(geneDownloadPath.resolve(getDataVersionFilename(GENEIMPRINT_DATA)))) {
                 logger.warn("The version file {} already exists", getDataVersionFilename(GENEIMPRINT_DATA));
@@ -377,6 +378,34 @@ public class GeneDownloadManager extends AbstractDownloadManager {
                     prefixId + GO_ANNOTATION_FILE_ID, GO_ANNOTATION_DATA, geneDownloadPath);
 
             logger.info(DOWNLOADING_MSG, getDataName(GO_ANNOTATION_DATA));
+        }
+        return downloadFile;
+    }
+
+    private DownloadFile downloadChemirDb(Path geneDownloadPath) throws IOException, InterruptedException, CellBaseException {
+        // Download ChimerDB file
+        DownloadFile downloadFile = null;
+
+        // Check if the species is supported
+        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+        if (configuration.getDownload().getGoAnnotation().getFiles().containsKey(prefixId + GO_ANNOTATION_FILE_ID)) {
+            logger.info(DOWNLOADING_MSG, getDataName(CHIMERDB_DATA));
+
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getChimerDb(), CHIMERKB_XLS_FILE_ID, CHIMERDB_DATA,
+                    geneDownloadPath);
+
+//            String fileName = Paths.get(configuration.getDownload().getChimerDb().getFiles().get(CHIMERKB_XLS_FILE_ID)).getFileName()
+//                    .toString();
+//            for (File file : geneDownloadPath.toFile().listFiles()) {
+//                if (file.getName().endsWith(fileName)) {
+//                    // Rename the ChimerKB file
+//                    String newFileName = fileName.split("=")[1];
+//                    Files.move(file.toPath(), geneDownloadPath.resolve(newFileName));
+//                    logger.info("Renamed {} to {}", file.getName(), newFileName);
+//                    break;
+//                }
+//            }
+            logger.info(DOWNLOADING_MSG, getDataName(CHIMERDB_DATA));
         }
         return downloadFile;
     }

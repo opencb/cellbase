@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
@@ -67,26 +66,27 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
     public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
                       Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
                       Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneGensusFile,
-                      Path cancerHostpotFile, Path canonicalFile, Path geneImprintFile)
+                      Path cancerHostpotFile, Path canonicalFile, Path geneImprintFile, Path chimerDbFile)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
-        indexHgncIdMapping(hgncFile);
-        indexManeMapping(maneFile, ENSEMBL_DATA);
-        indexLrgMapping(lrgFile, ENSEMBL_DATA);
-        indexProteinSequences(proteinFastaFile);
-        indexCdnaSequences(cDnaFastaFile);
-        indexExpression(species, geneExpressionFile);
-        indexDrugs(geneDrugFile);
-        indexDiseases(hpoFile);
-        indexConstraints(gnomadFile, ENSEMBL_DATA);
-        indexOntologyAnnotations(geneOntologyAnnotationFile);
-        indexMiRBase(species, miRBaseFile);
-        indexMiRTarBase(miRTarBaseFile);
-        indexCancerGeneCensus(cancerGeneGensusFile);
-        indexCancerHotspot(cancerHostpotFile);
+//        indexHgncIdMapping(hgncFile);
+//        indexManeMapping(maneFile, ENSEMBL_DATA);
+//        indexLrgMapping(lrgFile, ENSEMBL_DATA);
+//        indexProteinSequences(proteinFastaFile);
+//        indexCdnaSequences(cDnaFastaFile);
+//        indexExpression(species, geneExpressionFile);
+//        indexDrugs(geneDrugFile);
+//        indexDiseases(hpoFile);
+//        indexConstraints(gnomadFile, ENSEMBL_DATA);
+//        indexOntologyAnnotations(geneOntologyAnnotationFile);
+//        indexMiRBase(species, miRBaseFile);
+//        indexMiRTarBase(miRTarBaseFile);
+//        indexCancerGeneCensus(cancerGeneGensusFile);
+//        indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
         indexImprintedGenes(geneImprintFile);
+        indexChimerDb(chimerDbFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

@@ -72,6 +72,7 @@ public class DownloadProperties {
     private URLProperties pharmGKB;
     private URLProperties alphaMissense;
     private URLProperties pgsCatalog;
+    private URLProperties chimerDb;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -507,6 +508,15 @@ public class DownloadProperties {
 
     public DownloadProperties setMondoObo(URLProperties mondoObo) {
         this.mondoObo = mondoObo;
+        return this;
+    }
+
+    public URLProperties getChimerDb() {
+        return chimerDb;
+    }
+
+    public DownloadProperties setChimerDb(URLProperties chimerDb) {
+        this.chimerDb = chimerDb;
         return this;
     }
 
