@@ -20,12 +20,15 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 import static org.opencb.cellbase.lib.builders.EnsemblGeneBuilder.ENSEMBL_GENE_BASENAME;
+import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_BASENAME;
+import static org.opencb.cellbase.lib.builders.RefSeqGeneBuilder.REFSEQ_GENE_OUTPUT_FILENAME;
 
 public class GeneBuilder extends AbstractBuilder {
 
@@ -45,9 +48,9 @@ public class GeneBuilder extends AbstractBuilder {
                 configuration, ensemblGeneSerializer);
 
         // Create RefSeq gene builder
-//        CellBaseJsonFileSerializer refSeqGeneSerializer = new CellBaseJsonFileSerializer(buildPath, REFSEQ_GENE_BASENAME);
-//        this.refSeqGeneBuilder = new RefSeqGeneBuilder(downloadPath.resolve(REFSEQ_DATA), speciesConfiguration, configuration,
-//                refSeqGeneSerializer);
+        CellBaseJsonFileSerializer refSeqGeneSerializer = new CellBaseJsonFileSerializer(buildPath, REFSEQ_GENE_BASENAME);
+        this.refSeqGeneBuilder = new RefSeqGeneBuilder(downloadPath.resolve(REFSEQ_DATA), speciesConfiguration, configuration,
+                refSeqGeneSerializer);
     }
 
     public void check() throws Exception {
@@ -55,7 +58,7 @@ public class GeneBuilder extends AbstractBuilder {
         ensemblGeneBuilder.check();
 
         // Check RefSeq requirements
-//        refSeqGeneBuilder.check();
+        refSeqGeneBuilder.check();
     }
 
     @Override
@@ -67,11 +70,11 @@ public class GeneBuilder extends AbstractBuilder {
         ensemblGeneBuilder.parse();
 
         // Build RefSeq genes
-//        if (!Files.exists(downloadPath.resolve(REFSEQ_DATA).resolve(REFSEQ_GENE_OUTPUT_FILENAME))) {
-//            refSeqGeneBuilder.parse();
-//        } else {
-//            logger.info(DATA_ALREADY_BUILT, getDataName(REFSEQ_DATA) + " gene");
-//        }
+        if (!Files.exists(downloadPath.resolve(REFSEQ_DATA).resolve(REFSEQ_GENE_OUTPUT_FILENAME))) {
+            refSeqGeneBuilder.parse();
+        } else {
+            logger.info(DATA_ALREADY_BUILT, getDataName(REFSEQ_DATA) + " gene");
+        }
 
 
         logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(GENE_DATA));
@@ -87,30 +90,30 @@ public class GeneBuilder extends AbstractBuilder {
 
         String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
 
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
-//            dataList.add(MANE_SELECT_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
-//            dataList.add(LRG_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-//            dataList.add(CANCER_HOTSPOT_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
-//            dataList.add(DGIDB_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
-//            dataList.add(HPO_DISEASE_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-//            dataList.add(CANCER_GENE_CENSUS_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
-//            dataList.add(MIRTARBASE_DATA);
-//        }
-//        if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
-//            dataList.add(MIRBASE_DATA);
-//        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
+            dataList.add(MANE_SELECT_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
+            dataList.add(LRG_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+            dataList.add(CANCER_HOTSPOT_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
+            dataList.add(DGIDB_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
+            dataList.add(HPO_DISEASE_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+            dataList.add(CANCER_GENE_CENSUS_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
+            dataList.add(MIRTARBASE_DATA);
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
+            dataList.add(MIRBASE_DATA);
+        }
         if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
             dataList.add(GENEIMPRINT_DATA);
         }

@@ -27,8 +27,8 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
-import org.opencb.biodata.models.clinical.genefusion.GeneFusion;
 import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.genefusion.GeneFusion;
 import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
@@ -783,6 +783,7 @@ public class GeneBuilderIndexer {
 
         GeneBuilderIndexer.ChemirDbCallback callback = new GeneBuilderIndexer.ChemirDbCallback(rocksdb, rocksDbManager);
         ChimerDbParser.parse(chimerDbFile, callback);
+        logger.info("Processed {} gene fusions from ChimerDB", callback.getCounter());
 
         logger.info(PARSING_DONE_LOG_MESSAGE, chimerDbFile);
     }
@@ -792,11 +793,17 @@ public class GeneBuilderIndexer {
 
         private RocksDB rocksDB;
         private RocksDbManager rocksDbManager;
+
+        private int counter;
+
         private Logger logger;
 
         public ChemirDbCallback(RocksDB rocksDB, RocksDbManager rocksDbManager) {
             this.rocksDB = rocksDB;
             this.rocksDbManager = rocksDbManager;
+
+            this.counter = 0;
+
             this.logger = LoggerFactory.getLogger(this.getClass());
         }
 
@@ -806,7 +813,7 @@ public class GeneBuilderIndexer {
                 String key;
                 List<GeneFusion> updatedGeneFusion;
 
-                logger.info("Processing gene fusion: {}", geneFusion);
+                logger.debug("Processing gene fusion: {}", geneFusion);
 
                 // Head gene fusion
                 if (geneFusion != null && geneFusion.getHeadGene() != null
@@ -817,7 +824,7 @@ public class GeneBuilderIndexer {
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new ArrayList<>();
                     }
-                    logger.info("Adding gene fusion (id = {}, pair = {}) to key '{}' (current size = {})", geneFusion.getId(),
+                    logger.debug("Adding gene fusion (id = {}, pair = {}) to key '{}' (current size = {})", geneFusion.getId(),
                             geneFusion.getPair(), key, updatedGeneFusion.size());
                     updatedGeneFusion.add(geneFusion);
                     rocksDbManager.update(rocksdb, key, updatedGeneFusion);
@@ -835,12 +842,23 @@ public class GeneBuilderIndexer {
                     updatedGeneFusion.add(geneFusion);
                     rocksDbManager.update(rocksdb, key, updatedGeneFusion);
                 }
+
+
+                // Update counter
+                counter++;
+                if (counter % 1000 == 0) {
+                    logger.info("Processed {} gene fusions so far", counter);
+                }
             } catch (RocksDBException | IOException e) {
                 logger.warn("Something wrong happened when processing {} gene fusion {}: {}", CHIMERDB_DATA, geneFusion.getId(),
                         StringUtils.join(e.getStackTrace(), "\t"));
                 return false;
             }
             return true;
+        }
+
+        public int getCounter() {
+            return counter;
         }
     }
 

@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
 
@@ -70,20 +71,20 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
-//        indexHgncIdMapping(hgncFile);
-//        indexManeMapping(maneFile, ENSEMBL_DATA);
-//        indexLrgMapping(lrgFile, ENSEMBL_DATA);
-//        indexProteinSequences(proteinFastaFile);
-//        indexCdnaSequences(cDnaFastaFile);
-//        indexExpression(species, geneExpressionFile);
-//        indexDrugs(geneDrugFile);
-//        indexDiseases(hpoFile);
-//        indexConstraints(gnomadFile, ENSEMBL_DATA);
-//        indexOntologyAnnotations(geneOntologyAnnotationFile);
-//        indexMiRBase(species, miRBaseFile);
-//        indexMiRTarBase(miRTarBaseFile);
-//        indexCancerGeneCensus(cancerGeneGensusFile);
-//        indexCancerHotspot(cancerHostpotFile);
+        indexHgncIdMapping(hgncFile);
+        indexManeMapping(maneFile, ENSEMBL_DATA);
+        indexLrgMapping(lrgFile, ENSEMBL_DATA);
+        indexProteinSequences(proteinFastaFile);
+        indexCdnaSequences(cDnaFastaFile);
+        indexExpression(species, geneExpressionFile);
+        indexDrugs(geneDrugFile);
+        indexDiseases(hpoFile);
+        indexConstraints(gnomadFile, ENSEMBL_DATA);
+        indexOntologyAnnotations(geneOntologyAnnotationFile);
+        indexMiRBase(species, miRBaseFile);
+        indexMiRTarBase(miRTarBaseFile);
+        indexCancerGeneCensus(cancerGeneGensusFile);
+        indexCancerHotspot(cancerHostpotFile);
         indexCanonical(canonicalFile);
         indexImprintedGenes(geneImprintFile);
         indexChimerDb(chimerDbFile);
