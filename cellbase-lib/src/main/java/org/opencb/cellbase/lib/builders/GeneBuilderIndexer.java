@@ -27,11 +27,11 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
-import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.core.genefusion.GeneFusion;
-import org.opencb.biodata.models.variant.avro.Constraint;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
+import org.opencb.biodata.models.core.CancerHotspot;
+import org.opencb.biodata.models.core.CancerHotspotVariant;
+import org.opencb.biodata.models.core.GeneCancerAssociation;
+import org.opencb.biodata.models.core.MirnaTarget;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -705,8 +705,8 @@ public class GeneBuilderIndexer {
             logger.info("Loading imprinted genes from '{}'", imprintedGeneFile);
             InputStream inputStream = Files.newInputStream(imprintedGeneFile);
             try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                //               0    1       2        3      4
                 // Skip header: #Gene Aliases Location Status ExpressedAllele
-                //                 0    1         2        3       4
                 String line = br.readLine();
                 logger.info("Imprinted gene header line: {}", line);
                 while ((line = br.readLine()) != null) {
@@ -717,11 +717,7 @@ public class GeneBuilderIndexer {
                     String status = parts[3];
                     String expressedAllele = parts[4];
 
-                    ImprintedGene imprintedGene = new ImprintedGene()
-                            .setGeneName(gene)
-                            .setSource(status)
-                            .setExpressedAllele(expressedAllele)
-                            .setSource(GENEIMPRINT_DATA);
+                    ImprintedGene imprintedGene = new ImprintedGene(gene, status, expressedAllele, GENEIMPRINT_DATA, new HashMap<>());
 
                     // Add aliases as attributes
                     List<String> aliasesList = null;
@@ -729,7 +725,7 @@ public class GeneBuilderIndexer {
                         String[] aliasesSplit = aliases.split(",");
                         aliasesList = Arrays.stream(aliasesSplit).map(String::trim).collect(Collectors.toList());
                         if (CollectionUtils.isNotEmpty(aliasesList)) {
-                            imprintedGene.getAttributes().put("aliases", aliasesList);
+                            imprintedGene.getAttributes().put("aliases", StringUtils.join(aliasesList, ","));
                         }
                     }
 
