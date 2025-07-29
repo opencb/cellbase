@@ -99,6 +99,9 @@ public class VariantAnnotationCalculator {
 
     private HgvsCalculator hgvsCalculator;
 
+    private static final String IMPRINTED_GENE_INCLUDE = "imprintedGene";
+    private static final String GENE_FUSION_INCLUDE = "geneFusion";
+
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
@@ -433,6 +436,26 @@ public class VariantAnnotationCalculator {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // Imprinted genes
+        if (annotatorSet.contains(IMPRINTED_GENE_INCLUDE)) {
+            variantAnnotation.setImprintedGenes(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getImprinted() != null) {
+                    variantAnnotation.getImprintedGenes().addAll(gene.getAnnotation().getImprinted());
+                }
+            }
+        }
+
+        // Gene fusion for non-SNV variants
+        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != VariantType.SNV) {
+            variantAnnotation.setGeneFusions(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation() != null && gene.getAnnotation().getFusions() != null) {
+                    variantAnnotation.getGeneFusions().addAll(gene.getAnnotation().getFusions());
                 }
             }
         }
@@ -1215,8 +1238,8 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets", "pharmacogenomics",
-                    "cancerGeneAssociation", "cancerHotspots", "populationFrequencies", "repeats", "cytoband", "hgvs", "xrefs",
-                    EtlCommons.PGS_DATA));
+                    "cancerGeneAssociation", "cancerHotspots", IMPRINTED_GENE_INCLUDE, GENE_FUSION_INCLUDE, "populationFrequencies",
+                    "repeats", "cytoband", "hgvs", "xrefs", EtlCommons.PGS_DATA));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1252,6 +1275,12 @@ public class VariantAnnotationCalculator {
         }
         if (annotatorSet.contains("cancerHotspots")) {
             includeGeneFields.add("annotation.cancerHotspots");
+        }
+        if (annotatorSet.contains(IMPRINTED_GENE_INCLUDE)) {
+            includeGeneFields.add("annotation.imprinted");
+        }
+        if (annotatorSet.contains(GENE_FUSION_INCLUDE)) {
+            includeGeneFields.add("annotation.fusions");
         }
         return includeGeneFields;
     }
