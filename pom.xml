@@ -649,6 +649,37 @@
         </profile>
 
         <profile>
+            <id>default-config-test-local</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <CELLBASE.VERSION>v${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</CELLBASE.VERSION>
+                <CELLBASE.WAR.NAME>cellbase-${project.version}</CELLBASE.WAR.NAME>
+                <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
+                <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
+                <CELLBASE.DB.USER></CELLBASE.DB.USER>
+                <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
+                <CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE></CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
+                <CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>SCRAM-SHA-256</CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>
+                <CELLBASE.DB.MONGODB.READPREFERENCE>secondaryPreferred</CELLBASE.DB.MONGODB.READPREFERENCE>
+                <CELLBASE.SERVER.REST.PORT>9090</CELLBASE.SERVER.REST.PORT>
+                <CELLBASE.MONITOR.AGENT></CELLBASE.MONITOR.AGENT>
+
+                <!--
+                Configuration for JUnit tets (using the file configuration.test.yaml)
+                -->
+                <JUNIT.CELLBASE.DB.MONGODB.HOST>localhost:27017</JUNIT.CELLBASE.DB.MONGODB.HOST>
+                <JUNIT.CELLBASE.DB.USER></JUNIT.CELLBASE.DB.USER>
+                <JUNIT.CELLBASE.DB.PASSWORD></JUNIT.CELLBASE.DB.PASSWORD>
+                <JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE></JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
+                <JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>SCRAM-SHA-256</JUNIT.CELLBASE.DB.MONGODB.AUTHENTICATION_MECHANISM>
+                <JUNIT.CELLBASE.DB.MONGODB.READPREFERENCE>secondaryPreferred</JUNIT.CELLBASE.DB.MONGODB.READPREFERENCE>
+                <JUNIT.CELLBASE.SERVER.REST.PORT>9090</JUNIT.CELLBASE.SERVER.REST.PORT>
+            </properties>
+        </profile>
+
+        <profile>
             <id>deploy-maven</id>
             <distributionManagement>
                 <repository>
