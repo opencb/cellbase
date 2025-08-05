@@ -12,6 +12,7 @@
 
     <artifactId>cellbase-server</artifactId>
     <packaging>war</packaging>
+    <name>OpenCB CellBase Server</name>
 
     <dependencies>
         <dependency>
