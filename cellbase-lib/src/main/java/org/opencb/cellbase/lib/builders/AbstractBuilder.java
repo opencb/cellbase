@@ -93,7 +93,7 @@ public abstract class AbstractBuilder {
     }
 
     protected File checkFile(DownloadProperties.URLProperties props, String fileId, Path targetPath, String name) throws CellBaseException {
-        logger.info("Checking file {} (file ID {} in config.) ...", name, fileId);
+        logger.info("Checking file {} (file ID {} in config) ...", name, fileId);
         String filename = Paths.get(props.getFiles().get(fileId)).getFileName().toString();
         if (filename.contains(MANUAL_PREFIX)) {
             filename = filename.replace(MANUAL_PREFIX, "");
@@ -126,7 +126,7 @@ public abstract class AbstractBuilder {
     }
 
     protected File checkFile(String data, DownloadProperties.URLProperties props, String fileId, Path targetPath) throws CellBaseException {
-        logger.info("Checking file {} (file ID {} in config.) ...", getDataName(data), fileId);
+        logger.info("Checking file {} (file ID {} in config) ...", getDataName(data), fileId);
         if (!props.getFiles().containsKey(fileId)) {
             throw new CellBaseException("File ID " + fileId + " does not exist in the configuration file in the section '" + data + "'");
         }

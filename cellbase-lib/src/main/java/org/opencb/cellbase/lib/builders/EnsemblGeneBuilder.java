@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.GeneBuilder.*;
 
 public class EnsemblGeneBuilder extends AbstractBuilder {
 
@@ -52,30 +53,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
     private final Map<String, Integer> transcriptDict;
     private final Map<String, Exon> exonDict;
 
-    private Path gtfFile = null;
-    private Path proteinFastaFile = null;
-    private Path cDnaFastaFile = null;
-    private Path geneDescriptionFile = null;
-    private Path xrefsFile = null;
-    private Path hgncFile = null;
-    private Path maneFile = null;
-    private Path lrgFile = null;
-    private Path uniprotIdMappingFile = null;
-    private Path tfbsFile = null;
-    private Path tabixFile = null;
-    private Path geneExpressionFile = null;
-    private Path geneDrugFile = null;
-    private Path hpoFile = null;
-    private Path genomeSequenceFilePath = null;
-    private Path gnomadFile = null;
-    private Path geneOntologyAnnotationFile = null;
-    private Path miRBaseFile = null;
-    private Path miRTarBaseFile = null;
-    private Path cancerGeneCensusFile = null;
-    private Path cancerHostpotFile = null;
-    private Path ensemblCanonicalFile = null;
-    private Path geneImprintFile = null;
-    private Path chimerDbFile = null;
+    private Map<String, Path> filesToIndex = new HashMap<>();
 
     // source for genes is either ensembl or refseq
     private final String SOURCE = ParamConstants.QueryParams.ENSEMBL.key();
@@ -132,79 +110,92 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
 
         // Check Ensembl files
         DownloadProperties.URLProperties props = configuration.getDownload().getEnsembl().getUrl();
-        gtfFile = checkFile(props, ENSEMBL_GTF_FILE_ID, downloadPath, "Ensembl GTF").toPath();
-        proteinFastaFile = checkFile(props, ENSEMBL_PEP_FA_FILE_ID, downloadPath, "Ensembl Protein Fasta").toPath();
-        cDnaFastaFile = checkFile(props, ENSEMBL_CDNA_FA_FILE_ID, downloadPath, "Ensembl CDNA Fasta").toPath();
+        filesToIndex.put(GTF_FILE, checkFile(props, ENSEMBL_GTF_FILE_ID, downloadPath, "Ensembl GTF").toPath());
+        filesToIndex.put(PROTEIN_FASTA_FILE, checkFile(props, ENSEMBL_PEP_FA_FILE_ID, downloadPath, "Ensembl Protein Fasta").toPath());
+        filesToIndex.put(CDNA_FASTA_FILE, checkFile(props, ENSEMBL_CDNA_FA_FILE_ID, downloadPath, "Ensembl CDNA Fasta").toPath());
 
         // Commons
-        geneDescriptionFile = checkFile(props, ENSEMBL_DESCRIPTION_FILE_ID, downloadPath.getParent(), "Ensembl Description").toPath();
-        xrefsFile = checkFile(props, ENSEMBL_XREFS_FILE_ID, downloadPath.getParent(), "Ensembl Xrefs").toPath();
-        ensemblCanonicalFile = checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical").toPath();
+        filesToIndex.put(GENE_DESCRIPTION_FILE,
+                checkFile(props, ENSEMBL_DESCRIPTION_FILE_ID, downloadPath.getParent(), "Ensembl Description").toPath());
+        filesToIndex.put(XREFS_FILE, checkFile(props, ENSEMBL_XREFS_FILE_ID, downloadPath.getParent(), "Ensembl Xrefs").toPath());
+        filesToIndex.put(ENSEMBL_CANONICAL_FILE, checkFile(props, ENSEMBL_CANONICAL_FILE_ID, downloadPath.getParent(), "Ensembl Canonical")
+                .toPath());
 
         // Check common files
         String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
-        if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
-            maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MANE_SELECT_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
-            lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(LRG_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getHgnc(), prefixId)) {
-            hgncFile = checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HGNC_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-            cancerHostpotFile = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_HOTSPOT_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
-            geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(DGIDB_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneUniprotXref(), prefixId)) {
-            uniprotIdMappingFile = checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getGeneExpressionAtlas(), prefixId)) {
-            geneExpressionFile = checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
-            hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HPO_DISEASE_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getGnomadConstraints(), prefixId)) {
-            gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getGoAnnotation(), prefixId)) {
-            geneOntologyAnnotationFile = checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GO_ANNOTATION_DATA), speciesConfiguration.getScientificName());
-        }
-        if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-            cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_GENE_CENSUS_DATA), speciesConfiguration.getScientificName());
+        if (1 == 1) {
+            if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
+                filesToIndex.put(MANE_FILE, checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MANE_SELECT_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
+                filesToIndex.put(LRG_FILE, checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(LRG_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getHgnc(), prefixId)) {
+                filesToIndex.put(HGNC_FILE, checkFiles(HGNC_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HGNC_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+                filesToIndex.put(CANCER_HOTSPOT_FILE, checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_HOTSPOT_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
+                filesToIndex.put(GENE_DRUG_FILE, checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(DGIDB_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getGeneUniprotXref(), prefixId)) {
+                filesToIndex.put(UNIPROT_ID_MAPPING_FILE, checkFiles(UNIPROT_XREF_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getGeneExpressionAtlas(), prefixId)) {
+                filesToIndex.put(GENE_EXPRESSION_FILE, checkFiles(GENE_EXPRESSION_ATLAS_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(UNIPROT_XREF_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
+                filesToIndex.put(HPO_FILE, checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(HPO_DISEASE_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getGnomadConstraints(), prefixId)) {
+                filesToIndex.put(GNOMAD_FILE, checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA),
+                        speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getGoAnnotation(), prefixId)) {
+                filesToIndex.put(GENE_ONTOLOGY_ANNOTATION_FILE, checkFiles(GO_ANNOTATION_DATA, downloadPath.getParent(), 1).get(0)
+                        .toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GO_ANNOTATION_DATA), speciesConfiguration.getScientificName());
+            }
+            if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
+                filesToIndex.put(CANCER_GENE_CENSUS_FILE, checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CANCER_GENE_CENSUS_DATA),
+                        speciesConfiguration.getScientificName());
+            }
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
-            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(GENE_IMPRINT_FILE, checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getChimerDb(), prefixId)) {
-            chimerDbFile = checkFiles(CHIMERDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            DownloadProperties.URLProperties chimerDbProps = configuration.getDownload().getChimerDb();
+            filesToIndex.put(CHIMER_KB_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERKB_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
+            filesToIndex.put(CHIMER_PUB_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERPUB_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
+            filesToIndex.put(CHIMER_SEQ_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERSEQ_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CHIMERDB_DATA), speciesConfiguration.getScientificName());
         }
@@ -214,34 +205,36 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
         List<File> files = checkFiles(ensemblGeneLabel, MOTIF_FEATURES_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
                         .resolve(MOTIF_FEATURES_DATA), 2);
         if (files.get(0).getName().endsWith("tbi")) {
-            tabixFile = files.get(0).toPath();
-            tfbsFile = files.get(1).toPath();
+            filesToIndex.put(TABIX_FILE, files.get(0).toPath());
+            filesToIndex.put(TFBS_FILE, files.get(1).toPath());
         } else {
-            tabixFile = files.get(1).toPath();
-            tfbsFile = files.get(0).toPath();
+            filesToIndex.put(TABIX_FILE, files.get(1).toPath());
+            filesToIndex.put(TFBS_FILE, files.get(0).toPath());
         }
 
         // mirbase
-        if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
-            miRBaseFile = checkFiles(MIRBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
-                    .resolve(MIRBASE_DATA), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
-        }
+        if (1 == 1) {
+            if (isHSapiens || isDataSupported(configuration.getDownload().getMirbase(), prefixId)) {
+                filesToIndex.put(MIRBASE_FILE, checkFiles(MIRBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                        .resolve(MIRBASE_DATA), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
+            }
 
-        // mirtarbase
-        if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
-            miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
-                    .resolve(MIRTARBASE_DATA), 1).get(0).toPath();
-        } else {
-            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
+            // mirtarbase
+            if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
+                filesToIndex.put(MIRTARBASE_FILE, checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                        .resolve(MIRTARBASE_DATA), 1).get(0).toPath());
+            } else {
+                logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(MIRTARBASE_DATA), speciesConfiguration.getScientificName());
+            }
         }
 
         // Check genome FASTA file
         Path genomeDownloadPath = downloadPath.getParent().getParent().resolve(GENOME_DATA);
         String genomeGzFilename = Paths.get(((DataSource) dataSourceReader.readValue(genomeDownloadPath
                 .resolve(getDataVersionFilename(GENOME_DATA)).toFile())).getUrls().get(0)).getFileName().toString();
-        genomeSequenceFilePath = getFastaPath(genomeDownloadPath.resolve(genomeGzFilename));
+        filesToIndex.put(GENOME_SEQUENCE_FILE, getFastaPath(genomeDownloadPath.resolve(genomeGzFilename)));
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, ensemblGeneLabel);
         checked = true;
@@ -259,27 +252,29 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
         EnsemblGeneBuilderIndexer indexer = new EnsemblGeneBuilderIndexer(serializer.getOutdir());
         try {
             // process files and put values in rocksdb
-            indexer.index(geneDescriptionFile, xrefsFile, hgncFile, maneFile, lrgFile, uniprotIdMappingFile, proteinFastaFile,
-                    cDnaFastaFile, speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, gnomadFile,
-                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile, cancerGeneCensusFile, cancerHostpotFile, ensemblCanonicalFile,
-                    geneImprintFile, chimerDbFile);
+            indexer.index(filesToIndex, speciesConfiguration.getScientificName());
+
+            Path tfbsPath = filesToIndex.get(TFBS_FILE);
+            Path tabixPath = filesToIndex.get(TABIX_FILE);
+            Path genomeSequencePath = filesToIndex.get(GENOME_SEQUENCE_FILE);
+            Path gtfPath = filesToIndex.get(GTF_FILE);
 
             TabixReader tabixReader = null;
-            if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
+            if (!Files.exists(tfbsPath) || !Files.exists(tabixPath)) {
                 logger.error("Tfbs or tabix file not found. Download them and try again.");
             } else {
-                tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
+                tabixReader = new TabixReader(tfbsPath.toAbsolutePath().toString(), tabixPath.toAbsolutePath().toString());
             }
 
             // Preparing the fasta file for fast accessing
-            FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
+            FastaIndex fastaIndex = new FastaIndex(genomeSequencePath);
 
             // Empty transcript and exon dictionaries
             transcriptDict.clear();
             exonDict.clear();
 
-            logger.info(PARSING_LOG_MESSAGE, gtfFile);
-            GtfReader gtfReader = new GtfReader(gtfFile);
+            logger.info(PARSING_LOG_MESSAGE, gtfPath);
+            GtfReader gtfReader = new GtfReader(gtfPath);
 
             // Gene->Transcript->Feature->GTF line
             Map<String, Map<String, Map<String, Object>>> gtfMap = null;
@@ -461,7 +456,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
             fastaIndex.close();
             indexer.close();
 
-            logger.info(PARSING_DONE_LOG_MESSAGE, gtfFile);
+            logger.info(PARSING_DONE_LOG_MESSAGE, gtfPath);
         } catch (Exception e) {
             indexer.close();
             throw e;
@@ -992,7 +987,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
     private void getGtfFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".gtf") || fileName.endsWith(".gtf.gz")) {
-                gtfFile = geneDirectoryPath.resolve(fileName);
+                filesToIndex.put(GTF_FILE, geneDirectoryPath.resolve(fileName));
                 break;
             }
         }
@@ -1001,7 +996,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
     private void getProteinFastaFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".pep.all.fa") || fileName.endsWith(".pep.all.fa.gz")) {
-                proteinFastaFile = geneDirectoryPath.resolve(fileName);
+                filesToIndex.put(PROTEIN_FASTA_FILE, geneDirectoryPath.resolve(fileName));
                 break;
             }
         }
@@ -1010,7 +1005,7 @@ public class EnsemblGeneBuilder extends AbstractBuilder {
     private void getCDnaFastaFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
             if (fileName.endsWith(".cdna.all.fa") || fileName.endsWith(".cdna.all.fa.gz")) {
-                cDnaFastaFile = geneDirectoryPath.resolve(fileName);
+                filesToIndex.put(CDNA_FASTA_FILE, geneDirectoryPath.resolve(fileName));
                 break;
             }
         }

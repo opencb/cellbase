@@ -48,6 +48,7 @@ import java.util.Map;
 import static org.opencb.cellbase.lib.EtlCommons.ENSEMBL_DATA;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
 import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.GeneBuilder.*;
 
 public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
 
@@ -64,30 +65,27 @@ public class EnsemblGeneBuilderIndexer extends GeneBuilderIndexer {
         super(geneDirectoryPath);
     }
 
-    public void index(Path geneDescriptionFile, Path xrefsFile, Path hgncFile, Path maneFile, Path lrgFile, Path uniprotIdMappingFile,
-                      Path proteinFastaFile, Path cDnaFastaFile, String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile,
-                      Path gnomadFile, Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path cancerGeneGensusFile,
-                      Path cancerHostpotFile, Path canonicalFile, Path geneImprintFile, Path chimerDbFile)
+    public void index(Map<String, Path> filesToIndex, String species)
             throws IOException, RocksDBException, FileFormatException, CellBaseException {
-        indexDescriptions(geneDescriptionFile);
-        indexXrefs(xrefsFile, uniprotIdMappingFile);
-        indexHgncIdMapping(hgncFile);
-        indexManeMapping(maneFile, ENSEMBL_DATA);
-        indexLrgMapping(lrgFile, ENSEMBL_DATA);
-        indexProteinSequences(proteinFastaFile);
-        indexCdnaSequences(cDnaFastaFile);
-        indexExpression(species, geneExpressionFile);
-        indexDrugs(geneDrugFile);
-        indexDiseases(hpoFile);
-        indexConstraints(gnomadFile, ENSEMBL_DATA);
-        indexOntologyAnnotations(geneOntologyAnnotationFile);
-        indexMiRBase(species, miRBaseFile);
-        indexMiRTarBase(miRTarBaseFile);
-        indexCancerGeneCensus(cancerGeneGensusFile);
-        indexCancerHotspot(cancerHostpotFile);
-        indexCanonical(canonicalFile);
-        indexImprintedGenes(geneImprintFile);
-        indexChimerDb(chimerDbFile);
+        indexDescriptions(filesToIndex.get(GENE_DESCRIPTION_FILE));
+        indexXrefs(filesToIndex.get(XREFS_FILE), filesToIndex.get(UNIPROT_ID_MAPPING_FILE));
+        indexHgncIdMapping(filesToIndex.get(HGNC_FILE));
+        indexManeMapping(filesToIndex.get(MANE_FILE), ENSEMBL_DATA);
+        indexLrgMapping(filesToIndex.get(LRG_FILE), ENSEMBL_DATA);
+        indexProteinSequences(filesToIndex.get(PROTEIN_FASTA_FILE));
+        indexCdnaSequences(filesToIndex.get(CDNA_FASTA_FILE));
+        indexExpression(species, filesToIndex.get(GENE_EXPRESSION_FILE));
+        indexDrugs(filesToIndex.get(GENE_DRUG_FILE));
+        indexDiseases(filesToIndex.get(HPO_FILE));
+        indexConstraints(filesToIndex.get(GNOMAD_FILE), ENSEMBL_DATA);
+        indexOntologyAnnotations(filesToIndex.get(GENE_ONTOLOGY_ANNOTATION_FILE));
+        indexMiRBase(species, filesToIndex.get(MIRBASE_FILE));
+        indexMiRTarBase(filesToIndex.get(MIRTARBASE_FILE));
+        indexCancerGeneCensus(filesToIndex.get(CANCER_GENE_CENSUS_FILE));
+        indexCancerHotspot(filesToIndex.get(CANCER_HOTSPOT_FILE));
+        indexCanonical(filesToIndex.get(ENSEMBL_CANONICAL_FILE));
+        indexImprintedGenes(filesToIndex.get(GENE_IMPRINT_FILE));
+        indexChimerDb(filesToIndex.get(CHIMER_KB_FILE), filesToIndex.get(CHIMER_PUB_FILE), filesToIndex.get(CHIMER_SEQ_FILE));
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {

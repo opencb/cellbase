@@ -37,6 +37,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.GeneBuilder.*;
 
 public class RefSeqGeneBuilder extends AbstractBuilder {
 
@@ -45,20 +46,8 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
     private Map<String, Transcript> transcriptDict;
     private Map<String, Exon> exonDict;
-    private Path gtfFile = null;
-    private Path fastaFile = null;
-    private Path proteinFastaFile = null;
-    private Path cdnaFastaFile = null;
-    private Path maneFile = null;
-    private Path lrgFile = null;
-    private Path hpoFile = null;
-    private Path gnomadFile = null;
-    private Path geneDrugFile = null;
-    private Path miRTarBaseFile = null;
-    private Path cancerGeneCensusFile = null;
-    private Path cancerHotspot = null;
-    private Path geneImprintFile = null;
-    private Path chemirdbFile = null;
+
+    private Map<String, Path> filesToIndex = new HashMap<>();
 
     private SpeciesConfiguration speciesConfiguration;
     private static final Map<String, String> REFSEQ_CHROMOSOMES = new HashMap<>();
@@ -117,62 +106,74 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         // Check RefSeq files
         String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
         DownloadProperties.URLProperties props = configuration.getDownload().getRefSeq();
-        gtfFile = checkFile(props, prefixId + REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath();
-        proteinFastaFile = checkFile(props, prefixId + REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA").toPath();
-        cdnaFastaFile = checkFile(props, prefixId + REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath();
+        filesToIndex.put(GTF_FILE, checkFile(props, prefixId + REFSEQ_GENOMIC_GTF_FILE_ID, downloadPath, "RefSeq GTF").toPath());
+        filesToIndex.put(PROTEIN_FASTA_FILE, checkFile(props, prefixId + REFSEQ_PROTEIN_FAA_FILE_ID, downloadPath, "RefSeq Protein FAA")
+                .toPath());
+        filesToIndex.put(CDNA_FASTA_FILE, checkFile(props, prefixId + REFSEQ_RNA_FNA_FILE_ID, downloadPath, "RefSeq RNA FNA").toPath());
 
         // Check genome FASTA file
         String genomeGzFilename = Paths.get(props.getFiles().get(prefixId + REFSEQ_GENOMIC_FNA_FILE_ID)).getFileName().toString();
         Path fastaGzFile = downloadPath.resolve(genomeGzFilename);
-        fastaFile = EtlCommons.getFastaPath(fastaGzFile);
+        filesToIndex.put(FASTA_FILE, EtlCommons.getFastaPath(fastaGzFile));
 
         // Check common files
         if (isHSapiens || isDataSupported(configuration.getDownload().getManeSelect(), prefixId)) {
-            maneFile = checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(MANE_FILE, checkFiles(MANE_SELECT_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, MANE_SELECT_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getLrg(), prefixId)) {
-            lrgFile = checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(LRG_FILE, checkFiles(LRG_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, LRG_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-            cancerHotspot = checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(CANCER_HOTSPOT_FILE, checkFiles(CANCER_HOTSPOT_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_HOTSPOT_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getDgidb(), prefixId)) {
-            geneDrugFile = checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(GENE_DRUG_FILE, checkFiles(DGIDB_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, DGIDB_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getHpo(), prefixId)) {
-            hpoFile = checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(HPO_FILE, checkFiles(HPO_DISEASE_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, HPO_DISEASE_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getGnomadConstraints(), prefixId)) {
-            gnomadFile = checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(GNOMAD_FILE, checkFiles(GNOMAD_CONSTRAINTS_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GNOMAD_CONSTRAINTS_DATA), speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getCancerHotspot(), prefixId)) {
-            cancerGeneCensusFile = checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(CANCER_GENE_CENSUS_FILE, checkFiles(CANCER_GENE_CENSUS_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, CANCER_GENE_CENSUS_DATA, speciesConfiguration.getScientificName());
         }
         if (isHSapiens || isDataSupported(configuration.getDownload().getGeneImprint(), prefixId)) {
-            geneImprintFile = checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath();
+            filesToIndex.put(GENE_IMPRINT_FILE, checkFiles(GENEIMPRINT_DATA, downloadPath.getParent(), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(GENEIMPRINT_DATA), speciesConfiguration.getScientificName());
+        }
+        if (isHSapiens || isDataSupported(configuration.getDownload().getChimerDb(), prefixId)) {
+            DownloadProperties.URLProperties chimerDbProps = configuration.getDownload().getChimerDb();
+            filesToIndex.put(CHIMER_KB_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERKB_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
+            filesToIndex.put(CHIMER_PUB_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERPUB_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
+            filesToIndex.put(CHIMER_SEQ_FILE, checkFile(CHIMERDB_DATA, chimerDbProps, CHIMERSEQ_XLS_FILE_ID, downloadPath.getParent())
+                    .toPath());
+        } else {
+            logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, getDataName(CHIMERDB_DATA), speciesConfiguration.getScientificName());
         }
 
         // Check regulation files
         // mirtarbase
         if (isHSapiens || isDataSupported(configuration.getDownload().getMiRTarBase(), prefixId)) {
-            miRTarBaseFile = checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
-                    .resolve(MIRTARBASE_DATA), 1).get(0).toPath();
+            filesToIndex.put(MIRTARBASE_FILE, checkFiles(MIRTARBASE_DATA, downloadPath.getParent().getParent().resolve(REGULATION_DATA)
+                    .resolve(MIRTARBASE_DATA), 1).get(0).toPath());
         } else {
             logger.info(SKIPPING_INDEX_DATA_LOG_MESSAGE, MIRTARBASE_DATA, speciesConfiguration.getScientificName());
         }
@@ -186,19 +187,19 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
 
         // Preparing the fasta file for fast accessing
         FastaIndex fastaIndex = null;
-        if (fastaFile != null) {
-            fastaIndex = new FastaIndex(fastaFile);
+        if (filesToIndex.get(FASTA_FILE) != null) {
+            fastaIndex = new FastaIndex(filesToIndex.get(FASTA_FILE));
         }
 
         // Index protein sequences for later
         logger.info("Indexing gene annotation for {} ...", getDataName(REFSEQ_DATA));
-        RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFile.getParent());
-        indexer.index(maneFile, lrgFile, proteinFastaFile, cdnaFastaFile, geneDrugFile, hpoFile, gnomadFile, miRTarBaseFile,
-                cancerGeneCensusFile, cancerHotspot, geneImprintFile, chemirdbFile);
+        Path gtfFilePath = filesToIndex.get(GTF_FILE);
+        RefSeqGeneBuilderIndexer indexer = new RefSeqGeneBuilderIndexer(gtfFilePath.getParent());
+        indexer.index(filesToIndex);
         logger.info("Indexing done for {}", getDataName(REFSEQ_DATA));
 
-        logger.info(PARSING_LOG_MESSAGE, gtfFile);
-        try (GtfReader gtfReader = new GtfReader(gtfFile)) {
+        logger.info(PARSING_LOG_MESSAGE, gtfFilePath);
+        try (GtfReader gtfReader = new GtfReader(gtfFilePath)) {
             Gtf gtf;
             while ((gtf = gtfReader.read()) != null) {
                 String chromosome = getSequenceName(gtf.getSequenceName());
@@ -244,7 +245,7 @@ public class RefSeqGeneBuilder extends AbstractBuilder {
         }
         indexer.close();
 
-        logger.info(PARSING_DONE_LOG_MESSAGE, gtfFile);
+        logger.info(PARSING_DONE_LOG_MESSAGE, gtfFilePath);
     }
 
     // Store right before parsing the previous gene, or the very last gene.

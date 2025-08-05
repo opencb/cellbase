@@ -22,8 +22,10 @@ import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.opencb.cellbase.lib.EtlCommons.REFSEQ_DATA;
+import static org.opencb.cellbase.lib.builders.GeneBuilder.*;
 
 public class RefSeqGeneBuilderIndexer extends GeneBuilderIndexer {
 
@@ -31,20 +33,18 @@ public class RefSeqGeneBuilderIndexer extends GeneBuilderIndexer {
         super(refSeqDirectoryPath);
     }
 
-    public void index(Path maneFile, Path lrgFile, Path proteinFastaFile, Path cDnaFastaFile, Path geneDrugFile, Path hpoFilePath,
-                      Path gnomadFile, Path miRTarBaseFile, Path cancerGeneGensus, Path cancerHotspot, Path geneImprintFile,
-                      Path chimerDbFile) throws IOException, RocksDBException, FileFormatException, CellBaseException {
-        indexManeMapping(maneFile, REFSEQ_DATA);
-        indexLrgMapping(lrgFile, REFSEQ_DATA);
-        indexProteinSequences(proteinFastaFile);
-        indexCdnaSequences(cDnaFastaFile);
-        indexDrugs(geneDrugFile);
-        indexDiseases(hpoFilePath);
-        indexConstraints(gnomadFile, REFSEQ_DATA);
-        indexMiRTarBase(miRTarBaseFile);
-        indexCancerGeneCensus(cancerGeneGensus);
-        indexCancerHotspot(cancerHotspot);
-        indexImprintedGenes(geneImprintFile);
-        indexChimerDb(chimerDbFile);
+    public void index(Map<String, Path> filesToIndex) throws IOException, RocksDBException, FileFormatException, CellBaseException {
+        indexManeMapping(filesToIndex.get(MANE_FILE), REFSEQ_DATA);
+        indexLrgMapping(filesToIndex.get(LRG_FILE), REFSEQ_DATA);
+        indexProteinSequences(filesToIndex.get(PROTEIN_FASTA_FILE));
+        indexCdnaSequences(filesToIndex.get(CDNA_FASTA_FILE));
+        indexDrugs(filesToIndex.get(GENE_DRUG_FILE));
+        indexDiseases(filesToIndex.get(HPO_FILE));
+        indexConstraints(filesToIndex.get(GNOMAD_FILE), REFSEQ_DATA);
+        indexMiRTarBase(filesToIndex.get(MIRTARBASE_FILE));
+        indexCancerGeneCensus(filesToIndex.get(CANCER_GENE_CENSUS_FILE));
+        indexCancerHotspot(filesToIndex.get(CANCER_HOTSPOT_FILE));
+        indexImprintedGenes(filesToIndex.get(GENE_IMPRINT_FILE));
+        indexChimerDb(filesToIndex.get(CHIMER_KB_FILE), filesToIndex.get(CHIMER_PUB_FILE), filesToIndex.get(CHIMER_SEQ_FILE));
     }
 }

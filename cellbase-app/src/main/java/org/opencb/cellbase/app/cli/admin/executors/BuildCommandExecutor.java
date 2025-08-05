@@ -253,8 +253,10 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path geneBuildPath = buildFolder.resolve(GENE_DATA);
 
         List<Path> versionFiles = new ArrayList<>(Arrays.asList(
-                geneDownloadPath.resolve(ENSEMBL_DATA).resolve(getDataVersionFilename(ENSEMBL_DATA)),
-                geneDownloadPath.resolve(REFSEQ_DATA).resolve(getDataVersionFilename(REFSEQ_DATA))));
+                geneDownloadPath.resolve(ENSEMBL_DATA).resolve(getDataVersionFilename(ENSEMBL_DATA))));
+        if (1 == 1) {
+            versionFiles.add(geneDownloadPath.resolve(REFSEQ_DATA).resolve(getDataVersionFilename(REFSEQ_DATA)));
+        }
         List<String> dataList = GeneBuilder.getCommonDataSources(speciesConfiguration, configuration);
         for (String data : dataList) {
             Path versionFile;
