@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -161,12 +160,12 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, ImprintedGene[].class));
     }
 
-    public List<GeneFusion> getGeneFusion(RocksDB rdb, String key) throws RocksDBException, IOException {
+    public GeneFusion getGeneFusion(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             return null;
         }
-        return new ArrayList<>(Arrays.asList(mapper.readValue(dbContent, GeneFusion[].class)));
+        return mapper.readValue(dbContent, GeneFusion.class);
     }
 
     /**

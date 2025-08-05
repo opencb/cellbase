@@ -340,6 +340,8 @@ download:
     version: "4.0"
     files:
       CHIMERKB_XLS: https://www.kobic.re.kr/chimerdb/downloads?name=ChimerKB4.xlsx
+      CHIMERPUB_XLS: https://www.kobic.re.kr/chimerdb/downloads?name=ChimerPub4.xlsx
+      CHIMERSEQ_XLS: https://www.kobic.re.kr/chimerdb/downloads?name=ChimerSeq4.xlsx
 
   ## Others
   pubmed:

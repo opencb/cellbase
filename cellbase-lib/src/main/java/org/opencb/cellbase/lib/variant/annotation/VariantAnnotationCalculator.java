@@ -451,14 +451,14 @@ public class VariantAnnotationCalculator {
         }
 
         // Gene fusion for non-SNV variants
-        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != VariantType.SNV) {
-            variantAnnotation.setGeneFusions(new ArrayList<>());
-            for (Gene gene : geneList) {
-                if (gene.getAnnotation() != null && gene.getAnnotation().getFusions() != null) {
-                    variantAnnotation.getGeneFusions().addAll(gene.getAnnotation().getFusions());
-                }
-            }
-        }
+//        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != VariantType.SNV) {
+//            variantAnnotation.setGeneFusions(new ArrayList<>());
+//            for (Gene gene : geneList) {
+//                if (gene.getAnnotation() != null && gene.getAnnotation().getFusions() != null) {
+//                    variantAnnotation.getGeneFusions().addAll(gene.getAnnotation().getFusions());
+//                }
+//            }
+//        }
 
         return geneList;
     }

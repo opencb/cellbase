@@ -26,10 +26,7 @@ import org.opencb.commons.utils.DockerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
@@ -80,7 +77,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadGeneExpressionAtlas(geneDownloadPath));
         downloadFiles.add(downloadGnomadConstraints(geneDownloadPath));
         downloadFiles.add(downloadGO(geneDownloadPath));
-        downloadFiles.add(downloadChimerDb(geneDownloadPath));
+        downloadFiles.addAll(downloadChimerDb(geneDownloadPath));
 
         // Save data sources manually downloaded
         if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
@@ -382,31 +379,29 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         return downloadFile;
     }
 
-    private DownloadFile downloadChimerDb(Path geneDownloadPath) throws IOException, InterruptedException, CellBaseException {
+    private List<DownloadFile> downloadChimerDb(Path geneDownloadPath) throws IOException, InterruptedException, CellBaseException {
         // Download ChimerDB file
-        DownloadFile downloadFile = null;
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         // Check if the species is supported
-        String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
-        if (configuration.getDownload().getGoAnnotation().getFiles().containsKey(prefixId + GO_ANNOTATION_FILE_ID)) {
+        if (speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
             logger.info(DOWNLOADING_MSG, getDataName(CHIMERDB_DATA));
 
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getChimerDb(), CHIMERKB_XLS_FILE_ID, CHIMERDB_DATA,
-                    geneDownloadPath);
+            // Download files
+            List<String> urls = new ArrayList<>();
+            List<String> fileIds = Arrays.asList(CHIMERKB_XLS_FILE_ID, CHIMERPUB_XLS_FILE_ID, CHIMERSEQ_XLS_FILE_ID);
+            for (String fileId : fileIds) {
+                DownloadFile downloadFile = downloadDataSource(configuration.getDownload().getChimerDb(), fileId, geneDownloadPath);
+                downloadFiles.add(downloadFile);
+                urls.add(downloadFile.getUrl());
+            }
 
-//            String fileName = Paths.get(configuration.getDownload().getChimerDb().getFiles().get(CHIMERKB_XLS_FILE_ID)).getFileName()
-//                    .toString();
-//            for (File file : geneDownloadPath.toFile().listFiles()) {
-//                if (file.getName().endsWith(fileName)) {
-//                    // Rename the ChimerKB file
-//                    String newFileName = fileName.split("=")[1];
-//                    Files.move(file.toPath(), geneDownloadPath.resolve(newFileName));
-//                    logger.info("Renamed {} to {}", file.getName(), newFileName);
-//                    break;
-//                }
-//            }
+            // Save data source
+            saveDataSource(CHIMERDB_DATA, configuration.getDownload().getChimerDb().getVersion(), getTimeStamp(), urls,
+                    geneDownloadPath.resolve(getDataVersionFilename(CHIMERDB_DATA)));
+
             logger.info(DOWNLOADING_MSG, getDataName(CHIMERDB_DATA));
         }
-        return downloadFile;
+        return downloadFiles;
     }
 }

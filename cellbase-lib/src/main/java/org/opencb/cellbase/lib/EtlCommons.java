@@ -350,6 +350,8 @@ public final class EtlCommons {
     public static final String CHIMERDB_DATA = "chimerdb";
     // Must match the configuration file
     public static final String CHIMERKB_XLS_FILE_ID = "CHIMERKB_XLS";
+    public static final String CHIMERPUB_XLS_FILE_ID = "CHIMERPUB_XLS";
+    public static final String CHIMERSEQ_XLS_FILE_ID = "CHIMERSEQ_XLS";
 
     /**
      * @deprecated (when refactoring downloaders, builders and loaders)
