@@ -35,8 +35,8 @@ import org.opencb.biodata.models.core.chimerdb.ChimerPub;
 import org.opencb.biodata.models.core.chimerdb.ChimerSeq;
 import org.opencb.biodata.models.variant.avro.Constraint;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneImprinting;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.models.variant.avro.ImprintedGene;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -722,7 +722,7 @@ public class GeneBuilderIndexer {
                     String status = parts[3];
                     String expressedAllele = parts[4];
 
-                    ImprintedGene imprintedGene = new ImprintedGene(gene, status, expressedAllele, GENEIMPRINT_DATA, new HashMap<>());
+                    GeneImprinting geneImprinting = new GeneImprinting(gene, status, expressedAllele, GENEIMPRINT_DATA, new HashMap<>());
 
                     // Add aliases as attributes
                     List<String> aliasesList = null;
@@ -730,17 +730,17 @@ public class GeneBuilderIndexer {
                         String[] aliasesSplit = aliases.split(",");
                         aliasesList = Arrays.stream(aliasesSplit).map(String::trim).collect(Collectors.toList());
                         if (CollectionUtils.isNotEmpty(aliasesList)) {
-                            imprintedGene.getAttributes().put("aliases", StringUtils.join(aliasesList, ","));
+                            geneImprinting.getAttributes().put("aliases", StringUtils.join(aliasesList, ","));
                         }
                     }
 
                     // Add imprinted gene to the database
-                    rocksDbManager.update(rocksdb, gene + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
+                    rocksDbManager.update(rocksdb, gene + IMPRINTED_GENE_SUFFIX, Collections.singleton(geneImprinting));
 
                     // If the gene has aliases, add them to the database as well
                     if (CollectionUtils.isNotEmpty(aliasesList)) {
                         for (String alias : aliasesList) {
-                            rocksDbManager.update(rocksdb, alias + IMPRINTED_GENE_SUFFIX, Collections.singleton(imprintedGene));
+                            rocksDbManager.update(rocksdb, alias + IMPRINTED_GENE_SUFFIX, Collections.singleton(geneImprinting));
                         }
                     }
                 }
@@ -751,28 +751,28 @@ public class GeneBuilderIndexer {
         }
     }
 
-    protected List<ImprintedGene> getGeneImprinting(String id) throws RocksDBException, IOException {
+    protected List<GeneImprinting> getGeneImprinting(String id) throws RocksDBException, IOException {
         // Sanity check
         if (StringUtils.isEmpty(id)) {
             return Collections.emptyList();
         }
 
         String key = id + IMPRINTED_GENE_SUFFIX;
-        List<ImprintedGene> imprintedGeneList = rocksDbManager.getImprintedGene(rocksdb, key);
-        if (CollectionUtils.isEmpty(imprintedGeneList)) {
+        List<GeneImprinting> geneImprintingList = rocksDbManager.getGeneImprinting(rocksdb, key);
+        if (CollectionUtils.isEmpty(geneImprintingList)) {
             // No imprinted gene found for the given id
             return Collections.emptyList();
         }
 
         // Check if the gene name matches the id
-        for (ImprintedGene imprintedGene : imprintedGeneList) {
-            if (GENEIMPRINT_DATA.equalsIgnoreCase(imprintedGene.getSource()) && id.equalsIgnoreCase(imprintedGene.getGeneName())) {
+        for (GeneImprinting geneImprinting : geneImprintingList) {
+            if (GENEIMPRINT_DATA.equalsIgnoreCase(geneImprinting.getSource()) && id.equalsIgnoreCase(geneImprinting.getGeneName())) {
                 // Not an alias, attributes are not required
-                imprintedGene.setAttributes(null);
+                geneImprinting.setAttributes(null);
             }
         }
 
-        return imprintedGeneList;
+        return geneImprintingList;
     }
 
     protected void indexChimerDb(Path chimerKbPath, Path chimerPubPath, Path chimerSeqPath) throws IOException {

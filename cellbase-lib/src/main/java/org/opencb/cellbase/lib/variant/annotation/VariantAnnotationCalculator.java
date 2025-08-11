@@ -23,8 +23,8 @@ import org.opencb.biodata.models.pharma.PharmaChemical;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
-import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.models.variant.avro.GeneCancerAssociation;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.ParamConstants;
@@ -99,8 +99,8 @@ public class VariantAnnotationCalculator {
 
     private HgvsCalculator hgvsCalculator;
 
-    private static final String IMPRINTED_GENE_INCLUDE = "imprintedGene";
-    private static final String GENE_FUSION_INCLUDE = "geneFusion";
+    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
+    private static final String GENE_FUSION_INCLUDE = "geneFusions";
 
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
@@ -440,25 +440,15 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        // Imprinted genes
-        if (annotatorSet.contains(IMPRINTED_GENE_INCLUDE)) {
-            variantAnnotation.setImprintedGenes(new ArrayList<>());
-            for (Gene gene : geneList) {
-                if (gene.getAnnotation() != null && gene.getAnnotation().getImprinted() != null) {
-                    variantAnnotation.getImprintedGenes().addAll(gene.getAnnotation().getImprinted());
-                }
-            }
+        // Gene imprinting
+        if (annotatorSet.contains(GENE_IMPRINTING_INCLUDE)) {
+            variantAnnotation.setGeneImprinting(VariantAnnotationUtils.getGeneImprinting(geneList));
         }
 
         // Gene fusion for non-SNV variants
-//        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != VariantType.SNV) {
-//            variantAnnotation.setGeneFusions(new ArrayList<>());
-//            for (Gene gene : geneList) {
-//                if (gene.getAnnotation() != null && gene.getAnnotation().getFusions() != null) {
-//                    variantAnnotation.getGeneFusions().addAll(gene.getAnnotation().getFusions());
-//                }
-//            }
-//        }
+        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != null && variant.getType() != VariantType.SNV) {
+            variantAnnotation.setGeneFusions(VariantAnnotationUtils.getGeneFusionSummaries(geneList));
+        }
 
         return geneList;
     }
@@ -1238,7 +1228,7 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList("variation", "traitAssociation", "conservation", "functionalScore",
                     "consequenceType", "geneDisease", "drugInteraction", "geneConstraints", "mirnaTargets", "pharmacogenomics",
-                    "cancerGeneAssociation", "cancerHotspots", IMPRINTED_GENE_INCLUDE, GENE_FUSION_INCLUDE, "populationFrequencies",
+                    "cancerGeneAssociation", "cancerHotspots", GENE_IMPRINTING_INCLUDE, GENE_FUSION_INCLUDE, "populationFrequencies",
                     "repeats", "cytoband", "hgvs", "xrefs", EtlCommons.PGS_DATA));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
@@ -1276,7 +1266,7 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("cancerHotspots")) {
             includeGeneFields.add("annotation.cancerHotspots");
         }
-        if (annotatorSet.contains(IMPRINTED_GENE_INCLUDE)) {
+        if (annotatorSet.contains(GENE_IMPRINTING_INCLUDE)) {
             includeGeneFields.add("annotation.imprinted");
         }
         if (annotatorSet.contains(GENE_FUSION_INCLUDE)) {

@@ -152,12 +152,12 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, CancerHotspot[].class));
     }
 
-    public List<ImprintedGene> getImprintedGene(RocksDB rdb, String key) throws RocksDBException, IOException {
+    public List<GeneImprinting> getGeneImprinting(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             return null;
         }
-        return Arrays.asList(mapper.readValue(dbContent, ImprintedGene[].class));
+        return Arrays.asList(mapper.readValue(dbContent, GeneImprinting[].class));
     }
 
     public GeneFusion getGeneFusion(RocksDB rdb, String key) throws RocksDBException, IOException {
