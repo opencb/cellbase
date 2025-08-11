@@ -19,7 +19,7 @@ function install(){
   if [ -d "./$REPO" ]; then
     cd "$REPO" || exit 2
     echo "Branch name $BRANCH_NAME already exists."
-    mvn clean install -DskipTests
+    mvn clean install -DskipTests  --no-transfer-progress
   else
     echo "$CURRENT Branch is NOT EQUALS $BRANCH_NAME "
   fi
