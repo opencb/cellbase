@@ -36,4 +36,4 @@ jobs:
 
   release:
     uses: opencb/java-common-libs/.github/workflows/release-github-workflow.yml@develop
-    needs: [deploy-maven, deploy-docker, deploy-python]
+    needs: [deploy-maven, deploy-zetta-docker, deploy-python]
