@@ -762,11 +762,11 @@ public class VariantAnnotationUtils {
         summary.setSource(ChimerKb.SOURCE);
         summary.setPair(chimerKb.getFusionPair());
         if (chimerKb.getHeadGene() != null) {
-            summary.setHeadGene(new GeneFusionBreakpoint(chimerKb.getHeadGene().getGene(),
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerKb.getHeadGene().getGeneName(),
                     chimerKb.getHeadGene().getChromosome(), chimerKb.getHeadGene().getPosition(),
                     chimerKb.getHeadGene().getStrand()));
             if (chimerKb.getTailGene() != null) {
-                summary.setTailGene(new GeneFusionBreakpoint(chimerKb.getTailGene().getGene(),
+                summary.setTailGene(new GeneFusionBreakpoint(chimerKb.getTailGene().getGeneName(),
                         chimerKb.getTailGene().getChromosome(), chimerKb.getTailGene().getPosition(),
                         chimerKb.getTailGene().getStrand()));
             }
@@ -786,9 +786,9 @@ public class VariantAnnotationUtils {
         summary.setSource(ChimerPub.SOURCE);
         summary.setPair(chimerPub.getFusionPair());
         if (chimerPub.getHeadGene() != null) {
-            summary.setHeadGene(new GeneFusionBreakpoint(chimerPub.getHeadGene().getGene(), null, null, null));
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerPub.getHeadGene().getGeneName(), null, null, null));
             if (chimerPub.getTailGene() != null) {
-                summary.setTailGene(new GeneFusionBreakpoint(chimerPub.getTailGene().getGene(), null, null, null));
+                summary.setTailGene(new GeneFusionBreakpoint(chimerPub.getTailGene().getGeneName(), null, null, null));
             }
             summary.setPmid(chimerPub.getPmid());
             summary.setDiseases(chimerPub.getDiseases());
@@ -806,7 +806,7 @@ public class VariantAnnotationUtils {
         summary.setSource(ChimerSeq.SOURCE);
         summary.setPair(chimerSeq.getFusionPair());
         if (chimerSeq.getHeadGene() != null) {
-            summary.setHeadGene(new GeneFusionBreakpoint(chimerSeq.getHeadGene().getGene(),
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerSeq.getHeadGene().getGeneName(),
                     chimerSeq.getHeadGene().getChromosome(), chimerSeq.getHeadGene().getPosition(),
                     chimerSeq.getHeadGene().getStrand()));
             if (chimerSeq.getHeadGene().isKinase()) {
@@ -825,7 +825,7 @@ public class VariantAnnotationUtils {
                 summary.setTranscriptionFactor(chimerSeq.getHeadGene().isTranscriptionFactor());
             }
             if (chimerSeq.getTailGene() != null) {
-                summary.setTailGene(new GeneFusionBreakpoint(chimerSeq.getTailGene().getGene(),
+                summary.setTailGene(new GeneFusionBreakpoint(chimerSeq.getTailGene().getGeneName(),
                         chimerSeq.getTailGene().getChromosome(), chimerSeq.getTailGene().getPosition(),
                         chimerSeq.getTailGene().getStrand()));
             }

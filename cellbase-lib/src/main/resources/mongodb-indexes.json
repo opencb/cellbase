@@ -55,9 +55,19 @@
 {"collection": "gene", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.cancerAssociations.roleInCancer": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.geneImprinting.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneImprinting.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 
@@ -105,9 +115,19 @@
 {"collection": "refseq", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.geneImprinting.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneImprinting.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}

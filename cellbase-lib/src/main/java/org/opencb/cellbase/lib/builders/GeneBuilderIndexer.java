@@ -828,9 +828,9 @@ public class GeneBuilderIndexer {
 
                 // Head gene fusion
                 if (chimerKb != null && chimerKb.getHeadGene() != null
-                        && StringUtils.isNotEmpty(chimerKb.getHeadGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerKb.getHeadGene().getGeneName())) {
                     // Store the head gene fusion in the database
-                    key = chimerKb.getHeadGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerKb.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
@@ -843,9 +843,9 @@ public class GeneBuilderIndexer {
 
                 // Tail gene fusion
                 if (chimerKb != null && chimerKb.getTailGene() != null
-                        && StringUtils.isNotEmpty(chimerKb.getTailGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerKb.getTailGene().getGeneName())) {
                     // Store the tail gene fusion in the database
-                    key = chimerKb.getTailGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerKb.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
@@ -904,9 +904,9 @@ public class GeneBuilderIndexer {
 
                 // Head gene fusion
                 if (chimerPub != null && chimerPub.getHeadGene() != null
-                        && StringUtils.isNotEmpty(chimerPub.getHeadGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerPub.getHeadGene().getGeneName())) {
                     // Store the head gene fusion in the database
-                    key = chimerPub.getHeadGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerPub.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
@@ -919,9 +919,9 @@ public class GeneBuilderIndexer {
 
                 // Tail gene fusion
                 if (chimerPub != null && chimerPub.getTailGene() != null
-                        && StringUtils.isNotEmpty(chimerPub.getTailGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerPub.getTailGene().getGeneName())) {
                     // Store the tail gene fusion in the database
-                    key = chimerPub.getTailGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerPub.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
@@ -980,9 +980,9 @@ public class GeneBuilderIndexer {
 
                 // Head gene fusion
                 if (chimerSeq != null && chimerSeq.getHeadGene() != null
-                        && StringUtils.isNotEmpty(chimerSeq.getHeadGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerSeq.getHeadGene().getGeneName())) {
                     // Store the head gene fusion in the database
-                    key = chimerSeq.getHeadGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerSeq.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
@@ -995,9 +995,9 @@ public class GeneBuilderIndexer {
 
                 // Tail gene fusion
                 if (chimerSeq != null && chimerSeq.getTailGene() != null
-                        && StringUtils.isNotEmpty(chimerSeq.getTailGene().getGene())) {
+                        && StringUtils.isNotEmpty(chimerSeq.getTailGene().getGeneName())) {
                     // Store the tail gene fusion in the database
-                    key = chimerSeq.getTailGene().getGene() + GENE_FUSION_SUFFIX;
+                    key = chimerSeq.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
                     updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
                     if (updatedGeneFusion == null) {
                         updatedGeneFusion = new GeneFusion();
