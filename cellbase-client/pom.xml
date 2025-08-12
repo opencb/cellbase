@@ -12,6 +12,7 @@
 
     <artifactId>cellbase-client</artifactId>
     <packaging>jar</packaging>
+    <name>OpenCB CellBase Client</name>
 
     <dependencies>
         <dependency>

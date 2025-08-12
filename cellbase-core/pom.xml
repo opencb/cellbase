@@ -12,6 +12,7 @@
 
     <artifactId>cellbase-core</artifactId>
     <packaging>jar</packaging>
+    <name>OpenCB CellBase Core</name>
 
     <dependencies>
         <dependency>

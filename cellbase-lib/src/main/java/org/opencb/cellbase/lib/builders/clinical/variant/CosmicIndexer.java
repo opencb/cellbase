@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.variant.cosmic.CosmicParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
-
 import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;

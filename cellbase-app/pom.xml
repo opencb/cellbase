@@ -12,6 +12,7 @@
 
     <artifactId>cellbase-app</artifactId>
     <packaging>jar</packaging>
+    <name>OpenCB CellBase Application</name>
 
     <properties>
         <build.dir>${project.basedir}/../build</build.dir>
