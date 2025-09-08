@@ -229,6 +229,15 @@ download:
     version: "2020-03"
     files:
       HGMD: hgmd.vcf
+  civic:
+    host: https://civicdb.org/
+    version: "01-Sep-2025"
+    files:
+      VARIANTS: downloads/01-Sep-2025/01-Sep-2025-VariantSummaries.tsv
+      FEATURES: downloads/01-Sep-2025/01-Sep-2025-FeatureSummaries.tsv
+      PROFILES: downloads/01-Sep-2025/01-Sep-2025-MolecularProfileSummaries.tsv
+      ASSERTIONS: downloads/01-Sep-2025/01-Sep-2025-AssertionSummaries.tsv
+      EVIDENCES: downloads/01-Sep-2025/01-Sep-2025-ClinicalEvidenceSummaries.tsv
   gwasCatalog:
     ## Download file from https://www.ebi.ac.uk/gwas/docs/file-downloads to find the real version, which is 'e111_r2024-04-22'
     host: https://ftp.ebi.ac.uk/

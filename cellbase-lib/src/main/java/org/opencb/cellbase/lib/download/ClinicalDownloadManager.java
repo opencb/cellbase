@@ -51,6 +51,8 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             return Collections.emptyList();
         }
 
+        Path versionPath;
+        Path downloadPath;
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
@@ -60,46 +62,117 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         Path clinicalPath = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANT_DATA).toAbsolutePath();
         Files.createDirectories(clinicalPath);
 
+        DownloadProperties.URLProperties props;
+        List<String> urls;
 
         // ClinVar
-        logger.info(DOWNLOADING_MSG, getDataName(CLINVAR_DATA));
-        DownloadProperties.URLProperties props = configuration.getDownload().getClinvar();
-        List<String> urls = new ArrayList<>();
-        for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
-                CLINVAR_EFO_TERMS_FILE_ID)) {
-            downloadFile = downloadDataSource(props, fileId, clinicalPath);
-            downloadFiles.add(downloadFile);
+        versionPath = clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA));
+        if (Files.exists(versionPath)) {
+            logger.info("{} already downloaded. Skipping download.", getDataName(CLINVAR_DATA));
+        } else {
+            downloadPath = clinicalPath.resolve(CLINVAR_DATA);
+            if (!Files.exists(downloadPath)) {
+                logger.info("Creating {} directory: {}...", CLINVAR_DATA, downloadPath);
+                Files.createDirectory(downloadPath);
+            }
 
-            // Save URLs to be written in the version file
-            urls.add(downloadFile.getUrl());
+            logger.info(DOWNLOADING_MSG, getDataName(CLINVAR_DATA));
+            props = configuration.getDownload().getClinvar();
+            urls = new ArrayList<>();
+            for (String fileId : Arrays.asList(CLINVAR_FULL_RELEASE_FILE_ID, CLINVAR_SUMMARY_FILE_ID, CLINVAR_ALLELE_FILE_ID,
+                    CLINVAR_EFO_TERMS_FILE_ID)) {
+                downloadFile = downloadDataSource(props, fileId, downloadPath);
+                downloadFiles.add(downloadFile);
+
+                // Save URLs to be written in the version file
+                urls.add(downloadFile.getUrl());
+            }
+            // Save data source
+            saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls, versionPath);
+            logger.info(DOWNLOADING_DONE_MSG, getDataName(CLINVAR_DATA));
         }
-        // Save data source
-        saveDataSource(CLINVAR_DATA, props.getVersion(), getTimeStamp(), urls,
-                clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA)));
-        logger.info(DOWNLOADING_DONE_MSG, getDataName(CLINVAR_DATA));
 
         // COSMIC
-        logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
-        props = configuration.getDownload().getCosmic();
-        urls = new ArrayList<>();
-        for (String fileId : Arrays.asList(COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, COSMIC_CLASSIFICATION_FILE_ID)) {
-            // Save URLs to be written in the version file
-            urls.add(props.getHost() + props.getFiles().get(fileId));
+        versionPath = clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA));
+        if (Files.exists(versionPath)) {
+            logger.info("{} already downloaded. Skipping download.", getDataName(COSMIC_DATA));
+        } else {
+            downloadPath = clinicalPath.resolve(COSMIC_DATA);
+            if (!Files.exists(downloadPath)) {
+                logger.info("Creating {} directory: {}...", COSMIC_DATA, downloadPath);
+                Files.createDirectory(downloadPath);
+            }
+
+            logger.warn("{} files must be downloaded manually !", getDataName(COSMIC_DATA));
+            props = configuration.getDownload().getCosmic();
+            urls = new ArrayList<>();
+            for (String fileId : Arrays.asList(COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, COSMIC_CLASSIFICATION_FILE_ID)) {
+                // Save URLs to be written in the version file
+                urls.add(props.getHost() + props.getFiles().get(fileId));
+            }
+            saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), urls, versionPath);
         }
-        saveDataSource(COSMIC_DATA, props.getVersion(), getTimeStamp(), urls, clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA)));
 
         // HGMD
-        logger.warn("{} files must be downloaded manually !", getDataName(HGMD_DATA));
-        props = configuration.getDownload().getHgmd();
-        String url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
-        saveDataSource(HGMD_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url),
-                clinicalPath.resolve(getDataVersionFilename(HGMD_DATA)));
+        versionPath = clinicalPath.resolve(getDataVersionFilename(HGMD_DATA));
+        if (Files.exists(versionPath)) {
+            logger.info("{} already downloaded. Skipping download.", getDataName(HGMD_DATA));
+        } else {
+            downloadPath = clinicalPath.resolve(HGMD_DATA);
+            if (!Files.exists(downloadPath)) {
+                logger.info("Creating {} directory: {}...", HGMD_DATA, downloadPath);
+                Files.createDirectory(downloadPath);
+            }
+
+            logger.warn("{} files must be downloaded manually !", getDataName(HGMD_DATA));
+            props = configuration.getDownload().getHgmd();
+            String url = props.getHost() + props.getFiles().get(HGMD_FILE_ID);
+            saveDataSource(HGMD_DATA, props.getVersion(), getTimeStamp(), Collections.singletonList(url), versionPath);
+        }
+
+        // CIViC
+        versionPath = clinicalPath.resolve(getDataVersionFilename(CIVIC_DATA));
+        if (Files.exists(versionPath)) {
+            logger.info("{} already downloaded. Skipping download.", getDataName(CIVIC_DATA));
+        } else {
+            downloadPath = clinicalPath.resolve(CIVIC_DATA);
+            if (!Files.exists(downloadPath)) {
+                logger.info("Creating {} directory: {}...", CIVIC_DATA, downloadPath);
+                Files.createDirectory(downloadPath);
+            }
+
+            logger.info(DOWNLOADING_MSG, getDataName(CIVIC_DATA));
+            props = configuration.getDownload().getCivic();
+            urls = new ArrayList<>();
+            for (String fileId : Arrays.asList(CIVIC_VARIANTS_FILE_ID, CIVIC_FEATURES_FILE_ID, CIVIC_PROFILES_FILE_ID,
+                    CIVIC_ASSERTIONS_FILE_ID, CIVIC_EVIDENCES_FILE_ID)) {
+                downloadFile = downloadDataSource(props, fileId, downloadPath);
+                downloadFiles.add(downloadFile);
+
+                // Save URLs to be written in the version file
+                urls.add(downloadFile.getUrl());
+            }
+            // Save data source
+            saveDataSource(CIVIC_DATA, props.getVersion(), getTimeStamp(), urls, versionPath);
+            logger.info(DOWNLOADING_DONE_MSG, getDataName(CIVIC_DATA));
+        }
 
         // GWAS catalog
-        logger.info(DOWNLOADING_MSG, getDataName(GWAS_DATA));
-        downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, clinicalPath);
-        downloadFiles.add(downloadFile);
-        logger.info(DOWNLOADING_DONE_MSG, getDataName(GWAS_DATA));
+        versionPath = clinicalPath.resolve(getDataVersionFilename(GWAS_DATA));
+        if (Files.exists(versionPath)) {
+            logger.info("{} already downloaded. Skipping download.", getDataName(GWAS_DATA));
+        } else {
+            downloadPath = clinicalPath.resolve(GWAS_DATA);
+            if (!Files.exists(downloadPath)) {
+                logger.info("Creating {} directory: {}...", GWAS_DATA, downloadPath);
+                Files.createDirectory(downloadPath);
+            }
+
+            logger.info(DOWNLOADING_MSG, getDataName(GWAS_DATA));
+            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, downloadPath);
+            downloadFiles.add(downloadFile);
+            logger.info(DOWNLOADING_DONE_MSG, getDataName(GWAS_DATA));
+        }
 
         return downloadFiles;
     }

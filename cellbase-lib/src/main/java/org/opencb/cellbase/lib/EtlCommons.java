@@ -224,6 +224,14 @@ public final class EtlCommons {
     public static final String HGMD_DATA = "hgmd";
     // Must match the configuration file
     public static final String HGMD_FILE_ID = "HGMD";
+    // CIViC
+    public static final String CIVIC_DATA = "civic";
+    // Must match the configuration file
+    public static final String CIVIC_VARIANTS_FILE_ID = "VARIANTS";
+    public static final String CIVIC_FEATURES_FILE_ID = "FEATURES";
+    public static final String CIVIC_PROFILES_FILE_ID = "PROFILES";
+    public static final String CIVIC_ASSERTIONS_FILE_ID = "ASSERTIONS";
+    public static final String CIVIC_EVIDENCES_FILE_ID = "EVIDENCES";
     // GWAS
     public static final String GWAS_DATA = "gwas";
     // Must match the configuration file
@@ -441,6 +449,7 @@ public final class EtlCommons {
         dataNamesMap.put(CLINVAR_DATA, "ClinVar");
         dataNamesMap.put(COSMIC_DATA, "Cosmic");
         dataNamesMap.put(HGMD_DATA, "HGMD");
+        dataNamesMap.put(CIVIC_DATA, "CIViC");
         dataNamesMap.put(GWAS_DATA, "GWAS Catalog");
         dataNamesMap.put(SPLICE_SCORE_DATA, "Splice Score");
         dataNamesMap.put(MMSPLICE_DATA, "MMSplice");
@@ -498,6 +507,7 @@ public final class EtlCommons {
         dataCategoriesMap.put(CLINVAR_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(COSMIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(HGMD_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
+        dataCategoriesMap.put(CIVIC_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(GWAS_DATA, dataNamesMap.get(CLINICAL_VARIANT_DATA));
         dataCategoriesMap.put(MMSPLICE_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
         dataCategoriesMap.put(SPLICEAI_DATA, dataNamesMap.get(SPLICE_SCORE_DATA));
@@ -553,6 +563,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(CLINVAR_DATA, "clinVar" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(COSMIC_DATA, "cosmic" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(HGMD_DATA, "hgmd" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CIVIC_DATA, "civic" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(GWAS_DATA, "gwas" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(MMSPLICE_DATA, "mmSplice" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(SPLICEAI_DATA, "spliceAi" + SUFFIX_VERSION_FILENAME);

@@ -46,6 +46,7 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties cosmic;
     private URLProperties hgmd;
+    private URLProperties civic;
     private URLProperties dbSNP;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
@@ -242,6 +243,15 @@ public class DownloadProperties {
 
     public DownloadProperties setHgmd(URLProperties hgmd) {
         this.hgmd = hgmd;
+        return this;
+    }
+
+    public URLProperties getCivic() {
+        return civic;
+    }
+
+    public DownloadProperties setCivic(URLProperties civic) {
+        this.civic = civic;
         return this;
     }
 
