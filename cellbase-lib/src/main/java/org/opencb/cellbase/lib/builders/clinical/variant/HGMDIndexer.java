@@ -38,8 +38,6 @@ import static org.opencb.cellbase.lib.EtlCommons.DONE_MSG;
  */
 public class HGMDIndexer extends ClinicalIndexer {
     private final Path hgmdFile;
-    private final String version;
-    private final String assembly;
 
     public HGMDIndexer(Path hgmdFile, String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
             throws IOException {

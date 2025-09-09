@@ -50,8 +50,11 @@ public abstract class ClinicalIndexer {
     protected int numberVariantUpdates = 0;
     protected int totalNumberRecords = 0;
     protected int numberIndexedRecords = 0;
-    protected RocksDB rdb;
 
+    protected String version;
+    protected String assembly;
+
+    protected RocksDB rdb;
 
     protected static final String SYMBOL = "symbol";
 

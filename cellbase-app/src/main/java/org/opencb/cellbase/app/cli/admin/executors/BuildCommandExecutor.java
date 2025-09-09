@@ -494,6 +494,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(clinicalDownloadPath.resolve(getDataVersionFilename(CLINVAR_DATA)),
                 clinicalDownloadPath.resolve(getDataVersionFilename(COSMIC_DATA)),
                 clinicalDownloadPath.resolve(getDataVersionFilename(HGMD_DATA)),
+                clinicalDownloadPath.resolve(getDataVersionFilename(CIVIC_DATA)),
                 clinicalDownloadPath.resolve(getDataVersionFilename(GWAS_DATA))), clinicalBuildPath);
 
         // Create the file serializer and the clinical variants builder

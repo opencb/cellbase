@@ -67,7 +67,6 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String SOURCE = "Source";
     private static final String NAME = "name";
     private final Path docmFile;
-    private final String assembly;
 
     public DOCMIndexer(Path docmFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
             throws IOException {

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.builders.AbstractBuilder;
@@ -54,6 +55,11 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
     private Path cosmicGenomeScreensMutantFilePath;
     private Path cosmicClassificationFilePath;
     private Path hgmdFilePath;
+    private Path civicVariantsFilePath;
+    private Path civicFeaturesFilePath;
+    private Path civicProfilesFilePath;
+    private Path civicAssertionsFilePath;
+    private Path civicEvidencesFilePath;
     private Path gwasFilePath;
     private Path gwasDbSnpFilePath;
 
@@ -96,37 +102,49 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
         getIndexFastaReferenceGenome(genomeSequenceFilePath);
         logger.info(OK_MSG);
 
+        Path downloadPath;
+
         // Check ClinVar files
-        clinvarFullReleaseFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_FULL_RELEASE_FILE_ID,
-                clinicalVariantPath).toPath();
-        clinvarSummaryFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_SUMMARY_FILE_ID,
-                clinicalVariantPath).toPath();
-        clinvarVariationAlleleFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_ALLELE_FILE_ID,
-                clinicalVariantPath).toPath();
-        clinvarEFOFilePath = checkFile(CLINVAR_DATA, configuration.getDownload().getClinvar(), CLINVAR_EFO_TERMS_FILE_ID,
-                clinicalVariantPath).toPath();
+        downloadPath = clinicalVariantPath.resolve(CLINVAR_DATA);
+        DownloadProperties.URLProperties clinvarProps = configuration.getDownload().getClinvar();
+        clinvarFullReleaseFilePath = checkFile(CLINVAR_DATA, clinvarProps, CLINVAR_FULL_RELEASE_FILE_ID, downloadPath).toPath();
+        clinvarSummaryFilePath = checkFile(CLINVAR_DATA, clinvarProps, CLINVAR_SUMMARY_FILE_ID, downloadPath).toPath();
+        clinvarVariationAlleleFilePath = checkFile(CLINVAR_DATA, clinvarProps, CLINVAR_ALLELE_FILE_ID, downloadPath).toPath();
+        clinvarEFOFilePath = checkFile(CLINVAR_DATA, clinvarProps, CLINVAR_EFO_TERMS_FILE_ID, downloadPath).toPath();
 
         // Check COSMIC file
+        downloadPath = clinicalVariantPath.resolve(COSMIC_DATA);
         cosmicGenomeScreensMutantFilePath = checkFile(COSMIC_DATA, configuration.getDownload().getCosmic(),
-                COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, clinicalVariantPath).toPath();
+                COSMIC_GENOME_SCREENS_MUTANT_FILE_ID, downloadPath).toPath();
         cosmicClassificationFilePath = checkFile(COSMIC_DATA, configuration.getDownload().getCosmic(), COSMIC_CLASSIFICATION_FILE_ID,
-                clinicalVariantPath).toPath();
+                downloadPath).toPath();
 
         // Check HGMD file
-        hgmdFilePath = checkFiles(HGMD_DATA, clinicalVariantPath, 1).get(0).toPath();
+        downloadPath = clinicalVariantPath.resolve(HGMD_DATA);
+        hgmdFilePath = checkFiles(HGMD_DATA, downloadPath, 1).get(0).toPath();
+
+        // Check CIViC files
+        downloadPath = clinicalVariantPath.resolve(CIVIC_DATA);
+        DownloadProperties.URLProperties civicProps = configuration.getDownload().getCivic();
+        civicVariantsFilePath = checkFile(CIVIC_DATA, civicProps, CIVIC_VARIANTS_FILE_ID, downloadPath).toPath();
+        civicFeaturesFilePath = checkFile(CIVIC_DATA, civicProps, CIVIC_FEATURES_FILE_ID, downloadPath).toPath();
+        civicProfilesFilePath = checkFile(CIVIC_DATA, civicProps, CIVIC_PROFILES_FILE_ID, downloadPath).toPath();
+        civicAssertionsFilePath = checkFile(CIVIC_DATA, civicProps, CIVIC_ASSERTIONS_FILE_ID, downloadPath).toPath();
+        civicEvidencesFilePath = checkFile(CIVIC_DATA, civicProps, CIVIC_EVIDENCES_FILE_ID, downloadPath).toPath();
 
         // Check GWAS files
+        downloadPath = clinicalVariantPath.resolve(HGMD_DATA);
         gwasFilePath = checkFiles(GWAS_DATA, clinicalVariantPath, 1).get(0).toPath();
         String dbSnpFilename = Paths.get(configuration.getDownload().getGwasCatalog().getFiles().get(GWAS_DBSNP_FILE_ID)).getFileName()
                 .toString();
-        gwasDbSnpFilePath = clinicalVariantPath.resolve(dbSnpFilename);
+        gwasDbSnpFilePath = downloadPath.resolve(dbSnpFilename);
         if (!Files.exists(gwasDbSnpFilePath)) {
             throw new CellBaseException("Could not build clinical variants: the dbSNP file " + dbSnpFilename + " is missing at "
                     + clinicalVariantPath);
         }
-        if (!Files.exists(clinicalVariantPath.resolve(dbSnpFilename + TBI_EXTENSION))) {
+        if (!Files.exists(downloadPath.resolve(dbSnpFilename + TBI_EXTENSION))) {
             throw new CellBaseException("Could not build clinical variants: the dbSNP tabix file " + dbSnpFilename + TBI_EXTENSION
-                    + " is missing at " + clinicalVariantPath);
+                    + " is missing at " + downloadPath);
         }
 
         logger.info(CHECKING_DONE_BEFORE_BUILDING_LOG_MESSAGE, getDataName(CLINICAL_VARIANT_DATA));
@@ -171,6 +189,12 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
             HGMDIndexer hgmdIndexer = new HGMDIndexer(hgmdFilePath, configuration.getDownload().getHgmd().getVersion(), normalize,
                     genomeSequenceFilePath, assembly, rdb);
             hgmdIndexer.index();
+
+            // CIViC
+            CivicIndexer civicIndexer = new CivicIndexer(civicVariantsFilePath, civicFeaturesFilePath, civicProfilesFilePath,
+                    civicAssertionsFilePath, civicEvidencesFilePath, configuration.getDownload().getCivic().getVersion(), normalize,
+                    genomeSequenceFilePath, assembly, rdb);
+            civicIndexer.index();
 
             // GWAS catalog
             GwasIndexer gwasIndexer = new GwasIndexer(gwasFilePath, gwasDbSnpFilePath, genomeSequenceFilePath, assembly, rdb);

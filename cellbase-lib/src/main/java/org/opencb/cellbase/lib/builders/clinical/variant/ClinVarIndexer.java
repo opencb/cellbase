@@ -80,9 +80,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
 
-    private final String version;
-    private final String assembly;
-
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
     private int numberNoDiseaseTrait = 0;

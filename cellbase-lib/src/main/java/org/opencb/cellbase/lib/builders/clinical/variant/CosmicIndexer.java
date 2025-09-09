@@ -30,8 +30,6 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private final Path cosmicGenomeScreensMutantFilePath;
     private final Path cosmicClassificationFilePath;
-    private final String version;
-    private final String assembly;
 
     public CosmicIndexer(Path cosmicGenomeScreensMutantFilePath, Path cosmicClassificationFilePath, String version, boolean normalize,
                          Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {

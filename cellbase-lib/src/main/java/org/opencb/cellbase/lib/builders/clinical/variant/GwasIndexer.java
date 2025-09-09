@@ -40,7 +40,6 @@ public class GwasIndexer extends ClinicalIndexer {
 
     private final Path gwasFile;
     private final Path dbSnpTabixFile;
-    private final String assembly;
 
     private int invalidStartRecords;
     private int invalidChromosome;
