@@ -6,12 +6,13 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>6.6.0-SNAPSHOT</version>
+        <version>6.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>cellbase-app</artifactId>
     <packaging>jar</packaging>
+    <name>OpenCB CellBase Application</name>
 
     <properties>
         <build.dir>${project.basedir}/../build</build.dir>
