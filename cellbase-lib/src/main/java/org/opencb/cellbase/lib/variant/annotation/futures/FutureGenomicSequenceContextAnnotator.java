@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.variant.annotation.futures;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -53,7 +54,7 @@ public class FutureGenomicSequenceContextAnnotator implements Callable<List<Geno
 
     @Override
     public List<GenomicSequenceContext> call() throws Exception {
-        long startTime = System.currentTimeMillis();
+        StopWatch stopWatch = StopWatch.createStarted();
 
         GenomicSequenceContext genomicSequenceContext;
         List<GenomicSequenceContext> resultList = new ArrayList<>(variantList.size());
@@ -64,6 +65,9 @@ public class FutureGenomicSequenceContextAnnotator implements Callable<List<Geno
             genomicSequenceContext = null;
             if (VariantType.SNV != variant.getType() && VariantType.SNP != variant.getType()) {
                 int start = variant.getStart() - CONTEXT_SIZE;
+                if (start < 1) {
+                    start = 1;
+                }
                 int end = variant.getStart() + CONTEXT_SIZE;
                 Region region = new Region(variant.getChromosome(), start, end);
                 logger.debug("Region {} for the genomic sequence context query", region);
@@ -76,8 +80,8 @@ public class FutureGenomicSequenceContextAnnotator implements Callable<List<Geno
             }
             resultList.add(genomicSequenceContext);
         }
-        logger.info("Genomic sequence context queries performance in {} ms for {} variants",
-                System.currentTimeMillis() - startTime, variantList.size());
+        logger.info("Genomic sequence context queries performance in {} ms for {} variants", stopWatch.getTime(TimeUnit.MILLISECONDS),
+                variantList.size());
         return resultList;
     }
 
