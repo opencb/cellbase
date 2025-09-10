@@ -64,7 +64,7 @@ public class FutureGenomicSequenceContextAnnotator implements Callable<List<Geno
             genomicSequenceContext = null;
             if (VariantType.SNV != variant.getType() && VariantType.SNP != variant.getType()) {
                 int start = variant.getStart() - CONTEXT_SIZE;
-                int end = variant.getEnd() + CONTEXT_SIZE;
+                int end = variant.getStart() + CONTEXT_SIZE;
                 Region region = new Region(variant.getChromosome(), start, end);
                 logger.debug("Region {} for the genomic sequence context query", region);
                 GenomeSequenceFeature genomeSequenceFeature = genomeManager.getSequence(region, QueryOptions.empty(), dataRelease).first();
