@@ -93,6 +93,7 @@ public class VariantAnnotationCalculator {
     public static final String CONSEQUENCE_TYPE_INCLUDE = "consequenceType";
     public static final String PHARMACOGENOMICS_INCLUDE = "pharmacogenomics";
     public static final String HGVS_INCLUDE = "hgvs";
+    public static final String GENOMIC_CONTEXT_INCLUDE = "genomicContext";
 
     private GenomeManager genomeManager;
     private GeneManager geneManager;
@@ -478,10 +479,8 @@ public class VariantAnnotationCalculator {
         // Object to be returned
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>(normalizedVariantList.size());
 
-        /*
-         * Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
-         * Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
-         */
+        // Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
+        // Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
         List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
@@ -558,9 +557,12 @@ public class VariantAnnotationCalculator {
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
-        FutureGenomicSequenceContextAnnotator contextAnnotator = new FutureGenomicSequenceContextAnnotator(normalizedVariantList,
-                dataRelease.getRelease(), genomeManager);
-        Future<List<GenomicSequenceContext>> contextFuture = CACHED_THREAD_POOL.submit(contextAnnotator);
+        FutureGenomicSequenceContextAnnotator contextAnnotator = null;
+        Future<List<GenomicSequenceContext>> contextFuture = null;
+        if (annotatorSet.contains(GENOMIC_CONTEXT_INCLUDE)) {
+            contextAnnotator = new FutureGenomicSequenceContextAnnotator(normalizedVariantList, dataRelease.getRelease(), genomeManager);
+            contextFuture = CACHED_THREAD_POOL.submit(contextAnnotator);
+        }
 
         // We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
         Queue<Variant> variantBuffer = new LinkedList<>();
@@ -675,10 +677,8 @@ public class VariantAnnotationCalculator {
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - startTime, normalizedVariantList.size());
 
-        /*
-         * Now, hopefully the other annotations have finished and we can store the results.
-         * Method 'processResults' has been implemented in the same class for sanity.
-         */
+        // Now, hopefully the other annotations have finished and we can store the results.
+        // Method 'processResults' has been implemented in the same class for sanity.
         if (futureVariationAnnotator != null) {
             futureVariationAnnotator.processResults(variationFuture, variantAnnotationList, annotatorSet);
         }
@@ -706,10 +706,9 @@ public class VariantAnnotationCalculator {
         if (futurePharmacogenomicsAnnotator != null) {
             futurePharmacogenomicsAnnotator.processResults(pharmacogenomicsFuture, variantAnnotationList);
         }
-        contextAnnotator.processResults(contextFuture, variantAnnotationList);
-
-        // Not needed with newCachedThreadPool
-        // fixedThreadPool.shutdown();
+        if (contextAnnotator != null) {
+            contextAnnotator.processResults(contextFuture, variantAnnotationList);
+        }
 
         // ACMG, only if consequence type is required
         if (annotatorSet.contains(CONSEQUENCE_TYPE_INCLUDE)) {
@@ -1235,7 +1234,7 @@ public class VariantAnnotationCalculator {
                     FUNCTIONAL_SCORE_INCLUDE, CONSEQUENCE_TYPE_INCLUDE, GENE_DISEASE_INCLUDE, DRUG_INTERACTION_INCLUDE,
                     GENE_CONSTRAINTS_INCLUDE, MIRNA_TARGETS_INCLUDE, PHARMACOGENOMICS_INCLUDE, CANCER_GENE_ASSOCIATION_INCLUDE,
                     CANCER_HOTSPOTS_INCLUDE, POPULATION_FREQUENCIES_INCLUDE, REPEATS_INCLUDE, CYTOBAND_INCLUDE, HGVS_INCLUDE,
-                    XREFS_INCLUDE));
+                    XREFS_INCLUDE, GENOMIC_CONTEXT_INCLUDE));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
