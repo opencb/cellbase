@@ -186,17 +186,19 @@ public class CivicIndexerCallback implements CivicParserCallback {
         // Description
         evidenceEntry.setDescription(civicEvidence.getEvidenceStatement());
 
-        // In additional properties, we put all the CIViC variant related to that evidence
-        String jsonCivicVariant = civicVariantObjectWriter.writeValueAsString(civicVariant);
-        Property property = new Property(ORIGINAL_ADDITIONAL_PROPERTY_ID, CIVIC_DATA, jsonCivicVariant);
-        evidenceEntry.setAdditionalProperties(Collections.singletonList(property));
-
         // Bibliography
         List<String> bibliography = new ArrayList<>();
         if (StringUtils.isNotEmpty(civicEvidence.getCitation()) && StringUtils.isNotEmpty(civicEvidence.getSourceType())) {
             bibliography.add(civicEvidence.getSourceType() + ":" + civicEvidence.getCitation());
         }
         evidenceEntry.setBibliography(bibliography);
+
+        // In additional properties, we put all the CIViC variant related to that evidence and other properties from evidence
+        List<Property> additionalProperties = new ArrayList<>();
+        String jsonCivicVariant = civicVariantObjectWriter.writeValueAsString(civicVariant);
+        additionalProperties.add(new Property(ORIGINAL_ADDITIONAL_PROPERTY_ID, CIVIC_DATA, jsonCivicVariant));
+        addAdditionalProperties(civicEvidence, additionalProperties);
+        evidenceEntry.setAdditionalProperties(additionalProperties);
 
         return evidenceEntry;
     }
@@ -271,6 +273,39 @@ public class CivicIndexerCallback implements CivicParserCallback {
                 return Confidence.low_confidence_level;
             default:
                 return null;
+        }
+    }
+
+    private void addAdditionalProperties(CivicClinicalEvidence civicEvidence, List<Property> additionalProperties) {
+        addAdditionalProperty("disease", civicEvidence.getDisease(), additionalProperties);
+        addAdditionalProperty("doid", civicEvidence.getDoid(), additionalProperties);
+        addAdditionalProperty("phenotypes", civicEvidence.getPhenotypes(), additionalProperties);
+        addAdditionalProperty("therapies", civicEvidence.getTherapies(), additionalProperties);
+        addAdditionalProperty("therapy_interaction_type", civicEvidence.getTherapyInteractionType(), additionalProperties);
+        addAdditionalProperty("evidence_type", civicEvidence.getEvidenceType(), additionalProperties);
+        addAdditionalProperty("evidence_direction", civicEvidence.getEvidenceDirection(), additionalProperties);
+        addAdditionalProperty("significance", civicEvidence.getSignificance(), additionalProperties);
+        addAdditionalProperty("evidence_status", civicEvidence.getEvidenceStatus(), additionalProperties);
+        addAdditionalProperty("variant_origin", civicEvidence.getVariantOrigin(), additionalProperties);
+        addAdditionalProperty("last_review_date", civicEvidence.getLastReviewDate(), additionalProperties);
+        addAdditionalProperty("is_flagged", civicEvidence.getFlagged(), additionalProperties);
+    }
+
+    private void addAdditionalProperty(String name, String value, List<Property> additionalProperties) {
+        if (StringUtils.isNotEmpty(value)) {
+            additionalProperties.add(new Property(null, name, value));
+        }
+    }
+
+    private void addAdditionalProperty(String name, List<String> values, List<Property> additionalProperties) {
+        if (CollectionUtils.isNotEmpty(values)) {
+            additionalProperties.add(new Property(null, name, StringUtils.join(values, "; ")));
+        }
+    }
+
+    private void addAdditionalProperty(String name, Boolean value, List<Property> additionalProperties) {
+        if (value != null) {
+            additionalProperties.add(new Property(null, name, Boolean.toString(value)));
         }
     }
 
