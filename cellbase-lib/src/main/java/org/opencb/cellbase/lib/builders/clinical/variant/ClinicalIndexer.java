@@ -46,6 +46,8 @@ public abstract class ClinicalIndexer {
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
     private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
 
+    protected static final String ORIGINAL_ADDITIONAL_PROPERTY_ID = "original";
+
     protected int numberNewVariants = 0;
     protected int numberVariantUpdates = 0;
     protected int totalNumberRecords = 0;
@@ -69,7 +71,6 @@ public abstract class ClinicalIndexer {
         jsonObjectWriter = mapper.writer();
 
         PrintUtils.printSpace();
-//        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
     }
 
     protected Path genomeSequenceFilePath;
@@ -206,7 +207,7 @@ public abstract class ClinicalIndexer {
             return normalizedVariantList.stream().map((variant1) -> variant1.toString()).collect(Collectors.toList());
         }
 
-        return null;
+        return new ArrayList<>();
     }
 
     protected boolean isValid(Variant variant) {

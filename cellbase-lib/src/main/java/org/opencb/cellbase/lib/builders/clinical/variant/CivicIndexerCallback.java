@@ -16,6 +16,9 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.civic.CivicParserCallback;
@@ -25,7 +28,6 @@ import org.opencb.biodata.models.core.civic.CivicFeature;
 import org.opencb.biodata.models.core.civic.CivicVariant;
 import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
@@ -34,12 +36,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.EtlCommons.CIVIC_DATA;
+import static org.opencb.cellbase.lib.builders.clinical.variant.ClinicalIndexer.ORIGINAL_ADDITIONAL_PROPERTY_ID;
+
 public class CivicIndexerCallback implements CivicParserCallback {
 
     private RocksDB rdb;
     private ClinicalIndexer clinicalIndexer;
 
     private EvidenceSource evidenceSource;
+    private ObjectWriter civicVariantObjectWriter;
 
     private int numInvalidPositionLines = 0;
     private int numInvalidBaseLines = 0;
@@ -51,7 +57,8 @@ public class CivicIndexerCallback implements CivicParserCallback {
         this.rdb = rdb;
         this.clinicalIndexer = clinicalIndexer;
 
-        this.evidenceSource = new EvidenceSource(EtlCommons.CIVIC_DATA, clinicalIndexer.version, null);
+        this.evidenceSource = new EvidenceSource(CIVIC_DATA, clinicalIndexer.version, null);
+        this.civicVariantObjectWriter = new ObjectMapper().writerFor(CivicVariant.class);
     }
 
     @Override
@@ -87,7 +94,7 @@ public class CivicIndexerCallback implements CivicParserCallback {
                 // Add EvidenceEntry objects
                 variantAnnotation.getTraitAssociation().addAll(evidenceEntries);
 
-                rdb.put(normalisedVariantString.getBytes(), clinicalIndexer.jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+                rdb.put(normalisedVariantString.getBytes(), ClinicalIndexer.jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
 
             numPassedVariants++;
@@ -119,79 +126,153 @@ public class CivicIndexerCallback implements CivicParserCallback {
     }
 
     private List<EvidenceEntry> getEvidences(CivicVariant civicVariant) {
-        EvidenceEntry evidenceEntry = new EvidenceEntry();
+        List<EvidenceEntry> evidenceEntries = new ArrayList<>();
 
-        // Set source, ID and URL
-        evidenceEntry.setSource(evidenceSource);
-        evidenceEntry.setId(civicVariant.getNcitId());
-        evidenceEntry.setUrl(civicVariant.getVariantCivicUrl());
-
-        // Genomic feature
-        if (civicVariant.getFeature() != null && StringUtils.isNotEmpty(civicVariant.getFeature().getName())
-                && StringUtils.isNotEmpty(civicVariant.getFeature().getFeatureType())) {
-            CivicFeature civicFeature = civicVariant.getFeature();
-
-            // feature_type: Gene (e.g.: FGFR1), Factor (e.g.: Kataegis) and Fusion (e.g.:LANCL2::EGFR)
-            Map<String, String> xrefs = new HashMap<>();
-            GenomicFeature genomicFeature = new GenomicFeature();
-            if ("Gene".equals(civicFeature.getFeatureType())) {
-                genomicFeature.setFeatureType(FeatureTypes.gene);
-                xrefs.put("", civicFeature.getName());
-            } else {
-                xrefs.put(civicFeature.getFeatureType(), civicFeature.getName());
-            }
-            if (StringUtils.isNotEmpty(civicFeature.getEntrezId())) {
-                xrefs.put("entrez", civicFeature.getEntrezId());
-            }
-            if (StringUtils.isNotEmpty(civicFeature.getNcitId())) {
-                xrefs.put("ncit", civicFeature.getNcitId());
-            }
-            genomicFeature.setXrefs(xrefs);
-
-            // Add genomic feature to evidence entry
-            evidenceEntry.setGenomicFeatures(Collections.singletonList(genomicFeature));
-        }
-
-        // Biographical info
-        List<String> bibliography = getBibliography(civicVariant);
-        if (CollectionUtils.isNotEmpty(bibliography)) {
-            evidenceEntry.setBibliography(bibliography);
-        }
-
-        return Collections.singletonList(evidenceEntry);
-    }
-
-    private List<String> getBibliography(CivicVariant civicVariant) {
-        Set<String> bibliography = new HashSet<>();
         if (civicVariant.getMolecularProfile() != null) {
-            // Get bibliography from evidences of the molecular profile
+            // Process evidences from molecular profile
             if (CollectionUtils.isNotEmpty(civicVariant.getMolecularProfile().getEvidences())) {
-                bibliography.addAll(getBibliography(civicVariant.getMolecularProfile().getEvidences()));
+                addEvidenceEntries(civicVariant, civicVariant.getMolecularProfile().getEvidences(), evidenceEntries);
             }
 
-            // Get bibliography from evidences of the assertions
+            // Process evidences from assertions
             if (CollectionUtils.isNotEmpty(civicVariant.getMolecularProfile().getAssertions())) {
                 for (CivicAssertion assertion : civicVariant.getMolecularProfile().getAssertions()) {
                     if (CollectionUtils.isNotEmpty(assertion.getEvidences())) {
-                        bibliography.addAll(getBibliography(assertion.getEvidences()));
+                        addEvidenceEntries(civicVariant, assertion.getEvidences(), evidenceEntries);
                     }
                 }
             }
         }
 
-        return new ArrayList<>(bibliography);
+        return evidenceEntries;
     }
 
-    private Set<String> getBibliography(List<CivicClinicalEvidence> civicEvidences) {
-        Set<String> bibliography = new HashSet<>();
-        for (CivicClinicalEvidence evidence : civicEvidences) {
-            if (StringUtils.isNotEmpty(evidence.getCitation()) && StringUtils.isNotEmpty(evidence.getSourceType())) {
-                bibliography.add(evidence.getSourceType() + ":" + evidence.getCitation());
+    private void addEvidenceEntries(CivicVariant civicVariant, List<CivicClinicalEvidence> civicEvidences,
+                                    List<EvidenceEntry> evidenceEntries) {
+        for (CivicClinicalEvidence civicEvidence : civicEvidences) {
+            try {
+                EvidenceEntry evidenceEntry = createEvidenceEntry(civicVariant, civicEvidence);
+                evidenceEntries.add(evidenceEntry);
+            } catch (JsonProcessingException e) {
+                logger.warn("Error creating evidence entry for CIViC evidence ID {}: {}", civicEvidence.getEvidenceId(), e.getMessage());
             }
         }
-        return bibliography;
     }
 
+    private EvidenceEntry createEvidenceEntry(CivicVariant civicVariant, CivicClinicalEvidence civicEvidence)
+            throws JsonProcessingException {
+        EvidenceEntry evidenceEntry = new EvidenceEntry();
+
+        // Set source, ID and URL
+        evidenceEntry.setSource(evidenceSource);
+        evidenceEntry.setId(civicEvidence.getEvidenceId());
+        evidenceEntry.setUrl(civicEvidence.getEvidenceCivicUrl());
+
+        // Assembly
+        evidenceEntry.setAssembly(clinicalIndexer.assembly);
+
+        // Set genomic feature from variant's feature
+        if (civicVariant.getFeature() != null) {
+            List<GenomicFeature> genomicFeatures = createGenomicFeatures(civicVariant.getFeature());
+            evidenceEntry.setGenomicFeatures(genomicFeatures);
+        }
+
+        // Impact
+        evidenceEntry.setImpact(getEvidenceImpact(civicEvidence.getEvidenceLevel()));
+
+        // Confidence
+        evidenceEntry.setConfidence(getConfidence(civicEvidence.getRating()));
+
+        // Description
+        evidenceEntry.setDescription(civicEvidence.getEvidenceStatement());
+
+        // In additional properties, we put all the CIViC variant related to that evidence
+        String jsonCivicVariant = civicVariantObjectWriter.writeValueAsString(civicVariant);
+        Property property = new Property(ORIGINAL_ADDITIONAL_PROPERTY_ID, CIVIC_DATA, jsonCivicVariant);
+        evidenceEntry.setAdditionalProperties(Collections.singletonList(property));
+
+        // Bibliography
+        List<String> bibliography = new ArrayList<>();
+        if (StringUtils.isNotEmpty(civicEvidence.getCitation()) && StringUtils.isNotEmpty(civicEvidence.getSourceType())) {
+            bibliography.add(civicEvidence.getSourceType() + ":" + civicEvidence.getCitation());
+        }
+        evidenceEntry.setBibliography(bibliography);
+
+        return evidenceEntry;
+    }
+
+    private List<GenomicFeature> createGenomicFeatures(CivicFeature civicFeature) {
+        if (civicFeature == null || StringUtils.isEmpty(civicFeature.getName()) || StringUtils.isEmpty(civicFeature.getFeatureType())) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> xrefs = new HashMap<>();
+        GenomicFeature genomicFeature = new GenomicFeature();
+
+        // Set feature type based on CIViC feature type
+        if ("Gene".equals(civicFeature.getFeatureType())) {
+            genomicFeature.setFeatureType(FeatureTypes.gene);
+            xrefs.put("symbol", civicFeature.getName());
+        } else {
+            xrefs.put(civicFeature.getFeatureType(), civicFeature.getName());
+        }
+
+        // Add additional cross-references
+        if (StringUtils.isNotEmpty(civicFeature.getEntrezId())) {
+            xrefs.put("entrez", civicFeature.getEntrezId());
+        }
+        if (StringUtils.isNotEmpty(civicFeature.getNcitId())) {
+            xrefs.put("ncit", civicFeature.getNcitId());
+        }
+
+        genomicFeature.setXrefs(xrefs);
+        return Collections.singletonList(genomicFeature);
+    }
+
+    private EvidenceImpact getEvidenceImpact(String civicEvidenceLevel) {
+        if (civicEvidenceLevel == null) {
+            return null;
+        }
+
+        switch (civicEvidenceLevel.toUpperCase()) {
+            case "A":
+                // Validated, well-powered studies
+                return EvidenceImpact.very_strong;
+            case "B":
+                // Multiple clinical studies
+                return EvidenceImpact.strong;
+            case "C":
+                // Case studies/series
+                return EvidenceImpact.moderate;
+            case "D":
+                // Preclinical evidence
+                return EvidenceImpact.supporting;
+            case "E":
+                // Inferential evidence (also supporting level)
+                return EvidenceImpact.supporting;
+            default:
+                return null;
+        }
+    }
+
+    private Confidence getConfidence(String rating) {
+        if (StringUtils.isEmpty(rating)) {
+            return null;
+        }
+
+        switch (rating) {
+            case "5":
+            case "4":
+                return Confidence.high_confidence_level;
+            case "3":
+            case "2":
+                return Confidence.medium_confidence_level;
+            case "1":
+                return Confidence.low_confidence_level;
+            default:
+                return null;
+        }
+    }
 
     public int getNumInvalidPositionLines() {
         return numInvalidPositionLines;
