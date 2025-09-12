@@ -240,4 +240,13 @@ public class DataReleaseManager extends AbstractManager {
                 + ". Valid data releases are: " + StringUtils.join(dataReleases.stream().map(dr -> dr.getRelease())
                 .collect(Collectors.toList()), ","));
     }
+
+    public ReleaseMongoDBAdaptor getReleaseDBAdaptor() {
+        return releaseDBAdaptor;
+    }
+
+    public DataReleaseManager setReleaseDBAdaptor(ReleaseMongoDBAdaptor releaseDBAdaptor) {
+        this.releaseDBAdaptor = releaseDBAdaptor;
+        return this;
+    }
 }

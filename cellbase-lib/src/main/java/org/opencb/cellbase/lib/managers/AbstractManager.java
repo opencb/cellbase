@@ -107,4 +107,8 @@ public class AbstractManager implements AutoCloseable {
     public void close()  {
         mongoDBManager.close();
     }
+
+    public MongoDataStore getMongoDatastore() {
+        return mongoDatastore;
+    }
 }

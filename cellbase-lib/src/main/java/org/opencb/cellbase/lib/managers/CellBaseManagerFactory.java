@@ -20,6 +20,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
+import org.opencb.cellbase.lib.impl.core.singleton.DataReleaseSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class CellBaseManagerFactory {
 
     private Logger logger;
 
-    public CellBaseManagerFactory(CellBaseConfiguration configuration) {
+    public CellBaseManagerFactory(CellBaseConfiguration configuration) throws CellBaseException {
         this.configuration = configuration;
         logger = LoggerFactory.getLogger(this.getClass());
 
@@ -67,6 +68,8 @@ public class CellBaseManagerFactory {
         ontologyManagers = new HashMap<>();
         dataReleaseManagers = new HashMap<>();
         pharmacogenomicsManagers = new HashMap<>();
+
+        DataReleaseSingleton.initialize(this);
     }
 
     private String getMultiKey(String species, String assembly) {
@@ -323,7 +326,7 @@ public class CellBaseManagerFactory {
         return ontologyManagers.get(multiKey);
     }
 
-    public DataReleaseManager getDataRelesaseManager(String species) throws CellBaseException {
+    public DataReleaseManager getDataReleaseManager(String species) throws CellBaseException {
         if (species == null) {
             throw new CellBaseException("Species is required.");
         }
@@ -373,5 +376,9 @@ public class CellBaseManagerFactory {
             pharmacogenomicsManagers.put(multiKey, new PharmacogenomicsManager(species, assembly, configuration));
         }
         return pharmacogenomicsManagers.get(multiKey);
+    }
+
+    public CellBaseConfiguration getConfiguration() {
+        return configuration;
     }
 }

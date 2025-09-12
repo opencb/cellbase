@@ -40,6 +40,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.opencb.cellbase.lib.EtlCommons.GENE_DATA;
+
 /**
  * Created by imedina on 07/12/15.
  */
@@ -47,13 +49,6 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
 
     public XRefMongoDBAdaptor(MongoDataStore mongoDataStore) {
         super(mongoDataStore);
-
-        init();
-    }
-
-    private void init() {
-        logger.debug("XRefMongoDBAdaptor: in 'constructor'");
-        mongoDBCollectionByRelease = buildCollectionByReleaseMap("gene");
     }
 
     @Override
@@ -61,7 +56,7 @@ public class XRefMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         QueryOptions queryOptions = query.toQueryOptions();
         List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
-        MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
+        MongoDBCollection mongoDBCollection = getMongoDBCollection(GENE_DATA, query.getDataRelease());
         MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseMongoDBIterator<>(iterator);
     }
