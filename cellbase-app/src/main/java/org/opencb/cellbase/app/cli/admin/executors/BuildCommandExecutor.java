@@ -555,13 +555,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private AbstractBuilder buildPharmacogenomics() throws CellBaseException {
         // Sanity check
-        Path pharmGkbDownloadPath = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        Path pharmGkbBuildPath = buildFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        copyVersionFiles(Collections.singletonList(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA))), pharmGkbBuildPath);
+        Path clinPGxDownloadPath = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(CLINPGX_DATA);
+        Path clinPGxBuildPath = buildFolder.resolve(PHARMACOGENOMICS_DATA).resolve(CLINPGX_DATA);
+        copyVersionFiles(Collections.singletonList(clinPGxDownloadPath.resolve(getDataVersionFilename(CLINPGX_DATA))), clinPGxBuildPath);
 
-        // Create the file serializer and the PharmGKB builder
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(pharmGkbBuildPath);
-        return new PharmGKBBuilder(pharmGkbDownloadPath, serializer);
+        // Create the file serializer and the ClinPGx builder
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(clinPGxBuildPath);
+        return new ClinPGxBuilder(clinPGxDownloadPath, serializer);
     }
 
     private AbstractBuilder buildPolygenicScores() throws CellBaseException {

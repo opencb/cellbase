@@ -187,18 +187,8 @@ public final class EtlCommons {
 
     // Pharmacogenomics
     public static final String PHARMACOGENOMICS_DATA = "pharmacogenomics";
-    // PharmGKB
-    public static final String PHARMGKB_DATA = "pharmgkb";
-    // Must match the configuration file
-    public static final String PHARMGKB_GENES_FILE_ID = "GENES";
-    public static final String PHARMGKB_CHEMICALS_FILE_ID = "CHEMICALS";
-    public static final String PHARMGKB_VARIANTS_FILE_ID = "VARIANTS";
-    public static final String PHARMGKB_GUIDELINE_ANNOTATIONS_FILE_ID = "GUIDELINE_ANNOTATIONS";
-    public static final String PHARMGKB_VARIANT_ANNOTATIONS_FILE_ID = "VARIANT_ANNOTATIONS";
-    public static final String PHARMGKB_CLINICAL_ANNOTATIONS_FILE_ID = "CLINICAL_ANNOTATIONS";
-    public static final String PHARMGKB_CLINICAL_VARIANTS_FILE_ID = "CLINICAL_VARIANTS";
-    public static final String PHARMGKB_DRUG_LABELS_FILE_ID = "DRUG_LABELS";
-    public static final String PHARMGKB_RELATIONSHIPS_FILE_ID = "RELATIONSHIPS";
+    // ClinPGx
+    public static final String CLINPGX_DATA = "clinpgx";
 
     // Missense variantion functional score
     public static final String MISSENSE_VARIATION_SCORE_DATA = "missense_variation_functional_score";
@@ -436,7 +426,7 @@ public final class EtlCommons {
         dataNamesMap.put(MONDO_OBO_DATA, "Mondo");
         dataNamesMap.put(PUBMED_DATA, "PubMed");
         dataNamesMap.put(PHARMACOGENOMICS_DATA, "Pharmacogenomics");
-        dataNamesMap.put(PHARMGKB_DATA, "PharmGKB");
+        dataNamesMap.put(CLINPGX_DATA, "ClinPGx");
         dataNamesMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, "Variant Functional Score");
         dataNamesMap.put(CADD_DATA, "CADD");
         dataNamesMap.put(MISSENSE_VARIATION_SCORE_DATA, "Missense Variation Score");
@@ -498,7 +488,7 @@ public final class EtlCommons {
         dataCategoriesMap.put(DOID_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
         dataCategoriesMap.put(MONDO_OBO_DATA, dataNamesMap.get(ONTOLOGY_DATA));
         dataCategoriesMap.put(PUBMED_DATA, "Publication");
-        dataCategoriesMap.put(PHARMGKB_DATA, dataNamesMap.get(PHARMACOGENOMICS_DATA));
+        dataCategoriesMap.put(CLINPGX_DATA, dataNamesMap.get(PHARMACOGENOMICS_DATA));
         dataCategoriesMap.put(SIFT_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
         dataCategoriesMap.put(POLYPHEN_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
         dataCategoriesMap.put(CADD_DATA, dataNamesMap.get(VARIATION_FUNCTIONAL_SCORE_DATA));
@@ -554,7 +544,7 @@ public final class EtlCommons {
         dataVersionFilenamesMap.put(DOID_OBO_DATA, "doidObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(MONDO_OBO_DATA, "mondoObo" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(PUBMED_DATA, "pubMed" + SUFFIX_VERSION_FILENAME);
-        dataVersionFilenamesMap.put(PHARMGKB_DATA, "pharmGkb" + SUFFIX_VERSION_FILENAME);
+        dataVersionFilenamesMap.put(CLINPGX_DATA, "clinPgx" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(CADD_DATA, "cadd" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(SIFT_DATA, "sift" + SUFFIX_VERSION_FILENAME);
         dataVersionFilenamesMap.put(POLYPHEN_DATA, "polyPhen" + SUFFIX_VERSION_FILENAME);

@@ -39,9 +39,9 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class PharmGKBBuilder extends AbstractBuilder {
+public class ClinPGxBuilder extends AbstractBuilder {
 
-    private final Path pharmGkbDownloadPath;
+    private final Path clinPGxDownloadPath;
 
     private static final String CHEMICALS_BASENAME = "chemicals";
     private static final String CHEMICALS_TSV_FILENAME = "chemicals.tsv";
@@ -52,10 +52,10 @@ public class PharmGKBBuilder extends AbstractBuilder {
     private static final String GENES_BASENAME = "genes";
     private static final String GENES_TSV_FILENAME = "genes.tsv";
 
-    private static final String CLINICAL_ANNOTATIONS_BASENAME = "clinicalAnnotations";
-    private static final String CLINICAL_ANNOTATIONS_TSV_FILENAME = "clinical_annotations.tsv";
-    private static final String CLINICAL_ANN_ALLELES_TSV_FILENAME = "clinical_ann_alleles.tsv";
-    private static final String CLINICAL_ANN_EVIDENCE_TSV_FILENAME = "clinical_ann_evidence.tsv";
+    private static final String SUMMARY_ANNOTATIONS_BASENAME = "summaryAnnotations";
+    private static final String SUMMARY_ANNOTATIONS_TSV_FILENAME = "summary_annotations.tsv";
+    private static final String SUMMARY_ANN_ALLELES_TSV_FILENAME = "summary_ann_alleles.tsv";
+    private static final String SUMMARY_ANN_EVIDENCE_TSV_FILENAME = "summary_ann_evidence.tsv";
 
     private static final String VARIANT_ANNOTATIONS_BASENAME = "variantAnnotations";
     private static final String VARIANT_ANNOTATIONS_TSV_FILENAME = "var_drug_ann.tsv";
@@ -84,32 +84,32 @@ public class PharmGKBBuilder extends AbstractBuilder {
     private static final String GENE_ENTITY = "Gene";
     private static final String CHEMICAL_ENTITY = "Chemical";
 
-    private static final String PHARMGKB_ID_KEY = "PHARMGKB_ID";
-    private static final String PHARMGKB_ASSOCIATION_TYPE_KEY = "PHARMGKB_ASSOCIATION_TYPE";
-    private static final String PHARMGKB_LEVEL_OVERRIDE_KEY = "PHARMGKB_LEVEL_OVERRIDE";
-    private static final String PHARMGKB_LEVEL_MODIFIERS_KEY = "PHARMGKB_LEVEL_MODIFIERS";
-    private static final String PHARMGKB_LAST_UPDATE_DATE_KEY = "PHARMGKB_LAST_UPDATE_DATE";
-    private static final String PHARMGKB_IS_VIP_KEY = "PHARMGKB_IS_VIP";
+    private static final String CLINPGX_ID_KEY = "CLINPGX_ID";
+    private static final String CLINPGX_ASSOCIATION_TYPE_KEY = "CLINPGX_ASSOCIATION_TYPE";
+    private static final String CLINPGX_LEVEL_OVERRIDE_KEY = "CLINPGX_LEVEL_OVERRIDE";
+    private static final String CLINPGX_LEVEL_MODIFIERS_KEY = "CLINPGX_LEVEL_MODIFIERS";
+    private static final String CLINPGX_LAST_UPDATE_DATE_KEY = "CLINPGX_LAST_UPDATE_DATE";
+    private static final String CLINPGX_IS_VIP_KEY = "CLINPGX_IS_VIP";
 
-    public PharmGKBBuilder(Path parmGkbDownloadPath, CellBaseFileSerializer serializer) {
+    public ClinPGxBuilder(Path parmGkbDownloadPath, CellBaseFileSerializer serializer) {
         super(serializer);
-        this.pharmGkbDownloadPath = parmGkbDownloadPath;
+        this.clinPGxDownloadPath = parmGkbDownloadPath;
     }
 
     @Override
     public void parse() throws Exception {
-        logger.info(BUILDING_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(CLINPGX_DATA));
 
         // Sanity check
-        checkDirectory(pharmGkbDownloadPath, getDataName(PHARMGKB_DATA));
+        checkDirectory(clinPGxDownloadPath, getDataName(CLINPGX_DATA));
 
-        // Check PharmGKB files
-        DataSource dataSource = dataSourceReader.readValue(pharmGkbDownloadPath.resolve(getDataVersionFilename(PHARMGKB_DATA)).toFile());
-        List<File> pharmGkbFiles = checkFiles(dataSource, pharmGkbDownloadPath, getDataCategory(PHARMGKB_DATA) + "/"
-                + getDataName(PHARMGKB_DATA));
+        // Check ClinPGx files
+        DataSource dataSource = dataSourceReader.readValue(clinPGxDownloadPath.resolve(getDataVersionFilename(CLINPGX_DATA)).toFile());
+        List<File> clinPGxFiles = checkFiles(dataSource, clinPGxDownloadPath, getDataCategory(CLINPGX_DATA) + "/"
+                + getDataName(CLINPGX_DATA));
 
         // Unzip downloaded file
-        unzipDownloadedFiles(pharmGkbFiles);
+        unzipDownloadedFiles(clinPGxFiles);
 
         // Parse chemical file
         Map<String, PharmaChemical> chemicalsMap = parseChemicalFile();
@@ -131,7 +131,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
         }
         serializer.close();
 
-        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(PHARMGKB_DATA));
+        logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(CLINPGX_DATA));
     }
 
     private Map<String, PharmaChemical> parseChemicalFile() throws IOException {
@@ -144,8 +144,8 @@ public class PharmGKBBuilder extends AbstractBuilder {
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split("\t", -1);
-                // 0                      1     2              3            4              5    6                7      8
-                // PharmGKB Accession ID  Name  Generic Names  Trade Names  Brand Mixtures Type Cross-references SMILES InChI
+                // 0                     1     2              3            4              5    6                7      8
+                // ClinPGx Accession ID  Name  Generic Names  Trade Names  Brand Mixtures Type Cross-references SMILES InChI
                 // 9                10                  11                        12                       13            14
                 // Dosing Guideline External Vocabulary Clinical Annotation Count Variant Annotation Count Pathway Count VIP Count
                 // 15                        16                             17                           18
@@ -154,7 +154,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 // Label Has Dosing Info  Has Rx Annotation  RxNorm Identifiers  ATC Identifiers  PubChem Compound Identifiers
                 PharmaChemical pharmaChemical = new PharmaChemical()
                         .setId(fields[0])
-                        .setSource(PHARMGKB_DATA)
+                        .setSource(CLINPGX_DATA)
                         .setName(fields[1])
                         .setSmiles(fields[7])
                         .setInChI(fields[8]);
@@ -201,7 +201,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
         Map<String, Map<String, Object>> variantMap = parseVariantFile();
 
         // clinical_annotations.tsv
-        Path clinAnnotPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANNOTATIONS_TSV_FILENAME);
+        Path clinAnnotPath = serializer.getOutdir().resolve(SUMMARY_ANNOTATIONS_BASENAME).resolve(SUMMARY_ANNOTATIONS_TSV_FILENAME);
         logger.info(PARSING_LOG_MESSAGE, clinAnnotPath);
         try (BufferedReader br = FileUtils.newBufferedReader(clinAnnotPath)) {
             // Skip first line, i.e. the header line
@@ -252,10 +252,10 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, fields[0]);
-                attributes.put(PHARMGKB_LEVEL_OVERRIDE_KEY, fields[4]);
-                attributes.put(PHARMGKB_LEVEL_MODIFIERS_KEY, fields[5]);
-                attributes.put(PHARMGKB_LAST_UPDATE_DATE_KEY, fields[12]);
+                attributes.put(CLINPGX_ID_KEY, fields[0]);
+                attributes.put(CLINPGX_LEVEL_OVERRIDE_KEY, fields[4]);
+                attributes.put(CLINPGX_LEVEL_MODIFIERS_KEY, fields[5]);
+                attributes.put(CLINPGX_LAST_UPDATE_DATE_KEY, fields[12]);
                 pharmaVariantAnnotation.setAttributes(attributes);
 
                 // Add some fields from the variant map
@@ -385,7 +385,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
     }
 
     private void parseClinicalAnnotationEvidenceFile(Map<String, PharmaVariantAnnotation> variantAnnotationMap) throws IOException {
-        // For CellBase, variant annotation correponds to the PharmGKB clinical annotation
+        // For CellBase, variant annotation correponds to the ClinPGx clinical annotation
         // Processing clinical annotation evidences implies to process the variant annotation, guideline annotations,
         // drug label annotations, phenotype annotations and functional analysis annotations
         Map<String, PharmaVariantAssociation> variantAssociationMap = new HashMap<>();
@@ -399,7 +399,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
         parseStudyParameterFile(variantAssociationMap);
 
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
-        Path evidencesPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_EVIDENCE_TSV_FILENAME);
+        Path evidencesPath = serializer.getOutdir().resolve(SUMMARY_ANNOTATIONS_BASENAME).resolve(SUMMARY_ANN_EVIDENCE_TSV_FILENAME);
         logger.info(PARSING_LOG_MESSAGE, evidencesPath);
         try (BufferedReader br = FileUtils.newBufferedReader(evidencesPath)) {
             // Skip first line, i.e. the header line
@@ -468,7 +468,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, fields[0]);
+                attributes.put(CLINPGX_ID_KEY, fields[0]);
                 evidence.setAttributes(attributes);
 
                 // Add evidence to clinical annotation
@@ -486,14 +486,14 @@ public class PharmGKBBuilder extends AbstractBuilder {
 
     private void parseClinicalAnnotationAlleleFile(Map<String, PharmaVariantAnnotation> variantAnnotationMap) throws IOException {
         // Parse the clinical annotation alleles file (i.e., clinical_ann_alleles.tsv)
-        Path allelesPath = serializer.getOutdir().resolve(CLINICAL_ANNOTATIONS_BASENAME).resolve(CLINICAL_ANN_ALLELES_TSV_FILENAME);
+        Path allelesPath = serializer.getOutdir().resolve(SUMMARY_ANNOTATIONS_BASENAME).resolve(SUMMARY_ANN_ALLELES_TSV_FILENAME);
         logger.info(PARSING_LOG_MESSAGE, allelesPath);
         try (BufferedReader br = FileUtils.newBufferedReader(allelesPath)) {
             // Skip first line, i.e. the header line
             String line = br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split("\t", -1);
-                // For CellBase, variant annotation is equivalent to PharmGKB clinical annotation
+                // For CellBase, variant annotation is equivalent to ClinPGx clinical annotation
                 String variantAnnotationId = fields[0];
 
                 // Sanity check
@@ -510,7 +510,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
                         .setDescription(fields[3]);
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
+                attributes.put(CLINPGX_ID_KEY, variantAnnotationId);
                 clinicalAllele.setAttributes(attributes);
 
                 // Add allele to clinical annotation
@@ -526,7 +526,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
     }
 
     private void parseVariantAnnotationFile(Map<String, PharmaVariantAssociation> variantAssociationMap) throws IOException {
-        // For CellBase, variant association corresponds to PharmGKB variant annotation
+        // For CellBase, variant association corresponds to ClinPGx variant annotation
         // Parse the variant annotation file (i.e., var_drug_ann.tsv)
         Path varDrugPath = serializer.getOutdir().resolve(VARIANT_ANNOTATIONS_BASENAME).resolve(VARIANT_ANNOTATIONS_TSV_FILENAME);
         logger.info(PARSING_LOG_MESSAGE, varDrugPath);
@@ -570,8 +570,8 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, fields[0]);
-                attributes.put(PHARMGKB_ASSOCIATION_TYPE_KEY, VARIANT_ANNOTATION_EVIDENCE_TYPE);
+                attributes.put(CLINPGX_ID_KEY, fields[0]);
+                attributes.put(CLINPGX_ASSOCIATION_TYPE_KEY, VARIANT_ANNOTATION_EVIDENCE_TYPE);
                 variantAssociation.setAttributes(attributes);
 
                 if (StringUtils.isNotEmpty(fields[3])) {
@@ -627,12 +627,12 @@ public class PharmGKBBuilder extends AbstractBuilder {
 
                 // Sanity check
                 if (StringUtils.isEmpty(drugLabelId)) {
-                    logger.warn("PharmGKB ID is missing in drug label line: {}", line);
+                    logger.warn("ClinPGx ID is missing in drug label line: {}", line);
                     continue;
                 }
 
-                // 0            1     2       3               4              5                     6                7
-                // PharmGKB ID  Name  Source  Biomarker Flag  Testing Level  Has Prescribing Info  Has Dosing Info  Has Alternate Drug
+                // 0           1     2       3               4              5                     6                7
+                // ClinPGx ID  Name  Source  Biomarker Flag  Testing Level  Has Prescribing Info  Has Dosing Info  Has Alternate Drug
                 // 8              9            10         11     12                   13
                 // Cancer Genome  Prescribing  Chemicals  Genes  Variants/Haplotypes  Latest History Date (YYYY-MM-DD)
                 PharmaDrugLabelAnnotation labelAnnotation = new PharmaDrugLabelAnnotation()
@@ -646,7 +646,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
                         .setCancerGenome(fields[8]);
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, drugLabelId);
+                attributes.put(CLINPGX_ID_KEY, drugLabelId);
                 labelAnnotation.setAttributes(attributes);
 
                 // Add the drug label annotation to the map by ParhmGKB (= Evidence ID)
@@ -704,8 +704,8 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
-                attributes.put(PHARMGKB_ASSOCIATION_TYPE_KEY, PHENOTYPE_ANNOTATION_EVIDENCE_TYPE);
+                attributes.put(CLINPGX_ID_KEY, variantAnnotationId);
+                attributes.put(CLINPGX_ASSOCIATION_TYPE_KEY, PHENOTYPE_ANNOTATION_EVIDENCE_TYPE);
                 variantAssociation.setAttributes(attributes);
 
                 if (StringUtils.isNotEmpty(fields[3])) {
@@ -766,8 +766,8 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
-                attributes.put(PHARMGKB_ASSOCIATION_TYPE_KEY, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE);
+                attributes.put(CLINPGX_ID_KEY, variantAnnotationId);
+                attributes.put(CLINPGX_ASSOCIATION_TYPE_KEY, FUNCTIONAL_ANNOTATION_EVIDENCE_TYPE);
                 variantAssociation.setAttributes(attributes);
 
                 if (StringUtils.isNotEmpty(fields[3])) {
@@ -827,7 +827,7 @@ public class PharmGKBBuilder extends AbstractBuilder {
                         .setBiogeographicalGroups(fields[16]);
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_ID_KEY, variantAnnotationId);
+                attributes.put(CLINPGX_ID_KEY, variantAnnotationId);
                 studyParams.setAttributes(attributes);
 
                 // Add the study parameters map
@@ -854,10 +854,10 @@ public class PharmGKBBuilder extends AbstractBuilder {
         //    1. From guidelines (from the members 'relatedGenes' and 'relatedChemicals')
         //    2. From the file relationships.tsv (from the relationship Gene - Chemical)
 
-        // Create the PharmGKB gene ID map by chemical name
+        // Create the ClinPGx gene ID map by chemical name
         Map<String, Set<String>> pgkbGeneIdMapByChemicalName = new HashMap<>();
 
-        // Create and populate guideline annotations map by PharmGKB gene ID
+        // Create and populate guideline annotations map by ClinPGx gene ID
         List<PharmaGuidelineAnnotation> guidelineAnnotations = new ArrayList<>(parseGuidelineAnnotationFiles().values());
         Map<String, List<PharmaGuidelineAnnotation>> guidelineAnnotationMapByPgkbGeneId = new HashMap<>();
         for (PharmaGuidelineAnnotation guidelineAnnotation : guidelineAnnotations) {
@@ -867,13 +867,13 @@ public class PharmGKBBuilder extends AbstractBuilder {
                     if (StringUtils.isNotEmpty(relatedGene.getId())) {
                         String pgkbGeneId = relatedGene.getId();
                         if (StringUtils.isNotEmpty(pgkbGeneId)) {
-                            // Populate the guideline annotation map by PharmGKB gene ID
+                            // Populate the guideline annotation map by ClinPGx gene ID
                             if (!guidelineAnnotationMapByPgkbGeneId.containsKey(pgkbGeneId)) {
                                 guidelineAnnotationMapByPgkbGeneId.put(pgkbGeneId, new ArrayList<>());
                             }
                             guidelineAnnotationMapByPgkbGeneId.get(pgkbGeneId).add(guidelineAnnotation);
 
-                            // Populate the PharmGKB gene ID map by chemical names
+                            // Populate the ClinPGx gene ID map by chemical names
                             if (CollectionUtils.isNotEmpty(guidelineAnnotation.getGuideline().getRelatedChemicals())) {
                                 for (BasicObject relatedChemical : guidelineAnnotation.getGuideline().getRelatedChemicals()) {
                                     String chemicalName = relatedChemical.getName();
@@ -904,11 +904,11 @@ public class PharmGKBBuilder extends AbstractBuilder {
 
                 // Sanity check
                 if (StringUtils.isEmpty(pgkbGeneId)) {
-                    logger.warn("PharmGKB accession ID is missing in genes file line: {}", line);
+                    logger.warn("ClinPGx accession ID is missing in genes file line: {}", line);
                     continue;
                 }
-                // 0                      1             2        3           4     5       6                7                  8
-                // PharmGKB Accession Id  NCBI Gene ID  HGNC ID  Ensembl Id  Name  Symbol  Alternate Names  Alternate Symbols  Is VIP
+                // 0                     1             2        3           4     5       6                7                  8
+                // ClinPGx Accession Id  NCBI Gene ID  HGNC ID  Ensembl Id  Name  Symbol  Alternate Names  Alternate Symbols  Is VIP
                 // 9                       10                11                         12          13
                 // Has Variant Annotation  Cross-references  Has CPIC Dosing Guideline  Chromosome  Chromosomal Start - GRCh37
                 // 14                         15                          16
@@ -944,19 +944,19 @@ public class PharmGKBBuilder extends AbstractBuilder {
                 }
 
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put(PHARMGKB_IS_VIP_KEY, fields[8]);
+                attributes.put(CLINPGX_IS_VIP_KEY, fields[8]);
                 geneAnnotation.setAttributes(attributes);
 
                 // Add to the map
                 if (geneAnnotationMapByPgkbGeneId.containsKey(pgkbGeneId)) {
-                    logger.warn("PharmGKB gene ID {} is duplicated in the PharmGKB file {}", pgkbGeneId, GENES_TSV_FILENAME);
+                    logger.warn("ClinPGx gene ID {} is duplicated in the ClinPGx file {}", pgkbGeneId, GENES_TSV_FILENAME);
                 } else {
                     geneAnnotationMapByPgkbGeneId.put(pgkbGeneId, geneAnnotation);
                 }
             }
         }
 
-        // Parse the chemical-gene relationships and update the PharmGKB gene ID map byh chemical name
+        // Parse the chemical-gene relationships and update the ClinPGx gene ID map byh chemical name
         // In addtion, updata the gene annotation map with additional fields (e.g., evidences, pubmeds...)
         parseChemicalGeneRelationships(pgkbGeneIdMapByChemicalName, geneAnnotationMapByPgkbGeneId);
 
@@ -1050,9 +1050,9 @@ public class PharmGKBBuilder extends AbstractBuilder {
         return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toList());
     }
 
-    private void unzipDownloadedFiles(List<File> pharmGkbFiles) throws CellBaseException {
+    private void unzipDownloadedFiles(List<File> clinPGxFiles) throws CellBaseException {
         // Unzip
-        for (File pharmGgkFile : pharmGkbFiles) {
+        for (File pharmGgkFile : clinPGxFiles) {
             logger.info("Unzip file: {}", pharmGgkFile);
             try {
                 String outPath = serializer.getOutdir().resolve(pharmGgkFile.getName().split("\\.")[0]).toString();

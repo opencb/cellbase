@@ -32,7 +32,7 @@ public class PharmaChemicalQuery extends AbstractQuery {
     @QueryParameter(id = "name")
     private List<String> names;
 
-    @QueryParameter(id = "source", allowedValues = {"PharmGKB"})
+    @QueryParameter(id = "source", allowedValues = {"clinpgx"})
     private List<String> sources;
 
     @QueryParameter(id = "types", alias = {"type"})

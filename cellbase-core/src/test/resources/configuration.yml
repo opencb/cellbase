@@ -251,15 +251,15 @@ download:
     version: "156"
 
   pharmGKB:
-    host: https://api.pharmgkb.org/v1/download/file/data/
-    version: v1
+    host: https://api.clinpgx.org/v1/download/file/data/
+    version: "v1"
     files:
       GENES: genes.zip
       CHEMICALS: chemicals.zip
       VARIANTS: variants.zip
       GUIDELINE_ANNOTATIONS: guidelineAnnotations.json.zip
       VARIANT_ANNOTATIONS: variantAnnotations.zip
-      CLINICAL_ANNOTATIONS: clinicalAnnotations.zip
+      SUMMARY_ANNOTATIONS: summaryAnnotations.zip
       CLINICAL_VARIANTS: clinicalVariants.zip
       DRUG_LABELS: drugLabels.zip
       RELATIONSHIPS: relationships.zip

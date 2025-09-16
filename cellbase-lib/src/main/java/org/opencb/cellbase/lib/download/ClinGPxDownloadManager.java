@@ -30,9 +30,9 @@ import java.util.List;
 
 import static org.opencb.cellbase.lib.EtlCommons.*;
 
-public class PharmGKBDownloadManager extends AbstractDownloadManager {
+public class ClinGPxDownloadManager extends AbstractDownloadManager {
 
-    public PharmGKBDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
+    public ClinGPxDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellBaseException {
         super(species, assembly, targetDirectory, configuration);
     }
@@ -45,22 +45,22 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
             return Collections.emptyList();
         }
 
-        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+        logger.info(CATEGORY_DOWNLOADING_MSG, getDataCategory(CLINPGX_DATA), getDataName(CLINPGX_DATA));
 
-        Path pharmgkbDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(PHARMGKB_DATA);
-        Files.createDirectories(pharmgkbDownloadFolder);
+        Path clinPGxDownloadFolder = downloadFolder.resolve(PHARMACOGENOMICS_DATA).resolve(CLINPGX_DATA);
+        Files.createDirectories(clinPGxDownloadFolder);
 
-        DownloadProperties.URLProperties pharmGKBConfig = configuration.getDownload().getPharmGKB();
+        DownloadProperties.URLProperties clinPGxConfig = configuration.getDownload().getClinPGx();
 
         DownloadFile downloadFile;
         List<DownloadFile> downloadFiles = new ArrayList<>();
 
         List<String> urls = new ArrayList<>();
-        for (String fileName : pharmGKBConfig.getFiles().values()) {
-            String url = pharmGKBConfig.getHost() + fileName;
+        for (String fileName : clinPGxConfig.getFiles().values()) {
+            String url = clinPGxConfig.getHost() + fileName;
             urls.add(url);
 
-            Path downloadedFilePath = pharmgkbDownloadFolder.resolve(getFilenameFromUrl(url));
+            Path downloadedFilePath = clinPGxDownloadFolder.resolve(getFilenameFromUrl(url));
             logger.info(DOWNLOADING_FROM_TO_MSG, url, downloadedFilePath);
             downloadFile = downloadFile(url, downloadedFilePath);
             logger.info(OK_MSG);
@@ -68,10 +68,10 @@ public class PharmGKBDownloadManager extends AbstractDownloadManager {
         }
 
         // Save data source
-        saveDataSource(PHARMGKB_DATA, pharmGKBConfig.getVersion(), getTimeStamp(), urls,
-                pharmgkbDownloadFolder.resolve(getDataVersionFilename(PHARMGKB_DATA)));
+        saveDataSource(CLINPGX_DATA, clinPGxConfig.getVersion(), getTimeStamp(), urls,
+                clinPGxDownloadFolder.resolve(getDataVersionFilename(CLINPGX_DATA)));
 
-        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(PHARMGKB_DATA), getDataName(PHARMGKB_DATA));
+        logger.info(CATEGORY_DOWNLOADING_DONE_MSG, getDataCategory(CLINPGX_DATA), getDataName(CLINPGX_DATA));
 
         return downloadFiles;
     }

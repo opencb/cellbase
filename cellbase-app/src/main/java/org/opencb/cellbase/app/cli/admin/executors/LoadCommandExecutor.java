@@ -557,7 +557,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(PHARMGKB_DATA)));
+        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(CLINPGX_DATA)));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 

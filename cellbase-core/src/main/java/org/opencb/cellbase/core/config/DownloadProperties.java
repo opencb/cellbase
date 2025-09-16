@@ -70,7 +70,7 @@ public class DownloadProperties {
     private URLProperties mmSplice;
     private URLProperties spliceAi;
     private URLProperties pubmed;
-    private URLProperties pharmGKB;
+    private URLProperties clinPGx;
     private URLProperties alphaMissense;
     private URLProperties pgsCatalog;
     private URLProperties chimerDb;
@@ -458,12 +458,12 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getPharmGKB() {
-        return pharmGKB;
+    public URLProperties getClinPGx() {
+        return clinPGx;
     }
 
-    public DownloadProperties setPharmGKB(URLProperties pharmGKB) {
-        this.pharmGKB = pharmGKB;
+    public DownloadProperties setClinPGx(URLProperties clinPGx) {
+        this.clinPGx = clinPGx;
         return this;
     }
 

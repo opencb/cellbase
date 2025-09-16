@@ -106,7 +106,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         downloader = new PubMedDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case PHARMACOGENOMICS_DATA:
-                        downloader = new PharmGKBDownloadManager(species, assembly, outputDirectory, configuration);
+                        downloader = new ClinGPxDownloadManager(species, assembly, outputDirectory, configuration);
                         break;
                     case PGS_DATA:
                         downloader = new PgsDownloadManager(species, assembly, outputDirectory, configuration);
