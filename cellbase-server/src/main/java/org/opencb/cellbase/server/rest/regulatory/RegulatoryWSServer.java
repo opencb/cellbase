@@ -72,6 +72,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. featureType") String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             RegulationQuery query = new RegulationQuery(uriParams);
@@ -93,6 +99,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureTypes() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -116,6 +128,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureClasses() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -158,6 +176,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
             query.setDataRelease(getDataRelease());

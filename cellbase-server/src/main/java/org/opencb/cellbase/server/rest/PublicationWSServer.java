@@ -110,6 +110,12 @@ public class PublicationWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             PublicationQuery query = new PublicationQuery(uriParams);
             query.setDataRelease(getDataRelease());

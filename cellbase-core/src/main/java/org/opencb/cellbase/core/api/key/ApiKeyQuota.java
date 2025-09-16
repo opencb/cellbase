@@ -19,16 +19,20 @@ package org.opencb.cellbase.core.api.key;
 public class ApiKeyQuota {
 
     private long maxNumQueries;
+    private long maxNumAnnotatedVariants;
+    private long maxOutputBytes;
 
     public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
     public static final Long DEFAULT_MAX_NUM_QUERIES = 10000000L;
 
     public ApiKeyQuota() {
-        this(DEFAULT_MAX_NUM_QUERIES);
+        this(DEFAULT_MAX_NUM_QUERIES, 0, 0);
     }
 
-    public ApiKeyQuota(long maxNumQueries) {
+    public ApiKeyQuota(long maxNumQueries, long maxNumAnnotatedVariants, long maxOutputBytes) {
         this.maxNumQueries = maxNumQueries;
+        this.maxNumAnnotatedVariants = maxNumAnnotatedVariants;
+        this.maxOutputBytes = maxOutputBytes;
     }
 
     @Override
@@ -45,6 +49,24 @@ public class ApiKeyQuota {
 
     public ApiKeyQuota setMaxNumQueries(long maxNumQueries) {
         this.maxNumQueries = maxNumQueries;
+        return this;
+    }
+
+    public long getMaxNumAnnotatedVariants() {
+        return maxNumAnnotatedVariants;
+    }
+
+    public ApiKeyQuota setMaxNumAnnotatedVariants(long maxNumAnnotatedVariants) {
+        this.maxNumAnnotatedVariants = maxNumAnnotatedVariants;
+        return this;
+    }
+
+    public long getMaxOutputBytes() {
+        return maxOutputBytes;
+    }
+
+    public ApiKeyQuota setMaxOutputBytes(long maxOutputBytes) {
+        this.maxOutputBytes = maxOutputBytes;
         return this;
     }
 }

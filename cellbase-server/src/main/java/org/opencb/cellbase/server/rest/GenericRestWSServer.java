@@ -140,7 +140,7 @@ public class GenericRestWSServer implements IWSServer {
             }
 
             initQuery();
-        } catch (Exception e) {
+        } catch (CellBaseException | IOException e) {
             throw new CellBaseServerException(e);
         }
     }
@@ -224,8 +224,8 @@ public class GenericRestWSServer implements IWSServer {
         // Check version, species is validated later
         checkVersion();
 
-        // Check API key (expiration date, quota,...)
-        checkApiKey();
+//        // Check API key (expiration date, quota,...)
+//        checkApiKey();
     }
 
     protected int getDataRelease() throws CellBaseException {
@@ -296,21 +296,27 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void checkApiKey() throws CellBaseException {
-        // Update the API key content only for non-meta endpoints
-        if (!uriInfo.getPath().contains("/meta/")) {
-            String apiKey = getApiKey();
-            ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
-
-            // Check API key expiration date
-            if (payload.getExpiration() != null && payload.getExpiration().getTime() < new Date().getTime()) {
-                throw new CellBaseException("CellBase API key has expired");
-            }
-
-            // Check quota
-            MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-            metaManager.checkQuota(apiKey, payload);
+    protected Response checkApiKeyOrReturnError() {
+        try {
+            checkApiKey();
+            return null;
+        } catch (CellBaseException e) {
+            return createErrorResponse(e);
         }
+    }
+
+    private void checkApiKey() throws CellBaseException {
+        String apiKey = getApiKey();
+        ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
+
+        // Check API key expiration date
+        if (payload.getExpiration() != null && payload.getExpiration().getTime() < new Date().getTime()) {
+            throw new CellBaseException("CellBase API key has expired");
+        }
+
+        // Check quota
+        MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+        metaManager.checkQuota(apiKey, payload);
     }
 
     protected Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
@@ -454,13 +460,18 @@ public class GenericRestWSServer implements IWSServer {
 
         Response jsonResponse = createJsonResponse(queryResponse);
 
-        // Update API key stats, if necessary
+        // Update API key stats, if necessary (i.e., ignore meta endpoints)
         try {
             if (!uriInfo.getPath().contains("/meta/")) {
                 String apiKey = getApiKey();
                 MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
                 long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
-                metaManager.incApiKeyStats(apiKey, 1, queryResponse.getTime(), bytes);
+                // Check number of annotated variants
+                long numAnnotatedVariants = 0;
+                if (uriInfo.getPath().contains("/variant") && uriInfo.getPath().contains("/annotation")) {
+                    numAnnotatedVariants = queryResponse.allResultsSize();
+                }
+                metaManager.incApiKeyStats(apiKey, 1, numAnnotatedVariants, queryResponse.getTime(), bytes);
             }
         } catch (CellBaseException ex) {
             return createErrorResponse(ex);

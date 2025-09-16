@@ -94,6 +94,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
     })
     public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = TRANSCRIPT_DESCRIPTION,
             required = true) String transcripts) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
 
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
@@ -121,6 +126,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
     })
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] ids = id.split(",");
@@ -187,6 +198,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -225,6 +242,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = TRANSCRIPT_XREFS_DESCRIPTION,
             required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id, getDataRelease());
             return createOkResponse(queryResults);
@@ -245,6 +268,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
     })
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = TRANSCRIPT_IDS_DESCRIPTION, required = true) String transcripts) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<ProteinQuery> queries = new ArrayList<>();
             String[] ids = transcripts.split(",");
@@ -273,6 +302,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                               @QueryParam("aa") @ApiParam(name = "aa",
                                                                       value = AA_DESCRIPTION,
                                                                       required = false) String aa) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
             query.setDataRelease(getDataRelease());

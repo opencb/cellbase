@@ -63,22 +63,37 @@ public class MetaManager extends AbstractManager {
         CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getQuota(apiKey, date);
 
         long numQueries = 0;
+        long numAnnotatedVariants = 0;
+        long outputBytes = 0;
         if (quotaResult.getNumResults() == 0) {
             metaDBAdaptor.initApiKeyStats(apiKey, date);
         } else {
             numQueries = quotaResult.first().getNumQueries();
+            numAnnotatedVariants = quotaResult.first().getNumAnnotatedVariants();
+            outputBytes = quotaResult.first().getOutputBytes();
         }
         if (numQueries >= payload.getQuota().getMaxNumQueries()) {
             throw new CellBaseException("Maximum query limit reached: Your current API key has a quota of "
-                    + payload.getQuota().getMaxNumQueries() + " queries");
+                    + payload.getQuota().getMaxNumQueries() + " queries; currently " + numQueries + " queries");
+        }
+        if (payload.getQuota().getMaxNumAnnotatedVariants() > 0
+                && numAnnotatedVariants >= payload.getQuota().getMaxNumAnnotatedVariants()) {
+            throw new CellBaseException("Maximum annotated variants limit reached: Your current API key has a quota of "
+                    + payload.getQuota().getMaxNumAnnotatedVariants() + " annotated variants; currently " + numAnnotatedVariants
+                    + " annotated variants");
+        }
+        if (payload.getQuota().getMaxOutputBytes() > 0 && outputBytes >= payload.getQuota().getMaxOutputBytes()) {
+            throw new CellBaseException("Maximum output bytes limit reached: Your current API key has a quota of "
+                    + payload.getQuota().getMaxOutputBytes() + " bytes; currently used " + outputBytes + " bytes");
         }
     }
 
-    public CellBaseDataResult incApiKeyStats(String apiKey, long incNumQueries, long incDuration, long incBytes) {
+    public CellBaseDataResult incApiKeyStats(String apiKey, long incNumQueries, long incNumAnnotatedVariants, long incDuration,
+                                             long incOutputBytes) {
         String date = getApiKeyStatsDate();
 
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
-        return metaDBAdaptor.incApiKeyStats(apiKey, date, incNumQueries, incDuration, incBytes);
+        return metaDBAdaptor.incApiKeyStats(apiKey, date, incNumQueries, incNumAnnotatedVariants, incDuration, incOutputBytes);
     }
 
     private String getApiKeyStatsDate() {

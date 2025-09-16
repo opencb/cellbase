@@ -23,6 +23,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.VariantManager;
@@ -61,8 +62,8 @@ public class VariantWSServer extends GenericRestWSServer {
         super(apiVersion, species, assembly, uriInfo, hsr);
         try {
             variantManager = cellBaseManagerFactory.getVariantManager(this.species, this.assembly);
-        } catch (Exception e) {
-            throw new CellBaseServerException(e.getMessage());
+        } catch (CellBaseException e) {
+            throw new CellBaseServerException(e);
         }
     }
 
@@ -80,6 +81,12 @@ public class VariantWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             DataRelease dataRelease = getDataRelease(getDataRelease(), species, assembly);
             List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, dataRelease);
@@ -108,6 +115,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                              allowableValues = "false,true",
                                              defaultValue = "false") Boolean leftAlign) {
 
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             DataRelease dataRelease = getDataRelease(getDataRelease(), species, assembly);
             CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, Boolean.TRUE.equals(decompose),
@@ -116,7 +129,6 @@ public class VariantWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-
     }
 
     @POST
@@ -192,13 +204,17 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         + "or refSeq", allowableValues = "ensembl,refseq", defaultValue = "ensembl",
                                                         required = false) String consequenceTypeSource
     ) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
 
         try {
             checkNormalizationConfig();
         } catch (IllegalArgumentException e) {
             return createErrorResponse(e);
         }
-
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -284,6 +300,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        defaultValue = "ensembl", required = false) String consequenceTypeSource
 
     ) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             checkNormalizationConfig();
         } catch (IllegalArgumentException e) {
@@ -369,6 +391,12 @@ public class VariantWSServer extends GenericRestWSServer {
     })
     public Response getInfo(@PathParam("variants") @ApiParam(name = "variants", value = RS_IDS,
             required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             VariantQuery query = new VariantQuery(uriParams);
             List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")), query,
@@ -414,6 +442,12 @@ public class VariantWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response search() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             VariantQuery query = new VariantQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -449,6 +483,12 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get all sequence ontology terms describing consequence types",
             response = String.class, responseContainer = "QueryResponse")
     public Response getAllConsequenceTypes() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
 //            parseQueryParams();
             CellBaseDataResult<String> queryResult = variantManager.getConsequenceTypes();
@@ -483,6 +523,12 @@ public class VariantWSServer extends GenericRestWSServer {
                             @QueryParam("chromosome") @ApiParam(name = "chromosome", value = "Chromosome") String chromosome,
                             @QueryParam("position") @ApiParam(name = "position", value = "Position") Integer position,
                             @QueryParam("reference") @ApiParam(name = "reference", value = "Reference") String reference) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             SnpQuery query = new SnpQuery(uriParams);
             CellBaseDataResult<Snp> queryResult = variantManager.searchSnp(query);
@@ -506,6 +552,12 @@ public class VariantWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response startsWithSnp(@QueryParam("id") @ApiParam(name = "id", value = "SNP ID, e.g.: rs15703916") String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             try {
                 SnpQuery query = new SnpQuery(uriParams);

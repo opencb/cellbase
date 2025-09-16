@@ -60,7 +60,7 @@ public class ApiKeyManager {
         ApiKeyJwtPayload payload = new ApiKeyJwtPayload();
         payload.setSubject("ANONYMOUS");
         payload.setVersion(ApiKeyJwtPayload.CURRENT_VERSION);
-        payload.setQuota(new ApiKeyQuota(ApiKeyQuota.MAX_NUM_ANOYMOUS_QUERIES));
+        payload.setQuota(new ApiKeyQuota(ApiKeyQuota.MAX_NUM_ANOYMOUS_QUERIES, 0, 0));
         defaultApiKey = encode(payload);
     }
 
@@ -169,7 +169,9 @@ public class ApiKeyManager {
             sb.append("\t- '").append(entry.getKey()).append("' until ").append(DATE_FORMATTER.format(entry.getValue())).append("\n");
         }
         sb.append("Quota:\n");
-        sb.append("\tMax. num. queries: ").append(payload.getQuota().getMaxNumQueries()).append("\n");
+        sb.append("\tMax. num. queries           : ").append(payload.getQuota().getMaxNumQueries()).append("\n");
+        sb.append("\tMax. num. annotated variants: ").append(payload.getQuota().getMaxNumAnnotatedVariants()).append("\n");
+        sb.append("\tMax. output bytes      : ").append(payload.getQuota().getMaxOutputBytes()).append("\n");
 
         System.out.println(sb);
     }

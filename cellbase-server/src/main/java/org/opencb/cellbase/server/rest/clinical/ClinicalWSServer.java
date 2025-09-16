@@ -109,6 +109,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -126,6 +132,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all available allele origin labels", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response getAlleleOriginLabels() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             return createOkResponse(clinicalManager.getAlleleOriginLabels());
         } catch (Exception e) {
@@ -139,6 +151,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all available mode of inheritance labels", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response getModeInheritanceLabels() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             return createOkResponse(clinicalManager.getModeInheritanceLabels());
         } catch (Exception e) {
@@ -152,6 +170,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all available clinical significance labels", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response getClinicalSignificanceLabels() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             return createOkResponse(clinicalManager.getClinsigLabels());
         } catch (Exception e) {
@@ -165,6 +189,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all available consistency labels", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response getConsistencyLabels() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             return createOkResponse(clinicalManager.getConsistencyLabels());
         } catch (Exception e) {
@@ -178,6 +208,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all available variant types", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response getVariantTypes() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             return createOkResponse(clinicalManager.getVariantTypes());
         } catch (Exception e) {

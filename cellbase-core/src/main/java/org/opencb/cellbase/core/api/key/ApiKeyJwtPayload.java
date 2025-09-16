@@ -72,6 +72,8 @@ public class ApiKeyJwtPayload extends DefaultClaims {
         ApiKeyQuota output = new ApiKeyQuota();
         if (input != null) {
             output.setMaxNumQueries(((Integer) input.get("maxNumQueries")).longValue());
+            output.setMaxNumAnnotatedVariants(((Integer) input.get("maxNumAnnotatedVariants")).longValue());
+            output.setMaxOutputBytes(((Integer) input.get("maxOutputBytes")).longValue());
         }
         return output;
     }

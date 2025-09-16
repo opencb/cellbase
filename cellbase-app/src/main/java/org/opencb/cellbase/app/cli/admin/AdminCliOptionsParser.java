@@ -201,6 +201,16 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " maximum number of queries per month", arity = 1)
         public long maxNumQueries = ApiKeyQuota.DEFAULT_MAX_NUM_QUERIES;
 
+        @Parameter(names = {"--max-num-annotated-variants"}, description = "Use this parameter in conjunction with --create-api-key to"
+                + " specify the maximum number of annotated variants per month. A value of 0 indicates that no annotated variants limit" +
+                " will be applied.", arity = 1)
+        public long maxNumAnnotatedVariants = 0;
+
+        @Parameter(names = {"--max-num-output-bytes"}, description = "Use this parameter in conjunction with --create-api-key to specify"
+                + " the maximum number of returned bytes (per month) by the queries. A value of 0 indicates that no bytes limit will be"
+                + " applied", arity = 1)
+        public long maxNumOutputBytes = 0;
+
         @Parameter(names = {"--view-api-key"}, description = "API key to view", arity = 1)
         public String apiKeyToView;
     }

@@ -127,6 +127,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response groupBy(@DefaultValue("") @QueryParam("field") @ApiParam(name = "field", value = "Comma separated list of "
             + "field(s) to group by, e.g.: biotype.", required = true) String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
@@ -176,6 +182,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getAggregationStats(@DefaultValue("") @QueryParam("field")
                                         @ApiParam(name = "field", value = GROUP_BY_FIELDS, required = true) String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
@@ -265,6 +277,12 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAll(@QueryParam(SPLIT_RESULT_PARAM) @ApiParam(name = SPLIT_RESULT_PARAM,
             value = SPLIT_RESULT_DESCRIPTION,
             defaultValue = "false", allowableValues = "false,true") boolean splitResultById) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             if (splitResultById) {
                 // if we are splitting, can only have ONE of the three identifier fields populated
@@ -352,6 +370,12 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfo(@PathParam("genes") @ApiParam(name = "genes", value = GENE_IDS, required = true) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setDataRelease(getDataRelease());
@@ -383,6 +407,12 @@ public class GeneWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response startsWith(@PathParam("gene") @ApiParam(name = "gene", value = GENE_IDS, required = true) String gene) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             String source = "ensembl";
@@ -409,6 +439,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = GENE_XREF_IDS, required = true) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<TranscriptQuery> queries = new ArrayList<>();
             String[] ids = genes.split(",");
@@ -464,6 +500,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. biotype") String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
@@ -500,6 +542,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getSNPByGenes(@PathParam("genes")
                                   @ApiParam(name = "genes", value = GENE_XREF_IDS) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<VariantQuery> queries = new ArrayList<>();
             String[] ids = genes.split(",");
@@ -528,6 +576,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = GENE_ENSEMBL_IDS,
             required = true) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setDataRelease(getDataRelease());
@@ -551,6 +605,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = GENE_IDS,
             required = true) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -575,6 +635,12 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getSequence(@PathParam("genes") @ApiParam(name = "genes", value = GENE_IDS,
             required = true) String genes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] identifiers =  genes.split(",");

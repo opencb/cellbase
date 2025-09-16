@@ -83,6 +83,12 @@ public class IdWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = FEATURE_IDS_DESCRIPTION, required = true)
                                     String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             XrefQuery query = new XrefQuery(uriParams);
             List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
@@ -104,6 +110,12 @@ public class IdWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllXrefs() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             XrefQuery query = new XrefQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -176,6 +188,12 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getGeneByEnsemblId(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GeneQuery query = new GeneQuery(uriParams);
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),

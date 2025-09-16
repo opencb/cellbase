@@ -24,6 +24,8 @@ import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
+import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.api.key.ApiKeyStats;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
@@ -116,7 +118,10 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 
     public CellBaseDataResult initApiKeyStats(String apiKey, String date) throws CellBaseException {
         try {
-            ApiKeyStats apiKeyStats = new ApiKeyStats(apiKey, date);
+            ApiKeyManager apiKeyManager = new ApiKeyManager();
+            ApiKeyJwtPayload payload = apiKeyManager.decode(apiKey);
+
+            ApiKeyStats apiKeyStats = new ApiKeyStats(apiKey, date, payload);
             Document document = Document.parse(new ObjectMapper().writeValueAsString(apiKeyStats));
             return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.insert(document, QueryOptions.empty()));
         } catch (IOException e) {
@@ -124,19 +129,22 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         }
     }
 
-    public CellBaseDataResult incApiKeyStats(String apiKey, String date, long incNumQueries, long incDuration, long incBytes) {
+    public CellBaseDataResult incApiKeyStats(String apiKey, String date, long incNumQueries, long incNumAnnotatedVariants, long incDuration,
+                                             long incOuputBytes) {
         List<Bson> andBsonList = new ArrayList<>();
         andBsonList.add(Filters.eq("apiKey", apiKey));
         andBsonList.add(Filters.eq("date", date));
         Bson query = Filters.and(andBsonList);
 
         Bson update = Updates.combine(Updates.inc("numQueries", incNumQueries),
+                Updates.inc("numAnnotatedVariants", incNumAnnotatedVariants),
                 Updates.inc("duration", incDuration),
-                Updates.inc("bytes", incBytes));
+                Updates.inc("outputBytes", incOuputBytes));
 
         Document projection = new Document("numQueries", true)
+                .append("numAnnotatedVariants", true)
                 .append("duration", true)
-                .append("bytes", true);
+                .append("outputBytes", true);
 
         QueryOptions queryOptions = new QueryOptions("replace", true);
 
