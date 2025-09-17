@@ -150,7 +150,7 @@ download:
       CANCER_GENE_CENSUS: "manual@cancer-gene-census.tsv"
   pgsCatalog:
     host: https://www.pgscatalog.org/
-    version: "Dec. 15, 2023"
+    version: "2023-12-15"
     files:
       PGS_CATALOG: https://ftp.ebi.ac.uk/pub/databases/spot/pgs/metadata/pgs_all_metadata_scores.csv
 
@@ -181,7 +181,7 @@ download:
   ## Protein Data
   uniprot:
     host: https://ftp.uniprot.org/
-    version: "2025_02"
+    version: "2025-02"
     files:
       UNIPROT: pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
   interpro:
@@ -242,7 +242,7 @@ download:
       HGMD: hgmd.vcf
   civic:
     host: https://civicdb.org/
-    version: "01-Sep-2025"
+    version: "2025-09-01"
     files:
       VARIANTS: downloads/01-Sep-2025/01-Sep-2025-VariantSummaries.tsv
       FEATURES: downloads/01-Sep-2025/01-Sep-2025-FeatureSummaries.tsv
@@ -263,7 +263,7 @@ download:
 
   clinPGx:
     host: https://api.clinpgx.org/v1/download/file/data/
-    version: "v1"
+    version: "2025-09-01"
     files:
       GENES: genes.zip
       CHEMICALS: chemicals.zip
