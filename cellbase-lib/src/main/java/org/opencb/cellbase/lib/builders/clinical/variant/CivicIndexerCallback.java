@@ -277,6 +277,8 @@ public class CivicIndexerCallback implements CivicParserCallback {
     }
 
     private void addAdditionalProperties(CivicClinicalEvidence civicEvidence, List<Property> additionalProperties) {
+        addAdditionalProperty("rating", civicEvidence.getRating(), additionalProperties);
+        addAdditionalProperty("evidence_level", civicEvidence.getEvidenceLevel(), additionalProperties);
         addAdditionalProperty("disease", civicEvidence.getDisease(), additionalProperties);
         addAdditionalProperty("doid", civicEvidence.getDoid(), additionalProperties);
         addAdditionalProperty("phenotypes", civicEvidence.getPhenotypes(), additionalProperties);
