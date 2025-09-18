@@ -66,11 +66,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         List<String> urls;
 
         // ClinVar
-        versionPath = clinicalPath.resolve(getDataVersionFilename(CLINVAR_DATA));
+        downloadPath = clinicalPath.resolve(CLINVAR_DATA);
+        versionPath = downloadPath.resolve(getDataVersionFilename(CLINVAR_DATA));
         if (Files.exists(versionPath)) {
             logger.info("{} already downloaded. Skipping download.", getDataName(CLINVAR_DATA));
         } else {
-            downloadPath = clinicalPath.resolve(CLINVAR_DATA);
             if (!Files.exists(downloadPath)) {
                 logger.info("Creating {} directory: {}...", CLINVAR_DATA, downloadPath);
                 Files.createDirectory(downloadPath);
@@ -93,11 +93,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         }
 
         // COSMIC
-        versionPath = clinicalPath.resolve(getDataVersionFilename(COSMIC_DATA));
+        downloadPath = clinicalPath.resolve(COSMIC_DATA);
+        versionPath = downloadPath.resolve(getDataVersionFilename(COSMIC_DATA));
         if (Files.exists(versionPath)) {
             logger.info("{} already downloaded. Skipping download.", getDataName(COSMIC_DATA));
         } else {
-            downloadPath = clinicalPath.resolve(COSMIC_DATA);
             if (!Files.exists(downloadPath)) {
                 logger.info("Creating {} directory: {}...", COSMIC_DATA, downloadPath);
                 Files.createDirectory(downloadPath);
@@ -114,11 +114,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         }
 
         // HGMD
-        versionPath = clinicalPath.resolve(getDataVersionFilename(HGMD_DATA));
+        downloadPath = clinicalPath.resolve(HGMD_DATA);
+        versionPath = downloadPath.resolve(getDataVersionFilename(HGMD_DATA));
         if (Files.exists(versionPath)) {
             logger.info("{} already downloaded. Skipping download.", getDataName(HGMD_DATA));
         } else {
-            downloadPath = clinicalPath.resolve(HGMD_DATA);
             if (!Files.exists(downloadPath)) {
                 logger.info("Creating {} directory: {}...", HGMD_DATA, downloadPath);
                 Files.createDirectory(downloadPath);
@@ -131,11 +131,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         }
 
         // CIViC
-        versionPath = clinicalPath.resolve(getDataVersionFilename(CIVIC_DATA));
+        downloadPath = clinicalPath.resolve(CIVIC_DATA);
+        versionPath = downloadPath.resolve(getDataVersionFilename(CIVIC_DATA));
         if (Files.exists(versionPath)) {
             logger.info("{} already downloaded. Skipping download.", getDataName(CIVIC_DATA));
         } else {
-            downloadPath = clinicalPath.resolve(CIVIC_DATA);
             if (!Files.exists(downloadPath)) {
                 logger.info("Creating {} directory: {}...", CIVIC_DATA, downloadPath);
                 Files.createDirectory(downloadPath);
@@ -158,11 +158,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
         }
 
         // GWAS catalog
-        versionPath = clinicalPath.resolve(getDataVersionFilename(GWAS_DATA));
+        downloadPath = clinicalPath.resolve(GWAS_DATA);
+        versionPath = downloadPath.resolve(getDataVersionFilename(GWAS_DATA));
         if (Files.exists(versionPath)) {
             logger.info("{} already downloaded. Skipping download.", getDataName(GWAS_DATA));
         } else {
-            downloadPath = clinicalPath.resolve(GWAS_DATA);
             if (!Files.exists(downloadPath)) {
                 logger.info("Creating {} directory: {}...", GWAS_DATA, downloadPath);
                 Files.createDirectory(downloadPath);

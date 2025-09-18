@@ -491,11 +491,11 @@ public class BuildCommandExecutor extends CommandExecutor {
         // Sanity check
         Path clinicalDownloadPath = downloadFolder.resolve(CLINICAL_VARIANT_DATA);
         Path clinicalBuildPath = buildFolder.resolve(CLINICAL_VARIANT_DATA);
-        copyVersionFiles(Arrays.asList(clinicalDownloadPath.resolve(getDataVersionFilename(CLINVAR_DATA)),
-                clinicalDownloadPath.resolve(getDataVersionFilename(COSMIC_DATA)),
-                clinicalDownloadPath.resolve(getDataVersionFilename(HGMD_DATA)),
-                clinicalDownloadPath.resolve(getDataVersionFilename(CIVIC_DATA)),
-                clinicalDownloadPath.resolve(getDataVersionFilename(GWAS_DATA))), clinicalBuildPath);
+        copyVersionFiles(Arrays.asList(clinicalDownloadPath.resolve(CLINVAR_DATA).resolve(getDataVersionFilename(CLINVAR_DATA)),
+                clinicalDownloadPath.resolve(COSMIC_DATA).resolve(getDataVersionFilename(COSMIC_DATA)),
+                clinicalDownloadPath.resolve(HGMD_DATA).resolve(getDataVersionFilename(HGMD_DATA)),
+                clinicalDownloadPath.resolve(CIVIC_DATA).resolve(getDataVersionFilename(CIVIC_DATA)),
+                clinicalDownloadPath.resolve(GWAS_DATA).resolve(getDataVersionFilename(GWAS_DATA))), clinicalBuildPath);
 
         // Create the file serializer and the clinical variants builder
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(clinicalBuildPath, CLINICAL_VARIANTS_BASENAME, true);
