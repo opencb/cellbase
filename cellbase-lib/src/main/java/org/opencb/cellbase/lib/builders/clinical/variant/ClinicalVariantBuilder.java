@@ -134,7 +134,7 @@ public class ClinicalVariantBuilder extends AbstractBuilder {
 
         // Check GWAS files
         downloadPath = clinicalVariantPath.resolve(GWAS_DATA);
-        gwasFilePath = checkFiles(GWAS_DATA, clinicalVariantPath, 1).get(0).toPath();
+        gwasFilePath = checkFiles(GWAS_DATA, downloadPath, 1).get(0).toPath();
         String dbSnpFilename = Paths.get(configuration.getDownload().getGwasCatalog().getFiles().get(GWAS_DBSNP_FILE_ID)).getFileName()
                 .toString();
         gwasDbSnpFilePath = downloadPath.resolve(dbSnpFilename);
