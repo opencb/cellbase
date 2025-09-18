@@ -169,8 +169,10 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
             }
 
             logger.info(DOWNLOADING_MSG, getDataName(GWAS_DATA));
-            downloadFile = downloadAndSaveDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, downloadPath);
+            downloadFile = downloadDataSource(configuration.getDownload().getGwasCatalog(), GWAS_FILE_ID, GWAS_DATA, downloadPath);
             downloadFiles.add(downloadFile);
+            saveDataSource(GWAS_DATA, configuration.getDownload().getGwasCatalog().getVersion(), getTimeStamp(),
+                    Collections.singletonList(downloadFile.getUrl()), versionPath);
             logger.info(DOWNLOADING_DONE_MSG, getDataName(GWAS_DATA));
         }
 
