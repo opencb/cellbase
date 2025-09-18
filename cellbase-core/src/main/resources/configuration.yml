@@ -262,7 +262,7 @@ download:
 
   clinPGx:
     host: https://api.clinpgx.org/v1/download/file/data/
-    version: "2025-09-18"
+    version: "2025-09-01"
     files:
       GENES: genes.zip
       CHEMICALS: chemicals.zip
