@@ -22,10 +22,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.civic.CivicParserCallback;
-import org.opencb.biodata.models.core.civic.CivicAssertion;
-import org.opencb.biodata.models.core.civic.CivicClinicalEvidence;
-import org.opencb.biodata.models.core.civic.CivicFeature;
-import org.opencb.biodata.models.core.civic.CivicVariant;
+import org.opencb.biodata.models.core.civic.*;
 import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
 import org.rocksdb.RocksDB;
@@ -66,13 +63,23 @@ public class CivicIndexerCallback implements CivicParserCallback {
         try {
             // Get sequence location
             SequenceLocation sequenceLocation = getLocation(civicVariant);
-
-            // Get evidence entries
-            List<EvidenceEntry> evidenceEntries = getEvidences(civicVariant);
-
-            // Update RocksDB
-            return updateRocksDB(sequenceLocation, evidenceEntries);
+            if (sequenceLocation != null) {
+                // Get evidence entries
+                List<EvidenceEntry> evidenceEntries = getEvidences(civicVariant);
+                if (CollectionUtils.isNotEmpty(evidenceEntries)) {
+                    // Update RocksDB
+                    return updateRocksDB(sequenceLocation, evidenceEntries);
+                } else {
+                    logger.warn("Skipping CIViC variant ID {}: no evidences found", civicVariant.getVariantId());
+                    return false;
+                }
+            } else {
+                logger.warn("Skipping CIViC variant ID {}: invalid position", civicVariant.getVariantId());
+                return false;
+            }
         } catch (Exception e) {
+            // Log message
+            logger.warn("Skipping CIViC variant ID {}; exception message: {}", civicVariant.getVariantId(), e.getMessage());
             return false;
         }
     }
@@ -110,7 +117,7 @@ public class CivicIndexerCallback implements CivicParserCallback {
         String ref = StringUtils.isEmpty(civicVariant.getReferenceBases()) ? "-" : civicVariant.getReferenceBases();
         String alt = StringUtils.isEmpty(civicVariant.getVariantBases()) ? "-" : civicVariant.getVariantBases();
 
-        if (StringUtils.isNotEmpty(chromosome) && StringUtils.isNotEmpty(start)) {
+        if (StringUtils.isEmpty(chromosome) || StringUtils.isEmpty(start)) {
             logger.warn("Invalid position: {}:{} (CIViC ID: {})", chromosome, start, civicVariant.getVariantId());
             numInvalidPositionLines++;
             return null;
@@ -128,17 +135,19 @@ public class CivicIndexerCallback implements CivicParserCallback {
     private List<EvidenceEntry> getEvidences(CivicVariant civicVariant) {
         List<EvidenceEntry> evidenceEntries = new ArrayList<>();
 
-        if (civicVariant.getMolecularProfile() != null) {
-            // Process evidences from molecular profile
-            if (CollectionUtils.isNotEmpty(civicVariant.getMolecularProfile().getEvidences())) {
-                addEvidenceEntries(civicVariant, civicVariant.getMolecularProfile().getEvidences(), evidenceEntries);
-            }
+        if (CollectionUtils.isNotEmpty(civicVariant.getMolecularProfiles())) {
+            for (CivicMolecularProfile molecularProfile : civicVariant.getMolecularProfiles()) {
+                // Process evidences from molecular profile
+                if (CollectionUtils.isNotEmpty(molecularProfile.getEvidences())) {
+                    addEvidenceEntries(civicVariant, molecularProfile.getEvidences(), evidenceEntries);
+                }
 
-            // Process evidences from assertions
-            if (CollectionUtils.isNotEmpty(civicVariant.getMolecularProfile().getAssertions())) {
-                for (CivicAssertion assertion : civicVariant.getMolecularProfile().getAssertions()) {
-                    if (CollectionUtils.isNotEmpty(assertion.getEvidences())) {
-                        addEvidenceEntries(civicVariant, assertion.getEvidences(), evidenceEntries);
+                // Process evidences from assertions
+                if (CollectionUtils.isNotEmpty(molecularProfile.getAssertions())) {
+                    for (CivicAssertion assertion : molecularProfile.getAssertions()) {
+                        if (CollectionUtils.isNotEmpty(assertion.getEvidences())) {
+                            addEvidenceEntries(civicVariant, assertion.getEvidences(), evidenceEntries);
+                        }
                     }
                 }
             }

@@ -51,16 +51,18 @@ public class CivicIndexer extends ClinicalIndexer {
     }
 
     public void index() throws CellBaseException {
-        // Call CIViC parser
         String dataName = EtlCommons.getDataName(EtlCommons.CIVIC_DATA);
         try {
             logger.info("Parsing {} files ...", dataName);
+
+            // Call CIViC parser
             CivicIndexerCallback callback = new CivicIndexerCallback(rdb, this);
-            CivicParser.parse(civicVariantsFilePath, civicFeaturesFilePath, civicProfilesFilePath, civicAssertionsFilePath,
-                    civicEvidencesFilePath, version, callback);
+            CivicParser parser = new CivicParser(civicVariantsFilePath, civicFeaturesFilePath, civicProfilesFilePath,
+                    civicAssertionsFilePath, civicEvidencesFilePath, version, assembly, callback);
+            parser.parse();
 
             logger.info("{} parsing finished: {} variants passed", dataName, callback.getNumPassedVariants());
-            logger.info("{} parsing finished: {} invalid lines by nucletiodes", dataName, callback.getNumInvalidBaseLines());
+            logger.info("{} parsing finished: {} invalid lines by nucleotides", dataName, callback.getNumInvalidBaseLines());
             logger.info("{} parsing finished: {} invalid lines by position", dataName, callback.getNumInvalidPositionLines());
         } catch (IOException | FileFormatException e) {
             throw new CellBaseException("Error parsing " + dataName + " files: " + civicVariantsFilePath + ", " + civicFeaturesFilePath
