@@ -212,7 +212,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         }
                         case EtlCommons.PHARMACOGENOMICS_DATA: {
                             // Load data, create index and update release
-                            loadPharmacogenomica();
+                            loadPharmacogenomics();
                             break;
                         }
                         case EtlCommons.PGS_DATA: {
@@ -532,32 +532,33 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadPharmacogenomica() throws IOException, CellBaseException {
-        Path pharmaPath = input.resolve(EtlCommons.PHARMACOGENOMICS_DATA);
+    private void loadPharmacogenomics() throws IOException, CellBaseException {
+        // ClinPGx
+        Path clinPGxPath = input.resolve(EtlCommons.PHARMACOGENOMICS_DATA).resolve(CLINPGX_DATA);
 
-        if (!Files.exists(pharmaPath)) {
-            logger.warn("Pharmacogenomics folder {} not found to load", pharmaPath);
+        if (!Files.exists(clinPGxPath)) {
+            logger.warn("Pharmacogenomics/ClinPGx folder {} not found to load", clinPGxPath);
             return;
         }
 
         // Load data
-        Path pharmaJsonPath = pharmaPath.resolve(EtlCommons.PHARMACOGENOMICS_DATA + ".json.gz");
-        logger.info(LOADING_FILE_LOG_MESSAGE, pharmaJsonPath.toFile().getName());
+        Path cliniPGxFile = clinPGxPath.resolve(CLINPGX_DATA + JSON_GZ_EXTENSION);
+        logger.info(LOADING_FILE_LOG_MESSAGE, cliniPGxFile.toFile().getName());
         try {
-            loadRunner.load(pharmaJsonPath, EtlCommons.PHARMACOGENOMICS_DATA, dataRelease);
+            loadRunner.load(cliniPGxFile, EtlCommons.PHARMACOGENOMICS_DATA, dataRelease);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                  | IllegalAccessException | ExecutionException | IOException | CellBaseException | LoaderException e) {
-            logger.error(ERROR_LOADING_FILE_LOG_MESSAGE, pharmaJsonPath.toFile().getName(), Arrays.toString(e.getStackTrace()));
+            throw new CellBaseException("Error loading file " + cliniPGxFile.getFileName(), e);
         } catch (InterruptedException e) {
-            logger.error(ERROR_LOADING_FILE_LOG_MESSAGE, pharmaJsonPath.toFile().getName(), Arrays.toString(e.getStackTrace()));
             // Restore interrupted state...
             Thread.currentThread().interrupt();
+            throw new CellBaseException("Error loading file " + cliniPGxFile.getFileName(), e);
         }
         // Create index
         createIndex(EtlCommons.PHARMACOGENOMICS_DATA);
 
         // Update release (collection and sources)
-        List<Path> sources = Collections.singletonList(pharmaPath.resolve(getDataVersionFilename(CLINPGX_DATA)));
+        List<Path> sources = Collections.singletonList(clinPGxPath.resolve(getDataVersionFilename(CLINPGX_DATA)));
         dataReleaseManager.update(dataRelease, EtlCommons.PHARMACOGENOMICS_DATA, sources);
     }
 

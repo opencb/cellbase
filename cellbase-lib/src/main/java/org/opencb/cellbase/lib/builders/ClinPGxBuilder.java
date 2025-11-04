@@ -91,9 +91,9 @@ public class ClinPGxBuilder extends AbstractBuilder {
     private static final String CLINPGX_LAST_UPDATE_DATE_KEY = "CLINPGX_LAST_UPDATE_DATE";
     private static final String CLINPGX_IS_VIP_KEY = "CLINPGX_IS_VIP";
 
-    public ClinPGxBuilder(Path parmGkbDownloadPath, CellBaseFileSerializer serializer) {
+    public ClinPGxBuilder(Path clinPGxDownloadPath, CellBaseFileSerializer serializer) {
         super(serializer);
-        this.clinPGxDownloadPath = parmGkbDownloadPath;
+        this.clinPGxDownloadPath = clinPGxDownloadPath;
     }
 
     @Override
@@ -120,11 +120,11 @@ public class ClinPGxBuilder extends AbstractBuilder {
         // Parse gene file
         parseGeneFile(chemicalsMap);
 
-        // Generation the pharmacogenomics JSON file
-        logger.info("Writing {} JSON file to {} ...", PHARMACOGENOMICS_DATA, serializer.getOutdir());
+        // Generation the ClinPGx JSON file
+        logger.info("Writing {} JSON file to {} ...", CLINPGX_DATA, serializer.getOutdir());
         int counter = 0;
         for (Map.Entry<String, PharmaChemical> entry : chemicalsMap.entrySet()) {
-            ((CellBaseFileSerializer) serializer).serialize(entry.getValue(), PHARMACOGENOMICS_DATA);
+            ((CellBaseFileSerializer) serializer).serialize(entry.getValue(), CLINPGX_DATA);
             if (++counter % 1000 == 0) {
                 logger.info("\t\t {} chemicals/drugs written.", counter);
             }
