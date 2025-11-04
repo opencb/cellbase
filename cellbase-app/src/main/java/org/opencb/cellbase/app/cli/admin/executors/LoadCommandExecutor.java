@@ -157,15 +157,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
-                            // Load data
-                            loadIfExists(input.resolve("cadd.json.gz"), VARIATION_FUNCTIONAL_SCORE_DATA);
-
-                            // Create index
-                            createIndex(VARIATION_FUNCTIONAL_SCORE_DATA);
-
-                            // Update release (collection and sources)
-                            List<Path> sources = new ArrayList<>(Collections.singletonList(input.resolve("caddVersion.json")));
-                            dataReleaseManager.update(dataRelease, VARIATION_FUNCTIONAL_SCORE_DATA, sources);
+                            loadVariantFunctionalScore();
                             break;
                         }
                         case EtlCommons.CONSERVATION_DATA: {
@@ -362,6 +354,14 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info(LOADING_FILE_LOG_MESSAGE, input);
             loadRunner.load(input, VARIATION_DATA, dataRelease, field, innerFields);
         }
+    }
+
+    private void loadVariantFunctionalScore() throws CellBaseException {
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(VARIATION_FUNCTIONAL_SCORE_DATA, CADD_DATA + JSON_GZ_EXTENSION);
+
+        Path caddBuildPath = input.resolve(VARIATION_FUNCTIONAL_SCORE_DATA).resolve(CADD_DATA);
+        loadData(caddBuildPath, collectionMap);
     }
 
     private void loadConservation() throws IOException, CellBaseException {
