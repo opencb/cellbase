@@ -356,8 +356,6 @@ public final class EtlCommons {
      */
     @Deprecated
     public static final String GERP_FILE = "gerp_conservation_scores.homo_sapiens.GRCh38.bw";
-    public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
-    public static final String CLINICAL_VARIANTS_ANNOTATED_JSON_FILE = "clinical_variants.full.json.gz";
     public static final String DOCM_NAME = "DOCM";
     public static final String HPO_VERSION_FILE = "hpo" + SUFFIX_VERSION_FILENAME;
     public static final String GO_VERSION_FILE = "go" + SUFFIX_VERSION_FILENAME;

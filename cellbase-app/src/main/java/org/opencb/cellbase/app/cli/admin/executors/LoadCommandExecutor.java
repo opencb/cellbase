@@ -226,11 +226,11 @@ public class LoadCommandExecutor extends CommandExecutor {
                     }
                 } catch (IllegalAccessException | InstantiationException | InvocationTargetException | ExecutionException
                          | NoSuchMethodException | ClassNotFoundException | LoaderException | IOException e) {
-                    logger.error(Arrays.toString(e.getStackTrace()));
+                    throw new CellBaseException("Error loading '" + data + "' data", e);
                 } catch (InterruptedException e) {
-                    logger.error(Arrays.toString(e.getStackTrace()));
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
+                    throw new CellBaseException("Error loading '" + data + "' data", e);
                 }
             }
         }
@@ -390,22 +390,24 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadClinical() throws FileNotFoundException {
-        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
-        if (Files.exists(path)) {
+        Path clinicalPath = input.resolve(CLINICAL_VARIANT_DATA);
+        Path filePath = clinicalPath.resolve(CLINICAL_VARIANTS_BASENAME + JSON_GZ_EXTENSION);
+        if (Files.exists(filePath)) {
             try {
                 // Load data
-                logger.info("Loading '{}' ...", path);
-                loadRunner.load(path, CLINICAL_VARIANT_DATA, dataRelease);
+                logger.info("Loading '{}' ...", filePath);
+                loadRunner.load(filePath, CLINICAL_VARIANT_DATA, dataRelease);
 
                 // Create index
                 createIndex(CLINICAL_VARIANT_DATA);
 
                 // Update release (collection and sources)
                 List<Path> sources = new ArrayList<>(Arrays.asList(
-                        input.resolve(EtlCommons.getDataVersionFilename(CLINVAR_DATA)),
-                        input.resolve(EtlCommons.getDataVersionFilename(COSMIC_DATA)),
-                        input.resolve(EtlCommons.getDataVersionFilename(HGMD_DATA)),
-                        input.resolve(EtlCommons.getDataVersionFilename(GWAS_DATA))
+                        clinicalPath.resolve(EtlCommons.getDataVersionFilename(CLINVAR_DATA)),
+                        clinicalPath.resolve(EtlCommons.getDataVersionFilename(COSMIC_DATA)),
+                        clinicalPath.resolve(EtlCommons.getDataVersionFilename(CIVIC_DATA)),
+                        clinicalPath.resolve(EtlCommons.getDataVersionFilename(HGMD_DATA)),
+                        clinicalPath.resolve(EtlCommons.getDataVersionFilename(GWAS_DATA))
                 ));
                 dataReleaseManager.update(dataRelease, CLINICAL_VARIANT_DATA, sources);
             } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
@@ -417,7 +419,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 Thread.currentThread().interrupt();
             }
         } else {
-            throw new FileNotFoundException("File " + path + " does not exist");
+            throw new FileNotFoundException("File " + filePath + " does not exist");
         }
     }
 
