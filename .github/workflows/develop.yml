@@ -8,21 +8,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-    with:
-      maven_opts: -DCELLBASE.WAR.NAME=cellbase -P default-config-test
-
   test:
     uses: ./.github/workflows/test-analysis.yml
-    needs: build
     secrets: inherit
+    with:
+      upload_artifact: true
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: test
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+      cache_key: ${{ needs.build.outputs.cache_key }}
     secrets: inherit
 
   deploy-docker:

@@ -17,6 +17,7 @@ jobs:
     needs: build
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+      cache_key: ${{ needs.build.outputs.cache_key }}
     secrets: inherit
 
   deploy-docker:
