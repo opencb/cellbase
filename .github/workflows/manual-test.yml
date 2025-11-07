@@ -12,6 +12,11 @@ on:
         description: 'The process executes all tests even if some fail.'
         default: false
         required: false
+      upload_artifact:
+        type: boolean
+        description: 'Upload build artifact.'
+        default: false
+        required: false
 
 jobs:
   build:
