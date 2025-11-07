@@ -7,6 +7,10 @@ on:
         type: boolean
         required: false
         default: false
+    outputs:
+      cache_key:
+        description: "Cache key used for Maven repository"
+        value: ${{ jobs.build.outputs.cache_key }}
     secrets:
       SONAR_TOKEN:
         required: true
