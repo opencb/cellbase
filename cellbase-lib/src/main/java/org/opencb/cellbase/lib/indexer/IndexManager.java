@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
-import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -35,6 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR;
+
 
 public class IndexManager {
 
@@ -46,6 +47,28 @@ public class IndexManager {
     private MongoDBManager mongoDBManager;
 
     private Map<String, List<Map<String, ObjectMap>>> indexes;
+
+    private static final Map<String, List<String>> DATA_COLLECTIONS = new HashMap<>();
+
+    static {
+        DATA_COLLECTIONS.put("genome", Arrays.asList("genome_info", "genome_sequence"));
+        DATA_COLLECTIONS.put("conservation", Collections.singletonList("conservation"));
+        DATA_COLLECTIONS.put("repeats", Collections.singletonList("repeats"));
+        DATA_COLLECTIONS.put("gene", Arrays.asList("gene", "refseq"));
+        DATA_COLLECTIONS.put("protein", Collections.singletonList("protein"));
+        DATA_COLLECTIONS.put("regulation", Arrays.asList("regulatory_region", "regulatory_pfm"));
+        DATA_COLLECTIONS.put("variation", Collections.singletonList("variation"));
+        DATA_COLLECTIONS.put("variation_functional_score", Collections.singletonList("missense_variation_functional_score"));
+        DATA_COLLECTIONS.put("protein_functional_prediction", Collections.singletonList("protein_functional_prediction"));
+        DATA_COLLECTIONS.put("revel", Collections.singletonList("revel"));
+        DATA_COLLECTIONS.put("alphamissense", Collections.singletonList("alphamissense"));
+        DATA_COLLECTIONS.put("clinical_variants", Collections.singletonList("clinical_variants"));
+        DATA_COLLECTIONS.put("splice_score", Collections.singletonList("splice_score"));
+        DATA_COLLECTIONS.put("ontology", Collections.singletonList("ontology"));
+        DATA_COLLECTIONS.put("pubmed", Collections.singletonList("pubmed"));
+        DATA_COLLECTIONS.put("pharmacogenomics", Collections.singletonList("pharmacogenomics"));
+        DATA_COLLECTIONS.put("polygenic_score", Arrays.asList("variant_polygenic_score", "common_polygenic_score"));
+    }
 
     public IndexManager(String databaseName, Path indexFile, CellBaseConfiguration configuration) {
         this.databaseName = databaseName;
@@ -68,27 +91,30 @@ public class IndexManager {
     }
 
     /**
-     * Create indexes for specified collection. Use by the load to create indexes. Will throw an exception if
+     * Create indexes for the specified data. Use by the load to create indexes. Will throw an exception if
      * given database does not already exist.
      *
-     * @param collectionName create indexes for this collection, can be "all" or a list of collection names
+     * @param data create collection indexes for this data, can be "all" or a list of data names
+     * @param dataRelease data release
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
      *                         already exists.
      * @throws IOException if configuration file can't be read
      */
     @Deprecated
-    public void createMongoDBIndexes(String collectionName, boolean dropIndexesFirst) throws IOException {
-//        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
-        if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
+    public void createMongoDBIndexes(String data, String dataRelease, boolean dropIndexesFirst) throws IOException {
+        //        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
+        if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
             mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
 //            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
             logger.info("Loaded all indexes");
         } else {
-            String[] collections = collectionName.split(",");
-            for (String collection : collections) {
-                mongoDBIndexUtils.createIndexes(collection, dropIndexesFirst);
-//                mongoDBIndexUtils.createIndexes(mongoDataStore, indexResourceStream, collection, dropIndexesFirst);
-                logger.info("Loaded index for {} ", collection);
+            List<String> dataList = Arrays.asList(data.split(","));
+            for (String dataName : dataList) {
+                List<String> collections = new ArrayList<>();
+                for (String collection : DATA_COLLECTIONS.get(dataName)) {
+                    collections.add(collection + DATA_RELEASE_SEPARATOR + dataRelease);
+                }
+                createMongoDBIndexes(collections, dropIndexesFirst);
             }
         }
     }
@@ -97,8 +123,9 @@ public class IndexManager {
         checkIndexes();
 
         for (String collection : collections) {
-            String key = collection.split(CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR)[0];
+            String key = collection.split(DATA_RELEASE_SEPARATOR)[0];
             if (indexes.containsKey(key)) {
+                logger.info("Creating index for collection {} ", collection);
                 mongoDBIndexUtils.createIndexes(collection, indexes.get(key), dropIndexesFirst);
                 logger.info("Loaded index for {} ", collection);
             } else {

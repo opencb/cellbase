@@ -338,6 +338,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--db", "--database"}, description = "Database name.", required = true, arity = 1)
         public String database;
 
+        @Parameter(names = {"--data-release"}, description = "Database release.", required = true, arity = 1)
+        public String dataRelease;
+
         @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
         public boolean dropIndexesFirst;
 
