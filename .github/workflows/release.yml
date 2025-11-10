@@ -11,12 +11,15 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
     with:
       maven_opts: -DCELLBASE.WAR.NAME=cellbase
+      dependency_repos: "java-common-libs,biodata"
+      upload_artifact: true
 
   deploy-maven:
     uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
     needs: build
     with:
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+      cache_key: ${{ needs.build.outputs.cache_key }}
     secrets: inherit
 
   deploy-docker:

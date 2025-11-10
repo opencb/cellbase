@@ -242,8 +242,8 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                     && populationFrequency.getPopulation().equals(populationFrequency1.getPopulation())
                     && populationFrequency.getRefAllele().equals(populationFrequency1.getRefAllele())
                     && populationFrequency.getAltAllele().equals(populationFrequency1.getAltAllele())
-                    && populationFrequency.getAltAlleleFreq().equals(populationFrequency1.getAltAlleleFreq())
-                    && populationFrequency.getRefAlleleFreq().equals(populationFrequency1.getRefAlleleFreq())) {
+                    && populationFrequency.getAltAlleleFreq() == populationFrequency1.getAltAlleleFreq()
+                    && populationFrequency.getRefAlleleFreq() == populationFrequency1.getRefAlleleFreq()) {
                 populationFrequencyList1.add(populationFrequency);
             }
         }
