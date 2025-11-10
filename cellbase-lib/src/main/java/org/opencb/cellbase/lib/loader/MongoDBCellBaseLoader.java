@@ -127,7 +127,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     private String getCollectionName() throws LoaderException {
-        String collection = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
+        String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
 
         // Sanity check
         if (dataReleaseManager == null) {
@@ -141,24 +141,22 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (CollectionUtils.isEmpty(result.getResults())) {
             throw new LoaderException("No data releases are available for database " + database);
         }
-        List<Integer> releases = result.getResults().stream().map(dr -> dr.getRelease()).collect(Collectors.toList());
+        List<Integer> releases = result.getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList());
         if (!releases.contains(dataRelease)) {
             throw new LoaderException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
                     + " are: " + StringUtils.join(releases, ","));
         }
         for (DataRelease dr : result.getResults()) {
             if (dr.getRelease() == dataRelease) {
-                if (dr.getCollections().containsKey(data)) {
-                    String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
-                    if (dr.getCollections().get(data).equals(collectionName)) {
-                        logger.warn("Loading new data " + data + " with release " + dataRelease + " (already populated previously)");
-                    }
+                if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
+                    throw new LoaderException("Loading new data " + data + " with release " + dataRelease
+                            + " (already populated previously)");
                 }
+                break;
             }
-            break;
         }
 
-        return collection;
+        return collectionName;
     }
 
     private void getChunkSizes() {
@@ -222,7 +220,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                    }
 //
 //                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
-////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+    ////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
 //                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
 //                    numLoadedObjects += numUpdates;
 //                }
