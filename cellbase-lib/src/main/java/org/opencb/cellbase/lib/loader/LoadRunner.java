@@ -38,14 +38,11 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.zip.GZIPInputStream;
 
-import static org.opencb.cellbase.lib.EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA;
-
 /**
  * Created by parce on 18/02/15.
  */
 public class LoadRunner {
 
-    private static final String PROTEIN_FUNCTIONAL_PREDICTION = "protein_functional_prediction";
     private String database;
     private String loader;
 
@@ -103,12 +100,22 @@ public class LoadRunner {
         // protein_functional_prediction documents are extremely big. Increasing the batch size will probably
         // lead to an OutOfMemory error for this collection. Batch size can be much higher for the rest of
         // collections though
-        if (data.equals(PROTEIN_SUBSTITUTION_PREDICTION_DATA)
-                || data.equals(EtlCommons.PHARMACOGENOMICS_DATA)
-                || data.equals(EtlCommons.PUBMED_DATA)) {
-            batchSize = 50;
-        } else {
-            batchSize = 200;
+        switch (data) {
+            case EtlCommons.PUBMED_DATA: {
+                batchSize = 20;
+                break;
+            }
+
+            case EtlCommons.PHARMACOGENOMICS_DATA:
+            case EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA: {
+                batchSize = 50;
+                break;
+            }
+
+            default: {
+                batchSize = 200;
+                break;
+            }
         }
 
         // One CellBaseLoader is created for each thread in 'numThreads' variable
