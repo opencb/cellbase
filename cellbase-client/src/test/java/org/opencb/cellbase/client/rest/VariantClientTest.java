@@ -154,14 +154,14 @@ public class VariantClientTest {
         int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
-                .setVersion("v5.8.3-SNAPSHOT")
+                .setVersion("v5.8")
                 .setRest(new RestConfig(Collections.singletonList("https://ws.zettagenomics.com/cellbase"), 2000));
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
-        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
         CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
         Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
@@ -180,14 +180,14 @@ public class VariantClientTest {
         int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
-                .setVersion("v5.8.3-SNAPSHOT")
+                .setVersion("v5.8")
                 .setRest(new RestConfig(Collections.singletonList("https://ws.zettagenomics.com/cellbase"), 2000));
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
-        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
         CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
         Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
@@ -211,14 +211,14 @@ public class VariantClientTest {
         int dataRelease = 7;
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .setDefaultSpecies("hsapiens")
-                .setVersion("v5.8.3-SNAPSHOT")
+                .setVersion("v5.8")
                 .setRest(new RestConfig(Collections.singletonList("https://ws.zettagenomics.com/cellbase"), 2000));
 
         CellBaseClient client = new CellBaseClient(clientConfiguration);
 
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
-        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8.3-SNAPSHOT", result.getString("Version")));
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
         CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
         Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
