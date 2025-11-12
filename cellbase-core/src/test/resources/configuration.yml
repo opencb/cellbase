@@ -250,9 +250,9 @@ download:
     host: https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz
     version: "156"
 
-  pharmGKB:
+  clinPGx:
     host: https://api.clinpgx.org/v1/download/file/data/
-    version: "v1"
+    version: "2025-09-01"
     files:
       GENES: genes.zip
       CHEMICALS: chemicals.zip
