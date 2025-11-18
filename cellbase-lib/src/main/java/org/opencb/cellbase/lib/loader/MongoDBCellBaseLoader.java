@@ -84,16 +84,18 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private Path indexScriptFolder;
     private int[] chunkSizes;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database)
-            throws CellBaseException {
-        this(queue, data, dataRelease, database, null, null, null);
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, DataReleaseManager dataReleaseManager,
+                                 String database) throws CellBaseException {
+        this(queue, data, dataRelease, dataReleaseManager, database, null, null, null);
     }
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database,
-                                 String field, String[] innerFields, CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease,
+                                 DataReleaseManager dataReleaseManager, String database, String field, String[] innerFields,
+                                 CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
         super(queue, data, dataRelease, database, field, innerFields, cellBaseConfiguration);
+        this.dataReleaseManager = dataReleaseManager;
         if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
-            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
+            this.indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
 
@@ -117,13 +119,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         // Some collections need to add an extra _chunkIds field to speed up some queries
         getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
-
-        try {
-            dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
-//            dbAdaptorFactory = new MongoDBAdaptorFactory(releaseManager.get(dataRelease), mongoDataStore);
-        } catch (CellBaseException e) {
-            throw new LoaderException(e);
-        }
     }
 
     private String getCollectionName() throws LoaderException {
@@ -131,11 +126,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
         // Sanity check
         if (dataReleaseManager == null) {
-            try {
-                dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
-            } catch (CellBaseException e) {
-                throw new LoaderException(e);
-            }
+            throw new LoaderException("DataReleaseManager is not initialized");
         }
         CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(result.getResults())) {
@@ -621,8 +612,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Override
-    public void close() throws LoaderException {
-        mongoDBManager.close();
+    public void close() {
+        if (mongoDBManager != null) {
+            mongoDBManager.close();
+        }
     }
 
     private Path getIndexFilePath(String data) throws LoaderException {

@@ -90,34 +90,6 @@ public class LoadCommandExecutor extends CommandExecutor {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.conf);
 
         this.loadCommandOptions = loadCommandOptions;
-//<<<<<<< HEAD
-//
-//        input = Paths.get(loadCommandOptions.input);
-//        if (loadCommandOptions.database != null) {
-//            database = loadCommandOptions.database;
-//        }
-//        if (loadCommandOptions.data.equals("all")) {
-//            loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.REFSEQ_DATA,
-//                    EtlCommons.CONSERVATION_DATA, EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA,
-//                    EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-//                    EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANT_DATA, EtlCommons.REPEATS_DATA,
-//                    EtlCommons.ONTOLOGY_DATA, EtlCommons.MISSENSE_VARIATION_SCORE_DATA, EtlCommons.SPLICE_SCORE_DATA,
-//                    EtlCommons.PUBMED_DATA, EtlCommons.PHARMACOGENOMICS_DATA, EtlCommons.PGS_DATA};
-//        } else {
-//            loadOptions = loadCommandOptions.data.split(",");
-//        }
-//        if (loadCommandOptions.field != null) {
-//            field = loadCommandOptions.field;
-//        }
-//        if (loadCommandOptions.innerFields != null) {
-//            innerFields = loadCommandOptions.innerFields.split(",");
-//        }
-//        if (loadCommandOptions.loader != null) {
-//            loader = loadCommandOptions.loader;
-//        }
-//        createIndexes = !loadCommandOptions.skipIndex;
-//=======
-//>>>>>>> TASK-5564
     }
 
     /**
@@ -234,6 +206,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                 }
             }
         }
+
+        // Close
+        dataReleaseManager.close();
     }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
@@ -508,9 +483,11 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         if (Files.exists(pubmedPath)) {
             // Load data
+            int counter = 0;
             for (File file : pubmedPath.toFile().listFiles()) {
                 if (file.isFile() && (file.getName().endsWith("gz"))) {
-                    logger.info(LOADING_FILE_LOG_MESSAGE, file.getName());
+                    counter++;
+                    logger.info("File counter #{}. " + LOADING_FILE_LOG_MESSAGE, counter, file.getName());
                     try {
                         loadRunner.load(file.toPath(), PUBMED_DATA, dataRelease);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException

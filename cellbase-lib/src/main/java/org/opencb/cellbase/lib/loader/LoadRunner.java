@@ -122,9 +122,10 @@ public class LoadRunner {
         List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                    .getConstructor(BlockingQueue.class, String.class, Integer.class, String.class, String.class,
+                    .getConstructor(BlockingQueue.class, String.class, Integer.class, DataReleaseManager.class, String.class, String.class,
                             String[].class, CellBaseConfiguration.class)
-                    .newInstance(blockingQueue, data, dataRelease, database, field, innerFields, cellBaseConfiguration));
+                    .newInstance(blockingQueue, data, dataRelease, dataReleaseManager, database, field, innerFields,
+                            cellBaseConfiguration));
             logger.debug("CellBase loader thread '{}' created", i);
         }
 
@@ -139,7 +140,6 @@ public class LoadRunner {
             futures.add(executorService.submit(cellBaseLoaders.get(i)));
             logger.debug("CellBaseLoader '{}' initialized and submitted to the ExecutorService", i);
         }
-
         /*
          * Execution starts by reading the file and loading batches to the blockingQueue. This makes the loaders
          * to start fetching and loading batches into the database. The number of records processed is returned.
