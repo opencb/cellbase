@@ -43,6 +43,7 @@
 {"collection": "gene", "fields": {"mirna.matures.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.diseases.hpo": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.expression": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.factorValue": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
