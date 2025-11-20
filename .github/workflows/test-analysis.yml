@@ -21,7 +21,7 @@ jobs:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
     with:
       needs_hadoop_preparation: false
-      maven_opts: -Dcheckstyle.skip
+      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
       upload_artifact: ${{ inputs.upload_artifact }}
       dependency_repos: "java-common-libs,biodata"
     secrets: inherit
@@ -57,7 +57,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify surefire-report:report --fail-never -Dcheckstyle.skip org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=opencb_cellbase -DCELLBASE.WAR.NAME=cellbase
+        run: mvn -B verify surefire-report:report --fail-never -Dcheckstyle.skip org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=opencb_cellbase
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
         ## Skip cancelled()
