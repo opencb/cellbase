@@ -26,7 +26,7 @@ import java.util.List;
 public class CellBaseDataResponse<T> {
 
     private String apiVersion;
-    private int dataRelease;
+    private Integer dataRelease;
     private String apiKey;
     private int time;
     private List<Event> events;
@@ -37,10 +37,10 @@ public class CellBaseDataResponse<T> {
     }
 
     public CellBaseDataResponse(ObjectMap params, List<CellBaseDataResult<T>> responses) {
-        this("", 0, "", -1, Collections.emptyList(), params, responses);
+        this("", null, "", -1, Collections.emptyList(), params, responses);
     }
 
-    public CellBaseDataResponse(String apiVersion, int dataRelease, String apiKey, int time, List<Event> events, ObjectMap params,
+    public CellBaseDataResponse(String apiVersion, Integer dataRelease, String apiKey, int time, List<Event> events, ObjectMap params,
                                 List<CellBaseDataResult<T>> responses) {
         this.apiVersion = apiVersion;
         this.dataRelease = dataRelease;
@@ -170,11 +170,11 @@ public class CellBaseDataResponse<T> {
         return this;
     }
 
-    public int getDataRelease() {
+    public Integer getDataRelease() {
         return dataRelease;
     }
 
-    public CellBaseDataResponse<T> setDataRelease(int dataRelease) {
+    public CellBaseDataResponse<T> setDataRelease(Integer dataRelease) {
         this.dataRelease = dataRelease;
         return this;
     }

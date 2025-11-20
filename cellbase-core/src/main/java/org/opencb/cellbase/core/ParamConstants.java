@@ -114,7 +114,7 @@ public class ParamConstants {
 
     public static final String DATA_RELEASE_PARAM = "dataRelease";
     public static final String DATA_RELEASE_DESCRIPTION = "Data release. To get the list of available data releases, please call the"
-        + " endpoint 'meta/dataReleases'";
+        + " endpoint 'meta/{species}/dataReleases'";
 
     public static final String API_KEY_PARAM = "apiKey";
     public static final String API_KEY_DESCRIPTION = "API key to allow access to licensed/restricted data sources such as"

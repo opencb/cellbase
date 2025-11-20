@@ -25,6 +25,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
@@ -32,6 +33,7 @@ import org.opencb.cellbase.core.api.key.ApiKeyJwtPayload;
 import org.opencb.cellbase.core.api.key.ApiKeyManager;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
@@ -62,15 +64,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
-import static org.opencb.cellbase.core.ParamConstants.DATA_RELEASE_PARAM;
+import static org.opencb.cellbase.core.ParamConstants.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
 public class GenericRestWSServer implements IWSServer {
 
     protected String version;
-    protected DataRelease defaultDataRelease = null;
     protected String species;
     protected String assembly;
 
@@ -102,20 +102,11 @@ public class GenericRestWSServer implements IWSServer {
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
+    protected static Map<String, DataRelease> defaultDataReleases = new HashMap<>();
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
-
-        this.version = version;
-        this.uriInfo = uriInfo;
-        this.httpServletRequest = hsr;
-
-        try {
-            if (!INITIALIZED.get()) {
-                init();
-            }
-        } catch (Exception e) {
-            throw new CellBaseServerException(e);
-        }
+        this(version, DEFAULT_SPECIES, DEFAULT_ASSEMBLY, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species,
@@ -126,8 +117,8 @@ public class GenericRestWSServer implements IWSServer {
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
-        this.species = species;
-        this.assembly = assembly;
+        this.species = StringUtils.isEmpty(species) ? DEFAULT_SPECIES : species;
+        this.assembly = StringUtils.isEmpty(assembly) ? DEFAULT_ASSEMBLY : assembly;
 
         try {
             if (!INITIALIZED.get()) {
@@ -185,13 +176,39 @@ public class GenericRestWSServer implements IWSServer {
             if (apiKeyManager == null) {
                 apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
                 defaultApiKey = apiKeyManager.getDefaultApiKey();
-                logger.info("default API key {}", defaultApiKey);
+                logger.info("Default API key: {}", defaultApiKey);
             }
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
 
+            // Initialize default data releases
+            initDefaultDataReleases();
+
             INITIALIZED.set(true);
+        }
+    }
+
+    protected void initDefaultDataReleases() {
+        if (MapUtils.isEmpty(defaultDataReleases)) {
+            logger.info("Initializing default data releases for all species and assemblies for version '{}'", version);
+            List<SpeciesConfiguration> allSpecies = SpeciesUtils.getAllSpecies(cellBaseConfiguration);
+            for (SpeciesConfiguration specie : allSpecies) {
+                for (SpeciesConfiguration.Assembly assembly : specie.getAssemblies()) {
+                    try {
+                        String key = (specie.getId() + "_" + assembly.getName()).toLowerCase();
+                        DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(specie.getId(),
+                                assembly.getName());
+                        DataRelease defaultDataRelease = releaseManager.getDefault(version);
+                        defaultDataReleases.put(key, defaultDataRelease);
+                        logger.info("Default data release is '{}' for species '{}' and assembly '{}' and version '{}'",
+                                defaultDataRelease.getRelease(), specie.getId(), assembly.getName(), version);
+                    } catch (CellBaseException e) {
+                        logger.warn("No default data release found for species '{}' and assembly '{}' and version '{}': {}", specie.getId(),
+                                assembly.getName(), version, e.getMessage());
+                    }
+                }
+            }
         }
     }
 
@@ -205,51 +222,41 @@ public class GenericRestWSServer implements IWSServer {
             uriParams.remove("assembly");
         }
 
-        // Set default API key, if necessary
-        String apiKey = uriParams.getOrDefault(API_KEY_PARAM, null);
-        if (StringUtils.isEmpty(apiKey)) {
-            apiKey = defaultApiKey;
-            uriParams.put(API_KEY_PARAM, apiKey);
-        }
-
-        // Set default data release if necessary
-        if (defaultDataRelease == null) {
-            DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-            // getDefault launches an exception if no data release is found for that CellBase version
-            defaultDataRelease = releaseManager.getDefault(version);
-        }
-
+        // Check limit
         checkLimit();
 
         // Check version, species is validated later
         checkVersion();
-
-//        // Check API key (expiration date, quota,...)
-//        checkApiKey();
     }
 
-    protected int getDataRelease() throws CellBaseException {
-        if (uriParams.containsKey(DATA_RELEASE_PARAM) && StringUtils.isNotEmpty(uriParams.get(DATA_RELEASE_PARAM))) {
+    protected Integer getDataRelease() throws CellBaseException {
+        if (uriParams != null && uriParams.containsKey(DATA_RELEASE_PARAM) && StringUtils.isNotEmpty(uriParams.get(DATA_RELEASE_PARAM))) {
             try {
                 int dataRelease = Integer.parseInt(uriParams.get(DATA_RELEASE_PARAM));
                 // If data release is 0, then use the default data release
                 if (dataRelease == 0) {
-                    logger.info("Using data release 0 in query: using the default data release '" + defaultDataRelease.getRelease()
-                            + "' for CellBase version '" + version + "'");
-                    return defaultDataRelease.getRelease();
+                    return usingDefaultDataRelease();
                 } else {
                     return dataRelease;
                 }
             } catch (NumberFormatException e) {
                 throw new CellBaseException("Invalid data release number '" + uriParams.get(DATA_RELEASE_PARAM) + "'");
             }
+        } else {
+            return usingDefaultDataRelease();
         }
-        // If no data release is present in the query, then use the default data release
+    }
+
+    private int usingDefaultDataRelease() throws CellBaseException {
+        DataRelease defaultDataRelease = getDefaultDataRelease(species, assembly);
+        logger.info("No data release provided; using the default: {} (CellBase {}, {}/{})", defaultDataRelease.getRelease(), version,
+                species, assembly);
         return defaultDataRelease.getRelease();
     }
 
     protected DataRelease getDataRelease(int dataRelease, String species, String assembly) throws CellBaseException {
         DataRelease output;
+        DataRelease defaultDataRelease = getDefaultDataRelease(species, assembly);
         if (dataRelease == defaultDataRelease.getRelease()) {
             output = defaultDataRelease;
         } else {
@@ -263,8 +270,17 @@ public class GenericRestWSServer implements IWSServer {
         return output;
     }
 
+    protected DataRelease getDefaultDataRelease(String species, String assembly) throws CellBaseException {
+        String key = (species + "_" + assembly).toLowerCase();
+        DataRelease defaultDataRelease = defaultDataReleases.get(key);
+        if (defaultDataRelease == null) {
+            throw new CellBaseException("No default data release found for species '" + species + "' and assembly '" + assembly + "'");
+        }
+        return defaultDataRelease;
+    }
+
     protected String getApiKey() {
-        return (uriParams != null) ? uriParams.get(API_KEY_PARAM) : null;
+        return (uriParams != null && uriParams.containsKey(API_KEY_PARAM)) ? uriParams.get(API_KEY_PARAM) : defaultApiKey;
     }
 
     /**
@@ -437,8 +453,10 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         ObjectMap params = new ObjectMap();
-        params.put("species", species);
-        params.putAll(uriParams);
+//        params.put("species", species);
+        if (uriParams != null) {
+            params.putAll(uriParams);
+        }
         queryResponse.setParams(params);
 
         // Guarantee that the QueryResponse object contains a list of data results

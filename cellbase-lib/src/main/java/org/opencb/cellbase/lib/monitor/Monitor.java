@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.monitor;
 
+import org.apache.commons.collections4.MapUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Databases;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -80,7 +81,7 @@ public class Monitor {
     private HealthCheckResponse.Status checkMongoStatus(String species, String assembly) {
         Map<String, DatastoreStatus> datastoreStatusMap = metaManager.getDatabaseStatus(species, assembly);
 
-        if (datastoreStatusMap != null && datastoreStatusMap.size() > 0) {
+        if (!MapUtils.isEmpty(datastoreStatusMap)) {
             int downServers = 0;
             for (String datastoreDependencyName : datastoreStatusMap.keySet()) {
                 if (datastoreStatusMap.get(datastoreDependencyName).getResponseTime() == null) {
