@@ -306,7 +306,7 @@ public class MetaWSServer extends GenericRestWSServer {
         DataReleaseManager dataReleaseManager;
         for (SpeciesConfiguration species : allSpecies) {
             for (SpeciesConfiguration.Assembly assembly : species.getAssemblies()) {
-                String key = "Default data release for " + version + " (" + species + "/" + assembly.getName() + ")";
+                String key = "Default data release (" + species.getId() + "/" + assembly.getName() + ")";
                 try {
                     dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species.getId(), assembly.getName());
                     DataRelease defaultDataRelease = dataReleaseManager.getDefault(version);
