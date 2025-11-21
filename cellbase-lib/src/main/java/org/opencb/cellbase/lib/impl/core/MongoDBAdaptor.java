@@ -29,6 +29,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -502,7 +503,11 @@ public class MongoDBAdaptor {
             // Execute query and calculate time
             dbTimeStart = System.currentTimeMillis();
             if (options.containsKey("count") && options.getBoolean("count")) {
-                cellBaseDataResult = new CellBaseDataResult(mongoDBCollection2.count(query));
+                if (query.isEmpty()) {
+                    cellBaseDataResult = new CellBaseDataResult(mongoDBCollection2.estimatedCount());
+                } else {
+                    cellBaseDataResult = new CellBaseDataResult(mongoDBCollection2.count(query));
+                }
             } else {
                 MongoDBIterator<Document> iterator = mongoDBCollection2.nativeQuery().find(query, options);
                 List<Document> dbObjectList = new LinkedList<>();
@@ -513,9 +518,14 @@ public class MongoDBAdaptor {
                 cellBaseDataResult.setResults(dbObjectList);
 
                 // Limit is set in queryOptions, count number of total results
-                if (options != null && options.getInt("limit", 0) > 0
-                        && mongoDBCollection2.count(query).getResults().size() > 0) {
-                    cellBaseDataResult.setNumMatches(mongoDBCollection2.count(query).first());
+                if (options != null && options.getInt("limit", 0) > 0) {
+                    DataResult<Long> count;
+                    if (query.isEmpty()) {
+                        count = mongoDBCollection2.estimatedCount();
+                    } else {
+                        count = mongoDBCollection2.count(query);
+                    }
+                    cellBaseDataResult.setNumMatches(count.first());
                 } else {
                     cellBaseDataResult.setNumMatches(dbObjectList.size());
                 }
