@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.CaseFormat;
 import org.opencb.commons.utils.FileUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -51,6 +52,9 @@ public class CellBaseConfiguration {
     public static final String CELLBASE_DATABASES_MONGODB_USER = "CELLBASE_DATABASES_MONGODB_USER";
     public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
     public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
+    public static final String CELLBASE_SECRET_KEY = "CELLBASE_SECRET_KEY";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CellBaseConfiguration.class);
 
     public enum ConfigurationFileFormat {
         JSON, YAML
@@ -122,8 +126,12 @@ public class CellBaseConfiguration {
                         case CELLBASE_DATABASES_MONGODB_PASSWORD:
                             secureGetMongodb(configuration).setPassword(value);
                             break;
+                        case CELLBASE_SECRET_KEY:
+                            configuration.setSecretKey(value);
+                            LOGGER.info("Overriding CellBase secret key from environment variable {}.", CELLBASE_SECRET_KEY);
+                            break;
                         default:
-                            LoggerFactory.getLogger(CellBaseConfiguration.class).warn("Unknown env var '" + variable + "'");
+                            LOGGER.warn("Unknown env var '{}' found. Skipping it.", variable);
                     }
                 }
             }

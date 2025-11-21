@@ -104,6 +104,8 @@ public class GenericRestWSServer implements IWSServer {
 
     protected static Map<String, DataRelease> defaultDataReleases = new HashMap<>();
 
+    private static final String CELLBASE_HOME_ENV_VAR = "CELLBASE_HOME";
+
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws CellBaseServerException {
         this(version, DEFAULT_SPECIES, DEFAULT_ASSEMBLY, uriInfo, hsr);
@@ -151,33 +153,31 @@ public class GenericRestWSServer implements IWSServer {
             logger = LoggerFactory.getLogger(this.getClass());
 
             // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
-            String cellbaseHome = System.getenv("CELLBASE_HOME");
+            String cellbaseHome = System.getenv(CELLBASE_HOME_ENV_VAR);
             if (StringUtils.isEmpty(cellbaseHome)) {
-
                 // ENV variable isn't set, try the servlet context instead
                 ServletContext context = httpServletRequest.getServletContext();
-                if (StringUtils.isNotEmpty(context.getInitParameter("CELLBASE_HOME"))) {
-                    cellbaseHome = context.getInitParameter("CELLBASE_HOME");
+                if (StringUtils.isNotEmpty(context.getInitParameter(CELLBASE_HOME_ENV_VAR))) {
+                    cellbaseHome = context.getInitParameter(CELLBASE_HOME_ENV_VAR);
+                    logger.info("Using CELLBASE_HOME from servlet context parameter {}", CELLBASE_HOME_ENV_VAR);
                 } else {
                     logger.error("No valid configuration directory provided!");
                     throw new CellBaseException("No CELLBASE_HOME found");
                 }
+            } else {
+                logger.info("Using CELLBASE_HOME from environment variable {}", CELLBASE_HOME_ENV_VAR);
             }
 
             logger.info("CELLBASE_HOME set to: {}", cellbaseHome);
 
             logger.info("***************************************************");
-            logger.info("cellbaseHome = " + cellbaseHome);
+            logger.info("cellbaseHome = {}", cellbaseHome);
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
             logger.info("***************************************************");
 
-            // Get default API key (for anonymous queries)
-            if (apiKeyManager == null) {
-                apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
-                defaultApiKey = apiKeyManager.getDefaultApiKey();
-                logger.info("Default API key: {}", defaultApiKey);
-            }
+            // Init API key manager and get default API key for anonymous queries
+            initApiKeyManager();
 
             // Initialize Monitor
             monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
@@ -189,7 +189,15 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    protected void initDefaultDataReleases() {
+    private synchronized void initApiKeyManager() {
+        if (apiKeyManager == null) {
+            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+            defaultApiKey = apiKeyManager.getDefaultApiKey();
+            logger.info("Default API key (for anonymous users): {}", defaultApiKey);
+        }
+    }
+
+    private synchronized void initDefaultDataReleases() {
         if (MapUtils.isEmpty(defaultDataReleases)) {
             logger.info("Initializing default data releases for all species and assemblies for version '{}'", version);
             List<SpeciesConfiguration> allSpecies = SpeciesUtils.getAllSpecies(cellBaseConfiguration);
@@ -212,7 +220,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    protected void initQuery() throws CellBaseException {
+    private synchronized void initQuery() throws CellBaseException {
         startTime = System.currentTimeMillis();
         query = new Query();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
