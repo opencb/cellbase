@@ -22,7 +22,7 @@ public class ApiKeyQuota {
     private long maxNumAnnotatedVariants;
     private long maxOutputBytes;
 
-    public static final Long MAX_NUM_ANOYMOUS_QUERIES = 1000000L;
+    public static final Long MAX_NUM_ANONYMOUS_QUERIES = 1000000L;
     public static final Long DEFAULT_MAX_NUM_QUERIES = 10000000L;
 
     public ApiKeyQuota() {

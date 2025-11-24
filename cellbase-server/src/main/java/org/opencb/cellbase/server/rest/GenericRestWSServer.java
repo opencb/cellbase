@@ -25,7 +25,6 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.ParamConstants;
@@ -190,31 +189,27 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private synchronized void initApiKeyManager() {
-        if (apiKeyManager == null) {
-            apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
-            defaultApiKey = apiKeyManager.getDefaultApiKey();
-            logger.info("Default API key (for anonymous users): {}", defaultApiKey);
-        }
+        apiKeyManager = new ApiKeyManager(cellBaseConfiguration.getSecretKey());
+        defaultApiKey = apiKeyManager.getDefaultApiKey();
+        logger.info("Default API key (for anonymous users): {}", defaultApiKey);
     }
 
-    private synchronized void initDefaultDataReleases() {
-        if (MapUtils.isEmpty(defaultDataReleases)) {
-            logger.info("Initializing default data releases for all species and assemblies for version '{}'", version);
-            List<SpeciesConfiguration> allSpecies = SpeciesUtils.getAllSpecies(cellBaseConfiguration);
-            for (SpeciesConfiguration specie : allSpecies) {
-                for (SpeciesConfiguration.Assembly assembly : specie.getAssemblies()) {
-                    try {
-                        String key = (specie.getId() + "_" + assembly.getName()).toLowerCase();
-                        DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(specie.getId(),
-                                assembly.getName());
-                        DataRelease defaultDataRelease = releaseManager.getDefault(version);
-                        defaultDataReleases.put(key, defaultDataRelease);
-                        logger.info("Default data release is '{}' for species '{}' and assembly '{}' and version '{}'",
-                                defaultDataRelease.getRelease(), specie.getId(), assembly.getName(), version);
-                    } catch (CellBaseException e) {
-                        logger.warn("No default data release found for species '{}' and assembly '{}' and version '{}': {}", specie.getId(),
-                                assembly.getName(), version, e.getMessage());
-                    }
+    protected synchronized void initDefaultDataReleases() {
+        logger.info("Initializing default data releases for all species and assemblies for version '{}'", version);
+        List<SpeciesConfiguration> allSpecies = SpeciesUtils.getAllSpecies(cellBaseConfiguration);
+        for (SpeciesConfiguration specie : allSpecies) {
+            for (SpeciesConfiguration.Assembly assembly : specie.getAssemblies()) {
+                try {
+                    String key = (specie.getId() + "_" + assembly.getName()).toLowerCase();
+                    DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(specie.getId(),
+                            assembly.getName());
+                    DataRelease defaultDataRelease = releaseManager.getDefault(version);
+                    defaultDataReleases.put(key, defaultDataRelease);
+                    logger.info("Default data release is '{}' for species '{}' and assembly '{}' and version '{}'",
+                            defaultDataRelease.getRelease(), specie.getId(), assembly.getName(), version);
+                } catch (CellBaseException e) {
+                    logger.warn("No default data release found for species '{}' and assembly '{}' and version '{}': {}", specie.getId(),
+                            assembly.getName(), version, e.getMessage());
                 }
             }
         }

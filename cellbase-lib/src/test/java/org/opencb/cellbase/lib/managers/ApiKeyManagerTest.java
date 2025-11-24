@@ -143,6 +143,6 @@ public class ApiKeyManagerTest {
         String defaultApiKey = datManager.getDefaultApiKey();
         ApiKeyJwtPayload payload = datManager.decode(defaultApiKey);
         assertTrue(MapUtils.isEmpty(payload.getSources()));
-        assertEquals((long) ApiKeyQuota.MAX_NUM_ANOYMOUS_QUERIES, payload.getQuota().getMaxNumQueries());
+        assertEquals((long) ApiKeyQuota.MAX_NUM_ANONYMOUS_QUERIES, payload.getQuota().getMaxNumQueries());
     }
 }

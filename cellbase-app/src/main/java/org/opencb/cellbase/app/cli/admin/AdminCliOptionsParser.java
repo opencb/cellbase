@@ -211,6 +211,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " applied", arity = 1)
         public long maxNumOutputBytes = 0;
 
+        @Parameter(names = {"--admin"}, description = "Use this parameter in conjunction with --create-api-key to create the API key with"
+                + " administrator privileges.", arity = 0)
+        public boolean admin;
+
         @Parameter(names = {"--view-api-key"}, description = "API key to view", arity = 1)
         public String apiKeyToView;
     }
