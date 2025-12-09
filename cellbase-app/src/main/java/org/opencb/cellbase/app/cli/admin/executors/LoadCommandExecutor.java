@@ -128,6 +128,10 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadVariation();
                             break;
                         }
+                        case DBSNP_DATA: {
+                            loadDbSnp();
+                            break;
+                        }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
                             loadVariantFunctionalScore();
                             break;
@@ -319,16 +323,20 @@ public class LoadCommandExecutor extends CommandExecutor {
                 // Common loading process from CellBase variation data models
                 loadData(variationPath, VARIATION_DATA, VARIATION_CHR_PREFIX);
             }
-
-            // Loading dbSNP file, if necessary
-            HashMap<String, String> collectionMap = new HashMap<>();
-            collectionMap.put(SNP_DATA, DBSNP_OUTPUT_FILENAME);
-            loadData(variationPath.resolve(DBSNP_DATA), collectionMap);
         } else {
             // Custom update required e.g. population freqs loading
             logger.info(LOADING_FILE_LOG_MESSAGE, input);
             loadRunner.load(input, VARIATION_DATA, dataRelease, field, innerFields);
         }
+    }
+
+    private void loadDbSnp() throws CellBaseException {
+        Path dbSnpPath = input.resolve(DBSNP_DATA);
+
+        // Loading dbSNP file
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(SNP_DATA, DBSNP_OUTPUT_FILENAME);
+        loadData(dbSnpPath, collectionMap);
     }
 
     private void loadVariantFunctionalScore() throws CellBaseException {

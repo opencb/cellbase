@@ -173,6 +173,7 @@ public final class EtlCommons {
 
     // Variation
     public static final String VARIATION_DATA = "variation";
+    // DbSNP
     public static final String DBSNP_DATA = "dbsnp";
     public static final String SNP_DATA = "snp";
 

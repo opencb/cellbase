@@ -387,6 +387,7 @@ species:
         - pubmed
         - pharmacogenomics
         - polygenic_score
+        - dbsnp
     - id: "mmusculus"
       scientificName: "Mus musculus"
       assemblies:

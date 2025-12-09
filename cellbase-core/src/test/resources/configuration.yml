@@ -354,6 +354,7 @@ species:
         - ontology
         - pubmed
         - pharmacogenomics
+        - dbsnp
     - id: mmusculus
       scientificName: Mus musculus
       assemblies:

@@ -27,7 +27,6 @@ import org.opencb.biodata.models.variant.metadata.VariantStudyMetadata;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 
@@ -37,7 +36,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static org.opencb.cellbase.lib.EtlCommons.DBSNP_DATA;
 import static org.opencb.cellbase.lib.EtlCommons.HOMO_SAPIENS;
 
 /**
@@ -79,18 +77,11 @@ public class VariationBuilder extends AbstractBuilder {
 
         this.downloadPath = downloadPath;
         this.species = species;
-
-        // dbSNP
-        DownloadProperties.URLProperties dbSnpUrlProperties = configuration.getDownload().getDbSNP();
-        dbSnpBuilder = new DbSnpBuilder(downloadPath.resolve(DBSNP_DATA), dbSnpUrlProperties, fileSerializer);
     }
 
     @Override
     public void parse() throws Exception {
-        if (species.equalsIgnoreCase(HOMO_SAPIENS)) {
-            // Parsing dbSNP data
-            dbSnpBuilder.parse();
-        } else {
+        if (!species.equalsIgnoreCase(HOMO_SAPIENS)) {
             // Parsing VCF files
             parseVcf();
         }
