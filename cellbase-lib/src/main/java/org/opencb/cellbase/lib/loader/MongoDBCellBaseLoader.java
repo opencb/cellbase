@@ -33,7 +33,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
@@ -128,16 +128,16 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (dataReleaseManager == null) {
             throw new LoaderException("DataReleaseManager is not initialized");
         }
-        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
+        CellBaseDataResult<Release> result = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(result.getResults())) {
             throw new LoaderException("No data releases are available for database " + database);
         }
-        List<Integer> releases = result.getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList());
+        List<Integer> releases = result.getResults().stream().map(Release::getRelease).collect(Collectors.toList());
         if (!releases.contains(dataRelease)) {
             throw new LoaderException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
                     + " are: " + StringUtils.join(releases, ","));
         }
-        for (DataRelease dr : result.getResults()) {
+        for (Release dr : result.getResults()) {
             if (dr.getRelease() == dataRelease) {
                 if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
                     throw new LoaderException("Loading new data " + data + " with release " + dataRelease

@@ -29,7 +29,7 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -528,13 +528,13 @@ public class ExportCommandExecutor extends CommandExecutor {
     private void checkDataRelease() throws CellBaseException {
         // Check data release
         DataReleaseManager dataReleaseManager = managerFactory.getDataReleaseManager(species, assembly);
-        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
+        CellBaseDataResult<Release> dataReleaseResults = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available");
         }
 
         List<Integer> dataReleaseList = new ArrayList<>();
-        for (DataRelease dr : dataReleaseResults.getResults()) {
+        for (Release dr : dataReleaseResults.getResults()) {
             if (dr.getRelease() == dataRelease) {
                 return;
             }

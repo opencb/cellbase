@@ -37,7 +37,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -101,7 +101,7 @@ public class VariantAnnotationCalculator {
     private PharmacogenomicsManager pharmacogenomicsManager;
     private PolygenicScoreManager polygenicScoreManager;
 
-    private DataRelease dataRelease;
+    private Release dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
@@ -157,7 +157,7 @@ public class VariantAnnotationCalculator {
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease, String apiKey,
+    public VariantAnnotationCalculator(String species, String assembly, Release dataRelease, String apiKey,
                                        CellBaseManagerFactory cellbaseManagerFactory, CellBaseConfiguration configuration)
             throws CellBaseException {
         logger.debug("VariantAnnotationCalculator: in 'constructor'");
@@ -520,7 +520,7 @@ public class VariantAnnotationCalculator {
         return geneMirnaTargets;
     }
 
-    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, DataRelease dataRelease)
+    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, Release dataRelease)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         long globalStartTime = System.currentTimeMillis();
 

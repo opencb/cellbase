@@ -34,7 +34,7 @@ import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -101,7 +101,7 @@ public class GenericRestWSServer implements IWSServer {
     protected static String defaultApiKey;
     protected static ApiKeyManager apiKeyManager;
 
-    protected static Map<String, DataRelease> defaultDataReleases = new HashMap<>();
+    protected static Map<String, Release> defaultDataReleases = new HashMap<>();
 
     private static final String CELLBASE_HOME_ENV_VAR = "CELLBASE_HOME";
 
@@ -203,7 +203,7 @@ public class GenericRestWSServer implements IWSServer {
                     String key = (specie.getId() + "_" + assembly.getName()).toLowerCase();
                     DataReleaseManager releaseManager = cellBaseManagerFactory.getDataReleaseManager(specie.getId(),
                             assembly.getName());
-                    DataRelease defaultDataRelease = releaseManager.getDefault(version);
+                    Release defaultDataRelease = releaseManager.getDefault(version);
                     defaultDataReleases.put(key, defaultDataRelease);
                     logger.info("Default data release is '{}' for species '{}' and assembly '{}' and version '{}'",
                             defaultDataRelease.getRelease(), specie.getId(), assembly.getName(), version);
@@ -251,15 +251,15 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     private int usingDefaultDataRelease() throws CellBaseException {
-        DataRelease defaultDataRelease = getDefaultDataRelease(species, assembly);
+        Release defaultDataRelease = getDefaultDataRelease(species, assembly);
         logger.info("No data release provided; using the default: {} (CellBase {}, {}/{})", defaultDataRelease.getRelease(), version,
                 species, assembly);
         return defaultDataRelease.getRelease();
     }
 
-    protected DataRelease getDataRelease(int dataRelease, String species, String assembly) throws CellBaseException {
-        DataRelease output;
-        DataRelease defaultDataRelease = getDefaultDataRelease(species, assembly);
+    protected Release getDataRelease(int dataRelease, String species, String assembly) throws CellBaseException {
+        Release output;
+        Release defaultDataRelease = getDefaultDataRelease(species, assembly);
         if (dataRelease == defaultDataRelease.getRelease()) {
             output = defaultDataRelease;
         } else {
@@ -273,9 +273,9 @@ public class GenericRestWSServer implements IWSServer {
         return output;
     }
 
-    protected DataRelease getDefaultDataRelease(String species, String assembly) throws CellBaseException {
+    protected Release getDefaultDataRelease(String species, String assembly) throws CellBaseException {
         String key = (species + "_" + assembly).toLowerCase();
-        DataRelease defaultDataRelease = defaultDataReleases.get(key);
+        Release defaultDataRelease = defaultDataReleases.get(key);
         if (defaultDataRelease == null) {
             throw new CellBaseException("No default data release found for species '" + species + "' and assembly '" + assembly + "'");
         }

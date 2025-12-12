@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
@@ -45,8 +45,8 @@ public class IndexCommandExecutor extends CommandExecutor {
         try (DataReleaseManager dataReleaseManager = new DataReleaseManager(indexCommandOptions.database, configuration)) {
             // Check data release
             boolean found = false;
-            List<DataRelease> releases = dataReleaseManager.getReleases().getResults();
-            for (DataRelease release : releases) {
+            List<Release> releases = dataReleaseManager.getReleases().getResults();
+            for (Release release : releases) {
                 if (indexCommandOptions.dataRelease.equalsIgnoreCase(String.valueOf(release.getRelease()))) {
                     found = true;
                 }
@@ -54,7 +54,7 @@ public class IndexCommandExecutor extends CommandExecutor {
             if (!found) {
                 throw new CellBaseException("Data release " + indexCommandOptions.dataRelease + " not found in database "
                         + indexCommandOptions.database + ". Available releases: "
-                        + StringUtils.join(releases.stream().map(DataRelease::getRelease).collect(Collectors.toList()), ", "));
+                        + StringUtils.join(releases.stream().map(Release::getRelease).collect(Collectors.toList()), ", "));
             }
 
             Path indexFile = Paths.get(this.appHome).resolve("conf").resolve("mongodb-indexes.json");

@@ -26,7 +26,9 @@ import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.core.models.DataSource;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -103,7 +105,7 @@ public class MetaWSServer extends GenericRestWSServer {
             if (dataRelease == 0) {
                 dataRelease = getDefaultDataRelease(species, assembly).getRelease();
             }
-            DataRelease dr = dataReleaseManager.get(dataRelease);
+            Release dr = dataReleaseManager.get(dataRelease);
             if (dr == null) {
                 return createErrorResponse("/versions", "Could not find data release '" + dataRelease + "'");
             }
@@ -135,33 +137,22 @@ public class MetaWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
 
-        Map<String, List<String>> speciesAsseblyMap = new HashMap<>();
-        for (SpeciesConfiguration speciesConfig : SpeciesUtils.getAllSpecies(cellBaseConfiguration)) {
-            String speciesHealthCheck = speciesConfig.getId();
-            for (SpeciesConfiguration.Assembly speciesConfigAssembly : speciesConfig.getAssemblies()) {
-                String assemblyHealthcheck = speciesConfigAssembly.getName();
-
-                HealthCheckResponse health = monitor.run(httpServletRequest.getRequestURI(), cellBaseConfiguration, speciesHealthCheck,
-                        assemblyHealthcheck, apiKey);
-                if (health.getStatus() == HealthCheckResponse.Status.OK) {
-                    speciesAsseblyMap.computeIfAbsent(speciesHealthCheck, k -> new ArrayList<>());
-                    speciesAsseblyMap.get(speciesHealthCheck).add(assemblyHealthcheck);
-                }
-            }
+        try {
+            CellBaseDataResult queryResult = new CellBaseDataResult();
+            queryResult.setId("species");
+            queryResult.setTime(0);
+            queryResult.setResults(Arrays.asList(cellBaseConfiguration.getSpecies()));
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
-
-        CellBaseDataResult queryResult = new CellBaseDataResult();
-        queryResult.setId("species");
-        queryResult.setTime(0);
-        queryResult.setResults(Collections.singletonList(speciesAsseblyMap));
-        return createOkResponse(queryResult);
     }
 
     @GET
     @Path("/{species}/dataReleases")
-    @ApiOperation(httpMethod = "GET", value = "Returns data releases stored in the CellBase. Each data release contains the source names,"
-            + " versions and URLs from which data files were downloaded.", response = DataRelease.class,
-            responseContainer = "QueryResponse")
+    @ApiOperation(httpMethod = "GET", value = "[DEPRECATED] Returns data releases stored in the CellBase. Each data release contains the"
+            + " source names, versions and URLs from which data files were downloaded. To be deprecated, use the /releases instead.",
+            response = DataRelease.class, responseContainer = "QueryResponse")
     public Response getDataReleases(@PathParam("species")
                                     @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
                                             defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
@@ -174,31 +165,64 @@ public class MetaWSServer extends GenericRestWSServer {
         try {
             long dbTimeStart = System.currentTimeMillis();
 
-            if (StringUtils.isEmpty(species)) {
-                species = this.species;
-            }
-            if (StringUtils.isEmpty(assembly)) {
-                assembly = this.assembly;
+            // Get releases
+            List<Release> releases = searchReleases(species, assembly, dataRelease);
+
+            // Convert Release to DataRelease, for backwards compatibility
+            List<DataRelease> dataReleases = new ArrayList<>();
+            for (Release release : releases) {
+                DataRelease dr = new DataRelease();
+                dr.setRelease(release.getRelease());
+                dr.setDate(release.getDate());
+                dr.setActiveByDefaultIn(release.getActiveByDefaultIn());
+                dr.setCollections(release.getCollections());
+                List<DataReleaseSource> drSources = new ArrayList<>();
+                for (DataSource source : release.getSources()) {
+                    DataReleaseSource drSource = new DataReleaseSource();
+                    drSource.setName(source.getName());
+                    drSource.setVersion(source.getVersion());
+                    drSource.setData(source.getId());
+                    drSource.setDate(source.getDownloadDate());
+                    drSource.setUrl(source.getUrls());
+                    drSources.add(drSource);
+                }
+                dr.setSources(drSources);
+                dataReleases.add(dr);
             }
 
-            if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
-                return createErrorResponse("/dataReleases", "Invalid species: '" + species + "' or assembly: '" + assembly + "'");
-            }
-            DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+            // Return data releases
+            int dbTime = (int) (System.currentTimeMillis() - dbTimeStart);
+            return createOkResponse(new CellBaseDataResult<>("dataReleases", dbTime, Collections.emptyList(), dataReleases.size(),
+                    dataReleases, dataReleases.size()));
+        } catch (CellBaseException | NumberFormatException e) {
+            return createErrorResponse(e);
+        }
+    }
 
-            // Return data release(s)
-            if (dataRelease == null) {
-                // If empty, return all data releases
-                return createOkResponse(dataReleaseManager.getReleases());
-            } else if (dataRelease == 0) {
-                int dbTime = (int) (System.currentTimeMillis() - dbTimeStart);
-                return createOkResponse(new CellBaseDataResult<>("dataRelease", dbTime, Collections.emptyList(), 1,
-                        Collections.singletonList(dataReleaseManager.getDefault(version)), 1));
-            } else {
-                int dbTime = (int) (System.currentTimeMillis() - dbTimeStart);
-                return createOkResponse(new CellBaseDataResult<>("dataRelease", dbTime, Collections.emptyList(), 1,
-                        Collections.singletonList(dataReleaseManager.get(dataRelease)), 1));
-            }
+    @GET
+    @Path("/{species}/releases")
+    @ApiOperation(httpMethod = "GET", value = "Returns data releases stored in the CellBase. Each data release contains the source names,"
+            + " versions and URLs from which data files were downloaded.", response = Release.class,
+            responseContainer = "QueryResponse")
+    public Response getReleases(@PathParam("species")
+                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION,
+                                        defaultValue = ParamConstants.DEFAULT_SPECIES, required = true) String species,
+                                @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION,
+                                        defaultValue = ParamConstants.DEFAULT_ASSEMBLY) @QueryParam("assembly") String assembly,
+                                @ApiParam(name = "dataRelease", value = ParamConstants.DATA_RELEASE_DESCRIPTION
+                                        + ". Use '0' to get the default data release for the current version, or leave this"
+                                        + " parameter empty to get all data releases.") @QueryParam("dataRelease")
+                                Integer dataRelease) {
+        try {
+            long dbTimeStart = System.currentTimeMillis();
+
+            // Get releases
+            List<Release> releases = searchReleases(species, assembly, dataRelease);
+
+            // Return releases
+            int dbTime = (int) (System.currentTimeMillis() - dbTimeStart);
+            return createOkResponse(new CellBaseDataResult<>("releases", dbTime, Collections.emptyList(), releases.size(), releases,
+                    releases.size()));
         } catch (CellBaseException | NumberFormatException e) {
             return createErrorResponse(e);
         }
@@ -309,7 +333,7 @@ public class MetaWSServer extends GenericRestWSServer {
                 String key = "Default data release (" + species.getId() + "/" + assembly.getName() + ")";
                 try {
                     dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species.getId(), assembly.getName());
-                    DataRelease defaultDataRelease = dataReleaseManager.getDefault(version);
+                    Release defaultDataRelease = dataReleaseManager.getDefault(version);
                     info.put(key, String.valueOf(defaultDataRelease.getRelease()));
                 } catch (CellBaseException e) {
                     logger.warn(e.getMessage());
@@ -514,5 +538,31 @@ public class MetaWSServer extends GenericRestWSServer {
         }
         map.put("endpoints", endpoints);
         return map;
+    }
+
+    private List<Release> searchReleases(String species, String assembly, Integer dataRelease)
+            throws CellBaseException {
+        if (StringUtils.isEmpty(species)) {
+            species = this.species;
+        }
+        if (StringUtils.isEmpty(assembly)) {
+            assembly = this.assembly;
+        }
+
+        if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
+            throw new CellBaseException("Invalid species: '" + species + "' or assembly: '" + assembly + "'");
+        }
+
+        DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
+
+        // Return data release(s)
+        if (dataRelease == null) {
+            // If empty, return all data releases
+            return dataReleaseManager.getReleases().getResults();
+        } else if (dataRelease == 0) {
+            return Collections.singletonList(dataReleaseManager.getDefault(version));
+        } else {
+            return Collections.singletonList(dataReleaseManager.get(dataRelease));
+        }
     }
 }

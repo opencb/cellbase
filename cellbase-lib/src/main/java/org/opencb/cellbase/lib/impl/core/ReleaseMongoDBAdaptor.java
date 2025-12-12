@@ -29,7 +29,7 @@ import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.query.AbstractQuery;
 import org.opencb.cellbase.core.api.query.ProjectionQueryOptions;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.datastore.core.DataResult;
@@ -60,29 +60,29 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         mongoDBCollection = mongoDataStore.getCollection(DATA_RELEASE_COLLECTION_NAME);
     }
 
-    public CellBaseDataResult<DataRelease> getAll() {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null, DataRelease.class, new QueryOptions()));
+    public CellBaseDataResult<Release> getAll() {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null, Release.class, new QueryOptions()));
     }
 
-    public DataResult insert(DataRelease dataRelease) throws JsonProcessingException {
+    public DataResult insert(Release dataRelease) throws JsonProcessingException {
         Document document = Document.parse(new ObjectMapper().writeValueAsString(dataRelease));
         return mongoDBCollection.insert(document, QueryOptions.empty());
     }
 
-    public DataResult<DataRelease> update(int release, List<String> versions) throws CellBaseException {
-        DataRelease currDataRelease = mongoDBCollection.find(Filters.eq("release", release), null, DataRelease.class, QueryOptions.empty())
+    public DataResult<Release> update(int release, List<String> versions) throws CellBaseException {
+        Release currDataRelease = mongoDBCollection.find(Filters.eq("release", release), null, Release.class, QueryOptions.empty())
                 .first();
 
         Map<Integer, List<String>> toUpdate = new HashMap<>();
         for (String version : versions) {
-            DataResult<DataRelease> result = mongoDBCollection.find(Filters.eq("activeByDefaultIn", version), null, DataRelease.class,
+            DataResult<Release> result = mongoDBCollection.find(Filters.eq("activeByDefaultIn", version), null, Release.class,
                     QueryOptions.empty());
             if (result.getNumResults() > 1) {
                 throw new CellBaseException("There's something wrong in the CellBase MongoDB. CellBase version " + version + " has"
                         + " multiple data releases: " + StringUtils.join(result.getResults().stream().map(dr -> dr.getRelease()), ","));
             }
             if (result.getNumResults() == 1) {
-                DataRelease dr = result.first();
+                Release dr = result.first();
                 if (!toUpdate.containsKey(dr.getRelease())) {
                     toUpdate.put(dr.getRelease(), dr.getActiveByDefaultIn());
                 }
@@ -115,7 +115,7 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             session.close();
         }
 
-        return  mongoDBCollection.find(Filters.eq("release", release), null, DataRelease.class, QueryOptions.empty());
+        return  mongoDBCollection.find(Filters.eq("release", release), null, Release.class, QueryOptions.empty());
     }
 
     public DataResult update(int release, String field, Object value) {
@@ -123,7 +123,7 @@ public class ReleaseMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         Document projection = new Document(field, true);
         Bson update = Updates.set(field, value);
         QueryOptions queryOptions = new QueryOptions("replace", true);
-        return mongoDBCollection.findAndUpdate(query, projection, null, update, DataRelease.class, queryOptions);
+        return mongoDBCollection.findAndUpdate(query, projection, null, update, Release.class, queryOptions);
     }
 
     @Override

@@ -17,7 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -55,8 +55,8 @@ public class MetaClient extends ParentRestClient<ObjectMap> {
         return execute("species", new Query(),  new QueryOptions(QueryOptions.LIMIT, 1000), SpeciesProperties.class);
     }
 
-    public CellBaseDataResponse<DataRelease> dataReleases() throws IOException {
-        return execute(species, "dataReleases",  new QueryOptions(QueryOptions.LIMIT, 1000), DataRelease.class);
+    public CellBaseDataResponse<Release> dataReleases() throws IOException {
+        return execute(species, "dataReleases",  new QueryOptions(QueryOptions.LIMIT, 1000), Release.class);
     }
 
     public CellBaseDataResponse<ObjectMap> versions() throws IOException {

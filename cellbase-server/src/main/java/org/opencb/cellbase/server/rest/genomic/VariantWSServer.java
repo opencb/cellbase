@@ -24,7 +24,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.SnpQuery;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.CellBaseServerException;
@@ -88,7 +88,7 @@ public class VariantWSServer extends GenericRestWSServer {
         }
 
         try {
-            DataRelease dataRelease = getDataRelease(getDataRelease(), species, assembly);
+            Release dataRelease = getDataRelease(getDataRelease(), species, assembly);
             List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id, dataRelease);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -122,7 +122,7 @@ public class VariantWSServer extends GenericRestWSServer {
         }
 
         try {
-            DataRelease dataRelease = getDataRelease(getDataRelease(), species, assembly);
+            Release dataRelease = getDataRelease(getDataRelease(), species, assembly);
             CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id, Boolean.TRUE.equals(decompose),
                     Boolean.TRUE.equals(leftAlign), dataRelease);
             return createOkResponse(queryResults);
@@ -357,7 +357,7 @@ public class VariantWSServer extends GenericRestWSServer {
             // use the processed value, as there may be more than one "consequenceTypeSource" in the URI
             String consequenceTypeSources = (StringUtils.isEmpty(uriParams.get("consequenceTypeSource")) ? consequenceTypeSource
                     : uriParams.get("consequenceTypeSource"));
-            DataRelease dataRelease = getDataRelease(getDataRelease(), species, assembly);
+            Release dataRelease = getDataRelease(getDataRelease(), species, assembly);
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(query.toQueryOptions(),
                     variants, normalize, decompose, leftAlign, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding,
                     checkAminoAcidChange, consequenceTypeSources, dataRelease, getApiKey());

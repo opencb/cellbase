@@ -22,7 +22,7 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -656,14 +656,14 @@ public class LoadCommandExecutor extends CommandExecutor {
         return sources;
     }
 
-    private DataRelease getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
+    private Release getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
         // Check data release
-        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
+        CellBaseDataResult<Release> dataReleaseResults = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available");
         }
-        DataRelease lastDataRelease = null;
-        for (DataRelease dr : dataReleaseResults.getResults()) {
+        Release lastDataRelease = null;
+        for (Release dr : dataReleaseResults.getResults()) {
             if (lastDataRelease == null || dr.getRelease() > lastDataRelease.getRelease()) {
                 lastDataRelease = dr;
             }

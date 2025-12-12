@@ -18,7 +18,6 @@ package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.config.RestConfig;
-import org.opencb.cellbase.core.common.GitRepositoryState;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -162,8 +160,8 @@ public class VariantClientTest {
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
         Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
-        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
-        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+        CellBaseDataResponse<Release> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(Release::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
         Query query = new Query();
         query.put("id", "rs1570391602,rs41278952");
@@ -188,8 +186,8 @@ public class VariantClientTest {
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
         Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
-        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
-        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+        CellBaseDataResponse<Release> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(Release::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
         Query query = new Query();
         query.put("chromosome", "1");
@@ -219,8 +217,8 @@ public class VariantClientTest {
         // Assumptions before running the test
         ObjectMap result = client.getMetaClient().about().firstResult();
         Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
-        CellBaseDataResponse<DataRelease> dataReleaseResponse = client.getMetaClient().dataReleases();
-        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(DataRelease::getRelease).collect(Collectors.toList()).contains(dataRelease));
+        CellBaseDataResponse<Release> dataReleaseResponse = client.getMetaClient().dataReleases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(Release::getRelease).collect(Collectors.toList()).contains(dataRelease));
 
         Query query = new Query();
         query.put("id", "rs157039161");
