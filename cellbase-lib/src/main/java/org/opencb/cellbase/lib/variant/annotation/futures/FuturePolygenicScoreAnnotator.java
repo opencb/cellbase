@@ -61,7 +61,7 @@ public class FuturePolygenicScoreAnnotator implements Callable<List<CellBaseData
             cellBaseDataResultList.add(polygenicScoreManager.getPolygenicScoreAnnotation(variant.getChromosome(), variant.getStart(),
                     variant.getReference(), variant.getAlternate(), dataRelease));
         }
-        logger.info("PolygenicScore queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
+        logger.debug("PolygenicScore queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
                 variantList.size());
         return cellBaseDataResultList;
     }

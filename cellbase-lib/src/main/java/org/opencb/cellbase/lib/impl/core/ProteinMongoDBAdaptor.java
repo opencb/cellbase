@@ -91,7 +91,7 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
 
         mongoDBCollectionByRelease = buildCollectionByReleaseMap("protein");
-        proteinSubstitutionMongoDBCollectionByRelease = buildCollectionByReleaseMap("protein_substitution_predictions");
+        proteinSubstitutionMongoDBCollectionByRelease = buildCollectionByReleaseMap("protein_substitution_prediction");
     }
 
     public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer aaPosition, String aa) throws CellBaseException {
@@ -114,16 +114,12 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
             andBsonList.add(Filters.eq("scores.aaAlternate", aaAlternate));
             Bson bson = Filters.and(andBsonList);
 
-            System.out.println("transcriptId = " + transcriptId + ", aaPosition = " + aaPosition + ", aa = " + aa + ", aaAlternate = "
-                    + aaAlternate);
-
             DataResult<ProteinSubstitutionPrediction> predictions = mongoDBCollection.find(bson, null, ProteinSubstitutionPrediction.class,
                     new QueryOptions());
 
             if (predictions != null && CollectionUtils.isNotEmpty(predictions.getResults())) {
                 for (ProteinSubstitutionPrediction prediction : predictions.getResults()) {
                     for (ProteinSubstitutionPredictionScore predictionScore : prediction.getScores()) {
-                        System.out.println("predictionScore = " + predictionScore.toString());
                         if (StringUtils.isNotEmpty(predictionScore.getAaAlternate()) && StringUtils.isNotEmpty(aaAlternate)
                                 && predictionScore.getAaAlternate().equals(aaAlternate)) {
                             String key = prediction.getSource() + ":" + predictionScore.getScore() + ":" + predictionScore.getEffect();
