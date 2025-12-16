@@ -90,6 +90,8 @@ public class VariantAnnotationCalculator {
     public static final String HGVS_INCLUDE = "hgvs";
     public static final String GENOMIC_CONTEXT_INCLUDE = "genomicContext";
     public static final String PGS_INCLUDE = "polygenicScore";
+    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
+    private static final String GENE_FUSION_INCLUDE = "geneFusions";
 
     private GenomeManager genomeManager;
     private GeneManager geneManager;
@@ -147,10 +149,6 @@ public class VariantAnnotationCalculator {
     private FutureGenomicSequenceContextAnnotator contextAnnotator;
     private Future<List<GenomicSequenceContext>> contextFuture;
 
-
-    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
-    private static final String GENE_FUSION_INCLUDE = "geneFusions";
-
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
@@ -178,7 +176,7 @@ public class VariantAnnotationCalculator {
 
         // Init data release and API key
         this.dataRelease = dataRelease;
-        logger.info("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
+        logger.debug("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
         this.apiKey = apiKey;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
@@ -591,7 +589,7 @@ public class VariantAnnotationCalculator {
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
-        if (SpeciesUtils.hasData(configuration, species, PGS_DATA) && annotatorSet.contains(EtlCommons.PGS_DATA)) {
+        if (SpeciesUtils.hasData(configuration, species, PGS_DATA) && annotatorSet.contains(PGS_INCLUDE)) {
             futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease(), polygenicScoreManager, logger);
             polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
