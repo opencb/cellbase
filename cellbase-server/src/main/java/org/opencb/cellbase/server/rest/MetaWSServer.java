@@ -556,13 +556,26 @@ public class MetaWSServer extends GenericRestWSServer {
         DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
 
         // Return data release(s)
+        List<Release> releases;
         if (dataRelease == null) {
             // If empty, return all data releases
-            return dataReleaseManager.getReleases().getResults();
+            releases = dataReleaseManager.getReleases().getResults();
         } else if (dataRelease == 0) {
-            return Collections.singletonList(dataReleaseManager.getDefault(version));
+            releases = Collections.singletonList(dataReleaseManager.getDefault(version));
         } else {
-            return Collections.singletonList(dataReleaseManager.get(dataRelease));
+            releases = Collections.singletonList(dataReleaseManager.get(dataRelease));
         }
+
+        // Clean up collections and sources from polygenic scores, it is disabled and will be enabled in future releases
+        for (Release release : releases) {
+            List<String> collectionsToRemove = Arrays.asList("common_polygenic_score", "variant_polygenic_score");
+            for (String collection : collectionsToRemove) {
+                if (release.getCollections().containsKey(collection)) {
+                    release.getCollections().remove(collection);
+                }
+            }
+            release.getSources().removeIf(source -> "pgs_catalog".equalsIgnoreCase(source.getId()));
+        }
+        return releases;
     }
 }
