@@ -1780,6 +1780,9 @@ public class VariantAnnotationCalculator {
                 if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
                     // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
                     // to the two breakpoints
+                    if (newCellBaseDataResult.getResults() == null) {
+                        newCellBaseDataResult.setResults(new ArrayList<>());
+                    }
                     newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
                     newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
                     newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());
