@@ -22,7 +22,7 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -126,6 +126,10 @@ public class LoadCommandExecutor extends CommandExecutor {
                         }
                         case EtlCommons.VARIATION_DATA: {
                             loadVariation();
+                            break;
+                        }
+                        case DBSNP_DATA: {
+                            loadDbSnp();
                             break;
                         }
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
@@ -319,16 +323,20 @@ public class LoadCommandExecutor extends CommandExecutor {
                 // Common loading process from CellBase variation data models
                 loadData(variationPath, VARIATION_DATA, VARIATION_CHR_PREFIX);
             }
-
-            // Loading dbSNP file, if necessary
-            HashMap<String, String> collectionMap = new HashMap<>();
-            collectionMap.put(SNP_DATA, DBSNP_OUTPUT_FILENAME);
-            loadData(variationPath.resolve(DBSNP_DATA), collectionMap);
         } else {
             // Custom update required e.g. population freqs loading
             logger.info(LOADING_FILE_LOG_MESSAGE, input);
             loadRunner.load(input, VARIATION_DATA, dataRelease, field, innerFields);
         }
+    }
+
+    private void loadDbSnp() throws CellBaseException {
+        Path dbSnpPath = input.resolve(DBSNP_DATA);
+
+        // Loading dbSNP file
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(SNP_DATA, DBSNP_OUTPUT_FILENAME);
+        loadData(dbSnpPath, collectionMap);
     }
 
     private void loadVariantFunctionalScore() throws CellBaseException {
@@ -648,14 +656,14 @@ public class LoadCommandExecutor extends CommandExecutor {
         return sources;
     }
 
-    private DataRelease getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
+    private Release getDataReleaseForLoading(DataReleaseManager dataReleaseManager) throws CellBaseException {
         // Check data release
-        CellBaseDataResult<DataRelease> dataReleaseResults = dataReleaseManager.getReleases();
+        CellBaseDataResult<Release> dataReleaseResults = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(dataReleaseResults.getResults())) {
             throw new CellBaseException("No data releases are available");
         }
-        DataRelease lastDataRelease = null;
-        for (DataRelease dr : dataReleaseResults.getResults()) {
+        Release lastDataRelease = null;
+        for (Release dr : dataReleaseResults.getResults()) {
             if (lastDataRelease == null || dr.getRelease() > lastDataRelease.getRelease()) {
                 lastDataRelease = dr;
             }

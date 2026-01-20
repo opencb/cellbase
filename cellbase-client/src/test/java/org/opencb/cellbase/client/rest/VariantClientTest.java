@@ -18,7 +18,6 @@ package org.opencb.cellbase.client.rest;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,8 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.config.RestConfig;
-import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
@@ -235,7 +234,33 @@ public class VariantClientTest {
         }
     }
 
-//    @Test
+    @Test
+    public void testSearchSnpBydbSnpIdAndRelease() throws Exception {
+        int dataRelease = 1;
+        ClientConfiguration clientConfiguration = new ClientConfiguration()
+                .setDefaultSpecies("hsapiens")
+                .setVersion("v6.7")
+                .setRest(new RestConfig(Collections.singletonList("https://ws.zettagenomics.com/cellbase"), 2000));
+
+        CellBaseClient client = new CellBaseClient(clientConfiguration);
+
+        // Assumptions before running the test
+        ObjectMap result = client.getMetaClient().about().firstResult();
+        Assumptions.assumeTrue(VersionUtils.isMinVersion("5.8", result.getString("Version")));
+        CellBaseDataResponse<Release> dataReleaseResponse = client.getMetaClient().releases();
+        Assumptions.assumeTrue(dataReleaseResponse.getResponses().get(0).getResults().stream().map(Release::getRelease).collect(Collectors.toList()).contains(dataRelease));
+
+        Query query = new Query();
+        query.put("id", "rs1570391602,rs41278952");
+        query.put("dataRelease", dataRelease);
+
+        CellBaseDataResponse<Snp> response = client.getVariantClient().searchSnp(query, new QueryOptions());
+        assertEquals(2, response.getResponses().get(0).getNumResults());
+        assertEquals("rs1570391602", response.getResponses().get(0).getResults().get(0).getId());
+        assertEquals("rs41278952", response.getResponses().get(0).getResults().get(1).getId());
+    }
+
+    //    @Test
 //    public void getConsequenceTypeById() throws Exception {
 //        CellBaseDataResponse<String> stringCellBaseDataResponse = cellBaseClient.getVariantClient().getConsequenceTypeById("22:35490160:G:A", null);
 //        assertEquals("Consequence Type of rs6661 is wrong", "3_prime_UTR_variant", stringCellBaseDataResponse.firstResult());

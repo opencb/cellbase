@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 
@@ -53,13 +53,13 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
 
             DataReleaseManager dataReleaseManager = new DataReleaseManager(database, configuration);
 
-            DataRelease dataRelease;
+            Release dataRelease;
             if (dataReleaseCommandOptions.create) {
                 // Create release
                 dataRelease = dataReleaseManager.createRelease();
                 System.out.println("\nData release " + dataRelease.getRelease() + " was created.");
                 System.out.println("Data release description (in JSON format):");
-                System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
+                System.out.println(new ObjectMapper().writerFor(Release.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.update > 0) {
                 if (StringUtils.isEmpty(dataReleaseCommandOptions.versions)) {
                     throw new IllegalArgumentException("Missing CellBase versions to be added when updating data release");
@@ -74,10 +74,10 @@ public class DataReleaseCommandExecutor extends CommandExecutor {
                 dataRelease = dataReleaseManager.get(dataReleaseCommandOptions.update);
                 System.out.println("\nData release " + dataRelease.getRelease() + " was updated.");
                 System.out.println("Data release description (in JSON format):");
-                System.out.println(new ObjectMapper().writerFor(DataRelease.class).writeValueAsString(dataRelease));
+                System.out.println(new ObjectMapper().writerFor(Release.class).writeValueAsString(dataRelease));
             } else if (dataReleaseCommandOptions.list) {
                 // List releases
-                CellBaseDataResult<DataRelease> dataReleases = dataReleaseManager.getReleases();
+                CellBaseDataResult<Release> dataReleases = dataReleaseManager.getReleases();
                 System.out.println("\nNumber of data releases: " + dataReleases.getResults().size());
                 System.out.println("List of data releases (in JSON format):");
                 System.out.println(new ObjectMapper().writerFor(List.class).writeValueAsString(dataReleases.getResults()));

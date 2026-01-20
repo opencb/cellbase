@@ -24,7 +24,7 @@ import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
@@ -222,7 +222,7 @@ public class MongoDBManager {
         ReleaseMongoDBAdaptor releaseMongoDBAdaptor = new ReleaseMongoDBAdaptor(mongoDatastore);
 //        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(mongoDatastore);
         try {
-            CellBaseDataResult<DataRelease> releases = releaseMongoDBAdaptor.getAll();
+            CellBaseDataResult<Release> releases = releaseMongoDBAdaptor.getAll();
             // Query must return at least one data release. Otherwise there's a problem
             if (releases.getNumResults() >= 1) {
                 return releases.getTime() + "ms";

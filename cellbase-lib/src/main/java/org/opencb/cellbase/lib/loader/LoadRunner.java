@@ -20,7 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
@@ -174,7 +174,7 @@ public class LoadRunner {
             throw new CellBaseException("Invalid data release " + release);
         }
 
-        DataRelease currDataRelease = dataReleaseManager.get(release);
+        Release currDataRelease = dataReleaseManager.get(release);
         if (currDataRelease == null) {
             throw new CellBaseException("Loading data is not permitted since no data release " + release + " is found");
         }

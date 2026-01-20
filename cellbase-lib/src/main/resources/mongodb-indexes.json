@@ -161,6 +161,10 @@
 {"collection": "splice_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
 
 {"collection": "pubmed", "fields": {"medlineCitation.pmid.content": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.author.lastName": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.title": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.keywordList.keyword.content": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.abstractText.content": 1}, "options": {"background": true}}
 
 {"collection": "pharmacogenomics", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"id": 1}, "options": {"background": true}}

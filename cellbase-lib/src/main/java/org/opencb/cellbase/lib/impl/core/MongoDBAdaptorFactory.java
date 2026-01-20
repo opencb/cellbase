@@ -32,7 +32,6 @@ public class MongoDBAdaptorFactory {
         return new GenomeMongoDBAdaptor(mongoDatastore);
     }
 
-    @Deprecated
     public MetaMongoDBAdaptor getMetaDBAdaptor() {
         return new MetaMongoDBAdaptor(mongoDatastore);
     }

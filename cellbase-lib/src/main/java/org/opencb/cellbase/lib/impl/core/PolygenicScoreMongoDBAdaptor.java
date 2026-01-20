@@ -102,10 +102,7 @@ public class PolygenicScoreMongoDBAdaptor extends CellBaseDBAdaptor
                                 new HashMap<>());
                         for (PolygenicScore polygenicScore : score.getPolygenicScores()) {
                             // Search the matched PGS
-                            System.out.println(">>> polygenic score ID = " + polygenicScore.getId() + ", " + pgs.getId());
-                            System.out.println(">>> polygenic score variant scores size = " + polygenicScore.getValues().size());
                             if (pgs.getId().equals(polygenicScore.getId())) {
-                                System.out.println("FOUND !!!!!!");
                                 pgsVariant.setValues(polygenicScore.getValues());
                                 break;
                             }

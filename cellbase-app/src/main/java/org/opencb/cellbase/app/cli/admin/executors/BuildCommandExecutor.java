@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.models.DataSource;
@@ -146,6 +147,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                     case VARIATION_DATA:
                         parser = buildVariation();
                         break;
+                    case DBSNP_DATA:
+                        parser = buildDbSnp();
+                        break;
                     case REGULATION_DATA:
                         parser = buildRegulation();
                         break;
@@ -182,14 +186,14 @@ public class BuildCommandExecutor extends CommandExecutor {
                         break;
                     default:
                         throw new IllegalArgumentException("Data parameter '" + data + "' is not allowed for '" + species + "'. "
-                                + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ",")
+                                + "Valid values are: " + StringUtils.join(speciesConfiguration.getData(), ", ")
                                 + ". You can use data parameter 'all' to download everything");
                 }
 
                 if (parser != null) {
                     parser.parse();
                     parser.disconnect();
-                    logger.info(BUILDING_DONE_LOG_MESSAGE);
+                    logger.info(BUILDING_DONE_LOG_MESSAGE, getDataName(data));
                 }
             }
         } catch (InterruptedException e) {
@@ -468,6 +472,33 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new VariationBuilder(variationDownloadPath, speciesConfiguration.getScientificName(), serializer, configuration);
     }
 
+    private AbstractBuilder buildDbSnp() throws CellBaseException, IOException {
+        // Sanity check
+        if (!speciesConfiguration.getId().equalsIgnoreCase(HSAPIENS)) {
+            throw new CellBaseException("dbSNP data can only be built for homo sapiens");
+        }
+
+        Path dbSnpDownloadPath = downloadFolder.resolve(DBSNP_DATA);
+        if (!Files.exists(dbSnpDownloadPath.resolve(getDataVersionFilename(DBSNP_DATA)))) {
+            throw new CellBaseException("Could not find the dbSNP version file. First, download the data '" + DBSNP_DATA
+                    + "' before building it");
+        }
+
+        logger.info(BUILDING_LOG_MESSAGE, getDataName(DBSNP_DATA));
+
+        // Copy files if necessary
+        Path dbSnpBuildPath = buildFolder.resolve(DBSNP_DATA);
+        if (!Files.exists(dbSnpBuildPath.resolve(getDataVersionFilename(DBSNP_DATA)))) {
+            Path dbSnpVersionPath = dbSnpDownloadPath.resolve(getDataVersionFilename(DBSNP_DATA));
+            copyVersionFiles(Collections.singletonList(dbSnpVersionPath), dbSnpBuildPath);
+        }
+
+        // Create the file serializer and the variation builder
+        CellBaseFileSerializer fileSerializer = new CellBaseJsonFileSerializer(dbSnpBuildPath);
+        DownloadProperties.URLProperties dbSnpUrlProperties = configuration.getDownload().getDbSNP();
+        return new DbSnpBuilder(dbSnpDownloadPath, dbSnpUrlProperties, fileSerializer);
+    }
+
     private AbstractBuilder buildConservation() throws CellBaseException {
         logger.info(BUILDING_LOG_MESSAGE, getDataName(CONSERVATION_DATA));
 
@@ -632,7 +663,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             for (String data : dataList) {
                 if (!speciesConfig.getData().contains(data)) {
                     throw new CellBaseException("Data parameter '" + data + "' does not exist or it is not allowed for '" + species + "'. "
-                            + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ",") + ". "
+                            + "Valid values are: " + StringUtils.join(speciesConfig.getData(), ", ") + ". "
                             + "You can use data parameter 'all' to build everything");
                 }
             }

@@ -37,7 +37,7 @@ import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
@@ -72,7 +72,8 @@ public class VariantAnnotationCalculator {
     public static final String GENE_DISEASE_INCLUDE = "geneDisease";
     public static final String DRUG_INTERACTION_INCLUDE = "drugInteraction";
     public static final String GENE_CONSTRAINTS_INCLUDE = "geneConstraints";
-    public static final String MIRNA_TARGETS_INCLUDE = "mirnaTargets";
+    // DISABLED mirna targets, to be enabled in future releases
+//    public static final String MIRNA_TARGETS_INCLUDE = "mirnaTargets";
     public static final String CANCER_GENE_ASSOCIATION_INCLUDE = "cancerGeneAssociation";
     public static final String CANCER_HOTSPOTS_INCLUDE = "cancerHotspots";
     public static final String VARIATION_INCLUDE = "variation";
@@ -89,7 +90,10 @@ public class VariantAnnotationCalculator {
     public static final String PHARMACOGENOMICS_INCLUDE = "pharmacogenomics";
     public static final String HGVS_INCLUDE = "hgvs";
     public static final String GENOMIC_CONTEXT_INCLUDE = "genomicContext";
-    public static final String PGS_INCLUDE = "polygenicScore";
+    // DISABLED mirna targets, to be enabled in future releases
+//    public static final String PGS_INCLUDE = "polygenicScore";
+    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
+    private static final String GENE_FUSION_INCLUDE = "geneFusions";
 
     private GenomeManager genomeManager;
     private GeneManager geneManager;
@@ -101,7 +105,7 @@ public class VariantAnnotationCalculator {
     private PharmacogenomicsManager pharmacogenomicsManager;
     private PolygenicScoreManager polygenicScoreManager;
 
-    private DataRelease dataRelease;
+    private Release dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
@@ -147,17 +151,13 @@ public class VariantAnnotationCalculator {
     private FutureGenomicSequenceContextAnnotator contextAnnotator;
     private Future<List<GenomicSequenceContext>> contextFuture;
 
-
-    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
-    private static final String GENE_FUSION_INCLUDE = "geneFusions";
-
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease, String apiKey,
+    public VariantAnnotationCalculator(String species, String assembly, Release dataRelease, String apiKey,
                                        CellBaseManagerFactory cellbaseManagerFactory, CellBaseConfiguration configuration)
             throws CellBaseException {
         logger.debug("VariantAnnotationCalculator: in 'constructor'");
@@ -178,7 +178,7 @@ public class VariantAnnotationCalculator {
 
         // Init data release and API key
         this.dataRelease = dataRelease;
-        logger.info("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
+        logger.debug("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
         this.apiKey = apiKey;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
@@ -377,14 +377,14 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
-            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
-            for (Gene gene : geneList) {
-                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
-                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
-                }
-            }
-        }
+//        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
+//            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
+//            for (Gene gene : geneList) {
+//                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
+//                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
+//                }
+//            }
+//        }
 
         if (annotatorSet.contains(CANCER_GENE_ASSOCIATION_INCLUDE)) {
             variantAnnotation.setGeneCancerAssociations(new ArrayList<>());
@@ -520,7 +520,7 @@ public class VariantAnnotationCalculator {
         return geneMirnaTargets;
     }
 
-    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, DataRelease dataRelease)
+    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, Release dataRelease)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         long globalStartTime = System.currentTimeMillis();
 
@@ -591,11 +591,12 @@ public class VariantAnnotationCalculator {
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
-        if (SpeciesUtils.hasData(configuration, species, PGS_DATA) && annotatorSet.contains(EtlCommons.PGS_DATA)) {
-            futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
-                    dataRelease.getRelease(), polygenicScoreManager, logger);
-            polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
-        }
+        // DISABLED, to be re-enabled in future releases
+//        if (SpeciesUtils.hasData(configuration, species, PGS_DATA) && annotatorSet.contains(PGS_INCLUDE)) {
+//            futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
+//                    dataRelease.getRelease(), polygenicScoreManager, logger);
+//            polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
+//        }
 
         if (annotatorSet.contains(GENOMIC_CONTEXT_INCLUDE)) {
             contextAnnotator = new FutureGenomicSequenceContextAnnotator(normalizedVariantList, dataRelease.getRelease(), genomeManager);
@@ -1311,9 +1312,9 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList(VARIATION_INCLUDE, TRAIT_ASSOCIATION_INCLUDE, CONSERVATION_INCLUDE,
                     FUNCTIONAL_SCORE_INCLUDE, CONSEQUENCE_TYPE_INCLUDE, GENE_DISEASE_INCLUDE, DRUG_INTERACTION_INCLUDE,
-                    GENE_CONSTRAINTS_INCLUDE, MIRNA_TARGETS_INCLUDE, PHARMACOGENOMICS_INCLUDE, CANCER_GENE_ASSOCIATION_INCLUDE,
+                    GENE_CONSTRAINTS_INCLUDE, /*MIRNA_TARGETS_INCLUDE,*/ PHARMACOGENOMICS_INCLUDE, CANCER_GENE_ASSOCIATION_INCLUDE,
                     CANCER_HOTSPOTS_INCLUDE, GENE_IMPRINTING_INCLUDE, GENE_FUSION_INCLUDE, POPULATION_FREQUENCIES_INCLUDE,
-                    REPEATS_INCLUDE, CYTOBAND_INCLUDE, HGVS_INCLUDE, XREFS_INCLUDE, GENOMIC_CONTEXT_INCLUDE, PGS_INCLUDE));
+                    REPEATS_INCLUDE, CYTOBAND_INCLUDE, HGVS_INCLUDE, XREFS_INCLUDE, GENOMIC_CONTEXT_INCLUDE /*, PGS_INCLUDE */));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1341,9 +1342,9 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains(GENE_CONSTRAINTS_INCLUDE)) {
             includeGeneFields.add("annotation.constraints");
         }
-        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
-            includeGeneFields.add("annotation.targets");
-        }
+//        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
+//            includeGeneFields.add("annotation.targets");
+//        }
         if (annotatorSet.contains(CANCER_GENE_ASSOCIATION_INCLUDE)) {
             includeGeneFields.add("annotation.cancerAssociations");
         }
@@ -1779,6 +1780,9 @@ public class VariantAnnotationCalculator {
                 if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
                     // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
                     // to the two breakpoints
+                    if (newCellBaseDataResult.getResults() == null) {
+                        newCellBaseDataResult.setResults(new ArrayList<>());
+                    }
                     newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
                     newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
                     newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());

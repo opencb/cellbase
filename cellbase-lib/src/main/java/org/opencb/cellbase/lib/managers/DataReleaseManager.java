@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
@@ -56,19 +56,19 @@ public class DataReleaseManager extends AbstractManager {
         releaseDBAdaptor = dbAdaptorFactory.getReleaseDBAdaptor();
     }
 
-    public CellBaseDataResult<DataRelease> getReleases() {
+    public CellBaseDataResult<Release> getReleases() {
         return releaseDBAdaptor.getAll();
     }
 
-    public DataRelease createRelease() throws JsonProcessingException {
+    public Release createRelease() throws JsonProcessingException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
         // If collection release does not exist, it has to be created from zero (release 1), otherwise the biggest release
         // will be used to increment the release number and then create the new document release with the current date
-        DataRelease lastRelease = null;
-        CellBaseDataResult<DataRelease> releaseResult = getReleases();
+        Release lastRelease = null;
+        CellBaseDataResult<Release> releaseResult = getReleases();
         if (CollectionUtils.isNotEmpty(releaseResult.getResults())) {
-            for (DataRelease dataRelease : releaseResult.getResults()) {
+            for (Release dataRelease : releaseResult.getResults()) {
                 if (lastRelease == null || dataRelease.getRelease() > lastRelease.getRelease()) {
                     lastRelease = dataRelease;
                 }
@@ -78,7 +78,7 @@ public class DataReleaseManager extends AbstractManager {
         // Is it the first release?
         if (lastRelease == null) {
             // Create the first release, collections and sources are empty
-            lastRelease = new DataRelease()
+            lastRelease = new Release()
                     .setRelease(1)
                     .setDate(sdf.format(new Date()));
             releaseDBAdaptor.insert(lastRelease);
@@ -98,10 +98,10 @@ public class DataReleaseManager extends AbstractManager {
         return lastRelease;
     }
 
-    public DataRelease get(int release) throws CellBaseException {
-        CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
+    public Release get(int release) throws CellBaseException {
+        CellBaseDataResult<Release> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
-            for (DataRelease dataRelease : result.getResults()) {
+            for (Release dataRelease : result.getResults()) {
                 if (dataRelease.getRelease() == release) {
                     return dataRelease;
                 }
@@ -110,10 +110,10 @@ public class DataReleaseManager extends AbstractManager {
         throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
     }
 
-    public DataRelease getDefault(String cellBaseVersion) throws CellBaseException {
-        CellBaseDataResult<DataRelease> result = releaseDBAdaptor.getAll();
+    public Release getDefault(String cellBaseVersion) throws CellBaseException {
+        CellBaseDataResult<Release> result = releaseDBAdaptor.getAll();
         if (CollectionUtils.isNotEmpty(result.getResults())) {
-            for (DataRelease dataRelease : result.getResults()) {
+            for (Release dataRelease : result.getResults()) {
                 if (dataRelease.getActiveByDefaultIn().contains(cellBaseVersion)) {
                     return dataRelease;
                 }
@@ -122,17 +122,17 @@ public class DataReleaseManager extends AbstractManager {
         throw new CellBaseException("No data release found for CellBase " + cellBaseVersion + getSpeciesAssemblyMessage());
     }
 
-    public DataRelease update(int release, List<String> versions) throws CellBaseException {
+    public Release update(int release, List<String> versions) throws CellBaseException {
         return releaseDBAdaptor.update(release, versions).first();
     }
 
-    public DataRelease update(int release, String collection) throws CellBaseException {
+    public Release update(int release, String collection) throws CellBaseException {
         return update(release, collection, Collections.emptyList());
     }
 
-    public DataRelease update(int release, String collection, List<Path> dataSourcePaths)
+    public Release update(int release, String collection, List<Path> dataSourcePaths)
             throws CellBaseException {
-        DataRelease currDataRelease = get(release);
+        Release currDataRelease = get(release);
         if (currDataRelease != null) {
             // Update collections
             currDataRelease.getCollections().put(collection, CellBaseDBAdaptor.buildCollectionName(collection, release));
@@ -154,8 +154,8 @@ public class DataReleaseManager extends AbstractManager {
         throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
     }
 
-    public DataRelease updateSources(int release, List<Path> dataSourcePaths) throws CellBaseException {
-        DataRelease currDataRelease = get(release);
+    public Release updateSources(int release, List<Path> dataSourcePaths) throws CellBaseException {
+        Release currDataRelease = get(release);
         if (currDataRelease == null) {
             throw new CellBaseException("Data release '" + release + "' does not exist" + getSpeciesAssemblyMessage());
         }
@@ -176,7 +176,7 @@ public class DataReleaseManager extends AbstractManager {
 
     }
 
-    public void update(DataRelease dataRelease) {
+    public void update(Release dataRelease) {
         if (MapUtils.isNotEmpty(dataRelease.getCollections())) {
             releaseDBAdaptor.update(dataRelease.getRelease(), "collections", dataRelease.getCollections());
         }
@@ -218,8 +218,8 @@ public class DataReleaseManager extends AbstractManager {
         return configuration.getMaintainerContact();
     }
 
-    public DataRelease checkDataRelease(int inRelease) throws CellBaseException {
-        DataRelease outRelease;
+    public Release checkDataRelease(int inRelease) throws CellBaseException {
+        Release outRelease;
         if (inRelease < 0) {
             throw new CellBaseException("Invalid data release " + inRelease + ". Data release must be greater or equal to 0");
         }
@@ -234,8 +234,8 @@ public class DataReleaseManager extends AbstractManager {
             return outRelease;
         }
 
-        List<DataRelease> dataReleases = getReleases().getResults();
-        for (DataRelease dataRelease : dataReleases) {
+        List<Release> dataReleases = getReleases().getResults();
+        for (Release dataRelease : dataReleases) {
             if (inRelease == dataRelease.getRelease()) {
                 return dataRelease;
             }

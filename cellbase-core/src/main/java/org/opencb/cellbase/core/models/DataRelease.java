@@ -16,14 +16,21 @@
 
 package org.opencb.cellbase.core.models;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
+@Deprecated
 public class DataRelease {
     private int release;
     private String date;
+    /** @deprecated */
+    @Deprecated
+    private boolean active;
     private List<String> activeByDefaultIn;
     private Map<String, String> collections;
-    private List<DataSource> sources;
+    private List<DataReleaseSource> sources;
 
     public DataRelease() {
         this.activeByDefaultIn = Collections.emptyList();
@@ -32,7 +39,7 @@ public class DataRelease {
     }
 
     public DataRelease(int release, String date, List<String> activeByDefaultIn, Map<String, String> collections,
-                       List<DataSource> sources) {
+                       List<DataReleaseSource> sources) {
         this.release = release;
         this.date = date;
         this.activeByDefaultIn = activeByDefaultIn;
@@ -40,20 +47,19 @@ public class DataRelease {
         this.sources = sources;
     }
 
-    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataRelease{");
-        sb.append("release=").append(release);
-        sb.append(", date='").append(date).append('\'');
-        sb.append(", activeByDefaultIn=").append(activeByDefaultIn);
-        sb.append(", collections=").append(collections);
-        sb.append(", sources=").append(sources);
+        StringBuilder sb = new StringBuilder("DataRelease{");
+        sb.append("release=").append(this.release);
+        sb.append(", date='").append(this.date).append('\'');
+        sb.append(", activeByDefaultIn=").append(this.activeByDefaultIn);
+        sb.append(", collections=").append(this.collections);
+        sb.append(", sources=").append(this.sources);
         sb.append('}');
         return sb.toString();
     }
 
     public int getRelease() {
-        return release;
+        return this.release;
     }
 
     public DataRelease setRelease(int release) {
@@ -62,7 +68,7 @@ public class DataRelease {
     }
 
     public String getDate() {
-        return date;
+        return this.date;
     }
 
     public DataRelease setDate(String date) {
@@ -70,8 +76,17 @@ public class DataRelease {
         return this;
     }
 
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public DataRelease setActive(boolean active) {
+        this.active = active;
+        return this;
+    }
+
     public List<String> getActiveByDefaultIn() {
-        return activeByDefaultIn;
+        return this.activeByDefaultIn;
     }
 
     public DataRelease setActiveByDefaultIn(List<String> activeByDefaultIn) {
@@ -80,7 +95,7 @@ public class DataRelease {
     }
 
     public Map<String, String> getCollections() {
-        return collections;
+        return this.collections;
     }
 
     public DataRelease setCollections(Map<String, String> collections) {
@@ -88,33 +103,29 @@ public class DataRelease {
         return this;
     }
 
-    public List<DataSource> getSources() {
-        return sources;
+    public List<DataReleaseSource> getSources() {
+        return this.sources;
     }
 
-    public DataRelease setSources(List<DataSource> sources) {
+    public DataRelease setSources(List<DataReleaseSource> sources) {
         this.sources = sources;
         return this;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        } else if (o != null && this.getClass() == o.getClass()) {
+            DataRelease that = (DataRelease)o;
+            return this.release == that.release && Objects.equals(this.activeByDefaultIn, that.activeByDefaultIn)
+                    && Objects.equals(this.date, that.date) && Objects.equals(this.collections, that.collections)
+                    && Objects.equals(this.sources, that.sources);
+        } else {
             return false;
         }
-        DataRelease that = (DataRelease) o;
-        return release == that.release
-                && Objects.equals(activeByDefaultIn, that.activeByDefaultIn)
-                && Objects.equals(date, that.date)
-                && Objects.equals(collections, that.collections)
-                && Objects.equals(sources, that.sources);
     }
 
-    @Override
     public int hashCode() {
-        return Objects.hash(release, date, activeByDefaultIn, collections, sources);
+        return Objects.hash(new Object[]{this.release, this.date, this.activeByDefaultIn, this.collections, this.sources});
     }
 }

@@ -55,7 +55,7 @@ public class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult
         long startTime = System.currentTimeMillis();
         List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList, batchGeneList,
                 queryOptions, dataRelease);
-        logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+        logger.debug("Clinical query performance is {} ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
         return clinicalCellBaseDataResultList;
     }
 

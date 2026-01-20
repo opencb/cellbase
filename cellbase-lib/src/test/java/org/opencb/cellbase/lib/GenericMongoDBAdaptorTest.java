@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.lib.loader.LoadRunner;
@@ -53,7 +53,7 @@ import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
-    protected DataRelease dataRelease;
+    protected Release dataRelease;
     protected String apiKey;
 
     protected String cellBaseName;
@@ -109,8 +109,8 @@ public class GenericMongoDBAdaptorTest {
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
             URISyntaxException, CellBaseException, LoaderException {
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY);
-        CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
-        List<DataRelease> dataReleaseList = results.getResults();
+        CellBaseDataResult<Release> results = dataReleaseManager.getReleases();
+        List<Release> dataReleaseList = results.getResults();
         if (CollectionUtils.isEmpty(dataReleaseList)) {
             // Download data and populate mongo DB
             downloadAndPopulate();

@@ -22,9 +22,13 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MetaMongoDBAdaptor;
+import org.opencb.cellbase.lib.iterator.CellBaseIterator;
 import org.opencb.commons.monitor.DatastoreStatus;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MetaManager extends AbstractManager {
@@ -56,11 +60,46 @@ public class MetaManager extends AbstractManager {
         return this.mongoDBManager.getDatabaseStatus(species, assembly);
     }
 
+    public CellBaseDataResult<ApiKeyStats> getApiKeyStats(String apiKey, String date) {
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        return metaDBAdaptor.getApiKeyStats(apiKey, date);
+    }
+
+    public CellBaseDataResult<ApiKeyStats> getApiKeyStats(List<String> apiKeys, String startDate, String endDate) {
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        return metaDBAdaptor.getApiKeyStats(apiKeys, startDate, endDate);
+    }
+
+    public CellBaseDataResult<ApiKeyStats> getApiKeys() {
+        long dbTimeStart = System.currentTimeMillis();
+        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+        CellBaseIterator<ApiKeyStats> iterator = metaDBAdaptor.apiKeyStatsIterator();
+        System.out.println("API Key Stats:");
+        Map<String, ApiKeyStats> apiKeyStatsMap = new HashMap<>();
+        while (iterator.hasNext()) {
+            ApiKeyStats apiKeyStats = iterator.next();
+            if (!apiKeyStatsMap.containsKey(apiKeyStats.getApiKey())) {
+                apiKeyStatsMap.put(apiKeyStats.getApiKey(), apiKeyStats);
+            } else {
+                ApiKeyStats updatedApiKey = apiKeyStatsMap.get(apiKeyStats.getApiKey());
+                updatedApiKey.setNumAnnotatedVariants(updatedApiKey.getNumAnnotatedVariants() + apiKeyStats.getNumAnnotatedVariants());
+                updatedApiKey.setNumQueries(updatedApiKey.getNumQueries() + apiKeyStats.getNumQueries());
+                updatedApiKey.setDuration(updatedApiKey.getDuration() + apiKeyStats.getDuration());
+                updatedApiKey.setOutputBytes(updatedApiKey.getOutputBytes() + apiKeyStats.getOutputBytes());
+            }
+        }
+
+        // Return the aggregated results
+        int dbTime = (int) (System.currentTimeMillis() - dbTimeStart);
+        return new CellBaseDataResult<>("ApiKeys", dbTime, null, apiKeyStatsMap.size(), new ArrayList<>(apiKeyStatsMap.values()),
+                apiKeyStatsMap.size());
+    }
+
     public void checkQuota(String apiKey, ApiKeyJwtPayload payload) throws CellBaseException {
         String date = getApiKeyStatsDate();
 
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
-        CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getQuota(apiKey, date);
+        CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getApiKeyStats(apiKey, date);
 
         long numQueries = 0;
         long numAnnotatedVariants = 0;

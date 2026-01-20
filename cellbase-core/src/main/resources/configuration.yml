@@ -386,7 +386,9 @@ species:
         - ontology
         - pubmed
         - pharmacogenomics
-        - polygenic_score
+# DISABLED: to be enable in future releases
+#        - polygenic_score
+        - dbsnp
     - id: "mmusculus"
       scientificName: "Mus musculus"
       assemblies:

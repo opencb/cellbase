@@ -148,7 +148,7 @@ public class SnpMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCore
             throw new CellBaseException("Error parsing SNP query: " + query, e);
         }
 
-        logger.info("SnpMongoDBAdaptor parsed query: {}", andBsonList);
+        logger.debug("SnpMongoDBAdaptor parsed query: {}", andBsonList);
         if (!andBsonList.isEmpty()) {
             return Filters.and(andBsonList);
         } else {

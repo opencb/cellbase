@@ -82,7 +82,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
         includes.add("variants.evidences.variantAssociations.description");
         includes.add("variants.evidences.variantAssociations.discussion");
         includes.add("variants.alleles");
-        logger.info("Pharmacogenomics variant annotation/search includes: {}", StringUtils.join(includes, ","));
+        logger.debug("Pharmacogenomics variant annotation/search includes: {}", StringUtils.join(includes, ","));
         for (Variant variant : variantList) {
             PharmaChemicalQuery query = new PharmaChemicalQuery();
             query.setLocations(Collections.singletonList(variant.getChromosome() + ":" + variant.getStart()));
@@ -90,7 +90,7 @@ public class FuturePharmacogenomicsAnnotator implements Callable<List<CellBaseDa
             query.setIncludes(includes);
             cellBaseDataResultList.add(pharmacogenomicsManager.search(query));
         }
-        logger.info("Pharmacogenomics queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
+        logger.debug("Pharmacogenomics queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime,
                 variantList.size());
         return cellBaseDataResultList;
     }
