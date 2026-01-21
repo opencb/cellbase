@@ -13,6 +13,14 @@ jobs:
     with:
       upload_artifact: true
 
+  deploy-maven:
+    uses: opencb/java-common-libs/.github/workflows/deploy-maven-repository-workflow.yml@develop
+    needs: test
+    with:
+      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
+      cache_key: ${{ needs.test.outputs.cache_key }}
+    secrets: inherit
+
   deploy-docker:
     uses: opencb/java-common-libs/.github/workflows/deploy-docker-hub-workflow.yml@develop
     needs: test
