@@ -46,6 +46,6 @@ jobs:
     needs: calculate-xetabase-branch
     uses: opencb/java-common-libs/.github/workflows/test-xetabase-workflow.yml@develop
     with:
-      branch: ${{ needs.calculate-xetabase-branch.outputs.xetabase_branch }}
+      branch: develop
       task: ${{ github.event.pull_request.head.ref }}
     secrets: inherit
