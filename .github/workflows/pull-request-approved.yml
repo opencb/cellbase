@@ -6,41 +6,8 @@ on:
     types: [ submitted ]
 
 jobs:
-  calculate-xetabase-branch:
-    if: github.event.review.state == 'approved'
-    name: Calculate Xetabase branch
-    runs-on: ${{ vars.UBUNTU_VERSION }}
-    outputs:
-      xetabase_branch: ${{ steps.get_xetabase_branch.outputs.xetabase_branch }}
-    steps:
-      - name: Clone project
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: '10'
-          ## This is important to avoid the error in the next step: "fatal: repository 'https://github.com/zetta-genomics/opencga-enterprise.git/' not found"
-          persist-credentials: false
-      - id: get_xetabase_branch
-        name: "Get current branch for Xetabase from target branch"
-        run: |
-          chmod +x ./.github/workflows/scripts/get-xetabase-branch.sh
-          echo "github.event.pull_request.base.ref: ${{ github.event.pull_request.base.ref }}"
-          echo "github.event.pull_request.head.ref: ${{ github.event.pull_request.head.ref }}"
-          set +e  # Desactivar exit on error temporalmente
-          xetabase_branch=$(./.github/workflows/scripts/get-xetabase-branch.sh ${{ github.event.pull_request.base.ref }} 2>&1)
-          exit_code=$?
-          set -e
-          if [ $exit_code -ne 0 ]; then
-            echo "::error::Script failed with exit code $exit_code"
-            echo "Output: $xetabase_branch"
-            exit $exit_code
-          fi
-          echo "__Xetabase ref:__ \"${xetabase_branch}\"" | tee -a ${GITHUB_STEP_SUMMARY}
-          echo "xetabase_branch: ${xetabase_branch}"
-          echo "xetabase_branch=${xetabase_branch}" >> $GITHUB_OUTPUT
-        env:
-          ZETTA_REPO_ACCESS_TOKEN: ${{ secrets.ZETTA_REPO_ACCESS_TOKEN }}
 
-  test:
+  test-xetabase:
     if: github.event.review.state == 'approved'
     name: "Run all tests before merging"
     needs: calculate-xetabase-branch
@@ -49,3 +16,9 @@ jobs:
       branch: develop
       task: ${{ github.event.pull_request.head.ref }}
     secrets: inherit
+
+  test-cellbase:
+    uses: ./.github/workflows/test-analysis.yml
+    secrets: inherit
+    with:
+      upload_artifact: false
