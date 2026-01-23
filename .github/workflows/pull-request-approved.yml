@@ -10,7 +10,6 @@ jobs:
   test-xetabase:
     if: github.event.review.state == 'approved'
     name: "Run all tests before merging"
-    needs: calculate-xetabase-branch
     uses: opencb/java-common-libs/.github/workflows/test-xetabase-workflow.yml@develop
     with:
       branch: develop
