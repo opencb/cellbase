@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class CellBaseDBAdaptor extends MongoDBAdaptor {
 
-    protected List<DataRelease> dataReleases;
+    protected List<Release> dataReleases;
     protected Map<Integer, MongoDBCollection> mongoDBCollectionByRelease;
 
     public static final String DATA_RELEASE_SEPARATOR = "__v";
@@ -41,7 +41,7 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
     public Map<Integer, MongoDBCollection> buildCollectionByReleaseMap(String data) {
         Map<Integer, MongoDBCollection> collectionMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(dataReleases)) {
-            for (DataRelease dataRelease : dataReleases) {
+            for (Release dataRelease : dataReleases) {
                 if (dataRelease.getCollections().containsKey(data)) {
                     String collectionName = dataRelease.getCollections().get(data);
                     collectionMap.put(dataRelease.getRelease(), mongoDataStore.getCollection(collectionName));
@@ -80,11 +80,11 @@ public class CellBaseDBAdaptor extends MongoDBAdaptor {
         return sb.toString();
     }
 
-    public List<DataRelease> getDataReleases() {
+    public List<Release> getDataReleases() {
         return dataReleases;
     }
 
-    public CellBaseDBAdaptor setDataReleases(List<DataRelease> dataReleases) {
+    public CellBaseDBAdaptor setDataReleases(List<Release> dataReleases) {
         this.dataReleases = dataReleases;
         return this;
     }

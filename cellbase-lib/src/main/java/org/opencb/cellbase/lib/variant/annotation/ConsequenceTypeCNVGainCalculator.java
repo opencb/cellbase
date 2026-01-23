@@ -19,13 +19,17 @@ package org.opencb.cellbase.lib.variant.annotation;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,37 +75,45 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
                         ? new ArrayList<>(transcript.getFlags()) : null);
                 SoNames.clear();
 
-                if (transcript.getStrand().equals("+")) {
-                    // whole transcript affected
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
-                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
-                        solvePositiveTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                try {
+                    if (transcript.getStrand().equals("+")) {
+                        // whole transcript affected
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
+                            SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            solvePositiveTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
-                    }
-                } else {
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
-                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
-                        solveNegativeTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
+                            SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            solveNegativeTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    logger.error("Error computing consequence type: {}", Arrays.toString(e.getStackTrace()));
+                    SequenceOntologyTerm soTerm = new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(
+                            VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT), VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    consequenceType.setSequenceOntologyTerms(Collections.singletonList(soTerm));
+                    consequenceTypeList.add(consequenceType);
                 }
             }
         }

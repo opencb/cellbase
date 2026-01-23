@@ -130,6 +130,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getGenesByRegionPost(@FormParam("region") @ApiParam(name = "region",
             value = REGION_DESCRIPTION, required = true) String region) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         return getGenesByRegion(region);
     }
 
@@ -179,6 +185,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] coordinates = regions.split(",");
@@ -226,6 +238,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = REGION_DESCRIPTION, required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<TranscriptQuery> queries = new ArrayList<>();
             String[] coordinates = regions.split(",");
@@ -266,6 +284,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = REGION_DESCRIPTION, required = true) String region) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<RepeatsQuery> queries = new ArrayList<>();
             String[] coordinates = region.split(",");
@@ -309,6 +333,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getVariantByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<VariantQuery> queries = new ArrayList<>();
             if (!variantManager.validateRegionInput(regions)) {
@@ -357,6 +387,12 @@ public class RegionWSServer extends GenericRestWSServer {
                                         @DefaultValue("1") @QueryParam("strand")
                                         @ApiParam(name = "strand", value = STRAND,
                                                 allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -419,6 +455,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             // FIXME
 //            parseQueryParams();
@@ -454,6 +496,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getRegulatoryRegions(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<RegulationQuery> queries = new ArrayList<>();
             String[] regionArray = regions.split(",");
@@ -491,6 +539,12 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = REGION_DESCRIPTION,
             required = false) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<RegulationQuery> queries = new ArrayList<>();
             String[] regionArray = regions.split(",");
@@ -516,6 +570,12 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response conservation(@PathParam("regions")
                                  @ApiParam(name = "regions", value = REGION_DESCRIPTION,
                                          required = true) String regions) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults

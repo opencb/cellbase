@@ -71,6 +71,12 @@ public class SpeciesWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getSpeciesInfo() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions(), getDataRelease());

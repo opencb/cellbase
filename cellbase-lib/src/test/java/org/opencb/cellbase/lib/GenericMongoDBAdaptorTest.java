@@ -21,9 +21,9 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.core.utils.DatabaseNameUtils;
 import org.opencb.cellbase.lib.loader.LoadRunner;
 import org.opencb.cellbase.lib.loader.LoaderException;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
@@ -53,7 +53,7 @@ import static org.opencb.cellbase.lib.EtlCommons.PUBMED_DATA;
 public class GenericMongoDBAdaptorTest {
 
     private DataReleaseManager dataReleaseManager;
-    protected DataRelease dataRelease;
+    protected Release dataRelease;
     protected String apiKey;
 
     protected String cellBaseName;
@@ -94,7 +94,7 @@ public class GenericMongoDBAdaptorTest {
             cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
-            cellBaseName = MongoDBManager.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
+            cellBaseName = DatabaseNameUtils.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
 
             loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, cellBaseName, 2,
                     cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);
@@ -109,8 +109,8 @@ public class GenericMongoDBAdaptorTest {
             InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
             URISyntaxException, CellBaseException, LoaderException {
         dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY);
-        CellBaseDataResult<DataRelease> results = dataReleaseManager.getReleases();
-        List<DataRelease> dataReleaseList = results.getResults();
+        CellBaseDataResult<Release> results = dataReleaseManager.getReleases();
+        List<Release> dataReleaseList = results.getResults();
         if (CollectionUtils.isEmpty(dataReleaseList)) {
             // Download data and populate mongo DB
             downloadAndPopulate();
@@ -160,7 +160,7 @@ public class GenericMongoDBAdaptorTest {
                 loadData("conservation", "conservation", file.toPath(), true);
             }
         }
-        dataReleaseManager.update(dataRelease.getRelease(), "conservation", "conservation", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "conservation", Collections.emptyList());
 
         // Regulatory regions: regulatory_region.json.gz
         loadData("regulatory_region", "regulatory_region", baseDir.resolve("regulatory_region.json.gz"));
@@ -174,7 +174,7 @@ public class GenericMongoDBAdaptorTest {
                 loadData("protein_functional_prediction", "protein_functional_prediction", file.toPath(), true);
             }
         }
-        dataReleaseManager.update(dataRelease.getRelease(), "protein_functional_prediction", "protein_functional_prediction", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "protein_functional_prediction", Collections.emptyList());
 
         // Variation: variation_chr_all.json.gz
         loadData("variation", "variation", baseDir.resolve("variation_chr_all.json.gz"));
@@ -195,7 +195,7 @@ public class GenericMongoDBAdaptorTest {
         // splice_score
         loadData("splice_score", "splice_score", baseDir.resolve("splice_score/spliceai/splice_score_all.json.gz"), true);
         loadData("splice_score", "splice_score", baseDir.resolve("splice_score/mmsplice/splice_score_all.json.gz"), true);
-        dataReleaseManager.update(dataRelease.getRelease(), "splice_score", "splice_score", Collections.emptyList());
+        dataReleaseManager.update(dataRelease.getRelease(), "splice_score", Collections.emptyList());
 
         // clinical_variants.full.json.gz
         loadData("clinical_variants", "clinical_variants", baseDir.resolve("clinical_variants.full.json.gz"));
@@ -221,7 +221,7 @@ public class GenericMongoDBAdaptorTest {
             logger.info("Loading (" + collection + ", " + data + ") from file " + filePath);
             loadRunner.load(filePath, collection, dataRelease.getRelease());
             if (!skipUpdate) {
-                dataReleaseManager.update(dataRelease.getRelease(), collection, data, Collections.emptyList());
+                dataReleaseManager.update(dataRelease.getRelease(), collection, Collections.emptyList());
             }
         } else {
             logger.error("(" + collection + ", " + data + ") not loading: file " + filePath + "does not exist");

@@ -46,12 +46,17 @@ public abstract class ClinicalIndexer {
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
     private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
 
+    protected static final String ORIGINAL_ADDITIONAL_PROPERTY_ID = "original";
+
     protected int numberNewVariants = 0;
     protected int numberVariantUpdates = 0;
     protected int totalNumberRecords = 0;
     protected int numberIndexedRecords = 0;
-    protected RocksDB rdb;
 
+    protected String version;
+    protected String assembly;
+
+    protected RocksDB rdb;
 
     protected static final String SYMBOL = "symbol";
 
@@ -66,7 +71,6 @@ public abstract class ClinicalIndexer {
         jsonObjectWriter = mapper.writer();
 
         PrintUtils.printSpace();
-//        jsonObjectWriter = mapper.writerFor(VariantAnnotation.class);
     }
 
     protected Path genomeSequenceFilePath;
@@ -82,7 +86,7 @@ public abstract class ClinicalIndexer {
                 .setDecomposeMNVs(false);
 
         if (genomeSequenceFilePath != null) {
-            logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath.toString());
+            logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath);
             variantNormalizerConfig.enableLeftAlign(genomeSequenceFilePath.toString());
         } else {
             logger.info("Left alignment is NOT enabled.");
@@ -203,7 +207,7 @@ public abstract class ClinicalIndexer {
             return normalizedVariantList.stream().map((variant1) -> variant1.toString()).collect(Collectors.toList());
         }
 
-        return null;
+        return new ArrayList<>();
     }
 
     protected boolean isValid(Variant variant) {

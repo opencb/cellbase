@@ -18,9 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
-import org.opencb.biodata.models.core.MissenseVariantFunctionalScore;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.TranscriptMissenseVariantFunctionalScore;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -105,29 +103,12 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
                                                                              int dataRelease) throws CellBaseException {
         CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
                 aaPosition, aaReference, aaAlternate, options, dataRelease);
-        CellBaseDataResult<TranscriptMissenseVariantFunctionalScore> revelResults =
-                missenseVariationFunctionalScoreMongoDBAdaptor.getScores(
-                        variant.getChromosome(), variant.getStart(), variant.getReference(), variant.getAlternate(),
-                        aaReference, aaAlternate, dataRelease);
-        if (proteinVariantAnnotation.getResults() != null && revelResults.getResults() != null) {
-            if (proteinVariantAnnotation.getResults().get(0).getSubstitutionScores() == null) {
-                proteinVariantAnnotation.getResults().get(0).setSubstitutionScores(new ArrayList<>());
-            }
-            proteinVariantAnnotation.getResults().get(0).getSubstitutionScores().add(
-                    new Score(revelResults.first().getScore(), "revel", ""));
-        }
         return proteinVariantAnnotation;
     }
 
     public CellBaseDataResult<Object> getProteinSubstitutionRawData(List<String> transcriptIds, CellBaseQueryOptions options,
                                                                     int dataRelease) throws CellBaseException {
         return proteinDBAdaptor.getProteinSubstitutionRawData(transcriptIds, options, dataRelease);
-    }
-
-    public CellBaseDataResult<MissenseVariantFunctionalScore> getMissenseVariantFunctionalScores(String chromosome, List<Integer> positions,
-                                                                                                 CellBaseQueryOptions options,
-                                                                                                 int dataRelease) throws CellBaseException {
-        return missenseVariationFunctionalScoreMongoDBAdaptor.getScores(chromosome, positions, options, dataRelease);
     }
 }
 

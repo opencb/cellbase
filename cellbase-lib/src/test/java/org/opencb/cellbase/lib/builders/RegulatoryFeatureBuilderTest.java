@@ -33,7 +33,7 @@ public class RegulatoryFeatureBuilderTest {
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "regulatory_feature", true);
         RegulatoryFeatureBuilder parser = new RegulatoryFeatureBuilder(regulationDirectoryPath, serializer);
         parser.parse();
-        Set<Gff2> features = parser.regulatoryFeatureSet;
+        Set<Gff2> features = parser.getRegulatoryFeatureSet();
         assertEquals(1, features.size());
 
         Gff2 feature = features.iterator().next();

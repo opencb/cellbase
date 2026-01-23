@@ -32,7 +32,6 @@ public class MongoDBAdaptorFactory {
         return new GenomeMongoDBAdaptor(mongoDatastore);
     }
 
-    @Deprecated
     public MetaMongoDBAdaptor getMetaDBAdaptor() {
         return new MetaMongoDBAdaptor(mongoDatastore);
     }
@@ -97,6 +96,10 @@ public class MongoDBAdaptorFactory {
 
     public SnpMongoDBAdaptor getSnpDBAdaptor() {
         return new SnpMongoDBAdaptor(mongoDatastore);
+    }
+
+    public PolygenicScoreMongoDBAdaptor getPolygenicScoreMongoDBAdaptor() {
+        return new PolygenicScoreMongoDBAdaptor(mongoDatastore);
     }
 
     @Override

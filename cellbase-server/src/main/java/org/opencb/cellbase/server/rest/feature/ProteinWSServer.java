@@ -83,6 +83,12 @@ public class ProteinWSServer extends GenericRestWSServer {
     })
     public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = PROTEIN_IDS,
             required = true) String id) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(id.split(",")), query, getDataRelease(),
@@ -132,6 +138,12 @@ public class ProteinWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -170,6 +182,12 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                   required = false) Integer position,
                                           @QueryParam("aa") @ApiParam(name = "aa", value = AA_DESCRIPTION,
                                                   required = false) String aa) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -215,6 +233,12 @@ public class ProteinWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = PROTEIN_ACCESSION,
             required = true) String proteins) throws QueryException {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setDataRelease(getDataRelease());

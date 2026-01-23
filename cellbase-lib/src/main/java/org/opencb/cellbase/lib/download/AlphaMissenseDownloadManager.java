@@ -1,0 +1,54 @@
+/*
+ * Copyright 2015-2020 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.opencb.cellbase.lib.download;
+
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.lib.EtlCommons;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+
+import static org.opencb.cellbase.lib.EtlCommons.*;
+
+public class AlphaMissenseDownloadManager extends AbstractDownloadManager {
+
+    public AlphaMissenseDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
+            throws IOException, CellBaseException {
+        super(species, assembly, targetDirectory, configuration);
+    }
+
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        String dataName = getDataName(ALPHAMISSENSE_DATA);
+        logger.info(DOWNLOADING_MSG, dataName);
+
+        Path alphaMissensePath = downloadFolder.resolve(EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(ALPHAMISSENSE_DATA);
+        Files.createDirectories(alphaMissensePath);
+
+        // Download AlphaMissense file
+        DownloadFile downloadFile = downloadAndSaveDataSource(configuration.getDownload().getAlphaMissense(), ALPHAMISSENSE_FILE_ID,
+                ALPHAMISSENSE_DATA, alphaMissensePath);
+
+        logger.info(DOWNLOADING_DONE_MSG, dataName);
+
+        return Collections.singletonList(downloadFile);
+    }
+}

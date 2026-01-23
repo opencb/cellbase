@@ -26,7 +26,7 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.app.cli.admin.executors.validation.VEPVariant;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
@@ -75,10 +75,10 @@ public class ValidationCommandExecutor extends CommandExecutor {
         try {
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(validationCommandOptions.species,
                     validationCommandOptions.assembly);
-            DataRelease dataRelease = dataReleaseManager.get(validationCommandOptions.dataRelease);
+            Release dataRelease = dataReleaseManager.get(validationCommandOptions.dataRelease);
             variantAnnotationCalculator = new VariantAnnotationCalculator(validationCommandOptions.species,
                     validationCommandOptions.assembly, dataRelease, validationCommandOptions.apiKey,
-                    cellBaseManagerFactory);
+                    cellBaseManagerFactory, configuration);
         } catch (CellBaseException e) {
             e.printStackTrace();
             return;

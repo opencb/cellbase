@@ -16,17 +16,27 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
+import org.opencb.biodata.formats.feature.chimerdb.ChimerDbParserCallback;
+import org.opencb.biodata.formats.feature.chimerdb.ChimerKbParser;
+import org.opencb.biodata.formats.feature.chimerdb.ChimerPubParser;
+import org.opencb.biodata.formats.feature.chimerdb.ChimerSeqParser;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.clinical.ClinicalProperty;
-import org.opencb.biodata.models.core.CancerHotspot;
-import org.opencb.biodata.models.core.CancerHotspotVariant;
-import org.opencb.biodata.models.core.GeneCancerAssociation;
+import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.core.chimerdb.ChimerKb;
+import org.opencb.biodata.models.core.chimerdb.ChimerPub;
+import org.opencb.biodata.models.core.chimerdb.ChimerSeq;
+import org.opencb.biodata.models.variant.avro.Constraint;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneImprinting;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -34,15 +44,19 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.lib.EtlCommons.*;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_DONE_LOG_MESSAGE;
+import static org.opencb.cellbase.lib.builders.AbstractBuilder.PARSING_LOG_MESSAGE;
+
 public class GeneBuilderIndexer {
+
+    public static final String ROCKSDB_FOLDER = "rocksdb.idx";
 
     protected RocksDB rocksdb;
     protected RocksDbManager rocksDbManager;
@@ -50,18 +64,19 @@ public class GeneBuilderIndexer {
     protected String dbLocation;
     protected Options dbOption;
 
-    protected final String HGNC_ID_SUFFIX = "_hgncid";
-    protected final String MANE_SUFFIX = "_mane";
-    protected final String LRG_SUFFIX = "_lrg";
-    protected final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
-    protected final String CANCER_HOTSPOT_SUFFIX = "_chs";
-    protected final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
-    protected final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
-    protected final String DRUGS_SUFFIX = "_drug";
-    protected final String DISEASE_SUFFIX = "_disease";
-    protected final String MIRTARBASE_SUFFIX = "_mirtarbase";
-    protected final String TSO500_SUFFIX = "_tso500";
-    protected final String EGLH_HAEMONC_SUFFIX = "_eglh_haemonc";
+    protected static final String HGNC_ID_SUFFIX = "_hgncid";
+    protected static final String MANE_SUFFIX = "_mane";
+    protected static final String LRG_SUFFIX = "_lrg";
+    protected static final String CANCER_GENE_CENSUS_SUFFIX = "_cgc";
+    protected static final String CANCER_HOTSPOT_SUFFIX = "_chs";
+    protected static final String PROTEIN_SEQUENCE_SUFFIX = "_protein_fasta";
+    protected static final String CDNA_SEQUENCE_SUFFIX = "_cdna_fasta";
+    protected static final String DRUGS_SUFFIX = "_drug";
+    protected static final String DISEASE_SUFFIX = "_disease";
+    protected static final String MIRTARBASE_SUFFIX = "_mirtarbase";
+    private static final String CONSTRAINT_SUFFIX = "_constraint";
+    private static final String IMPRINTED_GENE_SUFFIX = "_imprinted";
+    private static final String GENE_FUSION_SUFFIX = "_fusion";
 
     public GeneBuilderIndexer(Path genePath) {
         this.init(genePath);
@@ -69,7 +84,7 @@ public class GeneBuilderIndexer {
 
     private void init(Path genePath) {
         rocksDbManager = new RocksDbManager();
-        dbLocation = genePath.resolve("integration.idx").toString();
+        dbLocation = genePath.resolve(ROCKSDB_FOLDER).toString();
         rocksdb = rocksDbManager.getDBConnection(dbLocation);
         dbOption = new Options().setCreateIfMissing(true);
 
@@ -77,18 +92,14 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading RefSeq's cDNA sequences...");
-        FileUtils.checkPath(cDnaFastaFile);
-        if (Files.size(cDnaFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
+        logger.info(PARSING_LOG_MESSAGE, cDnaFastaFile);
+        try (FastaReader fastaReader = new FastaReader(cDnaFastaFile)) {
             Fasta fasta;
             while ((fasta = fastaReader.read()) != null) {
                 rocksDbManager.update(rocksdb, fasta.getId() + CDNA_SEQUENCE_SUFFIX, fasta.getSeq());
             }
-            fastaReader.close();
-        } else {
-            logger.warn("RefSeq's cDNA sequences not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, cDnaFastaFile);
     }
 
     public String getCdnaFasta(String id) throws RocksDBException {
@@ -96,18 +107,18 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexProteinSequences(Path proteinFastaFile) throws IOException, FileFormatException, RocksDBException {
-        logger.info("Loading ENSEMBL's protein sequences...");
-        FileUtils.checkPath(proteinFastaFile);
-        if (Files.size(proteinFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(proteinFastaFile);
+        if (proteinFastaFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, proteinFastaFile);
+        try (FastaReader fastaReader = new FastaReader(proteinFastaFile)) {
             Fasta fasta;
             while ((fasta = fastaReader.read()) != null) {
                 rocksDbManager.update(rocksdb, fasta.getId() + PROTEIN_SEQUENCE_SUFFIX, fasta.getSeq());
             }
-            fastaReader.close();
-        } else {
-            logger.warn("ENSEMBL's protein sequences not loaded");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, proteinFastaFile);
     }
 
     protected String getProteinFasta(String id) throws RocksDBException {
@@ -115,22 +126,22 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexHgncIdMapping(Path hgncMappingFile) throws IOException, RocksDBException {
-        // #hgnc_id symbol  name    locus_group     locus_type      status  location        location_sortable  ...
-        logger.info("Indexing HGNC ID mapping data ...");
-
-        // We only need the first two columns: hgnc_id -> symbol
-        if (hgncMappingFile != null && Files.exists(hgncMappingFile) && Files.size(hgncMappingFile) > 0) {
-            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hgncMappingFile)) {
-                String line = bufferedReader.readLine();
-                while (StringUtils.isNotEmpty(line)) {
-                    String[] fields = line.split("\t", -1);
-                    rocksDbManager.update(rocksdb, fields[1] + HGNC_ID_SUFFIX, fields[0]);
-                    line = bufferedReader.readLine();
-                }
-            }
-        } else {
-            logger.warn("HGNC ID mapping file " + hgncMappingFile + " not found");
+        if (hgncMappingFile == null) {
+            return;
         }
+
+        logger.info(PARSING_LOG_MESSAGE, hgncMappingFile);
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hgncMappingFile)) {
+            String line = bufferedReader.readLine();
+            // We only need the first two columns: hgnc_id -> symbol
+            // #hgnc_id symbol  name    locus_group     locus_type      status  location        location_sortable  ...
+            while (StringUtils.isNotEmpty(line)) {
+                String[] fields = line.split("\t", -1);
+                rocksDbManager.update(rocksdb, fields[1] + HGNC_ID_SUFFIX, fields[0]);
+                line = bufferedReader.readLine();
+            }
+        }
+        logger.info(PARSING_DONE_LOG_MESSAGE, hgncMappingFile);
     }
 
     public String getHgncId(String id) throws RocksDBException {
@@ -138,29 +149,29 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexManeMapping(Path maneMappingFile, String referenceId) throws IOException, RocksDBException {
+        if (maneMappingFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, maneMappingFile);
+        int idColumn = referenceId.equalsIgnoreCase(ENSEMBL_DATA) ? 7 : 5;
+
         // #NCBI_GeneID    Ensembl_Gene    HGNC_ID      symbol   name    RefSeq_nuc      RefSeq_prot     Ensembl_nuc     Ensembl_prot
         // MANE_status     GRCh38_chr     chr_start       chr_end chr_strand
-        logger.info("Indexing MANE mapping data ...");
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile)) {
+            String line = bufferedReader.readLine();
+            while (StringUtils.isNotEmpty(line)) {
+                String[] fields = line.split("\t", -1);
+                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq", fields[5]);
+                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq_protein", fields[6]);
+                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl", fields[7]);
+                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl_protein", fields[8]);
+                rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_flag", fields[9]);
 
-        if (maneMappingFile != null && Files.exists(maneMappingFile) && Files.size(maneMappingFile) > 0) {
-            int idColumn = referenceId.equalsIgnoreCase("ensembl") ? 7 : 5;
-//            BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile);
-            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(maneMappingFile)) {
-                String line = bufferedReader.readLine();
-                while (StringUtils.isNotEmpty(line)) {
-                    String[] fields = line.split("\t", -1);
-                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq", fields[5]);
-                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_refseq_protein", fields[6]);
-                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl", fields[7]);
-                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_ensembl_protein", fields[8]);
-                    rocksDbManager.update(rocksdb, fields[idColumn] + MANE_SUFFIX + "_flag", fields[9]);
-
-                    line = bufferedReader.readLine();
-                }
+                line = bufferedReader.readLine();
             }
-        } else {
-            logger.warn("MANE mapping file " + maneMappingFile + " not found");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, maneMappingFile);
     }
 
     public String getMane(String id, String field) throws RocksDBException {
@@ -168,30 +179,31 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexLrgMapping(Path lrgMappingFile, String referenceId) throws IOException, RocksDBException {
+        if (lrgMappingFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, lrgMappingFile);
+
         // # Last modified: 30-03-2021@22:00:06
         // # LRG HGNC_SYMBOL REFSEQ_GENOMIC LRG_TRANSCRIPT REFSEQ_TRANSCRIPT ENSEMBL_TRANSCRIPT CCDS
         // LRG_1 COL1A1 NG_007400.1 t1 NM_000088.3 ENST00000225964.10 CCDS11561.1
-        logger.info("Indexing LRG mapping data ...");
-
-        if (lrgMappingFile != null && Files.exists(lrgMappingFile) && Files.size(lrgMappingFile) > 0) {
-            int idColumn = referenceId.equalsIgnoreCase("ensembl") ? 5 : 4;
-            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(lrgMappingFile)) {
-                String line = bufferedReader.readLine();
-                while (StringUtils.isNotEmpty(line)) {
-                    if (!line.startsWith("#")) {
-                        String[] fields = line.split("\t", -1);
-                        String id = fields[idColumn];
-                        if (StringUtils.isNotEmpty(id) && !id.equals("-")) {
-                            rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_refseq", fields[4]);
-                            rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_ensembl", fields[5]);
-                        }
+        int idColumn = referenceId.equalsIgnoreCase("ensembl") ? 5 : 4;
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(lrgMappingFile)) {
+            String line = bufferedReader.readLine();
+            while (StringUtils.isNotEmpty(line)) {
+                if (!line.startsWith("#")) {
+                    String[] fields = line.split("\t", -1);
+                    String id = fields[idColumn];
+                    if (StringUtils.isNotEmpty(id) && !id.equals("-")) {
+                        rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_refseq", fields[4]);
+                        rocksDbManager.update(rocksdb, id + LRG_SUFFIX + "_ensembl", fields[5]);
                     }
-                    line = bufferedReader.readLine();
                 }
+                line = bufferedReader.readLine();
             }
-        } else {
-            logger.warn("LRG mapping file " + lrgMappingFile + " not found");
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE, lrgMappingFile);
     }
 
     public String getLrg(String id, String field) throws RocksDBException {
@@ -199,6 +211,12 @@ public class GeneBuilderIndexer {
     }
 
     protected void indexCancerGeneCensus(Path cgcFile) throws IOException, RocksDBException {
+        if (cgcFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, cgcFile);
+
         Map<String, String> tissuesMap = new HashMap<>();
         tissuesMap.put("E", "epithelial");
         tissuesMap.put("L", "leukaemia/lymphoma");
@@ -224,22 +242,20 @@ public class GeneBuilderIndexer {
         mutationTypesMap.put("Mis", "missense");
         mutationTypesMap.put("PromoterMis", "missense");
 
-        logger.info("Indexing CANCER GENE CENSUS data ...");
-        if (cgcFile != null && Files.exists(cgcFile) && Files.size(cgcFile) > 0) {
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(cgcFile)) {
             // Skip the first header line
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(cgcFile);
-            bufferedReader.readLine();
+            String line = bufferedReader.readLine();
 
             GeneCancerAssociation cancerGeneAssociation;
-            String line;
+
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.split("\t", -1);
                 // Find Ensembl Gene Id in the last comma-separated column
                 List<String> synonyms = StringUtils.isNotEmpty(fields[19])
                         ? Arrays.stream(fields[19]
-                        .replaceAll("\"", "")
-                        .replaceAll(" ", "")
-                        .split(","))
+                                .replace("\"", "")
+                                .replace(" ", "")
+                                .split(","))
                         .collect(Collectors.toList())
                         : Collections.emptyList();
 
@@ -254,54 +270,55 @@ public class GeneBuilderIndexer {
                     boolean somatic = StringUtils.isNotEmpty(fields[7]) && fields[7].equalsIgnoreCase("yes");
                     boolean germline = StringUtils.isNotEmpty(fields[8]) && fields[8].equalsIgnoreCase("yes");
                     List<String> somaticTumourTypes = StringUtils.isNotEmpty(fields[9])
-                            ? Arrays.asList(fields[9].replaceAll("\"", "").split(", "))
+                            ? Arrays.asList(fields[9].replace("\"", "").split(", "))
                             : new ArrayList<>();
                     List<String> germlineTumourTypes = StringUtils.isNotEmpty(fields[10])
-                            ? Arrays.asList(fields[10].replaceAll("\"", "").split(", "))
+                            ? Arrays.asList(fields[10].replace("\"", "").split(", "))
                             : Collections.emptyList();
                     List<String> syndromes = StringUtils.isNotEmpty(fields[11])
-                            ? Arrays.asList(fields[11].replaceAll("\"", "").split("; "))
+                            ? Arrays.asList(fields[11].replace("\"", "").split("; "))
                             : Collections.emptyList();
                     List<String> tissues = StringUtils.isNotEmpty(fields[12])
                             ? Arrays.stream(fields[12]
-                            .replaceAll("\"", "")
-                            .replaceAll(" ", "")
-                            .split(","))
+                                    .replace("\"", "")
+                                    .replace(" ", "")
+                                    .split(","))
                             .map(tissuesMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
-                    List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = StringUtils.isNotEmpty(fields[13])
-                            ? fields[13].equalsIgnoreCase("Dom/Rec")
+                    List<ClinicalProperty.ModeOfInheritance> modeOfInheritance = Collections.emptyList();
+                    if (StringUtils.isNotEmpty(fields[13])) {
+                        modeOfInheritance = fields[13].equalsIgnoreCase("Dom/Rec")
                                 ? Arrays.asList(moiMap.get("Dom"), moiMap.get("Rec"))
-                                : Collections.singletonList(moiMap.get(fields[13]))
-                            : Collections.emptyList();
+                                : Collections.singletonList(moiMap.get(fields[13]));
+                    }
                     List<ClinicalProperty.RoleInCancer> roleInCancer = StringUtils.isNotEmpty(fields[14])
                             ? Arrays.stream(fields[14]
-                            .replaceAll("\"", "")
-                            .replaceAll(" ", "")
-                            .split(","))
+                                    .replace("\"", "")
+                                    .replace(" ", "")
+                                    .split(","))
                             .map(roleInCancerMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> mutationTypes = StringUtils.isNotEmpty(fields[15])
                             ? Arrays.stream(fields[15]
-                            .replaceAll("\"", "")
-                            .replaceAll(" ", "")
-                            .split(","))
+                                    .replace("\"", "")
+                                    .replace(" ", "")
+                                    .split(","))
                             .map(mutationTypesMap::get)
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> translocationPartners = StringUtils.isNotEmpty(fields[16])
                             ? Arrays.stream(fields[16]
-                            .replaceAll("\"", "")
-                            .replaceAll(" ", "")
-                            .split(","))
+                                    .replace("\"", "")
+                                    .replace(" ", "")
+                                    .split(","))
                             .collect(Collectors.toList())
                             : Collections.emptyList();
                     List<String> otherSyndromes = StringUtils.isNotEmpty(fields[18])
                             ? Arrays.stream(fields[18]
-                            .replaceAll("\"", "")
-                            .split("; "))
+                                    .replace("\"", "")
+                                    .split("; "))
                             .collect(Collectors.toList())
                             : Collections.emptyList();
 
@@ -312,10 +329,9 @@ public class GeneBuilderIndexer {
                     rocksDbManager.update(rocksdb, fields[0] + CANCER_GENE_CENSUS_SUFFIX, cancerGeneAssociation);
                 }
             }
-            bufferedReader.close();
-        } else {
-            logger.warn("CANCER GENE CENSUS file " + cgcFile + " not found");
         }
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, cgcFile);
     }
 
     public List<GeneCancerAssociation> getCancerGeneCensus(String geneName) throws RocksDBException, IOException {
@@ -324,170 +340,111 @@ public class GeneBuilderIndexer {
     }
 
     public void indexCancerHotspot(Path cancerHotspot) throws IOException, RocksDBException {
+        if (cancerHotspot == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, cancerHotspot);
+
         // Store all cancer hotspot (different gene and aminoacid position) for each gene in the same key
         Map<String, List<CancerHotspot>> visited = new HashMap<>();
-        FileInputStream fileInputStream = new FileInputStream(cancerHotspot.toFile());
-        HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
-        HSSFSheet sheet = workbook.getSheetAt(0);
-        Iterator<org.apache.poi.ss.usermodel.Row> iterator = sheet.iterator();
-        iterator.next();
-        while (iterator.hasNext()) {
-            Row currentRow = iterator.next();
-            String geneName = currentRow.getCell(0).toString();
 
-            if (currentRow.getCell(1).toString().contains("splice")) {
-                continue;
-            }
-            int aminoAcidPosition = Integer.parseInt(currentRow.getCell(1).toString());
+        try (FileInputStream fileInputStream = new FileInputStream(cancerHotspot.toFile())) {
+            HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
+            HSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<org.apache.poi.ss.usermodel.Row> iterator = sheet.iterator();
+            iterator.next();
+            while (iterator.hasNext()) {
+                Row currentRow = iterator.next();
+                String geneName = currentRow.getCell(0).toString();
 
-            CancerHotspot ch = null;
-            // Check if ch object already exist
-            if (visited.containsKey(geneName)) {
-                for (CancerHotspot hotspot : visited.get(geneName)) {
-                    if (hotspot.getAminoacidPosition() == aminoAcidPosition) {
-                        ch = hotspot;
-                        break;
+                if (currentRow.getCell(1).toString().contains("splice")) {
+                    continue;
+                }
+                int aminoAcidPosition = Integer.parseInt(currentRow.getCell(1).toString());
+
+                CancerHotspot ch = null;
+                // Check if ch object already exist
+                if (visited.containsKey(geneName)) {
+                    for (CancerHotspot hotspot : visited.get(geneName)) {
+                        if (hotspot.getAminoacidPosition() == aminoAcidPosition) {
+                            ch = hotspot;
+                            break;
+                        }
                     }
                 }
-            }
 
-            // If not exist we create new ch
-            if (ch == null) {
-                ch = new CancerHotspot();
-                ch.setScores(new HashMap<>());
-                ch.setCancerTypeCount(new HashMap<>());
-                ch.setOrganCount(new HashMap<>());
-                ch.setVariants(new ArrayList<>());
+                // If not exist we create new ch
+                if (ch == null) {
+                    ch = new CancerHotspot();
+                    ch.setScores(new HashMap<>());
+                    ch.setCancerTypeCount(new HashMap<>());
+                    ch.setOrganCount(new HashMap<>());
+                    ch.setVariants(new ArrayList<>());
 
-                // Parse new row
-                ch.setGeneName(geneName);
-                ch.setAminoacidPosition(aminoAcidPosition);
-                ch.getScores().put("log10Pvalue", Double.parseDouble(currentRow.getCell(2).toString()));
-                ch.setNumMutations(Integer.parseInt(currentRow.getCell(3).toString()));
+                    // Parse new row
+                    ch.setGeneName(geneName);
+                    ch.setAminoacidPosition(aminoAcidPosition);
+                    ch.getScores().put("log10Pvalue", Double.parseDouble(currentRow.getCell(2).toString()));
+                    ch.setNumMutations(Integer.parseInt(currentRow.getCell(3).toString()));
 
-                String[] cancerCountSplit = currentRow.getCell(11).toString().split("\\|");
-                for (String cancerCount : cancerCountSplit) {
-                    String[] split = cancerCount.split(":");
-                    ch.getCancerTypeCount().put(split[0], Integer.parseInt(split[2]));
+                    String[] cancerCountSplit = currentRow.getCell(11).toString().split("\\|");
+                    for (String cancerCount : cancerCountSplit) {
+                        String[] split = cancerCount.split(":");
+                        ch.getCancerTypeCount().put(split[0], Integer.parseInt(split[2]));
+                    }
+
+                    String[] organCountSplit = currentRow.getCell(12).toString().split("\\|");
+                    for (String organCount : organCountSplit) {
+                        String[] split = organCount.split(":");
+                        ch.getOrganCount().put(split[0], Integer.parseInt(split[2]));
+                    }
+
+                    ch.getScores().put("mutability", Double.parseDouble(currentRow.getCell(14).toString()));
+                    ch.getScores().put("muProtein", Double.parseDouble(currentRow.getCell(15).toString()));
+                    ch.setAnalysis(Arrays.asList(currentRow.getCell(17).toString().split(",")));
+                    ch.getScores().put("qvalue", Double.parseDouble(currentRow.getCell(18).toString()));
+                    ch.getScores().put("qvaluePancan", Double.parseDouble(currentRow.getCell(20).toString()));
+                    ch.setAminoacidReference(currentRow.getCell(35).toString());
+                    ch.getScores().put("qvalueCancerType", Double.parseDouble(currentRow.getCell(36).toString()));
+                    ch.setCancerType(currentRow.getCell(37).toString());
+
+                    if (visited.containsKey(geneName)) {
+                        // Gene exists but no this aminoacid position
+                        visited.get(geneName).add(ch);
+                    } else {
+                        // New gene found
+                        visited.put(geneName, new ArrayList<>(Collections.singletonList(ch)));
+                    }
                 }
 
-                String[] organCountSplit = currentRow.getCell(12).toString().split("\\|");
-                for (String organCount : organCountSplit) {
-                    String[] split = organCount.split(":");
-                    ch.getOrganCount().put(split[0], Integer.parseInt(split[2]));
+                // Add cancer hotspot variant information
+                CancerHotspotVariant cancerHotspotVariant = new CancerHotspotVariant();
+                cancerHotspotVariant.setSampleCount(new HashMap<>());
+
+                String[] alternateCountSplit = currentRow.getCell(8).toString().split(":");
+                cancerHotspotVariant.setAminoacidAlternate(alternateCountSplit[0]);
+                cancerHotspotVariant.setCount(Integer.parseInt(alternateCountSplit[1]));
+
+                String[] sampleSplit = currentRow.getCell(38).toString().split("\\|");
+                for (String sampleCount : sampleSplit) {
+                    String[] sampleCountSplit = sampleCount.split(":");
+                    cancerHotspotVariant.getSampleCount().put(sampleCountSplit[0], Integer.parseInt(sampleCountSplit[1]));
                 }
-
-                ch.getScores().put("mutability", Double.parseDouble(currentRow.getCell(14).toString()));
-                ch.getScores().put("muProtein", Double.parseDouble(currentRow.getCell(15).toString()));
-                ch.setAnalysis(Arrays.asList(currentRow.getCell(17).toString().split(",")));
-                ch.getScores().put("qvalue", Double.parseDouble(currentRow.getCell(18).toString()));
-                ch.getScores().put("qvaluePancan", Double.parseDouble(currentRow.getCell(20).toString()));
-                ch.setAminoacidReference(currentRow.getCell(35).toString());
-                ch.getScores().put("qvalueCancerType", Double.parseDouble(currentRow.getCell(36).toString()));
-                ch.setCancerType(currentRow.getCell(37).toString());
-
-                if (visited.containsKey(geneName)) {
-                    // Gene exists but no this aminoacid position
-                    visited.get(geneName).add(ch);
-                } else {
-                    // New gene found
-                    visited.put(geneName, new ArrayList<>(Collections.singletonList(ch)));
-                }
+                ch.getVariants().add(cancerHotspotVariant);
             }
-
-            // Add cancer hotspot variant information
-            CancerHotspotVariant cancerHotspotVariant = new CancerHotspotVariant();
-            cancerHotspotVariant.setSampleCount(new HashMap<>());
-
-            String[] alternateCountSplit = currentRow.getCell(8).toString().split(":");
-            cancerHotspotVariant.setAminoacidAlternate(alternateCountSplit[0]);
-            cancerHotspotVariant.setCount(Integer.parseInt(alternateCountSplit[1]));
-
-            String[] sampleSplit = currentRow.getCell(38).toString().split("\\|");
-            for (String sampleCount : sampleSplit) {
-                String[] sampleCountSplit = sampleCount.split(":");
-                cancerHotspotVariant.getSampleCount().put(sampleCountSplit[0], Integer.parseInt(sampleCountSplit[1]));
-            }
-            ch.getVariants().add(cancerHotspotVariant);
         }
-        fileInputStream.close();
 
-        for (String geneName : visited.keySet()) {
-            rocksDbManager.update(rocksdb, geneName + CANCER_HOTSPOT_SUFFIX, visited.get(geneName));
+        for (Map.Entry<String, List<CancerHotspot>> entry : visited.entrySet()) {
+            rocksDbManager.update(rocksdb, entry.getKey() + CANCER_HOTSPOT_SUFFIX, entry.getValue());
         }
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, cancerHotspot);
     }
 
     public List<CancerHotspot> getCancerHotspot(String geneName) throws RocksDBException, IOException {
         String key = geneName + CANCER_HOTSPOT_SUFFIX;
         return rocksDbManager.getCancerHotspot(rocksdb, key);
-    }
-
-
-    protected void indexTSO500(Path tso500Path) throws IOException, RocksDBException {
-        // Gene Ref Seq
-        // FAS  NM_000043
-        // AR   NM_000044
-        logger.info("Indexing TSO500 data ...");
-
-        if (tso500Path != null && Files.exists(tso500Path) && Files.size(tso500Path) > 0) {
-            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(tso500Path)) {
-                String line = bufferedReader.readLine();
-                while (StringUtils.isNotEmpty(line)) {
-                    if (!line.startsWith("#")) {
-                        String[] fields = line.split("\t", -1);
-                        if (fields.length == 2) {
-                            rocksDbManager.update(rocksdb, fields[1] + TSO500_SUFFIX, "TSO500");
-                        }
-                    }
-                    line = bufferedReader.readLine();
-                }
-            }
-        } else {
-            logger.warn("Ensembl TSO500 mapping file " + tso500Path + " not found");
-        }
-    }
-
-    public String getTSO500(String transcriptId) throws RocksDBException {
-        String key = transcriptId + TSO500_SUFFIX;
-        byte[] bytes = rocksdb.get(key.getBytes());
-        if (bytes == null) {
-            return null;
-        }
-        return new String(bytes);
-    }
-
-
-    protected void indexEGLHHaemOnc(Path eglhHaemOncPath) throws IOException, RocksDBException {
-        // Gene Ref Seq
-        // GNB1   NM_002074.4
-        // CSF3R  NM_000760.3
-        logger.info("Indexing EGLH HaemOnc data ...");
-
-        if (eglhHaemOncPath != null && Files.exists(eglhHaemOncPath) && Files.size(eglhHaemOncPath) > 0) {
-            try (BufferedReader bufferedReader = FileUtils.newBufferedReader(eglhHaemOncPath)) {
-                String line = bufferedReader.readLine();
-                while (StringUtils.isNotEmpty(line)) {
-                    if (!line.startsWith("#")) {
-                        String[] fields = line.split("\t", -1);
-                        if (fields.length == 2) {
-                            rocksDbManager.update(rocksdb, fields[1].split("\\.")[0] + EGLH_HAEMONC_SUFFIX, "EGLH_HaemOnc");
-                        }
-                    }
-                    line = bufferedReader.readLine();
-                }
-            }
-        } else {
-            logger.warn("Ensembl EGLH HaemOnc mapping file " + eglhHaemOncPath + " not found");
-        }
-    }
-
-    public String getEGLHHaemOnc(String transcriptId) throws RocksDBException {
-        String key = transcriptId + EGLH_HAEMONC_SUFFIX;
-        byte[] bytes = rocksdb.get(key.getBytes());
-        if (bytes == null) {
-            return null;
-        }
-        return new String(bytes);
     }
 
     private String getIndexEntry(String id, String suffix) throws RocksDBException {
@@ -510,4 +467,573 @@ public class GeneBuilderIndexer {
         rocksDbManager.closeIndex(rocksdb, dbOption, dbLocation);
     }
 
+    protected void indexDrugs(Path geneDrugFile) throws IOException, RocksDBException {
+        if (geneDrugFile == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, geneDrugFile);
+
+        String currentGene = "";
+        List<GeneDrugInteraction> drugs = new ArrayList<>();
+
+        try (BufferedReader br = FileUtils.newBufferedReader(geneDrugFile)) {
+            // Skip header
+            String line = br.readLine();
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+                String geneName = parts[0];
+                if (currentGene.equals("")) {
+                    currentGene = geneName;
+                } else if (!currentGene.equals(geneName)) {
+                    rocksDbManager.update(rocksdb, currentGene + DRUGS_SUFFIX, drugs);
+                    drugs = new ArrayList<>();
+                    currentGene = geneName;
+                }
+
+                String source = null;
+                if (parts.length >= 4) {
+                    source = parts[3];
+                }
+
+                String interactionType = null;
+                if (parts.length >= 5) {
+                    interactionType = parts[4];
+                }
+
+                String drugName = null;
+                if (parts.length >= 8) {
+                    // if drug name column is empty, use drug claim name instead
+                    drugName = StringUtils.isEmpty(parts[7]) ? parts[6] : parts[7];
+                }
+                if (StringUtils.isEmpty(drugName)) {
+                    // no drug name
+                    continue;
+                }
+
+                String chemblId = null;
+                if (parts.length >= 9) {
+                    chemblId = parts[8];
+                }
+
+                List<String> publications = new ArrayList<>();
+                if (parts.length >= 10 && parts[9] != null) {
+                    publications = Arrays.asList(parts[9].split(","));
+                }
+
+                GeneDrugInteraction drug = new GeneDrugInteraction(
+                        geneName, drugName, source, null, null, interactionType, chemblId, publications);
+                drugs.add(drug);
+            }
+        }
+        // update last gene
+        rocksDbManager.update(rocksdb, currentGene + DRUGS_SUFFIX, drugs);
+
+        logger.info(PARSING_DONE_LOG_MESSAGE, geneDrugFile);
+    }
+
+    protected void indexDiseases(Path hpoFilePath) throws IOException, RocksDBException {
+        if (hpoFilePath == null) {
+            return;
+        }
+
+        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
+
+        String line;
+
+        // HPO
+        logger.info(PARSING_LOG_MESSAGE, hpoFilePath);
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath)) {
+            // Skip first header line
+            line = bufferedReader.readLine();
+            logger.info("HPO header line: {}", line);
+            // 0           1              2             3            4
+            // hpo_id      hpo_name       ncbi_gene_id  gene_symbol  disease_id
+            // HP:0025700  Anhydramnios   26281         FGF20        OMIM:615721
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] fields = line.split("\t");
+                String omimId = fields[4];
+                String geneSymbol = fields[3];
+                String hpoId = fields[0];
+                String diseaseName = fields[1];
+                GeneTraitAssociation disease =
+                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), HPO_DISEASE_DATA);
+                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
+            }
+        }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
+
+        for (Map.Entry<String, List<GeneTraitAssociation>> entry : geneDiseaseAssociationMap.entrySet()) {
+            rocksDbManager.update(rocksdb, entry.getKey() + DISEASE_SUFFIX, entry.getValue());
+        }
+    }
+
+    protected void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException {
+        if (miRTarBaseFile == null) {
+            return;
+        }
+
+        MiRTarBaseIndexer miRTarBaseIndexer = new MiRTarBaseIndexer();
+        Map<String, List<MirnaTarget>> result = miRTarBaseIndexer.index(miRTarBaseFile);
+        for (Map.Entry<String, List<MirnaTarget>> entry : result.entrySet()) {
+            rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
+        }
+    }
+
+    public static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
+        if (map.containsKey(key)) {
+            map.get(key).add(value);
+        } else {
+            List<T> valueList = new ArrayList<>();
+            valueList.add(value);
+            map.put(key, valueList);
+        }
+    }
+
+    protected List<GeneDrugInteraction> getDrugs(String id) throws RocksDBException, IOException {
+        String key = id + DRUGS_SUFFIX;
+        return rocksDbManager.getDrugs(rocksdb, key);
+    }
+
+    protected List<GeneTraitAssociation> getDiseases(String id) throws RocksDBException, IOException {
+        String key = id + DISEASE_SUFFIX;
+        return rocksDbManager.getDiseases(rocksdb, key);
+    }
+
+    protected List<MirnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
+        String key = geneName + MIRTARBASE_SUFFIX;
+        return rocksDbManager.getMirnaTargets(rocksdb, key);
+    }
+
+    protected void indexConstraints(Path gnomadFile, String source) throws IOException, RocksDBException {
+        if (gnomadFile == null) {
+            return;
+        }
+
+        if (Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+            logger.info("Loading oe, oe ci upper, z scores for mis, syn and lof from gnomAD file: '{}'", gnomadFile);
+            InputStream inputStream = Files.newInputStream(gnomadFile);
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                // Skip header.
+                String line = br.readLine();
+                logger.info("gnomAD header line: {}", line);
+                while ((line = br.readLine()) != null) {
+                    String[] parts = line.split("\t");
+                    String transcriptIdentifier = parts[2];
+                    if (StringUtils.isEmpty(transcriptIdentifier)
+                            || (ENSEMBL_DATA.equals(source) && !transcriptIdentifier.startsWith("ENST"))
+                            || (REFSEQ_DATA.equals(source) && transcriptIdentifier.startsWith("ENST"))) {
+                        // Skip this line if transcriptIdentifier is empty or does not match the source
+                        continue;
+                    }
+
+                    String canonical = parts[3];
+                    String geneIdentifier = parts[1];
+
+                    String misObs = parts[27];
+                    String misExp = parts[28];
+                    String misOe = parts[30];
+                    String misOeCiLower = parts[32];
+                    String misOeCiUpper = parts[33];
+                    String misZScore = parts[35];
+                    String synObs = parts[40];
+                    String synExp = parts[41];
+                    String synOe = parts[43];
+                    String synOeCiLower = parts[45];
+                    String synOeCiUpper = parts[46];
+                    String synZScore = parts[48];
+                    String lofObs = parts[13];
+                    String lofExp = parts[14];
+                    String lofOe = parts[16];
+                    String lofOeCiLower = parts[21];
+                    String lofOeCiUpper = parts[22];
+                    String lofZScore = parts[26];
+                    String lofPLi = parts[18];
+
+                    List<Constraint> constraints = new ArrayList<>();
+                    addConstraint(constraints, "mis.obs", misObs);
+                    addConstraint(constraints, "mis.exp", misExp);
+                    addConstraint(constraints, "mis.oe", misOe);
+                    addConstraint(constraints, "mis.oe_ci.lower", misOeCiLower);
+                    addConstraint(constraints, "mis.oe_ci.upper", misOeCiUpper);
+                    addConstraint(constraints, "mis.z_score", misZScore);
+                    addConstraint(constraints, "syn.obs", synObs);
+                    addConstraint(constraints, "syn.exp", synExp);
+                    addConstraint(constraints, "syn.oe", synOe);
+                    addConstraint(constraints, "syn.oe_ci.lower", synOeCiLower);
+                    addConstraint(constraints, "syn.oe_ci.upper", synOeCiUpper);
+                    addConstraint(constraints, "syn.z_score", synZScore);
+                    addConstraint(constraints, "lof.obs", lofObs);
+                    addConstraint(constraints, "lof.exp", lofExp);
+                    addConstraint(constraints, "lof.oe", lofOe);
+                    addConstraint(constraints, "lof.pLi", lofPLi);
+                    addConstraint(constraints, "lof.oe_ci.lower", lofOeCiLower);
+                    addConstraint(constraints, "lof.oe_ci.upper", lofOeCiUpper);
+                    addConstraint(constraints, "lof.z_score", lofZScore);
+
+                    rocksDbManager.update(rocksdb, transcriptIdentifier + CONSTRAINT_SUFFIX, constraints);
+
+                    if ("TRUE".equalsIgnoreCase(canonical)) {
+                        rocksDbManager.update(rocksdb, geneIdentifier + CONSTRAINT_SUFFIX, constraints);
+                    }
+                }
+            }
+            inputStream.close();
+        } else {
+            logger.error("gnomAD constraints file not found");
+        }
+    }
+
+    protected List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
+        String key = id + CONSTRAINT_SUFFIX;
+        return rocksDbManager.getConstraints(rocksdb, key);
+    }
+
+    private void addConstraint(List<Constraint> constraints, String name, String value) {
+        Constraint constraint = new Constraint();
+        constraint.setMethod("LOFTEE");
+        constraint.setSource("gnomAD");
+        constraint.setName(name);
+        try {
+            constraint.setValue(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            // invalid number (e.g. NA), discard.
+            return;
+        }
+        constraints.add(constraint);
+    }
+
+    protected void indexImprintedGenes(Path imprintedGeneFile) throws IOException, RocksDBException {
+        // IMPORTANT: Only imprinted genes from geneimprint are supported
+        if (imprintedGeneFile != null && Files.exists(imprintedGeneFile) && Files.size(imprintedGeneFile) > 0) {
+            logger.info("Loading imprinted genes from '{}'", imprintedGeneFile);
+            InputStream inputStream = Files.newInputStream(imprintedGeneFile);
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                //               0    1       2        3      4
+                // Skip header: #Gene Aliases Location Status ExpressedAllele
+                String line = br.readLine();
+                logger.info("Imprinted gene header line: {}", line);
+                while ((line = br.readLine()) != null) {
+                    String[] parts = line.split("\t");
+
+                    String gene = parts[0];
+                    String aliases = parts[1];
+                    String status = parts[3];
+                    String expressedAllele = parts[4];
+
+                    GeneImprinting geneImprinting = new GeneImprinting(gene, status, expressedAllele, GENEIMPRINT_DATA, new HashMap<>());
+
+                    // Add aliases as attributes
+                    List<String> aliasesList = null;
+                    if (StringUtils.isNotEmpty(aliases)) {
+                        String[] aliasesSplit = aliases.split(",");
+                        aliasesList = Arrays.stream(aliasesSplit).map(String::trim).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(aliasesList)) {
+                            geneImprinting.getAttributes().put("aliases", StringUtils.join(aliasesList, ","));
+                        }
+                    }
+
+                    // Add imprinted gene to the database
+                    rocksDbManager.update(rocksdb, gene + IMPRINTED_GENE_SUFFIX, Collections.singleton(geneImprinting));
+
+                    // If the gene has aliases, add them to the database as well
+                    if (CollectionUtils.isNotEmpty(aliasesList)) {
+                        for (String alias : aliasesList) {
+                            rocksDbManager.update(rocksdb, alias + IMPRINTED_GENE_SUFFIX, Collections.singleton(geneImprinting));
+                        }
+                    }
+                }
+            }
+            inputStream.close();
+        } else {
+            logger.warn("Imprinted gene file {} does not exist or is empty", imprintedGeneFile);
+        }
+    }
+
+    protected List<GeneImprinting> getGeneImprinting(String id) throws RocksDBException, IOException {
+        // Sanity check
+        if (StringUtils.isEmpty(id)) {
+            return Collections.emptyList();
+        }
+
+        String key = id + IMPRINTED_GENE_SUFFIX;
+        List<GeneImprinting> geneImprintingList = rocksDbManager.getGeneImprinting(rocksdb, key);
+        if (CollectionUtils.isEmpty(geneImprintingList)) {
+            // No imprinted gene found for the given id
+            return Collections.emptyList();
+        }
+
+        // Check if the gene name matches the id
+        for (GeneImprinting geneImprinting : geneImprintingList) {
+            if (GENEIMPRINT_DATA.equalsIgnoreCase(geneImprinting.getSource()) && id.equalsIgnoreCase(geneImprinting.getGeneName())) {
+                // Not an alias, attributes are not required
+                geneImprinting.setAttributes(null);
+            }
+        }
+
+        return geneImprintingList;
+    }
+
+    protected void indexChimerDb(Path chimerKbPath, Path chimerPubPath, Path chimerSeqPath) throws IOException {
+        if (chimerKbPath == null) {
+            return;
+        }
+
+        logger.info(PARSING_LOG_MESSAGE, chimerSeqPath);
+        GeneBuilderIndexer.ChimerSeqCallback chimerSeqCallback = new GeneBuilderIndexer.ChimerSeqCallback(rocksdb, rocksDbManager);
+        ChimerSeqParser.parse(chimerSeqPath, chimerSeqCallback);
+        logger.info("Processed {} gene fusions (ChimerSeq) from ChimerDB", chimerSeqCallback.getCounter());
+        logger.info(PARSING_DONE_LOG_MESSAGE, chimerSeqPath);
+
+        logger.info(PARSING_LOG_MESSAGE, chimerPubPath);
+        GeneBuilderIndexer.ChimerPubCallback chimerPubCallback = new GeneBuilderIndexer.ChimerPubCallback(rocksdb, rocksDbManager);
+        ChimerPubParser.parse(chimerPubPath, chimerPubCallback);
+        logger.info("Processed {} gene fusions (ChimerPub) from ChimerDB", chimerPubCallback.getCounter());
+        logger.info(PARSING_DONE_LOG_MESSAGE, chimerPubPath);
+
+        logger.info(PARSING_LOG_MESSAGE, chimerKbPath);
+        GeneBuilderIndexer.ChimerKbCallback chimerKbCallback = new GeneBuilderIndexer.ChimerKbCallback(rocksdb, rocksDbManager);
+        ChimerKbParser.parse(chimerKbPath, chimerKbCallback);
+        logger.info("Processed {} gene fusions (ChimerKB) from ChimerDB", chimerKbCallback.getCounter());
+        logger.info(PARSING_DONE_LOG_MESSAGE, chimerKbPath);
+    }
+
+    // Implementation of the ChimerKbCallback function
+    public class ChimerKbCallback implements ChimerDbParserCallback<ChimerKb> {
+
+        private RocksDB rocksDB;
+        private RocksDbManager rocksDbManager;
+
+        private int counter;
+
+        private Logger logger;
+
+        public ChimerKbCallback(RocksDB rocksDB, RocksDbManager rocksDbManager) {
+            this.rocksDB = rocksDB;
+            this.rocksDbManager = rocksDbManager;
+
+            this.counter = 0;
+
+            this.logger = LoggerFactory.getLogger(this.getClass());
+        }
+
+        @Override
+        public boolean processChimerDbObject(ChimerKb chimerKb) {
+            try {
+                String key;
+                GeneFusion updatedGeneFusion;
+
+                logger.debug("Processing gene fusion (ChimerKB): {}", chimerKb);
+
+                // Head gene fusion
+                if (chimerKb != null && chimerKb.getHeadGene() != null
+                        && StringUtils.isNotEmpty(chimerKb.getHeadGene().getGeneName())) {
+                    // Store the head gene fusion in the database
+                    key = chimerKb.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding head gene fusion (ChimerKB) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerKb.getId(), chimerKb.getFusionPair(), key, updatedGeneFusion.getChimerKb().size());
+                    updatedGeneFusion.getChimerKb().add(chimerKb);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Tail gene fusion
+                if (chimerKb != null && chimerKb.getTailGene() != null
+                        && StringUtils.isNotEmpty(chimerKb.getTailGene().getGeneName())) {
+                    // Store the tail gene fusion in the database
+                    key = chimerKb.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding tail gene fusion (ChimerKB) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerKb.getId(), chimerKb.getFusionPair(), key, updatedGeneFusion.getChimerKb().size());
+                    updatedGeneFusion.getChimerKb().add(chimerKb);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Update counter
+                counter++;
+                if (counter % 1000 == 0) {
+                    logger.info("Processed {} ChimerKB gene fusions so far", counter);
+                }
+            } catch (RocksDBException | IOException e) {
+                // Add the getStackTrace to the log
+                logger.warn("Something wrong happened when processing {} gene fusion (ChimerKB) {}: {}", CHIMERDB_DATA, chimerKb.getId(),
+                        e.getStackTrace());
+                return false;
+            }
+            return true;
+        }
+
+        public int getCounter() {
+            return counter;
+        }
+    }
+
+    // Implementation of the ChimerPubCallback function
+    public class ChimerPubCallback implements ChimerDbParserCallback<ChimerPub> {
+
+        private RocksDB rocksDB;
+        private RocksDbManager rocksDbManager;
+
+        private int counter;
+
+        private Logger logger;
+
+        public ChimerPubCallback(RocksDB rocksDB, RocksDbManager rocksDbManager) {
+            this.rocksDB = rocksDB;
+            this.rocksDbManager = rocksDbManager;
+
+            this.counter = 0;
+
+            this.logger = LoggerFactory.getLogger(this.getClass());
+        }
+
+        @Override
+        public boolean processChimerDbObject(ChimerPub chimerPub) {
+            try {
+                String key;
+                GeneFusion updatedGeneFusion;
+
+                logger.debug("Processing gene fusion (ChimerPub): {}", chimerPub);
+
+                // Head gene fusion
+                if (chimerPub != null && chimerPub.getHeadGene() != null
+                        && StringUtils.isNotEmpty(chimerPub.getHeadGene().getGeneName())) {
+                    // Store the head gene fusion in the database
+                    key = chimerPub.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding head gene fusion (ChimerPub) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerPub.getId(), chimerPub.getFusionPair(), key, updatedGeneFusion.getChimerPub().size());
+                    updatedGeneFusion.getChimerPub().add(chimerPub);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Tail gene fusion
+                if (chimerPub != null && chimerPub.getTailGene() != null
+                        && StringUtils.isNotEmpty(chimerPub.getTailGene().getGeneName())) {
+                    // Store the tail gene fusion in the database
+                    key = chimerPub.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding tail gene fusion (ChimerPub) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerPub.getId(), chimerPub.getFusionPair(), key, updatedGeneFusion.getChimerPub().size());
+                    updatedGeneFusion.getChimerPub().add(chimerPub);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Update counter
+                counter++;
+                if (counter % 2000 == 0) {
+                    logger.info("Processed {} ChimerPub gene fusions so far", counter);
+                }
+            } catch (RocksDBException | IOException e) {
+                // Add the getStackTrace to the log
+                logger.warn("Something wrong happened when processing {} gene fusion (ChimerPub) {}: {}", CHIMERDB_DATA, chimerPub.getId(),
+                        e.getStackTrace());
+                return false;
+            }
+            return true;
+        }
+
+        public int getCounter() {
+            return counter;
+        }
+    }
+
+    // Implementation of the ChimerSeqCallback function
+    public class ChimerSeqCallback implements ChimerDbParserCallback<ChimerSeq> {
+
+        private RocksDB rocksDB;
+        private RocksDbManager rocksDbManager;
+
+        private int counter;
+
+        private Logger logger;
+
+        public ChimerSeqCallback(RocksDB rocksDB, RocksDbManager rocksDbManager) {
+            this.rocksDB = rocksDB;
+            this.rocksDbManager = rocksDbManager;
+
+            this.counter = 0;
+
+            this.logger = LoggerFactory.getLogger(this.getClass());
+        }
+
+        @Override
+        public boolean processChimerDbObject(ChimerSeq chimerSeq) {
+            try {
+                String key;
+                GeneFusion updatedGeneFusion;
+
+                logger.debug("Processing gene fusion (ChimerSeq): {}", chimerSeq);
+
+                // Head gene fusion
+                if (chimerSeq != null && chimerSeq.getHeadGene() != null
+                        && StringUtils.isNotEmpty(chimerSeq.getHeadGene().getGeneName())) {
+                    // Store the head gene fusion in the database
+                    key = chimerSeq.getHeadGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding head gene fusion (ChimerSeq) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerSeq.getId(), chimerSeq.getFusionPair(), key, updatedGeneFusion.getChimerSeq().size());
+                    updatedGeneFusion.getChimerSeq().add(chimerSeq);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Tail gene fusion
+                if (chimerSeq != null && chimerSeq.getTailGene() != null
+                        && StringUtils.isNotEmpty(chimerSeq.getTailGene().getGeneName())) {
+                    // Store the tail gene fusion in the database
+                    key = chimerSeq.getTailGene().getGeneName() + GENE_FUSION_SUFFIX;
+                    updatedGeneFusion = rocksDbManager.getGeneFusion(rocksDB, key);
+                    if (updatedGeneFusion == null) {
+                        updatedGeneFusion = new GeneFusion();
+                    }
+                    logger.debug("Adding tail gene fusion (ChimerSeq) (id = {}, pair = {}) to key '{}' (current size = {})",
+                            chimerSeq.getId(), chimerSeq.getFusionPair(), key, updatedGeneFusion.getChimerSeq().size());
+                    updatedGeneFusion.getChimerSeq().add(chimerSeq);
+                    rocksDbManager.update(rocksdb, key, updatedGeneFusion);
+                }
+
+                // Update counter
+                counter++;
+                if (counter % 10000 == 0) {
+                    logger.info("Processed {} ChimerSeq gene fusions so far", counter);
+                }
+            } catch (RocksDBException | IOException e) {
+                // Add the getStackTrace to the log
+                logger.warn("Something wrong happened when processing {} gene fusion (ChimerSeq) {}: {}", CHIMERDB_DATA, chimerSeq.getId(),
+                        e.getStackTrace());
+                return false;
+            }
+            return true;
+        }
+
+        public int getCounter() {
+            return counter;
+        }
+    }
+
+    protected GeneFusion getGeneFusion(String id) throws RocksDBException, IOException {
+        // Sanity check
+        if (StringUtils.isEmpty(id)) {
+            return null;
+        }
+
+        String key = id + GENE_FUSION_SUFFIX;
+        return rocksDbManager.getGeneFusion(rocksdb, key);
+    }
 }

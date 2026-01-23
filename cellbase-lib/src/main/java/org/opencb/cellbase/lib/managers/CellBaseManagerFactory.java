@@ -45,6 +45,7 @@ public class CellBaseManagerFactory {
     private FileManager fileManager;
     private PublicationManager publicationManager;
     private Map<String, PharmacogenomicsManager> pharmacogenomicsManagers;
+    private Map<String, PolygenicScoreManager> polygenicScoreManagers;
 
     private Map<String, DataReleaseManager> dataReleaseManagers;
 
@@ -67,6 +68,7 @@ public class CellBaseManagerFactory {
         ontologyManagers = new HashMap<>();
         dataReleaseManagers = new HashMap<>();
         pharmacogenomicsManagers = new HashMap<>();
+        polygenicScoreManagers = new HashMap<>();
     }
 
     private String getMultiKey(String species, String assembly) {
@@ -373,5 +375,16 @@ public class CellBaseManagerFactory {
             pharmacogenomicsManagers.put(multiKey, new PharmacogenomicsManager(species, assembly, configuration));
         }
         return pharmacogenomicsManagers.get(multiKey);
+    }
+
+    public PolygenicScoreManager getPolygenicScoreManager(String species, String assembly) throws CellBaseException {
+        String multiKey = getMultiKey(species, assembly);
+        if (!polygenicScoreManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                throw new CellBaseException("Invalid species " + species + " or assembly " + assembly);
+            }
+            polygenicScoreManagers.put(multiKey, new PolygenicScoreManager(species, assembly, configuration));
+        }
+        return polygenicScoreManagers.get(multiKey);
     }
 }

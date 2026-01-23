@@ -101,7 +101,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
     @Override
     public CellBaseDataResult groupBy(PublicationQuery query) throws CellBaseException {
         Bson bsonQuery = parseQuery(query);
-        logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
+        logger.info("PublicationQuery, bson: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, query.getDataRelease());
         return groupBy(bsonQuery, query, "name", mongoDBCollection);
     }
@@ -152,7 +152,7 @@ public class PublicationMongoDBAdaptor extends CellBaseDBAdaptor implements Cell
             e.printStackTrace();
         }
 
-        logger.info("Publication parsed query: " + andBsonList.toString());
+        logger.info("Publication parsed query: " + andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

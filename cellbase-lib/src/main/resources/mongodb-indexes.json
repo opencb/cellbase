@@ -16,6 +16,8 @@
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 
+{"collection": "genome_info", "fields": {"supercontigs.name": 1}, "options": {"background": true}}
+
 {"collection": "genome_sequence", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "genome_sequence", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "genome_sequence", "fields": {"sequenceType": 1}, "options": {"background": true}}
@@ -43,6 +45,7 @@
 {"collection": "gene", "fields": {"mirna.matures.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.diseases.hpo": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.expression": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.factorValue": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
@@ -51,6 +54,20 @@
 {"collection": "gene", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "gene", "fields": {"annotation.cancerAssociations.roleInCancer": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneImprinting.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneImprinting.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerKb.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerPub.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "gene", "fields": {"annotation.geneFusions.chimerSeq.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "missense_variation_functional_score", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}
 
@@ -97,6 +114,20 @@
 {"collection": "refseq", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
 {"collection": "refseq", "fields": {"annotation.mirnaTargets.id": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "refseq", "fields": {"annotation.mirnaTargets.sourceId": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneImprinting.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneImprinting.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerKb.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerPub.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.source": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.fusionPair": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.headGene.geneName": 1}, "options": {"background": true, "sparse": true}}
+{"collection": "refseq", "fields": {"annotation.geneFusions.chimerSeq.tailGene.geneName": 1}, "options": {"background": true, "sparse": true}}
 
 {"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}
@@ -130,6 +161,10 @@
 {"collection": "splice_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
 
 {"collection": "pubmed", "fields": {"medlineCitation.pmid.content": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.author.lastName": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.title": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.keywordList.keyword.content": 1}, "options": {"background": true}}
+{"collection": "pubmed", "fields": {"medlineCitation.article.content.abstractText.content": 1}, "options": {"background": true}}
 
 {"collection": "pharmacogenomics", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"id": 1}, "options": {"background": true}}
@@ -145,6 +180,18 @@
 {"collection": "pharmacogenomics", "fields": {"variants.phenotypeType": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.confidence": 1}, "options": {"background": true}}
 {"collection": "pharmacogenomics", "fields": {"variants.evidences.pubmed": 1}, "options": {"background": true}}
+
+{"collection": "protein_substitution_prediction", "fields": {"checksum": 1}, "options": {"background": true}}
+{"collection": "protein_substitution_prediction", "fields": {"uniprotId": 1}, "options": {"background": true}}
+{"collection": "protein_substitution_prediction", "fields": {"transcriptId": 1}, "options": {"background": true}}
+{"collection": "protein_substitution_prediction", "fields": {"aaPosition": 1}, "options": {"background": true}}
+
+{"collection": "common_polygenic_score", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_score", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "common_polygenic_score", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_score", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_score", "fields": {"chromosome": 1, "position": 1}, "options": {"background": true}}
+{"collection": "variant_polygenic_score", "fields": {"polygenicScores.id": 1}, "options": {"background": true}}
 
 {"collection": "snp", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "snp", "fields": {"chromosome": 1, "position": 1, "reference": 1}, "options": {"background": true}}

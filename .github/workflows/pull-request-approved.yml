@@ -6,7 +6,17 @@ on:
     types: [ submitted ]
 
 jobs:
-  test:
+
+  test-xetabase:
+    if: github.event.review.state == 'approved'
+    name: "Run all tests before merging"
+    uses: opencb/java-common-libs/.github/workflows/test-xetabase-workflow.yml@develop
+    with:
+      branch: develop
+      task: ${{ github.event.pull_request.head.ref }}
+    secrets: inherit
+
+  test-cellbase:
     uses: ./.github/workflows/test-analysis.yml
     secrets: inherit
     with:

@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.models;
 import java.util.List;
 import java.util.Objects;
 
+@Deprecated
 public class DataReleaseSource {
     private String name;
     private String version;
@@ -37,20 +38,19 @@ public class DataReleaseSource {
         this.url = url;
     }
 
-    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DataReleaseSource{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", version='").append(version).append('\'');
-        sb.append(", data='").append(data).append('\'');
-        sb.append(", date='").append(date).append('\'');
-        sb.append(", url=").append(url);
+        StringBuilder sb = new StringBuilder("DataReleaseSource{");
+        sb.append("name='").append(this.name).append('\'');
+        sb.append(", version='").append(this.version).append('\'');
+        sb.append(", data='").append(this.data).append('\'');
+        sb.append(", date='").append(this.date).append('\'');
+        sb.append(", url=").append(this.url);
         sb.append('}');
         return sb.toString();
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public DataReleaseSource setName(String name) {
@@ -59,7 +59,7 @@ public class DataReleaseSource {
     }
 
     public String getVersion() {
-        return version;
+        return this.version;
     }
 
     public DataReleaseSource setVersion(String version) {
@@ -68,7 +68,7 @@ public class DataReleaseSource {
     }
 
     public String getData() {
-        return data;
+        return this.data;
     }
 
     public DataReleaseSource setData(String data) {
@@ -77,7 +77,7 @@ public class DataReleaseSource {
     }
 
     public String getDate() {
-        return date;
+        return this.date;
     }
 
     public DataReleaseSource setDate(String date) {
@@ -86,7 +86,7 @@ public class DataReleaseSource {
     }
 
     public List<String> getUrl() {
-        return url;
+        return this.url;
     }
 
     public DataReleaseSource setUrl(List<String> url) {
@@ -94,24 +94,20 @@ public class DataReleaseSource {
         return this;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        } else if (o != null && this.getClass() == o.getClass()) {
+            DataReleaseSource that = (DataReleaseSource)o;
+            return Objects.equals(this.name, that.name) && Objects.equals(this.version, that.version)
+                    && Objects.equals(this.data, that.data) && Objects.equals(this.date, that.date)
+                    && Objects.equals(this.url, that.url);
+        } else {
             return false;
         }
-        DataReleaseSource that = (DataReleaseSource) o;
-        return Objects.equals(name, that.name)
-                && Objects.equals(version, that.version)
-                && Objects.equals(data, that.data)
-                && Objects.equals(date, that.date)
-                && Objects.equals(url, that.url);
     }
 
-    @Override
     public int hashCode() {
-        return Objects.hash(name, version, data, date, url);
+        return Objects.hash(new Object[]{this.name, this.version, this.data, this.date, this.url});
     }
 }

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PharmGKBBuilderTest {
+class ClinPGxBuilderTest {
 
     @Test
     public void parseGenericNames() {

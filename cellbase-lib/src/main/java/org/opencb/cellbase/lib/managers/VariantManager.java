@@ -31,7 +31,7 @@ import org.opencb.cellbase.core.api.query.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.CellBaseCoreDBAdaptor;
@@ -91,13 +91,13 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return variantDBAdaptor.nativeGet(query, queryOptions, dataRelease);
     }
 
-    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, DataRelease dataRelease)
+    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants, Release dataRelease)
             throws CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager, dataRelease.getRelease());
         List<CellBaseDataResult<String>> results = new ArrayList<>();
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
         List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
         for (Variant variant : variantList) {
             List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
@@ -118,10 +118,10 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
      * @throws CellBaseException if the species is incorrect
      */
     public CellBaseDataResult<Variant> getNormalizationByVariant(String variants, boolean decompose, boolean leftAlign,
-                                                                 DataRelease dataRelease) throws CellBaseException {
+                                                                 Release dataRelease) throws CellBaseException {
         List<Variant> variantList = parseVariants(variants);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, "", cellbaseManagerFactory);
+                dataRelease, "", cellbaseManagerFactory, configuration);
 
 
         // Set decompose MNV behaviour
@@ -152,7 +152,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               Integer cnvExtraPadding,
                                                                               Boolean checkAminoAcidChange,
                                                                               String consequenceTypeSource,
-                                                                              DataRelease dataRelease,
+                                                                              Release dataRelease,
                                                                               String apiKey)
             throws ExecutionException, InterruptedException, CellBaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
@@ -196,7 +196,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         }
 
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                dataRelease, apiKey, cellbaseManagerFactory);
+                dataRelease, apiKey, cellbaseManagerFactory, configuration);
         List<CellBaseDataResult<VariantAnnotation>> queryResults = variantAnnotationCalculator.getAnnotationByVariantList(variantList,
                 queryOptions);
         return queryResults;

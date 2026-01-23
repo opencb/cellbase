@@ -121,6 +121,12 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -144,6 +150,12 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     })
     public Response getInfo(@PathParam("chemicals") @ApiParam(name = "chemicals", value = "Chemical/drug names", required = true)
                                     String chemicals) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             PharmaChemicalQuery pharmaQuery = new PharmaChemicalQuery(uriParams);
             List<CellBaseDataResult<PharmaChemical>> queryResults = pharmacogenomicsManager.info(Arrays.asList(chemicals.split(",")),
@@ -166,6 +178,12 @@ public class PharmacogenomicsWSServer extends GenericRestWSServer {
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. variants.location") String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             PharmaChemicalQuery query = new PharmaChemicalQuery(uriParams);

@@ -19,15 +19,16 @@ package org.opencb.cellbase.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.CaseFormat;
-import org.apache.commons.lang.StringUtils;
 import org.opencb.commons.utils.FileUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CellBaseConfiguration {
 
@@ -51,6 +52,9 @@ public class CellBaseConfiguration {
     public static final String CELLBASE_DATABASES_MONGODB_USER = "CELLBASE_DATABASES_MONGODB_USER";
     public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
     public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
+    public static final String CELLBASE_SECRET_KEY = "CELLBASE_SECRET_KEY";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CellBaseConfiguration.class);
 
     public enum ConfigurationFileFormat {
         JSON, YAML
@@ -122,8 +126,12 @@ public class CellBaseConfiguration {
                         case CELLBASE_DATABASES_MONGODB_PASSWORD:
                             secureGetMongodb(configuration).setPassword(value);
                             break;
+                        case CELLBASE_SECRET_KEY:
+                            configuration.setSecretKey(value);
+                            LOGGER.info("Overriding CellBase secret key from environment variable {}.", CELLBASE_SECRET_KEY);
+                            break;
                         default:
-                            LoggerFactory.getLogger(CellBaseConfiguration.class).warn("Unknown env var '" + variable + "'");
+                            LOGGER.warn("Unknown env var '{}' found. Skipping it.", variable);
                     }
                 }
             }
@@ -135,10 +143,7 @@ public class CellBaseConfiguration {
             configuration.setDatabases(new Databases());
         }
         if (configuration.getDatabases().getMongodb() == null) {
-            configuration.getDatabases().setMongodb(new MongoDBDatabaseCredentials());
-        }
-        if (configuration.getDatabases().getMongodb().getShards() == null) {
-            configuration.getDatabases().getMongodb().setShards(Collections.emptyList());
+            configuration.getDatabases().setMongodb(new DatabaseCredentials());
         }
         if (configuration.getDatabases().getMongodb().getOptions() == null) {
             configuration.getDatabases().getMongodb().setOptions(new HashMap<>());
@@ -226,51 +231,6 @@ public class CellBaseConfiguration {
 
     public void setSpecies(SpeciesProperties species) {
         this.species = species;
-    }
-
-    /**
-     * get the config for this species.
-     * @param id shortName for species, e.g. hsapiens
-     * @return configuration for this species
-     */
-    public SpeciesConfiguration getSpeciesConfig(String id) {
-        if (StringUtils.isEmpty(id)) {
-            return null;
-        }
-        List<SpeciesConfiguration> allSpecies = getAllSpecies();
-        for (SpeciesConfiguration config : allSpecies) {
-            if (config.getId().equals(id)) {
-                return config;
-            }
-        }
-        return null;
-    }
-
-    public List<SpeciesConfiguration> getAllSpecies() {
-        List<SpeciesConfiguration> allSpecies = new ArrayList<>();
-        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
-            allSpecies.addAll(species.getVertebrates());
-        }
-        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
-            allSpecies.addAll(species.getMetazoa());
-        }
-        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
-            allSpecies.addAll(species.getFungi());
-        }
-        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
-            allSpecies.addAll(species.getProtist());
-        }
-        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
-            allSpecies.addAll(species.getPlants());
-        }
-        if (species.getVirus() != null && !species.getVirus().isEmpty()) {
-            allSpecies.addAll(species.getVirus());
-        }
-        if (species.getBacteria() != null && !species.getBacteria().isEmpty()) {
-            allSpecies.addAll(species.getBacteria());
-        }
-
-        return allSpecies;
     }
 
     public ServerProperties getServer() {

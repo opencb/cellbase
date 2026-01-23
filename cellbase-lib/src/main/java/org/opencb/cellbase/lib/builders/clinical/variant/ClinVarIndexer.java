@@ -17,14 +17,11 @@
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.rcv.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.rcv.v64jaxb.*;
 import org.opencb.biodata.models.sequence.SequenceLocation;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.core.models.DataReleaseSource;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.ProgressLogger;
@@ -44,10 +41,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.opencb.cellbase.lib.EtlCommons.*;
-
-//import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 
 /**
  * Created by fjlopez on 28/09/16.
@@ -81,14 +74,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String DIPLOTYPE = "Diplotype";
     private static final String VARIANT = "Variant";
     private static final char CLINICAL_SIGNIFICANCE_SEPARATOR = '/';
+
     private final Path clinvarXMLFiles;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
-    private final String assembly;
-
-    private String version;
-    private String date;
 
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
@@ -101,15 +91,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final Set<ModeOfInheritance> RECESSIVE_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
-    public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
-                          Path clinvarEFOFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
-                          RocksDB rdb) throws IOException {
+    public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile, Path clinvarEFOFile,
+                          String version, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
 
         this.clinvarXMLFiles = clinvarXMLFiles;
         this.clinvarSummaryFile = clinvarSummaryFile;
         this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
+        this.version = version;
         this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
@@ -117,70 +107,52 @@ public class ClinVarIndexer extends ClinicalIndexer {
         this.rdb = rdb;
     }
 
-    public void index() throws RocksDBException {
-        try {
-            Path clinvarVersionPath = clinvarSummaryFile.getParent().resolve(CLINVAR_VERSION_FILENAME);
-            if (!Files.exists(clinvarVersionPath)) {
-                throw new IOException("ClinVar version file " + clinvarVersionPath + " does not exist");
+    public void index() throws RocksDBException, IOException, JAXBException {
+        Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
+        Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
+
+        File[] files = clinvarXMLFiles.toFile().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".xml") || name.endsWith(".xml.gz");
             }
-            ObjectMapper jsonObjectMapper = new ObjectMapper();
-            ObjectReader jsonObjectReader = jsonObjectMapper.readerFor(DataReleaseSource.class);
-            DataReleaseSource dataReleaseSource = jsonObjectReader.readValue(clinvarVersionPath.toFile());
+        });
 
-            this.date = dataReleaseSource.getDate();
-            this.version = dataReleaseSource.getVersion();
+        Arrays.sort(files);
 
+        ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000, 200).setBatchSize(10000);
 
-            Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
-            Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
+        for (File clinvarXMLFile : files) {
 
-            File[] files = clinvarXMLFiles.toFile().listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".xml") || name.endsWith(".xml.gz");
-                }
-            });
+            logger.info("Unmarshalling clinvar file {} ...", clinvarXMLFile);
+            JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile.toPath());
+            logger.info(EtlCommons.DONE_MSG);
 
-            Arrays.sort(files);
-
-            ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000,
-                    200).setBatchSize(10000);
-
-            for (File clinvarXMLFile : files) {
-
-                logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
-                JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile.toPath());
-                logger.info("Done");
-
-                logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
+            logger.info("Serializing clinvar records that have Sequence Location for Assembly {} ...", assembly);
 
 
-                for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
-                    List<AlleleLocationData> alleleLocationDataList =
-                            rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
-                    if (alleleLocationDataList != null) {
-                        boolean success = false;
-                        // Actually this list is currently not allowed to be > 2
-                        for (int i = 0; i < alleleLocationDataList.size(); i++) {
-                            String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
-                            // updateRocksDB may fail (false) if normalisation process fails
-                            success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
-                                    traitsToEfoTermsMap) || success;
-                        }
-                        if (success) {
-                            numberIndexedRecords++;
-                        }
+            for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
+                List<AlleleLocationData> alleleLocationDataList =
+                        rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+                if (alleleLocationDataList != null) {
+                    boolean success = false;
+                    // Actually this list is currently not allowed to be > 2
+                    for (int i = 0; i < alleleLocationDataList.size(); i++) {
+                        String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
+                        // updateRocksDB may fail (false) if normalisation process fails
+                        success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
+                                traitsToEfoTermsMap) || success;
                     }
-                    progressLogger.increment(1);
-                    totalNumberRecords++;
+                    if (success) {
+                        numberIndexedRecords++;
+                    }
                 }
+                progressLogger.increment(1);
+                totalNumberRecords++;
             }
-            logger.info("Done");
-            printSummary();
-        } catch (RocksDBException | JAXBException | IOException e) {
-            logger.error("Error indexing ClinVar", e);
-            throw new RocksDBException(e.getMessage());
         }
+        logger.info(EtlCommons.DONE_MSG);
+        printSummary();
     }
 
     private String getMateVariantStringByAlleleLocationData(int i, List<AlleleLocationData> alleleLocationDataList) {
@@ -346,7 +318,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                String mateVariantString, String clinicalHaplotypeString,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, date);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, null);
         // Create a set to avoid situations like germline;germline;germline
         List<AlleleOrigin> alleleOrigin = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
@@ -427,7 +399,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
-        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, date);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, version, null);
 //        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(

@@ -100,6 +100,12 @@ public class OntologyWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             query.setDataRelease(getDataRelease());
@@ -123,6 +129,12 @@ public class OntologyWSServer extends GenericRestWSServer {
     })
     public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ONTOLOGY_DESCRIPTION, required = true)
                                     String ids) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")), query,
@@ -155,6 +167,12 @@ public class OntologyWSServer extends GenericRestWSServer {
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. namespace") String field) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             copyToFacet("field", field);
             OntologyQuery query = new OntologyQuery(uriParams);

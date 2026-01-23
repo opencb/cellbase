@@ -134,7 +134,6 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
     @Override
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) throws CellBaseException {
         Bson bsonQuery = parseQuery(geneQuery);
-        logger.info("geneQuery: {}", bsonQuery.toBsonDocument().toJson());
         MongoDBCollection mongoDBCollection = getCollectionByRelease(mongoDBCollectionByRelease, geneQuery.getDataRelease());
         return groupBy(bsonQuery, geneQuery, "name", mongoDBCollection);
     }
@@ -219,7 +218,6 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        logger.debug("gene parsed query: " + andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -257,6 +255,7 @@ public class GeneMongoDBAdaptor extends CellBaseDBAdaptor implements CellBaseCor
             List<Bson> orBsonList = new ArrayList<>();
             orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.id"));
             orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.name"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.hpo"));
             andBsonList.add(Filters.or(orBsonList));
         }
     }

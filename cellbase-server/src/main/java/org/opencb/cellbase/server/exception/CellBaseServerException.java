@@ -22,4 +22,12 @@ public class CellBaseServerException extends WebApplicationException {
     public CellBaseServerException(String msg) {
         super(msg);
     }
+
+    public CellBaseServerException(String msg, Throwable e) {
+        super(msg, e);
+    }
+
+    public CellBaseServerException(Throwable e) {
+        super(e);
+    }
 }

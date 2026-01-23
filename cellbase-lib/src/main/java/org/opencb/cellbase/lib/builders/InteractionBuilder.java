@@ -33,7 +33,7 @@ import java.util.*;
  * Time: 4:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class InteractionBuilder extends CellBaseBuilder {
+public class InteractionBuilder extends AbstractBuilder {
 
     private final String species;
     private final Path psimiTabFile;
