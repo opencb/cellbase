@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -28,10 +30,15 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -586,6 +593,90 @@ public class ClinicalVariantBuilderTest {
 
     }
 
+    @Test
+    public void testGwasIndexer() throws RocksDBException, IOException {
+        Path gwasDataDir = Paths.get("/opt/gwas-data/");
+        Assumptions.assumeTrue(Files.exists(gwasDataDir));
+
+        Path gwasFile = gwasDataDir.resolve("gwas_catalog_v1.0.2-associations_e105_r2022-04-07.tsv");
+        Path dbSnpTabixFile = gwasDataDir.resolve("All.vcf.gz");
+        Path genomeSequenceFilePath = gwasDataDir.resolve("Homo_sapiens.GRCh38.fa");
+        String assembly = "grch38";
+
+        Path outputDir = Paths.get("/tmp");
+        Path rocksDbDir = outputDir.resolve("integration.idx");
+        Object[] dbConnection = getDBConnection(rocksDbDir.toAbsolutePath().toString(), true);
+        RocksDB rdb = (RocksDB) dbConnection[0];
+
+        GwasIndexer gwasIndexer = new GwasIndexer(gwasFile, dbSnpTabixFile, genomeSequenceFilePath, assembly, rdb);
+        gwasIndexer.index();
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(outputDir, CLINICAL_VARIANT_DATA, true);
+        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+        // named "iterator"
+        RocksIterator rocksIterator = rdb.newIterator();
+
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println("Reading from RocksDB index and serializing to " + serializer.getOutdir().resolve(serializer.getFileName()));
+        int counter = 0;
+        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+            Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
+            if (variant != null) {
+                VariantAnnotation variantAnnotation = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
+                variant.setAnnotation(variantAnnotation);
+                serializer.serialize(variant);
+                counter++;
+                if (counter % 10000 == 0) {
+                    System.out.printf(counter + " written");
+                }
+            }
+        }
+        serializer.close();
+        System.out.println("Done.");
+        serializer.close();
+
+        Path clinicalVariantFile = outputDir.resolve(CLINICAL_VARIANT_DATA + JSON_GZ_EXTENSION);
+        Assertions.assertTrue(Files.exists(clinicalVariantFile));
+
+        // Read serialized variants and check some of them
+        List<Variant> variantList = loadSerializedVariants(clinicalVariantFile.toAbsolutePath().toString());
+        Assertions.assertFalse(variantList.isEmpty());
+        Assertions.assertEquals(93, variantList.size());
+        boolean found = false;
+        for (Variant variant : variantList) {
+            assertNotNull(variant.getAnnotation().getGwas());
+            Assertions.assertEquals("EBI GWAS catalog", variant.getAnnotation().getGwas().get(0).getSource(), "Source");
+            if (variant.getChromosome().equals("11") && variant.getStart().equals(27658369) && variant.getReference().equals("C")
+                    && variant.getAlternate().equals("T")) {
+                found = true;
+                Assertions.assertEquals("rs6265", variant.getAnnotation().getGwas().get(0).getSnpId());
+                Assertions.assertEquals(3.0E-10, variant.getAnnotation().getGwas().get(0).getStudies().get(0).getTraits().get(0).getScores().get(0).getPvalue());
+                Assertions.assertEquals(9.522878745280337, variant.getAnnotation().getGwas().get(0).getStudies().get(0).getTraits().get(0).getScores().get(0).getPvalueMlog());
+            }
+        }
+        Assertions.assertTrue(found, "Expected GWAS variant not found in serialized variants.");
+
+        // Clean and delete directories/files
+        rdb.close();
+        org.apache.commons.io.FileUtils.deleteDirectory(rocksDbDir.toFile());
+        Files.deleteIfExists(clinicalVariantFile);
+    }
+
+    private Variant parseVariantFromVariantId(String variantId) {
+        try {
+            String[] parts = variantId.split(":", -1); // -1 to include empty fields
+            if (parts[1].contains("-")) {
+                String[] pos = parts[1].split("-");
+                return new Variant(parts[0].trim(), Integer.parseInt(pos[0].trim()), Integer.parseInt(pos[1].trim()), parts[2], parts[3]);
+            } else {
+                return new Variant(parts[0].trim(), Integer.parseInt(parts[1].trim()), parts[2], parts[3]);
+            }
+        } catch (Exception e) {
+            System.out.printf("{}. Impossible to create the variant object from the variant ID: {}", e.getMessage(), variantId);
+            return null;
+        }
+    }
+
     private void cleanUp() throws URISyntaxException, IOException {
         // Clean up temporary files/directories/indexes
         org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant1/").toFile());
@@ -726,17 +817,17 @@ public class ClinicalVariantBuilderTest {
 //
 //                EvidenceEntry entry = buildEvidenceEntry(info);
 //                System.out.println(variant.toStringSimple() + " : " + entry.toString());
-////                if (variant != null) {
-////                    boolean success = updateRocksDB(variant);
-////                    // updateRocksDB may fail (false) if normalisation process fails
-////                    if (success) {
-////                        numberIndexedRecords++;
-////                    }
-////                }
-////                totalNumberRecords++;
-////                if (totalNumberRecords % 1000 == 0) {
-////                    logger.info("{} records parsed", totalNumberRecords);
-////                }
+    ////                if (variant != null) {
+    ////                    boolean success = updateRocksDB(variant);
+    ////                    // updateRocksDB may fail (false) if normalisation process fails
+    ////                    if (success) {
+    ////                        numberIndexedRecords++;
+    ////                    }
+    ////                }
+    ////                totalNumberRecords++;
+    ////                if (totalNumberRecords % 1000 == 0) {
+    ////                    logger.info("{} records parsed", totalNumberRecords);
+    ////                }
 //            }
 //        }
 //    }
@@ -811,4 +902,38 @@ public class ClinicalVariantBuilderTest {
         System.out.println(v.toStringSimple());
     }
 
+    private Object[] getDBConnection(String dbLocation, boolean forceCreate) {
+        boolean indexingNeeded = forceCreate || !Files.exists(Paths.get(dbLocation));
+        // a static method that loads the RocksDB C++ library.
+        RocksDB.loadLibrary();
+        // the Options class contains a set of configurable DB options
+        // that determines the behavior of a database.
+        Options options = new Options().setCreateIfMissing(true);
+
+//        options.setMaxBackgroundCompactions(4);
+//        options.setMaxBackgroundFlushes(1);
+//        options.setCompressionType(CompressionType.NO_COMPRESSION);
+//        options.setMaxOpenFiles(-1);
+//        options.setIncreaseParallelism(4);
+//        options.setCompactionStyle(CompactionStyle.LEVEL);
+//        options.setLevelCompactionDynamicLevelBytes(true);
+
+        RocksDB db = null;
+        try {
+            // a factory method that returns a RocksDB instance
+            if (indexingNeeded) {
+                db = RocksDB.open(options, dbLocation);
+            } else {
+                db = RocksDB.openReadOnly(options, dbLocation);
+            }
+            // do something
+        } catch (RocksDBException e) {
+            // do some error handling
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return new Object[]{db, options, dbLocation, indexingNeeded};
+
+    }
 }

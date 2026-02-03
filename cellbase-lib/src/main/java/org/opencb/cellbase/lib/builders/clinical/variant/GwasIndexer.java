@@ -263,19 +263,19 @@ public class GwasIndexer extends ClinicalIndexer {
                     GwasAssociationStudyTraitScores scores = new GwasAssociationStudyTraitScores();
                     if (StringUtils.isNotEmpty(values[27])) {
                         try {
-                            scores.setPValue(Double.parseDouble(values[27]));
+                            scores.setPvalue(Double.parseDouble(values[27]));
                         } catch (NumberFormatException e) {
                             logger.warn(e.getMessage() + ". Parsing pValue: " + values[27]);
                         }
                     }
                     if (StringUtils.isNotEmpty(values[28])) {
                         try {
-                            scores.setPValueMlog(Double.parseDouble(values[28]));
+                            scores.setPvalueMlog(Double.parseDouble(values[28]));
                         } catch (NumberFormatException e) {
                             logger.warn(e.getMessage() + ". Parsing pValue mlog: " + values[28]);
                         }
                     }
-                    scores.setPValueText(values[29]);
+                    scores.setPvalueText(values[29]);
                     if (StringUtils.isNotEmpty(values[30])) {
                         try {
                             scores.setOrBeta(Double.parseDouble(values[30]));
@@ -463,8 +463,8 @@ public class GwasIndexer extends ClinicalIndexer {
                 GwasAssociationStudyTraitScores newScores = newTrait.getScores().get(0);
                 for (GwasAssociationStudyTraitScores scores : currTrait.getScores()) {
                     if (scores.getOrBeta() == newScores.getOrBeta()
-                            && scores.getPValueMlog() == newScores.getPValueMlog()
-                            && scores.getPValue() == newScores.getPValue()) {
+                            && scores.getPvalueMlog() == newScores.getPvalueMlog()
+                            && scores.getPvalue() == newScores.getPvalue()) {
                         currScores = scores;
                         break;
                     }
