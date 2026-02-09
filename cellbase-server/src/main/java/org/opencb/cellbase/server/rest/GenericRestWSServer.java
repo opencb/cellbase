@@ -126,6 +126,13 @@ public class GenericRestWSServer implements IWSServer {
                 init();
             }
 
+            // Normalize species name to species ID (e.g., "Homo Sapiens" -> "hsapiens")
+            // This ensures the species name matches the keys used in defaultDataReleases map
+            SpeciesConfiguration speciesConfig = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, this.species);
+            if (speciesConfig != null) {
+                this.species = speciesConfig.getId();
+            }
+
             if (this.assembly == null) {
                 // Default assembly depends on the CellBaseConfiguration (so it has to be already initialized)
                 this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, this.species).getName();

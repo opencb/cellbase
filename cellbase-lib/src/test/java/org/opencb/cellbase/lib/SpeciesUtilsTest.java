@@ -70,4 +70,34 @@ public class SpeciesUtilsTest extends GenericMongoDBAdaptorTest {
         }
         assertEquals(ASSEMBLY.toLowerCase(Locale.ROOT), assembly.getName().toLowerCase(Locale.ROOT));
     }
+
+    @Test
+    public void testGetSpeciesConfiguration_Normalization() {
+        // Test that various species name formats (scientific name, common name, ID)
+        // all return the same SpeciesConfiguration with the correct species ID
+
+        // Test with species ID (lowercase)
+        SpeciesConfiguration speciesConfigById = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, "hsapiens");
+        assertEquals("hsapiens", speciesConfigById.getId());
+
+        // Test with scientific name (case insensitive)
+        SpeciesConfiguration speciesConfigByScientific1 = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, "Homo sapiens");
+        assertEquals("hsapiens", speciesConfigByScientific1.getId());
+
+        SpeciesConfiguration speciesConfigByScientific2 = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, "homo sapiens");
+        assertEquals("hsapiens", speciesConfigByScientific2.getId());
+
+        SpeciesConfiguration speciesConfigByScientific3 = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, "HOMO SAPIENS");
+        assertEquals("hsapiens", speciesConfigByScientific3.getId());
+
+        // Test with URL-encoded space (as it would come from REST API)
+        SpeciesConfiguration speciesConfigByScientific4 = SpeciesUtils.getSpeciesConfiguration(cellBaseConfiguration, "Homo Sapiens");
+        assertEquals("hsapiens", speciesConfigByScientific4.getId());
+
+        // All should return the same configuration object (same scientific name, etc.)
+        assertEquals(speciesConfigById.getScientificName(), speciesConfigByScientific1.getScientificName());
+        assertEquals(speciesConfigById.getScientificName(), speciesConfigByScientific2.getScientificName());
+        assertEquals(speciesConfigById.getScientificName(), speciesConfigByScientific3.getScientificName());
+        assertEquals(speciesConfigById.getScientificName(), speciesConfigByScientific4.getScientificName());
+    }
 }
