@@ -417,7 +417,9 @@ public class ExportCommandExecutor extends CommandExecutor {
         int counter = 0;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, ONTOLOGY_DATA);
         OntologyManager ontologyManager = managerFactory.getOntologyManager(species, assembly);
-        CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(new OntologyQuery());
+        OntologyQuery ontologyQuery = new OntologyQuery();
+        ontologyQuery.setDataRelease(dataRelease);
+        CellBaseIterator<OntologyTerm> iterator = ontologyManager.iterator(ontologyQuery);
         while (iterator.hasNext()) {
             serializer.serialize(iterator.next());
             counter++;
