@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -35,6 +36,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR;
+import static org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor.buildCollectionName;
 
 
 public class IndexManager {
@@ -58,16 +60,18 @@ public class IndexManager {
         DATA_COLLECTIONS.put("protein", Collections.singletonList("protein"));
         DATA_COLLECTIONS.put("regulation", Arrays.asList("regulatory_region", "regulatory_pfm"));
         DATA_COLLECTIONS.put("variation", Collections.singletonList("variation"));
-        DATA_COLLECTIONS.put("variation_functional_score", Collections.singletonList("missense_variation_functional_score"));
-        DATA_COLLECTIONS.put("protein_functional_prediction", Collections.singletonList("protein_functional_prediction"));
-        DATA_COLLECTIONS.put("revel", Collections.singletonList("revel"));
-        DATA_COLLECTIONS.put("alphamissense", Collections.singletonList("alphamissense"));
+        DATA_COLLECTIONS.put("snp", Collections.singletonList("snp"));
+        DATA_COLLECTIONS.put("variation_functional_score", Collections.singletonList("variation_functional_score"));
+        DATA_COLLECTIONS.put("protein_functional_prediction", Collections.singletonList("protein_substitution_prediction"));
         DATA_COLLECTIONS.put("clinical_variants", Collections.singletonList("clinical_variants"));
         DATA_COLLECTIONS.put("splice_score", Collections.singletonList("splice_score"));
         DATA_COLLECTIONS.put("ontology", Collections.singletonList("ontology"));
         DATA_COLLECTIONS.put("pubmed", Collections.singletonList("pubmed"));
         DATA_COLLECTIONS.put("pharmacogenomics", Collections.singletonList("pharmacogenomics"));
+
+        /* This is commented temporary for performance purposes
         DATA_COLLECTIONS.put("polygenic_score", Arrays.asList("variant_polygenic_score", "common_polygenic_score"));
+        */
     }
 
     public IndexManager(String databaseName, Path indexFile, CellBaseConfiguration configuration) {
@@ -81,8 +85,6 @@ public class IndexManager {
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
         mongoDBManager =  new MongoDBManager(configuration);
-
-//        Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
 
         MongoDataStore mongoDBDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         mongoDBIndexUtils = new MongoDBIndexUtils(mongoDBDatastore, indexFile);
@@ -100,19 +102,16 @@ public class IndexManager {
      *                         already exists.
      * @throws IOException if configuration file can't be read
      */
-    @Deprecated
-    public void createMongoDBIndexes(String data, String dataRelease, boolean dropIndexesFirst) throws IOException {
-        //        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
+    public void createMongoDBIndexes(String data, int dataRelease, boolean dropIndexesFirst) throws IOException {
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
-//            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
+            createAllIndexes(dataRelease, dropIndexesFirst);
             logger.info("Loaded all indexes");
         } else {
             List<String> dataList = Arrays.asList(data.split(","));
             for (String dataName : dataList) {
                 List<String> collections = new ArrayList<>();
                 for (String collection : DATA_COLLECTIONS.get(dataName)) {
-                    collections.add(collection + DATA_RELEASE_SEPARATOR + dataRelease);
+                    collections.add(CellBaseDBAdaptor.buildCollectionName(collection, dataRelease));
                 }
                 createMongoDBIndexes(collections, dropIndexesFirst);
             }
@@ -154,13 +153,21 @@ public class IndexManager {
             }
         }
     }
+    private void createAllIndexes(int dataRelease, boolean dropIndexesFirst) throws IOException {
+        Map<String, List<Map<String, ObjectMap>>> indexes = getIndexesFromFile();
 
+        for (String key : indexes.keySet()) {
+            String collectionName = buildCollectionName(key, dataRelease);
+            logger.info("Creating index for collection {}", collectionName);
+            mongoDBIndexUtils.createIndexes(collectionName, indexes.get(key), dropIndexesFirst);
+            logger.info("Done.");
+        }
+    }
     private void checkIndexes() throws IOException {
         if (indexes == null) {
             indexes = getIndexesFromFile();
         }
     }
-
     private Map<String, List<Map<String, ObjectMap>>> getIndexesFromFile() throws IOException {
         ObjectMapper objectMapper = generateDefaultObjectMapper();
         Map<String, List<Map<String, ObjectMap>>> indexes = new HashMap<>();

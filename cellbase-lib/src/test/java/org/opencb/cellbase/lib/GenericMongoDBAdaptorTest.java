@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.junit.Assert;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -66,7 +67,7 @@ public class GenericMongoDBAdaptorTest {
     private static final String LOCALHOST = "localhost:27017";
     protected static final String SPECIES = "hsapiens";
     protected static final String ASSEMBLY = "grch38";
-//    protected static final String API_VERSION = "v5";
+    //    protected static final String API_VERSION = "v5";
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
     protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
@@ -90,18 +91,19 @@ public class GenericMongoDBAdaptorTest {
                     GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                     CellBaseConfiguration.ConfigurationFileFormat.YAML);
 
-            String[] versionSplit = GitRepositoryState.get().getBuildVersion().split("\\.");
-            cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
-            cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+        String[] versionSplit = GitRepositoryState.get().getBuildVersion().split("\\.");
+        cellBaseConfiguration.setVersion("v" + versionSplit[0] + "." + versionSplit[1]);
+        cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
-            cellBaseName = DatabaseNameUtils.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
+        cellBaseName = DatabaseNameUtils.getDatabaseName(SPECIES, ASSEMBLY, cellBaseConfiguration.getVersion());
 
-            loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, cellBaseName, 2,
-                    cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);
+        loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, cellBaseName, 2,
+                cellBaseManagerFactory.getDataReleaseManager(SPECIES, ASSEMBLY), cellBaseConfiguration);
 
             initDB();
         } catch (Exception e) {
             e.printStackTrace();
+            Assert.fail();
         }
     }
 

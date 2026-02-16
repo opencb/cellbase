@@ -63,7 +63,7 @@ public class IndexCommandExecutor extends CommandExecutor {
             if (indexCommandOptions.validate) {
                 indexManager.validateMongoDBIndexes(indexCommandOptions.data);
             } else {
-                indexManager.createMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.dataRelease,
+                indexManager.createMongoDBIndexes(indexCommandOptions.data, Integer.parseInt(indexCommandOptions.dataRelease),
                         indexCommandOptions.dropIndexesFirst);
             }
 
