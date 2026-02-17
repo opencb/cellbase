@@ -355,6 +355,10 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, CellBaseException, LoaderException {
+        // Check if SIFT/POLYPHEN source has already been loaded
+        checkSourceAlreadyLoaded(SIFT_DATA);
+        checkSourceAlreadyLoaded(POLYPHEN_DATA);
+
         loadData(input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(PROTEIN_FUNCTIONAL_PREDICTION_DATA),
                 PROTEIN_SUBSTITUTION_PREDICTION_DATA, "prot_func_pred_");
     }
@@ -364,7 +368,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         checkSourceAlreadyLoaded(REVEL_DATA);
 
         HashMap<String, String> collectionMap = new HashMap<>();
-        collectionMap.put(MISSENSE_VARIATION_SCORE_DATA, REVEL_DATA + JSON_GZ_EXTENSION);
+        collectionMap.put(PROTEIN_SUBSTITUTION_PREDICTION_DATA, REVEL_DATA + JSON_GZ_EXTENSION);
 
         Path revelPath = input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(REVEL_DATA);
         loadData(revelPath, collectionMap);
@@ -375,7 +379,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         checkSourceAlreadyLoaded(ALPHAMISSENSE_DATA);
 
         HashMap<String, String> collectionMap = new HashMap<>();
-        collectionMap.put(MISSENSE_VARIATION_SCORE_DATA, ALPHAMISSENSE_DATA + JSON_GZ_EXTENSION);
+        collectionMap.put(PROTEIN_SUBSTITUTION_PREDICTION_DATA, ALPHAMISSENSE_DATA + JSON_GZ_EXTENSION);
 
         Path alphaMissensePath = input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(ALPHAMISSENSE_DATA);
         loadData(alphaMissensePath, collectionMap);

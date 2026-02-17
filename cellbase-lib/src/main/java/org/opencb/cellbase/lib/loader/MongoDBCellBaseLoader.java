@@ -51,7 +51,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
-import static org.opencb.cellbase.lib.EtlCommons.MISSENSE_VARIATION_SCORE_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA;
 
 /**
  * Created by parce on 18/02/15.
@@ -140,10 +140,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     + " are: " + StringUtils.join(releases, ","));
         }
 
-        // Sanity check don't populate collections already populated
-        // Missense variation score data (i.e., revel and alphaMissense) is checked later, since revel and alphamissense are loaded
+        // Sanity check don't populate collections already populated, one exception:
+        // Protein substitution prediction data (i.e., polyphen, sift, revel and alphaMissense) is checked later, since they are loaded
         // in the same collection but independently
-        if (!data.equalsIgnoreCase(MISSENSE_VARIATION_SCORE_DATA)) {
+        if (!data.equalsIgnoreCase(PROTEIN_SUBSTITUTION_PREDICTION_DATA)) {
             for (Release dr : result.getResults()) {
                 if (dr.getRelease() == dataRelease) {
                     if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
