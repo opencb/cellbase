@@ -22,6 +22,7 @@ import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.DataSource;
 import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.utils.DatabaseNameUtils;
@@ -359,17 +360,25 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadRevel() throws CellBaseException {
-        HashMap<String, String> collectionMap = new HashMap<>();
-        collectionMap.put(PROTEIN_SUBSTITUTION_PREDICTION_DATA, REVEL_DATA + JSON_GZ_EXTENSION);
+        // Check if REVEL source has already been loaded
+        checkSourceAlreadyLoaded(REVEL_DATA);
 
-        loadData(input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(REVEL_DATA), collectionMap);
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(MISSENSE_VARIATION_SCORE_DATA, REVEL_DATA + JSON_GZ_EXTENSION);
+
+        Path revelPath = input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(REVEL_DATA);
+        loadData(revelPath, collectionMap);
     }
 
     private void loadAlphaMissense() throws CellBaseException {
-        HashMap<String, String> collectionMap = new HashMap<>();
-        collectionMap.put(PROTEIN_SUBSTITUTION_PREDICTION_DATA, ALPHAMISSENSE_DATA + JSON_GZ_EXTENSION);
+        // Check if AlphaMissense source has already been loaded
+        checkSourceAlreadyLoaded(ALPHAMISSENSE_DATA);
 
-        loadData(input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(ALPHAMISSENSE_DATA), collectionMap);
+        HashMap<String, String> collectionMap = new HashMap<>();
+        collectionMap.put(MISSENSE_VARIATION_SCORE_DATA, ALPHAMISSENSE_DATA + JSON_GZ_EXTENSION);
+
+        Path alphaMissensePath = input.resolve(PROTEIN_SUBSTITUTION_PREDICTION_DATA).resolve(ALPHAMISSENSE_DATA);
+        loadData(alphaMissensePath, collectionMap);
     }
 
     private void loadClinical() throws FileNotFoundException {
@@ -676,5 +685,17 @@ public class LoadCommandExecutor extends CommandExecutor {
                     + " already assigned CellBase versions:" + StringUtils.join(lastDataRelease.getActiveByDefaultIn(), ","));
         }
         return lastDataRelease;
+    }
+
+    private void checkSourceAlreadyLoaded(String sourceId) throws CellBaseException {
+        Release release = getDataReleaseForLoading(dataReleaseManager);
+        if (release.getSources() != null) {
+            for (DataSource source : release.getSources()) {
+                if (sourceId.equalsIgnoreCase(source.getId())) {
+                    throw new CellBaseException("Loading data '" + sourceId + "' with release " + dataRelease
+                            + " failed: source '" + sourceId + "' already loaded previously");
+                }
+            }
+        }
     }
 }

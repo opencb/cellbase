@@ -51,6 +51,8 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
+import static org.opencb.cellbase.lib.EtlCommons.MISSENSE_VARIATION_SCORE_DATA;
+
 /**
  * Created by parce on 18/02/15.
  */
@@ -137,13 +139,19 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             throw new LoaderException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
                     + " are: " + StringUtils.join(releases, ","));
         }
-        for (Release dr : result.getResults()) {
-            if (dr.getRelease() == dataRelease) {
-                if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
-                    throw new LoaderException("Loading new data " + data + " with release " + dataRelease
-                            + " (already populated previously)");
+
+        // Sanity check don't populate collections already populated
+        // Missense variation score data (i.e., revel and alphaMissense) is checked later, since revel and alphamissense are loaded
+        // in the same collection but independently
+        if (!data.equalsIgnoreCase(MISSENSE_VARIATION_SCORE_DATA)) {
+            for (Release dr : result.getResults()) {
+                if (dr.getRelease() == dataRelease) {
+                    if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
+                        throw new LoaderException("Loading new data '" + data + "' with release " + dataRelease
+                                + " (already populated previously)");
+                    }
+                    break;
                 }
-                break;
             }
         }
 
