@@ -186,6 +186,7 @@
 {"collection": "protein_substitution_prediction", "fields": {"transcriptId": 1}, "options": {"background": true}}
 {"collection": "protein_substitution_prediction", "fields": {"aaPosition": 1}, "options": {"background": true}}
 {"collection": "protein_substitution_prediction", "fields": {"chromosome": 1, "source": 1, "aaPosition": 1, "position": 1}, "options": {"background": true}}
+{"collection": "protein_substitution_prediction", "fields": {"transcriptId": 1, "size": 1}, "options": {"background": true}}
 
 {"collection": "common_polygenic_score", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "common_polygenic_score", "fields": {"name": 1}, "options": {"background": true}}

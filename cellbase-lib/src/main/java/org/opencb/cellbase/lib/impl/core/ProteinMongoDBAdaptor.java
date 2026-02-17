@@ -108,7 +108,11 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         // Ensembl transcript id is needed for this collection
         if (query.getTranscriptsId() != null && query.getTranscriptsId().get(0) != null) {
             String transcriptId = query.getTranscriptsId().get(0).split("\\.")[0];
-            Bson transcript = Filters.eq("transcriptId", transcriptId);
+            // Filter for SIFT/POLYPHEN documents: they have the 'size' field, REVEL/ALPHAMISSENSE don't
+            List<Bson> andBsonList = new ArrayList<>();
+            andBsonList.add(Filters.eq("transcriptId", transcriptId));
+            andBsonList.add(Filters.exists("size", true));
+            Bson transcript = Filters.and(andBsonList);
             MongoDBCollection mongoDBCollection = getCollectionByRelease(proteinSubstitutionMongoDBCollectionByRelease,
                     query.getDataRelease());
 
@@ -170,57 +174,6 @@ public class ProteinMongoDBAdaptor extends CellBaseDBAdaptor implements CellBase
         // Return null if no transcript id is provided
         return result;
     }
-
-//    private List<Score> getRevelAndAlphaMissenseScores(MongoDBCollection mongoDBCollection, String transcriptId,
-//                                                       Integer position, String aa) {
-//        List<Score> scoreList = new ArrayList<>();
-//
-//        if (position == null || StringUtils.isEmpty(aa)) {
-//            return scoreList;
-//        }
-//
-//        // Query for documents with source field (REVEL, ALPHAMISSENSE)
-//        Bson filter = Filters.and(
-//            Filters.eq("transcriptId", transcriptId),
-//            Filters.eq("aaPosition", position),
-//            Filters.in("source", "revel", "alphamissense")
-//        );
-//
-//        try {
-//            CellBaseDataResult<Document> documents = new CellBaseDataResult<>(
-//                mongoDBCollection.find(filter, new QueryOptions())
-//            );
-//
-//            if (documents != null && !documents.getResults().isEmpty()) {
-//                for (Document document : documents.getResults()) {
-//                    String source = (String) document.get("source");
-//                    List<Document> scoresArray = document.getList("scores", Document.class);
-//
-//                    if (scoresArray != null) {
-//                        for (Document scoreDoc : scoresArray) {
-//                            String aaAlternate = (String) scoreDoc.get("aaAlternate");
-//
-//                            // Check if this score matches the requested alternate AA
-//                            if (aa.equals(aaAlternate)) {
-//                                Object scoreValue = scoreDoc.get("score");
-//                                if (scoreValue != null) {
-//                                    double score = Double.parseDouble(scoreValue.toString());
-//                                    String description = (String) scoreDoc.get("effect");
-//                                    scoreList.add(new Score(score, source, description));
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            logger.debug("Error retrieving REVEL and ALPHAMISSENSE scores for transcriptId: {}, position: {}",
-//                    transcriptId, position, e);
-//        }
-//
-//        return scoreList;
-//    }
-
 
     private List<Score> getRevelAndAlphaMissenseScores(MongoDBCollection mongoDBCollection, String chromosome, Integer position,
                                                        String transcriptId, Integer aaPosition, String aa) {
