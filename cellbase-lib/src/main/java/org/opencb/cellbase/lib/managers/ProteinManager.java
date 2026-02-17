@@ -76,7 +76,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         if (queryResult.getNumResults() > 0) {
             String transcriptId = queryResult.getResults().get(0).getId();
             query.setTranscriptsId(Collections.singletonList(transcriptId));
-            CellBaseDataResult<Score> scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
+            CellBaseDataResult<Score> scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, null, null, position, aa);
             scoresCellBaseDataResult.setId(transcriptId);
             return scoresCellBaseDataResult;
         } else {
@@ -101,8 +101,8 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(Variant variant, String ensemblTranscriptId, int aaPosition,
                                                                              String aaReference, String aaAlternate, QueryOptions options,
                                                                              int dataRelease) throws CellBaseException {
-        CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId,
-                aaPosition, aaReference, aaAlternate, options, dataRelease);
+        CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(variant,
+                ensemblTranscriptId, aaPosition, aaReference, aaAlternate, options, dataRelease);
         return proteinVariantAnnotation;
     }
 
