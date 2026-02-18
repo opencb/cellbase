@@ -21,10 +21,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.models.variant.avro.Constraint;
+import org.opencb.biodata.models.core.GeneCancerAssociation;
+import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.avro.*;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -60,8 +59,11 @@ public class RocksDbManager {
         Options options = new Options().setCreateIfMissing(true);
         RocksDB db = null;
         try {
+            if (!Files.exists(Paths.get(dbLocation))) {
+                Files.createDirectories(Paths.get(dbLocation));
+            }
             return RocksDB.open(options, dbLocation);
-        } catch (RocksDBException e) {
+        } catch (RocksDBException | IOException e) {
             // do some error handling
             e.printStackTrace();
             System.exit(1);
@@ -148,6 +150,22 @@ public class RocksDbManager {
             return null;
         }
         return Arrays.asList(mapper.readValue(dbContent, CancerHotspot[].class));
+    }
+
+    public List<GeneImprinting> getGeneImprinting(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, GeneImprinting[].class));
+    }
+
+    public GeneFusion getGeneFusion(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return mapper.readValue(dbContent, GeneFusion.class);
     }
 
     /**

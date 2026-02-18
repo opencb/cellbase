@@ -27,7 +27,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -40,6 +39,8 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.opencb.cellbase.lib.EtlCommons.CLINICAL_VARIANT_DATA;
+import static org.opencb.cellbase.lib.EtlCommons.JSON_GZ_EXTENSION;
 
 /**
  * Created by fjlopez on 07/10/16.
@@ -89,10 +90,10 @@ public class ClinicalVariantBuilderTest {
                         .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
                 clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantBuilder(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), CLINICAL_VARIANT_DATA, true);
+        (new ClinicalVariantBuilder(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
-        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + CLINICAL_VARIANT_DATA + JSON_GZ_EXTENSION);
         assertEquals(23, parsedVariantList.size());
 
         // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
@@ -145,10 +146,10 @@ public class ClinicalVariantBuilderTest {
 
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), CLINICAL_VARIANT_DATA, true);
+        (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
-        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + CLINICAL_VARIANT_DATA + JSON_GZ_EXTENSION);
         assertEquals(29, parsedVariantList.size());
 
         // DOCM MNV (from docm.json.gz):
@@ -230,10 +231,10 @@ public class ClinicalVariantBuilderTest {
                         .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
                 clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), CLINICAL_VARIANT_DATA, true);
+        (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37", null, serializer)).parse();
 
-        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + CLINICAL_VARIANT_DATA + JSON_GZ_EXTENSION);
         assertEquals(29, parsedVariantList.size());
 
         // ClinVar variant with invalid alternate allele string ("TTBS") must NOT be parsed

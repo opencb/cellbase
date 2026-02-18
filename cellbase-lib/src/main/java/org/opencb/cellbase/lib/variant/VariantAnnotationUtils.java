@@ -16,7 +16,13 @@
 
 package org.opencb.cellbase.lib.variant;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GeneFusion;
+import org.opencb.biodata.models.core.chimerdb.ChimerKb;
+import org.opencb.biodata.models.core.chimerdb.ChimerPub;
+import org.opencb.biodata.models.core.chimerdb.ChimerSeq;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
@@ -709,5 +715,138 @@ public class VariantAnnotationUtils {
         }
         return aaSequence.toString();
     }
+
+    public static List<GeneImprinting> getGeneImprinting(List<Gene> geneList) {
+        List<GeneImprinting> geneImprintingList = new ArrayList<>();
+        for (Gene gene : geneList) {
+            if (gene.getAnnotation() != null && CollectionUtils.isNotEmpty(gene.getAnnotation().getGeneImprinting())) {
+                geneImprintingList.addAll(gene.getAnnotation().getGeneImprinting());
+            }
+        }
+        return geneImprintingList;
+    }
+
+    public static List<GeneFusionSummary> getGeneFusionSummaries(List<Gene> geneList) {
+        List<GeneFusionSummary> geneFusionSummaries = new ArrayList<>();
+        for (Gene gene : geneList) {
+            if (gene.getAnnotation() != null && gene.getAnnotation().getGeneFusions() != null) {
+                GeneFusion geneFusions = gene.getAnnotation().getGeneFusions();
+
+                // ChimerKB
+                if (CollectionUtils.isNotEmpty(geneFusions.getChimerKb())) {
+                    for (ChimerKb chimerKb : geneFusions.getChimerKb()) {
+                        geneFusionSummaries.add(VariantAnnotationUtils.getGeneFusionSummaryFromChimerKb(chimerKb));
+                    }
+                }
+
+                // ChimerPub
+                if (CollectionUtils.isNotEmpty(geneFusions.getChimerPub())) {
+                    for (ChimerPub chimerPub : geneFusions.getChimerPub()) {
+                        geneFusionSummaries.add(VariantAnnotationUtils.getGeneFusionSummaryFromChimerPub(chimerPub));
+                    }
+                }
+
+                // ChimerSeq
+                if (CollectionUtils.isNotEmpty(geneFusions.getChimerSeq())) {
+                    for (ChimerSeq chimerSeq : geneFusions.getChimerSeq()) {
+                        geneFusionSummaries.add(VariantAnnotationUtils.getGeneFusionSummaryFromChimerSeq(chimerSeq));
+                    }
+                }
+            }
+        }
+        return geneFusionSummaries;
+    }
+
+    public static GeneFusionSummary getGeneFusionSummaryFromChimerKb(ChimerKb chimerKb) {
+        GeneFusionSummary summary = new GeneFusionSummary();
+        summary.setSource(ChimerKb.SOURCE);
+        summary.setPair(chimerKb.getFusionPair());
+        if (chimerKb.getHeadGene() != null) {
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerKb.getHeadGene().getGeneName(),
+                    chimerKb.getHeadGene().getChromosome(), chimerKb.getHeadGene().getPosition(),
+                    chimerKb.getHeadGene().getStrand()));
+            if (chimerKb.getTailGene() != null) {
+                summary.setTailGene(new GeneFusionBreakpoint(chimerKb.getTailGene().getGeneName(),
+                        chimerKb.getTailGene().getChromosome(), chimerKb.getTailGene().getPosition(),
+                        chimerKb.getTailGene().getStrand()));
+            }
+            summary.setPmid(chimerKb.getPmid());
+            summary.setDiseases(chimerKb.getDiseases());
+            summary.setKinase(chimerKb.isKinase());
+            summary.setOncogene(chimerKb.isOncogene());
+            summary.setTumorSuppresor(chimerKb.isTumorSuppressor());
+            summary.setReceptor(chimerKb.isReceptor());
+            summary.setTranscriptionFactor(chimerKb.isTranscriptionFactor());
+        }
+        return summary;
+    }
+
+    public static GeneFusionSummary getGeneFusionSummaryFromChimerPub(ChimerPub chimerPub) {
+        GeneFusionSummary summary = new GeneFusionSummary();
+        summary.setSource(ChimerPub.SOURCE);
+        summary.setPair(chimerPub.getFusionPair());
+        if (chimerPub.getHeadGene() != null) {
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerPub.getHeadGene().getGeneName(), null, null, null));
+            if (chimerPub.getTailGene() != null) {
+                summary.setTailGene(new GeneFusionBreakpoint(chimerPub.getTailGene().getGeneName(), null, null, null));
+            }
+            summary.setPmid(chimerPub.getPmid());
+            summary.setDiseases(chimerPub.getDiseases());
+            summary.setKinase(chimerPub.isKinase());
+            summary.setOncogene(chimerPub.isOncogene());
+            summary.setTumorSuppresor(chimerPub.isTumorSuppressor());
+            summary.setReceptor(chimerPub.isReceptor());
+            summary.setTranscriptionFactor(chimerPub.isTranscriptionFactor());
+        }
+        return summary;
+    }
+
+    public static GeneFusionSummary getGeneFusionSummaryFromChimerSeq(ChimerSeq chimerSeq) {
+        GeneFusionSummary summary = new GeneFusionSummary();
+        summary.setSource(ChimerSeq.SOURCE);
+        summary.setPair(chimerSeq.getFusionPair());
+        if (chimerSeq.getHeadGene() != null) {
+            summary.setHeadGene(new GeneFusionBreakpoint(chimerSeq.getHeadGene().getGeneName(),
+                    chimerSeq.getHeadGene().getChromosome(), chimerSeq.getHeadGene().getPosition(),
+                    chimerSeq.getHeadGene().getStrand()));
+            if (chimerSeq.getHeadGene().isKinase()) {
+                summary.setKinase(chimerSeq.getHeadGene().isKinase());
+            }
+            if (chimerSeq.getHeadGene().isOncogene()) {
+                summary.setOncogene(chimerSeq.getHeadGene().isOncogene());
+            }
+            if (chimerSeq.getHeadGene().isTumorSuppressor()) {
+                summary.setTumorSuppresor(chimerSeq.getHeadGene().isTumorSuppressor());
+            }
+            if (chimerSeq.getHeadGene().isReceptor()) {
+                summary.setReceptor(chimerSeq.getHeadGene().isReceptor());
+            }
+            if (chimerSeq.getHeadGene().isTranscriptionFactor()) {
+                summary.setTranscriptionFactor(chimerSeq.getHeadGene().isTranscriptionFactor());
+            }
+            if (chimerSeq.getTailGene() != null) {
+                summary.setTailGene(new GeneFusionBreakpoint(chimerSeq.getTailGene().getGeneName(),
+                        chimerSeq.getTailGene().getChromosome(), chimerSeq.getTailGene().getPosition(),
+                        chimerSeq.getTailGene().getStrand()));
+            }
+            if (chimerSeq.getTailGene().isKinase()) {
+                summary.setKinase(chimerSeq.getTailGene().isKinase());
+            }
+            if (chimerSeq.getTailGene().isOncogene()) {
+                summary.setOncogene(chimerSeq.getTailGene().isOncogene());
+            }
+            if (chimerSeq.getTailGene().isTumorSuppressor()) {
+                summary.setTumorSuppresor(chimerSeq.getTailGene().isTumorSuppressor());
+            }
+            if (chimerSeq.getTailGene().isReceptor()) {
+                summary.setReceptor(chimerSeq.getTailGene().isReceptor());
+            }
+            if (chimerSeq.getTailGene().isTranscriptionFactor()) {
+                summary.setTranscriptionFactor(chimerSeq.getTailGene().isTranscriptionFactor());
+            }
+        }
+        return summary;
+    }
+
 
 }

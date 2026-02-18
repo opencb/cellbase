@@ -56,7 +56,6 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
     private final Path germlineFile;
     private final Path somaticFile;
-    private final String assembly;
     private final Pattern snvPattern;
     private final Path germlineReferencesFile;
     private final Path somaticReferencesFile;

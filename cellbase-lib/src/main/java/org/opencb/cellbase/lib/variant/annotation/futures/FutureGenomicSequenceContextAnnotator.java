@@ -80,7 +80,7 @@ public class FutureGenomicSequenceContextAnnotator implements Callable<List<Geno
             }
             resultList.add(genomicSequenceContext);
         }
-        logger.info("Genomic sequence context queries performance in {} ms for {} variants", stopWatch.getTime(TimeUnit.MILLISECONDS),
+        logger.debug("Genomic sequence context queries performance in {} ms for {} variants", stopWatch.getTime(TimeUnit.MILLISECONDS),
                 variantList.size());
         return resultList;
     }

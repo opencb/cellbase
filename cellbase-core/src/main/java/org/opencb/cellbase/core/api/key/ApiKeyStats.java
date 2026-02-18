@@ -16,36 +16,45 @@
 
 package org.opencb.cellbase.core.api.key;
 
+import java.util.Map;
+
 public class ApiKeyStats {
     private String apiKey;
     private String date; // date consists of year + month, e.g.: 202304
     private long numQueries;
+    private long numAnnotatedVariants;
     private long duration;
-    private long bytes;
+    private long outputBytes;
+    private Map<String, Object> token;
 
     public ApiKeyStats() {
     }
 
-    public ApiKeyStats(String apiKey, String date) {
-        this(apiKey, date, 0, 0, 0);
+    public ApiKeyStats(String apiKey, String date, Map<String, Object> token) {
+        this(apiKey, date, 0, 0, 0, 0, token);
     }
 
-    public ApiKeyStats(String apiKey, String date, long numQueries, long duration, long bytes) {
+    public ApiKeyStats(String apiKey, String date, long numQueries, long numAnnotatedVariants, long duration, long outputBytes,
+                       Map<String, Object> token) {
         this.apiKey = apiKey;
         this.date = date;
         this.numQueries = numQueries;
+        this.numAnnotatedVariants = numAnnotatedVariants;
         this.duration = duration;
-        this.bytes = bytes;
+        this.outputBytes = outputBytes;
+        this.token = token;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("TokenStats{");
+        final StringBuilder sb = new StringBuilder("ApiKeyStats{");
         sb.append("apiKey='").append(apiKey).append('\'');
         sb.append(", date='").append(date).append('\'');
         sb.append(", numQueries=").append(numQueries);
+        sb.append(", numAnnotatedVariants=").append(numAnnotatedVariants);
         sb.append(", duration=").append(duration);
-        sb.append(", bytes=").append(bytes);
+        sb.append(", outputBytes=").append(outputBytes);
+        sb.append(", token=").append(token);
         sb.append('}');
         return sb.toString();
     }
@@ -77,6 +86,15 @@ public class ApiKeyStats {
         return this;
     }
 
+    public long getNumAnnotatedVariants() {
+        return numAnnotatedVariants;
+    }
+
+    public ApiKeyStats setNumAnnotatedVariants(long numAnnotatedVariants) {
+        this.numAnnotatedVariants = numAnnotatedVariants;
+        return this;
+    }
+
     public long getDuration() {
         return duration;
     }
@@ -86,12 +104,21 @@ public class ApiKeyStats {
         return this;
     }
 
-    public long getBytes() {
-        return bytes;
+    public long getOutputBytes() {
+        return outputBytes;
     }
 
-    public ApiKeyStats setBytes(long bytes) {
-        this.bytes = bytes;
+    public ApiKeyStats setOutputBytes(long outputBytes) {
+        this.outputBytes = outputBytes;
+        return this;
+    }
+
+    public Map<String, Object> getToken() {
+        return token;
+    }
+
+    public ApiKeyStats setToken(Map<String, Object> token) {
+        this.token = token;
         return this;
     }
 }

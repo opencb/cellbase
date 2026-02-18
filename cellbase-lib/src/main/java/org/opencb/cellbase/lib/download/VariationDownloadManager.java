@@ -17,14 +17,14 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,29 +38,44 @@ public class VariationDownloadManager extends AbstractDownloadManager {
     }
 
     @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
-        return Collections.singletonList(downloadDbSnp());
+    public List<DownloadFile> download() throws IOException, InterruptedException, CellBaseException {
+        return downloadVariation();
     }
 
-    public DownloadFile downloadDbSnp() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, VARIATION_DATA)) {
-            return null;
+    public List<DownloadFile> downloadVariation() throws IOException, InterruptedException, CellBaseException {
+        // Check if the species supports this data
+        if (!SpeciesUtils.hasData(configuration, speciesConfiguration.getScientificName(), VARIATION_DATA)) {
+            logger.info(DATA_NOT_SUPPORTED_MSG, getDataName(VARIATION_DATA), speciesConfiguration.getScientificName());
+            return Collections.emptyList();
         }
-        if (speciesConfiguration.getScientificName().equals(EtlCommons.HOMO_SAPIENS_NAME)) {
-            logger.info("Downloading dbSNP information ...");
 
-            Path variation = downloadFolder.resolve(VARIATION_DATA);
-            Files.createDirectories(variation);
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+        Path variationFolder = downloadFolder.resolve(VARIATION_DATA);
 
-            DownloadProperties.URLProperties dbSNP = configuration.getDownload().getDbSNP();
-            String url = dbSNP.getHost();
-            saveVersionData(VARIATION_DATA, DBSNP_NAME, dbSNP.getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), variation.resolve(DBSNP_VERSION_FILENAME));
+        if (!speciesConfiguration.getScientificName().equals(HOMO_SAPIENS)) {
+            // Other species download the VCF files from Ensembl
+            Files.createDirectories(variationFolder);
 
-            Path outPath = variation.resolve(Paths.get(url).getFileName());
-            logger.info("Downloading {} to {} ...", url, outPath);
-            return downloadFile(url, outPath.toString());
+            logger.info(DOWNLOADING_MSG, getDataName(VARIATION_DATA));
+
+            DownloadFile downloadFile;
+            String prefixId = getConfigurationFileIdPrefix(speciesConfiguration.getScientificName());
+
+            // Variation and structural variations
+            List<String> fileIds = Arrays.asList(prefixId + VARIATION_FILE_ID, prefixId + STRUCTURAL_VARIATIONS_FILE_ID);
+            List<String> urls = new ArrayList<>();
+            for (String fileId : fileIds) {
+                downloadFile = downloadEnsemblDataSource(configuration.getDownload().getEnsembl(), fileId, null, variationFolder);
+                downloadFiles.add(downloadFile);
+                urls.add(downloadFile.getUrl());
+            }
+
+            saveDataSource(VARIATION_DATA, ensemblVersion, getTimeStamp(), urls,
+                    variationFolder.resolve(getDataVersionFilename(VARIATION_DATA)));
+
+            logger.info(DOWNLOADING_DONE_MSG, getDataName(VARIATION_DATA));
         }
-        return null;
+
+        return downloadFiles;
     }
 }

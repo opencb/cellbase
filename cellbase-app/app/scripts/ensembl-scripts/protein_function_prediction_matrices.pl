@@ -6,6 +6,10 @@ use Data::Dumper;
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 use JSON;
 
+#use lib "~/appl/cellbase/build/scripts/ensembl-scripts/";
+#use lib "~/soft/ensembl-variation/modules/";
+#use lib "~/soft/ensembl/modules/";
+
 use DB_CONFIG;
 
 my $species = 'Homo sapiens';
@@ -16,7 +20,7 @@ my $verbose = '0';
 my $help = '0';
 
 ####################################################################
-## Parsing command line options ####################################
+## Parsing command line options
 ####################################################################
 # USAGE: ./protein_function_prediction.pl --outdir ../../appl_db/ird_v1/hsa ...
 # Docker: docker run -it --mount type=bind,source=/home/imedina/cellbase/v5/homo_sapiens_grch38/,target=/output
@@ -39,7 +43,46 @@ if (-d $outdir){
 }
 
 ####################################################################
-## Ensembl APIs ####################################################
+## Sift and PolyPhen version files
+####################################################################
+
+# Get the current time
+my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+# Adjust the year and month values (year is years since 1900, and month is 0-based)
+
+$year += 1900;
+$mon += 1;
+
+# Format the date and time
+my $formatted_date = sprintf("%04d%02d%02d_%02d%02d%02d", $year, $mon, $mday, $hour, $min, $sec);
+
+# Common JSON structure for Sift and PolyPhen versions
+my $jsonVersion = {};
+$jsonVersion->{"downloadDate"} = $formatted_date;
+$jsonVersion->{"category"} = "Protein Substitution Prediction";
+$jsonVersion->{"version"} = "Ensembl 114_38";
+my @urls = ();
+push @urls, "ensembldb.ensembl.org:3306";
+$jsonVersion->{"urls"} = \@urls;
+
+# Sift version file
+print "Generating the JSON file for the Sift version.\n";
+$jsonVersion->{"id"} = "sift";
+$jsonVersion->{"name"} = "Sift";
+open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
+
+# PolyPhen version file
+print "Generating the JSON file for the PolyPhen version\n";
+$jsonVersion->{"id"} = "polyphen";
+$jsonVersion->{"name"} = "PolyPhen";
+open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file\n";
+print FILE to_json($jsonVersion) . "\n";
+close(FILE);
+
+####################################################################
+## Ensembl APIs
 ####################################################################
 ## creating ensembl adaptors
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
@@ -87,12 +130,13 @@ my %effect_code = ("probably damaging" => 0,
 #}
 #print join("=", $polyphen2->get_prediction(1, 'G'))."\n";
 
+##################################################################
 
 my ($translation, $seq, $md5seq, @preds, @all_predictions);
 #my @transcripts = @{$transcript_adaptor->fetch_all_by_biotype('protein_coding')};
 
 ##################################################################
-## selecting chromosomes	######################################
+## Selecting chromosomes
 ##################################################################
 my @chromosomes;
 if ($chrom eq 'all') {
@@ -126,42 +170,56 @@ foreach my $chr(@chromosomes) {
 
 	        ## HASH ##
 			my $effect = {};
+			$effect->{"chromosome"} = $trans->seq_region_name;
 	        $effect->{"transcriptId"} = $trans->stable_id;
-	        $effect->{"checksum"} = $md5seq;
-	        $effect->{"size"} = length($seq);
 
 	        foreach my $u (@{ $trans->get_all_xrefs('Uniprot/SWISSPROT') }){
 		        $effect->{"uniprotId"} = $u->display_id();
 	        }
 
+			$effect->{"source"} = "polyphen";
 	        my $polyphen2 = $prot_function_adaptor->fetch_polyphen_predictions_by_translation_md5($md5seq);
-			for(my $i=1; $i<=length($seq); $i++) {
-				foreach (my $j=0; $j < @aa_code; $j++) {
-					if(defined $polyphen2) {
+			if(defined $polyphen2) {
+				for(my $i=1; $i<=length($seq); $i++) {
+					$effect->{"aaPosition"} = $i;
+					my @scores = ();
+					foreach (my $j=0; $j < @aa_code; $j++) {
 						@preds = $polyphen2->get_prediction($i, $aa_code[$j]);
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"pe"} = $effect_code{$preds[0]};
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"ps"} = $preds[1];
+						if(defined $preds[0] || defined $preds[1]) {
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[1], "effect" => $preds[0]};
+							$effect->{"scores"} = \@scores;
+						}
+					}
+					if(@scores) {
+						print FILE to_json($effect)."\n";
 					}
 				}
 			}
 
-			my $sift = $prot_function_adaptor->fetch_sift_predictions_by_translation_md5($md5seq);
-			for(my $i=1; $i<=length($seq); $i++) {
-	            foreach (my $j=0; $j < @aa_code; $j++) {
-	            	if(defined $sift) {
-	            		@preds = $sift->get_prediction($i, $aa_code[$j]);
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"se"} = $effect_code{$preds[0]};
-						$effect->{"aaPositions"}->{$i}->{$aa_code[$j]}->{"ss"} = $preds[1];
-	            	}
-	            }
-	        }
-			print FILE to_json($effect)."\n";
+			$effect->{"source"} = "sift";
+	        my $sift = $prot_function_adaptor->fetch_sift_predictions_by_translation_md5($md5seq);
+			if(defined $sift) {
+				for(my $i=1; $i<=length($seq); $i++) {
+					$effect->{"aaPosition"} = $i;
+					my @scores = ();
+					foreach (my $j=0; $j < @aa_code; $j++) {
+						@preds = $sift->get_prediction($i, $aa_code[$j]);
+						if(defined $preds[0] || defined $preds[1]) {
+							push @scores, {"aaAlternate" => $aa_code[$j], "score" => $preds[1], "effect" => $preds[0]};
+							$effect->{"scores"} = \@scores;
+						}
+					}
+					if(@scores) {
+						print FILE to_json($effect)."\n";
+					}
+				}
+			}
 		}
 	}
 	close(FILE);
 
 	## GZip output to save space in Amazon AWS
-#	exec("gzip prot_func_pred_chr_".$chrom->seq_region_name);
+	exec("gzip " . $outdir . "/prot_func_pred_chr_" . $chr->seq_region_name . ".json");
 }
 
 sub print_parameters {

@@ -20,7 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.slf4j.Logger;
@@ -43,7 +43,6 @@ import java.util.zip.GZIPInputStream;
  */
 public class LoadRunner {
 
-    private static final String PROTEIN_FUNCTIONAL_PREDICTION = "protein_functional_prediction";
     private String database;
     private String loader;
 
@@ -101,21 +100,32 @@ public class LoadRunner {
         // protein_functional_prediction documents are extremely big. Increasing the batch size will probably
         // lead to an OutOfMemory error for this collection. Batch size can be much higher for the rest of
         // collections though
-        if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)
-                || data.equals(EtlCommons.PHARMACOGENOMICS_DATA)
-                || data.equals(EtlCommons.PUBMED_DATA)) {
-            batchSize = 50;
-        } else {
-            batchSize = 200;
+        switch (data) {
+            case EtlCommons.PUBMED_DATA: {
+                batchSize = 20;
+                break;
+            }
+
+            case EtlCommons.PHARMACOGENOMICS_DATA:
+            case EtlCommons.PROTEIN_SUBSTITUTION_PREDICTION_DATA: {
+                batchSize = 50;
+                break;
+            }
+
+            default: {
+                batchSize = 200;
+                break;
+            }
         }
 
         // One CellBaseLoader is created for each thread in 'numThreads' variable
         List<CellBaseLoader> cellBaseLoaders = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             cellBaseLoaders.add((CellBaseLoader) Class.forName(loader)
-                    .getConstructor(BlockingQueue.class, String.class, Integer.class, String.class, String.class,
+                    .getConstructor(BlockingQueue.class, String.class, Integer.class, DataReleaseManager.class, String.class, String.class,
                             String[].class, CellBaseConfiguration.class)
-                    .newInstance(blockingQueue, data, dataRelease, database, field, innerFields, cellBaseConfiguration));
+                    .newInstance(blockingQueue, data, dataRelease, dataReleaseManager, database, field, innerFields,
+                            cellBaseConfiguration));
             logger.debug("CellBase loader thread '{}' created", i);
         }
 
@@ -130,7 +140,6 @@ public class LoadRunner {
             futures.add(executorService.submit(cellBaseLoaders.get(i)));
             logger.debug("CellBaseLoader '{}' initialized and submitted to the ExecutorService", i);
         }
-
         /*
          * Execution starts by reading the file and loading batches to the blockingQueue. This makes the loaders
          * to start fetching and loading batches into the database. The number of records processed is returned.
@@ -165,7 +174,7 @@ public class LoadRunner {
             throw new CellBaseException("Invalid data release " + release);
         }
 
-        DataRelease currDataRelease = dataReleaseManager.get(release);
+        Release currDataRelease = dataReleaseManager.get(release);
         if (currDataRelease == null) {
             throw new CellBaseException("Loading data is not permitted since no data release " + release + " is found");
         }
@@ -195,7 +204,7 @@ public class LoadRunner {
                     batch = new ArrayList<>(batchSize);
                 }
                 if (inputFileRecords % batchSize == 0) {
-                    logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
+                    logger.debug("{} records read from {}", inputFileRecords, inputFile);
                 }
             }
             br.close();

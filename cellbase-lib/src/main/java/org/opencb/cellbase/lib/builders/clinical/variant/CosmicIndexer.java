@@ -17,11 +17,10 @@
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.formats.variant.cosmic.CosmicParser;
+import org.opencb.biodata.formats.variant.cosmic.CosmicParser101;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,28 +28,31 @@ import java.nio.file.Path;
 
 public class CosmicIndexer extends ClinicalIndexer {
 
-    private final Path cosmicFile;
-    private final String assembly;
+    private final Path cosmicGenomeScreensMutantFilePath;
+    private final Path cosmicClassificationFilePath;
 
-    private static final String COSMIC_VERSION = "v99";
-
-    public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
+    public CosmicIndexer(Path cosmicGenomeScreensMutantFilePath, Path cosmicClassificationFilePath, String version, boolean normalize,
+                         Path genomeSequenceFilePath, String assembly, RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
 
-        this.cosmicFile = cosmicFile;
+        this.cosmicGenomeScreensMutantFilePath = cosmicGenomeScreensMutantFilePath;
+        this.cosmicClassificationFilePath = cosmicClassificationFilePath;
+        this.version = version;
         this.normalize = normalize;
         this.assembly = assembly;
         this.rdb = rdb;
     }
 
-    public void index() throws RocksDBException, CellBaseException {
+    public void index() throws CellBaseException {
         // Call COSMIC parser
         try {
             logger.info("Parsing cosmic file ...");
             CosmicIndexerCallback callback = new CosmicIndexerCallback(rdb, this);
-            CosmicParser.parse(cosmicFile, COSMIC_VERSION, EtlCommons.COSMIC_DATA, assembly, callback);
+            CosmicParser101.parse(cosmicGenomeScreensMutantFilePath, cosmicClassificationFilePath, version, EtlCommons.COSMIC_DATA,
+                    assembly, callback);
         } catch (IOException | FileFormatException e) {
-            throw new CellBaseException("Error parsing COSMIC file " + cosmicFile, e);
+            throw new CellBaseException("Error parsing COSMIC files: " + cosmicGenomeScreensMutantFilePath + ", "
+                    + cosmicClassificationFilePath, e);
         }
     }
 }

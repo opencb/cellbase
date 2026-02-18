@@ -35,16 +35,15 @@ import org.opencb.cellbase.core.api.RegulationQuery;
 import org.opencb.cellbase.core.api.RepeatsQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
 import org.opencb.cellbase.core.api.query.QueryException;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.utils.SpeciesUtils;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
-import org.opencb.cellbase.lib.variant.annotation.futures.FutureGenomicSequenceContextAnnotator;
-import org.opencb.cellbase.lib.variant.annotation.futures.FuturePharmacogenomicsAnnotator;
-import org.opencb.cellbase.lib.variant.annotation.futures.FutureSnpAnnotator;
-import org.opencb.cellbase.lib.variant.annotation.futures.FutureSpliceScoreAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.futures.*;
 import org.opencb.cellbase.lib.variant.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -58,14 +57,10 @@ import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.core.ParamConstants.API_KEY_PARAM;
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
+import static org.opencb.cellbase.lib.EtlCommons.*;
 
 /**
  * Created by imedina on 06/02/16.
- */
-/**
- * Created by imedina on 11/07/14.
- *
- * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class VariantAnnotationCalculator {
 
@@ -77,7 +72,8 @@ public class VariantAnnotationCalculator {
     public static final String GENE_DISEASE_INCLUDE = "geneDisease";
     public static final String DRUG_INTERACTION_INCLUDE = "drugInteraction";
     public static final String GENE_CONSTRAINTS_INCLUDE = "geneConstraints";
-    public static final String MIRNA_TARGETS_INCLUDE = "mirnaTargets";
+    // DISABLED mirna targets, to be enabled in future releases
+//    public static final String MIRNA_TARGETS_INCLUDE = "mirnaTargets";
     public static final String CANCER_GENE_ASSOCIATION_INCLUDE = "cancerGeneAssociation";
     public static final String CANCER_HOTSPOTS_INCLUDE = "cancerHotspots";
     public static final String VARIATION_INCLUDE = "variation";
@@ -94,6 +90,10 @@ public class VariantAnnotationCalculator {
     public static final String PHARMACOGENOMICS_INCLUDE = "pharmacogenomics";
     public static final String HGVS_INCLUDE = "hgvs";
     public static final String GENOMIC_CONTEXT_INCLUDE = "genomicContext";
+    // DISABLED mirna targets, to be enabled in future releases
+//    public static final String PGS_INCLUDE = "polygenicScore";
+    private static final String GENE_IMPRINTING_INCLUDE = "geneImprinting";
+    private static final String GENE_FUSION_INCLUDE = "geneFusions";
 
     private GenomeManager genomeManager;
     private GeneManager geneManager;
@@ -103,10 +103,16 @@ public class VariantAnnotationCalculator {
     private RepeatsManager repeatsManager;
     private ProteinManager proteinManager;
     private PharmacogenomicsManager pharmacogenomicsManager;
-    private DataRelease dataRelease;
+    private PolygenicScoreManager polygenicScoreManager;
+
+    private Release dataRelease;
     private String apiKey;
     private Set<String> annotatorSet;
     private List<String> includeGeneFields;
+
+    private String species;
+    private String assembly;
+    private CellBaseConfiguration configuration;
 
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
@@ -121,14 +127,45 @@ public class VariantAnnotationCalculator {
 
     private HgvsCalculator hgvsCalculator;
 
+    // Futures
+    private FutureVariationAnnotator futureVariationAnnotator;
+    private Future<List<CellBaseDataResult<Variant>>> variationFuture;
+    private FutureSnpAnnotator futureSnpAnnotator;
+    private Future<List<CellBaseDataResult<Snp>>> snpFuture;
+    private FutureConservationAnnotator futureConservationAnnotator;
+    private Future<List<CellBaseDataResult<Score>>> conservationFuture;
+    private FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator;
+    private Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture;
+    private FutureClinicalAnnotator futureClinicalAnnotator;
+    private Future<List<CellBaseDataResult<Variant>>> clinicalFuture;
+    private FutureRepeatsAnnotator futureRepeatsAnnotator;
+    private Future<List<CellBaseDataResult<Repeat>>> repeatsFuture;
+    private FutureCytobandAnnotator futureCytobandAnnotator;
+    private Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture;
+    private FutureSpliceScoreAnnotator futureSpliceScoreAnnotator;
+    private Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture;
+    private FuturePharmacogenomicsAnnotator futurePharmacogenomicsAnnotator;
+    private Future<List<CellBaseDataResult<PharmaChemical>>> pharmacogenomicsFuture;
+    private FuturePolygenicScoreAnnotator futurePolygenicScoreAnnotator;
+    private Future<List<CellBaseDataResult<PolygenicScoreAnnotation>>> polygenicScoreFuture;
+    private FutureGenomicSequenceContextAnnotator contextAnnotator;
+    private Future<List<GenomicSequenceContext>> contextFuture;
+
     private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = ParamConstants.FeatureType.TF_binding_site.name();
 
     private static final ExecutorService CACHED_THREAD_POOL = Executors.newCachedThreadPool();
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
 
-    public VariantAnnotationCalculator(String species, String assembly, DataRelease dataRelease, String apiKey,
-                                       CellBaseManagerFactory cellbaseManagerFactory) throws CellBaseException {
+    public VariantAnnotationCalculator(String species, String assembly, Release dataRelease, String apiKey,
+                                       CellBaseManagerFactory cellbaseManagerFactory, CellBaseConfiguration configuration)
+            throws CellBaseException {
+        logger.debug("VariantAnnotationCalculator: in 'constructor'");
+
+        this.species = species;
+        this.assembly = assembly;
+        this.configuration = configuration;
+
         this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
         this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
         this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
@@ -137,19 +174,20 @@ public class VariantAnnotationCalculator {
         this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
         this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
         this.pharmacogenomicsManager = cellbaseManagerFactory.getPharmacogenomicsManager(species, assembly);
+        this.polygenicScoreManager = cellbaseManagerFactory.getPolygenicScoreManager(species, assembly);
 
         // Init data release and API key
         this.dataRelease = dataRelease;
-        logger.info("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
+        logger.debug("Variant annotation calculator using data release {}", this.dataRelease.getRelease());
         this.apiKey = apiKey;
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-        hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease.getRelease());
+        this.hgvsCalculator = new HgvsCalculator(genomeManager, this.dataRelease.getRelease());
 
-        logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
+
     }
 
     private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() {
@@ -339,14 +377,14 @@ public class VariantAnnotationCalculator {
             }
         }
 
-        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
-            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
-            for (Gene gene : geneList) {
-                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
-                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
-                }
-            }
-        }
+//        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
+//            variantAnnotation.setGeneMirnaTargets(new ArrayList<>());
+//            for (Gene gene : geneList) {
+//                if (gene.getMirna() != null && gene.getMirna().getMatures() != null) {
+//                    variantAnnotation.setGeneMirnaTargets(getTargets(gene));
+//                }
+//            }
+//        }
 
         if (annotatorSet.contains(CANCER_GENE_ASSOCIATION_INCLUDE)) {
             variantAnnotation.setGeneCancerAssociations(new ArrayList<>());
@@ -451,6 +489,16 @@ public class VariantAnnotationCalculator {
             }
         }
 
+        // Gene imprinting
+        if (annotatorSet.contains(GENE_IMPRINTING_INCLUDE)) {
+            variantAnnotation.setGeneImprinting(VariantAnnotationUtils.getGeneImprinting(geneList));
+        }
+
+        // Gene fusion for non-SNV variants
+        if (annotatorSet.contains(GENE_FUSION_INCLUDE) && variant.getType() != null && variant.getType() != VariantType.SNV) {
+            variantAnnotation.setGeneFusions(VariantAnnotationUtils.getGeneFusionSummaries(geneList));
+        }
+
         return geneList;
     }
 
@@ -472,18 +520,18 @@ public class VariantAnnotationCalculator {
         return geneMirnaTargets;
     }
 
-    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, DataRelease dataRelease)
+    private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList, Release dataRelease)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException, CellBaseException {
         long globalStartTime = System.currentTimeMillis();
 
         // Object to be returned
         List<VariantAnnotation> variantAnnotationList = new ArrayList<>(normalizedVariantList.size());
 
+        List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
+
         // Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
         // Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
-        FutureVariationAnnotator futureVariationAnnotator = null;
-        Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
-        List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
+        futureInitAnnotators();
 
         if (annotatorSet.contains(VARIATION_INCLUDE) || annotatorSet.contains(POPULATION_FREQUENCIES_INCLUDE)) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
@@ -492,73 +540,64 @@ public class VariantAnnotationCalculator {
             variationFuture = CACHED_THREAD_POOL.submit(futureVariationAnnotator);
         }
 
-        FutureSnpAnnotator futureSnpAnnotator = null;
-        Future<List<CellBaseDataResult<Snp>>> snpFuture = null;
-        if (annotatorSet.contains(XREFS_INCLUDE) && dataRelease.getCollections().containsKey(EtlCommons.SNP_COLLECTION_NAME)) {
+        if (annotatorSet.contains(XREFS_INCLUDE) && dataRelease.getCollections().containsKey(SNP_DATA)) {
             futureSnpAnnotator = new FutureSnpAnnotator(normalizedVariantList, dataRelease.getRelease(), variantManager, logger);
             snpFuture = CACHED_THREAD_POOL.submit(futureSnpAnnotator);
         }
 
-        FutureConservationAnnotator futureConservationAnnotator = null;
-        Future<List<CellBaseDataResult<Score>>> conservationFuture = null;
-        if (annotatorSet.contains(CONSERVATION_INCLUDE)) {
+        if (SpeciesUtils.hasData(configuration, species, CONSERVATION_DATA) && annotatorSet.contains(CONSERVATION_INCLUDE)) {
             futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease());
             conservationFuture = CACHED_THREAD_POOL.submit(futureConservationAnnotator);
         }
 
-        FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
-        Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture = null;
-        if (annotatorSet.contains(FUNCTIONAL_SCORE_INCLUDE)) {
+        if (SpeciesUtils.hasData(configuration, species, VARIATION_FUNCTIONAL_SCORE_DATA)
+                && annotatorSet.contains(FUNCTIONAL_SCORE_INCLUDE)) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
-                    dataRelease.getRelease());
+                    dataRelease.getRelease(), variantManager);
             variantFunctionalScoreFuture = CACHED_THREAD_POOL.submit(futureVariantFunctionalScoreAnnotator);
         }
 
-        FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
         // FIXME "clinical" is deprecated, replaced with traitAssociation
-        if (annotatorSet.contains(CLINICAL_INCLUDE) || annotatorSet.contains(TRAIT_ASSOCIATION_INCLUDE)) {
-            QueryOptions queryOptions = new QueryOptions();
-            queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
-            queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
-            queryOptions.add(API_KEY_PARAM, apiKey);
-            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
+        if (SpeciesUtils.hasData(configuration, species, CLINICAL_VARIANT_DATA)
+                && (annotatorSet.contains("clinical") || annotatorSet.contains(TRAIT_ASSOCIATION_INCLUDE))) {
+            QueryOptions queryOptions = getClinicalQueryOptions();
+            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions,
+                    dataRelease.getRelease(), clinicalManager);
             clinicalFuture = CACHED_THREAD_POOL.submit(futureClinicalAnnotator);
         }
 
-        FutureRepeatsAnnotator futureRepeatsAnnotator = null;
-        Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
-        if (annotatorSet.contains(REPEATS_INCLUDE)) {
+        if (SpeciesUtils.hasData(configuration, species, REPEATS_DATA) && annotatorSet.contains(REPEATS_INCLUDE)) {
             futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, dataRelease.getRelease());
             repeatsFuture = CACHED_THREAD_POOL.submit(futureRepeatsAnnotator);
         }
 
-        FutureCytobandAnnotator futureCytobandAnnotator = null;
-        Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains(CYTOBAND_INCLUDE)) {
             futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty(), dataRelease.getRelease());
             cytobandFuture = CACHED_THREAD_POOL.submit(futureCytobandAnnotator);
         }
 
-        FutureSpliceScoreAnnotator futureSpliceScoreAnnotator = null;
-        Future<List<CellBaseDataResult<SpliceScore>>> spliceScoreFuture = null;
-        if (annotatorSet.contains(CONSEQUENCE_TYPE_INCLUDE)) {
-            futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, dataRelease.getRelease(), apiKey,
-                    variantManager, logger);
+        if (SpeciesUtils.hasData(configuration, species, SPLICE_SCORE_DATA) && annotatorSet.contains(CONSEQUENCE_TYPE_INCLUDE)) {
+            futureSpliceScoreAnnotator = new FutureSpliceScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
+                    dataRelease.getRelease(), apiKey, variantManager);
             spliceScoreFuture = CACHED_THREAD_POOL.submit(futureSpliceScoreAnnotator);
         }
 
-        FuturePharmacogenomicsAnnotator futurePharmacogenomicsAnnotator = null;
-        Future<List<CellBaseDataResult<PharmaChemical>>> pharmacogenomicsFuture = null;
-        if (annotatorSet.contains(PHARMACOGENOMICS_INCLUDE) && dataRelease.getCollections().containsKey(EtlCommons.PHARMACOGENOMICS_DATA)) {
+        if (SpeciesUtils.hasData(configuration, species, PHARMACOGENOMICS_DATA)
+                && annotatorSet.contains(PHARMACOGENOMICS_INCLUDE)
+                && dataRelease.getCollections().containsKey(EtlCommons.PHARMACOGENOMICS_DATA)) {
             futurePharmacogenomicsAnnotator = new FuturePharmacogenomicsAnnotator(normalizedVariantList, QueryOptions.empty(),
                     dataRelease.getRelease(), pharmacogenomicsManager, logger);
             pharmacogenomicsFuture = CACHED_THREAD_POOL.submit(futurePharmacogenomicsAnnotator);
         }
 
-        FutureGenomicSequenceContextAnnotator contextAnnotator = null;
-        Future<List<GenomicSequenceContext>> contextFuture = null;
+        // DISABLED, to be re-enabled in future releases
+//        if (SpeciesUtils.hasData(configuration, species, PGS_DATA) && annotatorSet.contains(PGS_INCLUDE)) {
+//            futurePolygenicScoreAnnotator = new FuturePolygenicScoreAnnotator(normalizedVariantList, QueryOptions.empty(),
+//                    dataRelease.getRelease(), polygenicScoreManager, logger);
+//            polygenicScoreFuture = CACHED_THREAD_POOL.submit(futurePolygenicScoreAnnotator);
+//        }
+
         if (annotatorSet.contains(GENOMIC_CONTEXT_INCLUDE)) {
             contextAnnotator = new FutureGenomicSequenceContextAnnotator(normalizedVariantList, dataRelease.getRelease(), genomeManager);
             contextFuture = CACHED_THREAD_POOL.submit(contextAnnotator);
@@ -677,6 +716,45 @@ public class VariantAnnotationCalculator {
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - startTime, normalizedVariantList.size());
 
+        // Now process the futures results
+        futureProcessResults(variantAnnotationList);
+
+        // ACMG, only if consequence type is required
+        if (annotatorSet.contains(CONSEQUENCE_TYPE_INCLUDE)) {
+            setAcmgPredictions(variantAnnotationList);
+        }
+
+        logger.debug("Total batch annotation performance is {} ms for {} variants", System.currentTimeMillis()
+                - globalStartTime, normalizedVariantList.size());
+        return variantAnnotationList;
+    }
+
+    private void futureInitAnnotators() {
+        futureVariationAnnotator = null;
+        variationFuture = null;
+        futureSnpAnnotator = null;
+        snpFuture = null;
+        futureConservationAnnotator = null;
+        conservationFuture = null;
+        futureVariantFunctionalScoreAnnotator = null;
+        variantFunctionalScoreFuture = null;
+        futureClinicalAnnotator = null;
+        clinicalFuture = null;
+        futureRepeatsAnnotator = null;
+        repeatsFuture = null;
+        futureCytobandAnnotator = null;
+        cytobandFuture = null;
+        futureSpliceScoreAnnotator = null;
+        spliceScoreFuture = null;
+        futurePharmacogenomicsAnnotator = null;
+        pharmacogenomicsFuture = null;
+        futurePolygenicScoreAnnotator = null;
+        polygenicScoreFuture = null;
+        contextAnnotator = null;
+        contextFuture = null;
+    }
+
+    private void futureProcessResults(List<VariantAnnotation> variantAnnotationList) throws InterruptedException, ExecutionException {
         // Now, hopefully the other annotations have finished and we can store the results.
         // Method 'processResults' has been implemented in the same class for sanity.
         if (futureVariationAnnotator != null) {
@@ -706,21 +784,23 @@ public class VariantAnnotationCalculator {
         if (futurePharmacogenomicsAnnotator != null) {
             futurePharmacogenomicsAnnotator.processResults(pharmacogenomicsFuture, variantAnnotationList);
         }
+        if (futurePolygenicScoreAnnotator != null) {
+            futurePolygenicScoreAnnotator.processResults(polygenicScoreFuture, variantAnnotationList);
+        }
         if (contextAnnotator != null) {
             contextAnnotator.processResults(contextFuture, variantAnnotationList);
         }
-
-        // ACMG, only if consequence type is required
-        if (annotatorSet.contains(CONSEQUENCE_TYPE_INCLUDE)) {
-            setAcmdPredictions(variantAnnotationList);
-        }
-
-        logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
-                - globalStartTime, normalizedVariantList.size());
-        return variantAnnotationList;
     }
 
-    private static void setAcmdPredictions(List<VariantAnnotation> variantAnnotationList) {
+    private QueryOptions getClinicalQueryOptions() {
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add(ParamConstants.QueryParams.PHASE.key(), phased);
+        queryOptions.add(ParamConstants.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+        queryOptions.add(API_KEY_PARAM, apiKey);
+        return queryOptions;
+    }
+
+    private static void setAcmgPredictions(List<VariantAnnotation> variantAnnotationList) {
         for (VariantAnnotation variantAnnotation : variantAnnotationList) {
             if (variantAnnotation != null && CollectionUtils.isNotEmpty(variantAnnotation.getConsequenceTypes())) {
                 for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
@@ -1232,9 +1312,9 @@ public class VariantAnnotationCalculator {
             // 'expression' removed in CB 5.0
             annotatorSet = new HashSet<>(Arrays.asList(VARIATION_INCLUDE, TRAIT_ASSOCIATION_INCLUDE, CONSERVATION_INCLUDE,
                     FUNCTIONAL_SCORE_INCLUDE, CONSEQUENCE_TYPE_INCLUDE, GENE_DISEASE_INCLUDE, DRUG_INTERACTION_INCLUDE,
-                    GENE_CONSTRAINTS_INCLUDE, MIRNA_TARGETS_INCLUDE, PHARMACOGENOMICS_INCLUDE, CANCER_GENE_ASSOCIATION_INCLUDE,
-                    CANCER_HOTSPOTS_INCLUDE, POPULATION_FREQUENCIES_INCLUDE, REPEATS_INCLUDE, CYTOBAND_INCLUDE, HGVS_INCLUDE,
-                    XREFS_INCLUDE, GENOMIC_CONTEXT_INCLUDE));
+                    GENE_CONSTRAINTS_INCLUDE, /*MIRNA_TARGETS_INCLUDE,*/ PHARMACOGENOMICS_INCLUDE, CANCER_GENE_ASSOCIATION_INCLUDE,
+                    CANCER_HOTSPOTS_INCLUDE, GENE_IMPRINTING_INCLUDE, GENE_FUSION_INCLUDE, POPULATION_FREQUENCIES_INCLUDE,
+                    REPEATS_INCLUDE, CYTOBAND_INCLUDE, HGVS_INCLUDE, XREFS_INCLUDE, GENOMIC_CONTEXT_INCLUDE /*, PGS_INCLUDE */));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1262,14 +1342,20 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains(GENE_CONSTRAINTS_INCLUDE)) {
             includeGeneFields.add("annotation.constraints");
         }
-        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
-            includeGeneFields.add("annotation.targets");
-        }
+//        if (annotatorSet.contains(MIRNA_TARGETS_INCLUDE)) {
+//            includeGeneFields.add("annotation.targets");
+//        }
         if (annotatorSet.contains(CANCER_GENE_ASSOCIATION_INCLUDE)) {
             includeGeneFields.add("annotation.cancerAssociations");
         }
         if (annotatorSet.contains(CANCER_HOTSPOTS_INCLUDE)) {
             includeGeneFields.add("annotation.cancerHotspots");
+        }
+        if (annotatorSet.contains(GENE_IMPRINTING_INCLUDE)) {
+            includeGeneFields.add("annotation.imprinted");
+        }
+        if (annotatorSet.contains(GENE_FUSION_INCLUDE)) {
+            includeGeneFields.add("annotation.fusions");
         }
         return includeGeneFields;
     }
@@ -1483,8 +1569,6 @@ public class VariantAnnotationCalculator {
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
-//        return variantList.stream().map((variant) -> variantToRegion(variant)).collect(Collectors.toList());
-
         // In great majority of cases returned region list size will equal variant list; this will happen except when
         // there's a breakend within the variantList
         List<Region> regionList = new ArrayList<>(variantList.size());
@@ -1647,7 +1731,9 @@ public class VariantAnnotationCalculator {
                         }
                     }
 
-                    if (annotatorSet.contains(POPULATION_FREQUENCIES_INCLUDE) && preferredVariant != null) {
+                    if (annotatorSet.contains(POPULATION_FREQUENCIES_INCLUDE)
+                            && preferredVariant != null
+                            && preferredVariant.getAnnotation() != null) {
                         variantAnnotationList.get(i)
                                 .setPopulationFrequencies(preferredVariant.getAnnotation().getPopulationFrequencies());
                     }
@@ -1694,6 +1780,9 @@ public class VariantAnnotationCalculator {
                 if (tmpCellBaseDataResultList.size() > 1 && tmpCellBaseDataResultList.get(1).getResults() != null) {
                     // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
                     // to the two breakpoints
+                    if (newCellBaseDataResult.getResults() == null) {
+                        newCellBaseDataResult.setResults(new ArrayList<>());
+                    }
                     newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
                     newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
                     newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());
@@ -1724,105 +1813,6 @@ public class VariantAnnotationCalculator {
             }
         }
 
-    }
-
-    class FutureVariantFunctionalScoreAnnotator implements Callable<List<CellBaseDataResult<Score>>> {
-        private List<Variant> variantList;
-        private QueryOptions queryOptions;
-        private int dataRelease;
-
-        FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions, int dataRelease) {
-            this.variantList = variantList;
-            this.queryOptions = queryOptions;
-            this.dataRelease = dataRelease;
-        }
-
-        @Override
-        public List<CellBaseDataResult<Score>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
-            logger.debug("Query variant functional score");
-            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResultList =
-                    variantManager.getFunctionalScoreVariant(variantList, queryOptions, dataRelease);
-            logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
-                    System.currentTimeMillis() - startTime, variantList.size());
-            return variantFunctionalScoreCellBaseDataResultList;
-        }
-
-        public void processResults(Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture,
-                                   List<VariantAnnotation> variantAnnotationList)
-                throws InterruptedException, ExecutionException {
-            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResults;
-            try {
-                variantFunctionalScoreCellBaseDataResults = variantFunctionalScoreFuture.get(30, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                variantFunctionalScoreFuture.cancel(true);
-                throw new ExecutionException("Unable to finish variant functional score query on time", e);
-            }
-
-            if (variantFunctionalScoreCellBaseDataResults != null) {
-                for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    if (variantFunctionalScoreCellBaseDataResults.get(i).getNumResults() > 0) {
-                        variantAnnotationList.get(i)
-                                .setFunctionalScore((List<Score>) variantFunctionalScoreCellBaseDataResults.get(i).getResults());
-                    }
-                }
-            }
-        }
-    }
-
-    class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
-        private List<Variant> variantList;
-        private List<Gene> batchGeneList;
-        private QueryOptions queryOptions;
-
-        FutureClinicalAnnotator(List<Variant> variantList, List<Gene> batchGeneList, QueryOptions queryOptions) {
-            this.variantList = variantList;
-            this.batchGeneList = batchGeneList;
-            this.queryOptions = queryOptions;
-        }
-
-        @Override
-        public List<CellBaseDataResult<Variant>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
-            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList, batchGeneList,
-                    queryOptions, dataRelease.getRelease());
-            logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
-            return clinicalCellBaseDataResultList;
-        }
-
-        public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,
-                                   List<VariantAnnotation> variantAnnotationList)
-                throws InterruptedException, ExecutionException {
-            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResults;
-            try {
-                clinicalCellBaseDataResults = clinicalFuture.get(30, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                clinicalFuture.cancel(true);
-                throw new ExecutionException("Unable to finish clinical variant query on time", e);
-            }
-
-            if (clinicalCellBaseDataResults != null) {
-                for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
-                    if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
-                        variantAnnotationList.get(i).setTraitAssociation(getAllTraitAssociations(clinicalCellBaseDataResult));
-                        // Add GWAS info
-                        List<GwasAssociation> gwas = clinicalCellBaseDataResult.getResults().get(0).getAnnotation().getGwas();
-                        if (CollectionUtils.isNotEmpty(gwas)) {
-                            variantAnnotationList.get(i).setGwas(gwas);
-                        }
-                    }
-                }
-            }
-        }
-
-        private List<EvidenceEntry> getAllTraitAssociations(CellBaseDataResult<Variant> clinicalQueryResult) {
-            List<EvidenceEntry> traitAssociations = new ArrayList<>();
-            for (Variant variant: clinicalQueryResult.getResults()) {
-                traitAssociations.addAll(variant.getAnnotation().getTraitAssociation());
-            }
-            return traitAssociations;
-        }
     }
 
     class FutureRepeatsAnnotator implements Callable<List<CellBaseDataResult<Repeat>>> {

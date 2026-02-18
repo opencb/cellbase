@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.GenomeSequenceChunk;
+import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -24,11 +26,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
+public class GenomeSequenceFastaBuilder extends AbstractBuilder {
 
     private Path genomeReferenceFastaFile;
 
     private static final int CHUNK_SIZE = 2000;
+    public static final String GENOME_JSON_BASENAME = "genome";
+    public static final String GENOME_JSON_FILENAME = GENOME_JSON_BASENAME + ".json.gz";
 
     public GenomeSequenceFastaBuilder(Path genomeReferenceFastaFile, CellBaseSerializer serializer) {
         super(serializer);
@@ -36,9 +40,10 @@ public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
     }
 
     @Override
-    public void parse() {
+    public void parse() throws CellBaseException {
+        logger.info(PARSING_LOG_MESSAGE, genomeReferenceFastaFile);
 
-        try {
+        try (BufferedReader br = FileUtils.newBufferedReader(genomeReferenceFastaFile)) {
             String sequenceName = null;
             String sequenceType = "";
             String sequenceAssembly = null;
@@ -46,8 +51,7 @@ public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
             StringBuilder sequenceStringBuilder = new StringBuilder();
 
             // Preparing input and output files
-            BufferedReader br;
-            br = FileUtils.newBufferedReader(genomeReferenceFastaFile);
+
 
             while ((line = br.readLine()) != null) {
 
@@ -55,11 +59,9 @@ public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
                     sequenceStringBuilder.append(line);
                 } else {
                     // new chromosome, save data
-                    if (sequenceStringBuilder.length() > 0) {
-                        if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR") && !sequenceName.contains("contig")) {
-                            System.out.println(sequenceName);
-                            serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
-                        }
+                    if (sequenceStringBuilder.length() > 0 && StringUtils.isNotEmpty(sequenceName) && !sequenceName.contains("PATCH")
+                            && !sequenceName.contains("HSCHR") && !sequenceName.contains("contig")) {
+                        serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
                     }
 
                     // initialize data structures
@@ -75,18 +77,17 @@ public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
                 }
             }
             // Last chromosome must be processed
-            if (!sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR") && !sequenceName.contains("contig")) {
+            if (StringUtils.isNotEmpty(sequenceName) && !sequenceName.contains("PATCH") && !sequenceName.contains("HSCHR")
+                    && !sequenceName.contains("contig")) {
                 serializeGenomeSequence(sequenceName, sequenceType, sequenceAssembly, sequenceStringBuilder.toString());
             }
-
-            br.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.info(PARSING_DONE_LOG_MESSAGE);
     }
 
-    private void serializeGenomeSequence(String chromosome, String sequenceType, String sequenceAssembly, String sequence)
-            throws IOException {
+    private void serializeGenomeSequence(String chromosome, String sequenceType, String sequenceAssembly, String sequence) {
         int chunk = 0;
         int start = 1;
         int end = CHUNK_SIZE - 1;
@@ -100,11 +101,10 @@ public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
             genomeSequenceChunk = new GenomeSequenceChunk(chromosome, chromosome + "_" + 0 + "_" + chunkIdSuffix, start,
                     sequence.length() - 1, sequenceType, sequenceAssembly, chunkSequence);
             serializer.serialize(genomeSequenceChunk);
-            start += CHUNK_SIZE - 1;
         } else {
             while (start < sequence.length()) {
                 if (chunk % 10000 == 0) {
-                    System.out.println("Chr:" + chromosome + " chunkId:" + chunk);
+                    logger.info("Chr: {}, chunkId: {}", chromosome, chunk);
                 }
                 // First chunk of the chromosome
                 if (start == 1) {

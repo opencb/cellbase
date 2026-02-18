@@ -95,6 +95,12 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     paramType = "query")
     })
     public Response getAll() {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             logger.info("/search GenomeQuery: {}", query.toString());
@@ -139,6 +145,12 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     })
     public Response getChromosomes(@PathParam("chromosomes") @ApiParam(name = "chromosomes", value = CHROMOSOMES,
             required = true) String chromosomes) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomes, getDataRelease());

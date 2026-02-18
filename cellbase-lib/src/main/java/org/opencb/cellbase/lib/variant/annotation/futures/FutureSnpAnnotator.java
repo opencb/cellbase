@@ -60,7 +60,7 @@ public class FutureSnpAnnotator implements Callable<List<CellBaseDataResult<Snp>
         includes.add("id");
         includes.add("source");
         String logMsg = StringUtils.join(includes, ",");
-        logger.info("SNP annotation/search includes: {}", logMsg);
+        logger.debug("SNP annotation/search includes: {}", logMsg);
         for (Variant variant : variantList) {
             SnpQuery query = new SnpQuery();
             query.setChromosome(variant.getChromosome());
@@ -70,7 +70,7 @@ public class FutureSnpAnnotator implements Callable<List<CellBaseDataResult<Snp>
             query.setIncludes(includes);
             cellBaseDataResultList.add(variantManager.searchSnp(query));
         }
-        logger.info("SNP queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+        logger.debug("SNP queries performance in {} ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
         return cellBaseDataResultList;
     }
 

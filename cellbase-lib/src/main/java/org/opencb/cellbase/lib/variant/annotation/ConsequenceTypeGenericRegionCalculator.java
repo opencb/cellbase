@@ -20,14 +20,18 @@ import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
+import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellBaseException;
 import org.opencb.cellbase.lib.variant.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -74,42 +78,50 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                         ? new ArrayList<>(transcript.getFlags()) : null);
                 SoNames.clear();
 
-                if (transcript.getStrand().equals("+")) {
-                    // whole transcript affected
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
-                        SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
-                        solvePositiveTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                try {
+                    if (transcript.getStrand().equals("+")) {
+                        // whole transcript affected
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
+                            SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                             consequenceTypeList.add(consequenceType);
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            solvePositiveTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
-                    }
-                } else {
-                    if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
-                        SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
+                    } else {
+                        if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
+                            SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
 //                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                        consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                        consequenceTypeList.add(consequenceType);
-                    } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
+                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                            consequenceTypeList.add(consequenceType);
+                        } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
 //                        if (isBigDeletion) {  // Big deletion
 //                            SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
 //                        }
-                        solveNegativeTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                            solveNegativeTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                            consequenceTypeList.add(consequenceType);
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
                     }
+                } catch (Exception e) {
+                    logger.error("Error computing consequence type: {}", Arrays.toString(e.getStackTrace()));
+                    SequenceOntologyTerm soTerm = new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(
+                            VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT), VariantAnnotationUtils.FUNCTION_UNCERTAIN_VARIANT);
+                    consequenceType.setSequenceOntologyTerms(Collections.singletonList(soTerm));
+                    consequenceTypeList.add(consequenceType);
                 }
             }
         }
@@ -179,7 +191,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 //            variantEndExonNumber = exon.getExonNumber();
             exonOverlap.add(new ExonOverlap(exon.getExonNumber() + exonStringSuffix,
                     (exon.getEnd() - variantStart + 1) * 100f / exonSize));
-        // Variant includes the whole exon. Variant end is located before the exon, variant start is located after the exon
+            // Variant includes the whole exon. Variant end is located before the exon, variant start is located after the exon
         } else {
             exonOverlap.add(new ExonOverlap(exon.getExonNumber() + exonStringSuffix, 100f));
         }
@@ -340,7 +352,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+                                                        int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
             throws CellBaseException {
         if (variantEnd > transcript.getGenomicCodingEnd()) {
             if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
@@ -384,7 +396,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveCodingExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
+                                                              int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         Boolean codingAnnotationAdded = false;
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
@@ -462,7 +474,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveJunction(Integer spliceSite1, Integer spliceSite2, String leftSpliceSiteTag,
-                               String rightSpliceSiteTag, boolean[] junctionSolution) {
+                                 String rightSpliceSiteTag, boolean[] junctionSolution) {
 
         junctionSolution[0] = false;  // Is splicing variant in non-coding region
         junctionSolution[1] = false;  // Variant is intronic and both ends fall within the intron
@@ -539,7 +551,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             exonOverlap.add(new ExonOverlap(exon.getExonNumber() + exonStringSuffix,
                     (variantEnd - exon.getStart() + 1) * 100f / exonSize));
 //            variantEndExonNumber = exon.getExonNumber();
-        // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
+            // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
         } else {
             exonOverlap.add(new ExonOverlap(String.valueOf(exon.getExonNumber()), 100f));
         }
@@ -604,7 +616,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
-                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
+                                                        int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase)
             throws CellBaseException {
         if (variantStart < transcript.getGenomicCodingStart()) {
             // Check transcript has 3 UTR
@@ -649,7 +661,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
     }
 
     protected void solveCodingExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
+                                                              int cdnaVariantStart, int cdnaVariantEnd) throws CellBaseException {
         // This will indicate wether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
 

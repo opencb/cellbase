@@ -97,6 +97,12 @@ public class TfWSServer extends RegulatoryWSServer {
                     paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = TFBS_IDS, required = true) String tf) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             List<RegulationQuery> queries = new ArrayList<>();
             String[] identifiers = tf.split(",");
@@ -151,6 +157,12 @@ public class TfWSServer extends RegulatoryWSServer {
                     paramType = "query")
     })
     public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = TFBS_IDS, required = true) String tf) {
+        // Check API key (expiration date, quota,...)
+        Response apiKeyError = checkApiKeyOrReturnError();
+        if (apiKeyError != null) {
+            return apiKeyError;
+        }
+
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setDataRelease(getDataRelease());

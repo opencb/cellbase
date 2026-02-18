@@ -134,16 +134,13 @@ our $ENSEMBL_GENOMES_PORT = "4157";
 our $ENSEMBL_GENOMES_USER = "anonymous";
 
 ## Vertebrates
-our $HOMO_SAPIENS_CORE = "homo_sapiens_core_104_38";
-our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_104_38";
-our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_104_38";
-our $HOMO_SAPIENS_COMPARA = "homo_sapiens_compara_104_38";
-#our $HOMO_SAPIENS_CORE = "homo_sapiens_core_78_38";
-#our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_78_38";
-#our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_78_38";
-our $MUS_MUSCULUS_CORE = "mus_musculus_core_78_38";
-our $MUS_MUSCULUS_VARIATION = "mus_musculus_variation_78_38";
-our $MUS_MUSCULUS_FUNCTIONAL = "mus_musculus_funcgen_78_38";
+our $HOMO_SAPIENS_CORE = "homo_sapiens_core_114_38";
+our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_114_38";
+our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_114_38";
+our $HOMO_SAPIENS_COMPARA = "homo_sapiens_compara_114_38";
+our $MUS_MUSCULUS_CORE = "mus_musculus_core_114_39";
+our $MUS_MUSCULUS_VARIATION = "mus_musculus_variation_114_39";
+our $MUS_MUSCULUS_FUNCTIONAL = "mus_musculus_funcgen_114_39";
 our $RATTUS_NORVEGICUS_CORE = "rattus_norvegicus_core_78_5";
 our $RATTUS_NORVEGICUS_VARIATION = "rattus_norvegicus_variation_78_5";
 our $RATTUS_NORVEGICUS_FUNCTIONAL = "rattus_norvegicus_funcgen_78_5";

@@ -68,8 +68,10 @@ public class ApiKeyCommandExecutor extends CommandExecutor {
                 if (apiKeyCommandOptions.expiration != null) {
                     payload.setExpiration(parseDate(apiKeyCommandOptions.expiration));
                 }
+                payload.setAdmin(apiKeyCommandOptions.admin);
                 payload.setSources(parseSources(apiKeyCommandOptions.dataSources));
-                payload.setQuota(new ApiKeyQuota(apiKeyCommandOptions.maxNumQueries));
+                payload.setQuota(new ApiKeyQuota(apiKeyCommandOptions.maxNumQueries, apiKeyCommandOptions.maxNumAnnotatedVariants,
+                        apiKeyCommandOptions.maxNumOutputBytes));
 
                 // Create API key
                 String apiKey = apiKeyManager.encode(payload);

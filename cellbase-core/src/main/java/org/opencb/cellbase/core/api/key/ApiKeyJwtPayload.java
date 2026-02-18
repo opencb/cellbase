@@ -32,6 +32,7 @@ public class ApiKeyJwtPayload extends DefaultClaims {
     private static final String VERSION = "version";
     private static final String SOURCES = "sources";
     private static final String QUOTA = "quota";
+    private static final String ADMIN = "admin";
 
     public static final String CURRENT_VERSION = "1.0";
     public static final DateFormat DATE_FORMATTER = new SimpleDateFormat("dd/MM/yyyy");
@@ -72,11 +73,21 @@ public class ApiKeyJwtPayload extends DefaultClaims {
         ApiKeyQuota output = new ApiKeyQuota();
         if (input != null) {
             output.setMaxNumQueries(((Integer) input.get("maxNumQueries")).longValue());
+            output.setMaxNumAnnotatedVariants(((Integer) input.get("maxNumAnnotatedVariants")).longValue());
+            output.setMaxOutputBytes(((Integer) input.get("maxOutputBytes")).longValue());
         }
         return output;
     }
 
     public void setQuota(ApiKeyQuota quota) {
         put(QUOTA, quota);
+    }
+
+    public Boolean getAdmin() {
+        return get(ADMIN, Boolean.class);
+    }
+
+    public void setAdmin(Boolean admin) {
+        put(ADMIN, admin);
     }
 }

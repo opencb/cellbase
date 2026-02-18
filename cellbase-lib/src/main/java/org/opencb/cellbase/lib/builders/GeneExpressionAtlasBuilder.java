@@ -31,7 +31,7 @@ import java.util.*;
 /**
  * Created by antonior on 10/16/14.
  */
-public class GeneExpressionAtlasBuilder extends CellBaseBuilder {
+public class GeneExpressionAtlasBuilder extends AbstractBuilder {
 
     private Path geneAtlasDirectoryPath;
 

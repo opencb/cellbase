@@ -33,7 +33,7 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.db.MongoDBManager;
@@ -84,16 +84,18 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private Path indexScriptFolder;
     private int[] chunkSizes;
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database)
-            throws CellBaseException {
-        this(queue, data, dataRelease, database, null, null, null);
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, DataReleaseManager dataReleaseManager,
+                                 String database) throws CellBaseException {
+        this(queue, data, dataRelease, dataReleaseManager, database, null, null, null);
     }
 
-    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease, String database,
-                                 String field, String[] innerFields, CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
+    public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, Integer dataRelease,
+                                 DataReleaseManager dataReleaseManager, String database, String field, String[] innerFields,
+                                 CellBaseConfiguration cellBaseConfiguration) throws CellBaseException {
         super(queue, data, dataRelease, database, field, innerFields, cellBaseConfiguration);
+        this.dataReleaseManager = dataReleaseManager;
         if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
-            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
+            this.indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
 
@@ -117,49 +119,35 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         // Some collections need to add an extra _chunkIds field to speed up some queries
         getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
-
-        try {
-            dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
-//            dbAdaptorFactory = new MongoDBAdaptorFactory(releaseManager.get(dataRelease), mongoDataStore);
-        } catch (CellBaseException e) {
-            throw new LoaderException(e);
-        }
     }
 
     private String getCollectionName() throws LoaderException {
-        String collection = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
+        String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
 
         // Sanity check
         if (dataReleaseManager == null) {
-            try {
-                dataReleaseManager = new DataReleaseManager(database, cellBaseConfiguration);
-            } catch (CellBaseException e) {
-                throw new LoaderException(e);
-            }
+            throw new LoaderException("DataReleaseManager is not initialized");
         }
-        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
+        CellBaseDataResult<Release> result = dataReleaseManager.getReleases();
         if (CollectionUtils.isEmpty(result.getResults())) {
             throw new LoaderException("No data releases are available for database " + database);
         }
-        List<Integer> releases = result.getResults().stream().map(dr -> dr.getRelease()).collect(Collectors.toList());
+        List<Integer> releases = result.getResults().stream().map(Release::getRelease).collect(Collectors.toList());
         if (!releases.contains(dataRelease)) {
             throw new LoaderException("Invalid data release " + dataRelease + " for database " + database + ". Available releases"
                     + " are: " + StringUtils.join(releases, ","));
         }
-        for (DataRelease dr : result.getResults()) {
+        for (Release dr : result.getResults()) {
             if (dr.getRelease() == dataRelease) {
-                if (dr.getCollections().containsKey(data)) {
-                    String collectionName = CellBaseDBAdaptor.buildCollectionName(data, dataRelease);
-                    if (dr.getCollections().get(data).equals(collectionName)) {
-                        throw new LoaderException("Impossible load data " + data + " with release " + dataRelease + " since it"
-                                + " has already been done.");
-                    }
+                if (dr.getCollections().containsKey(data) && dr.getCollections().get(data).equals(collectionName)) {
+                    throw new LoaderException("Loading new data " + data + " with release " + dataRelease
+                            + " (already populated previously)");
                 }
+                break;
             }
-            break;
         }
 
-        return collection;
+        return collectionName;
     }
 
     private void getChunkSizes() {
@@ -171,6 +159,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "gene":
                 case "refseq":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.GENE_CHUNK_SIZE};
+                    break;
+                case "conservation":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
                     break;
                 case "variation":  // TODO: why are we using different chunk sizes??
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE,
@@ -220,7 +211,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                    }
 //
 //                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(dataRelease);
-////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+    ////                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
 //                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
 //                    numLoadedObjects += numUpdates;
 //                }
@@ -621,8 +612,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Override
-    public void close() throws LoaderException {
-        mongoDBManager.close();
+    public void close() {
+        if (mongoDBManager != null) {
+            mongoDBManager.close();
+        }
     }
 
     private Path getIndexFilePath(String data) throws LoaderException {

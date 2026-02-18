@@ -44,7 +44,7 @@ import org.opencb.cellbase.app.cli.main.annotation.indexers.VariantIndexer;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
@@ -205,9 +205,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 if (local) {
                     CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-                    DataRelease dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
+                    Release dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
                     VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
-                            dataRelease, variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory);
+                            dataRelease, variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory, configuration);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -483,9 +483,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // equals the number of returned annotations
             CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
             DataReleaseManager dataReleaseManager = cellBaseManagerFactory.getDataReleaseManager(species, assembly);
-            DataRelease dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
+            Release dataRelease = dataReleaseManager.get(variantAnnotationCommandOptions.dataRelease);
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly, dataRelease,
-                    variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory), serverQueryOptions);
+                    variantAnnotationCommandOptions.apiKey, cellBaseManagerFactory, configuration), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()

@@ -27,7 +27,7 @@ jobs:
     if: {{ inputs.build }}
     with:
       needs_hadoop_preparation: false
-      maven_opts: -Dcheckstyle.skip
+      maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
       upload_artifact: ${{ inputs.upload_artifact }}
       dependency_repos: "java-common-libs,biodata"
     secrets: inherit

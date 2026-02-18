@@ -8,7 +8,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.query.QueryException;
 import org.opencb.cellbase.core.exception.CellBaseException;
-import org.opencb.cellbase.core.models.DataRelease;
+import org.opencb.cellbase.core.models.Release;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.loader.LoaderException;
@@ -38,18 +38,18 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
     @Test
     @Disabled
     public void testCreate() throws JsonProcessingException {
-        CellBaseDataResult<DataRelease> result = dataReleaseManager.getReleases();
-        DataRelease dr = dataReleaseManager.createRelease();
+        CellBaseDataResult<Release> result = dataReleaseManager.getReleases();
+        Release dr = dataReleaseManager.createRelease();
         assertEquals(result.getNumResults() + 1, dr.getRelease());
     }
 
     @Test
     @Disabled
     public void testAddActiveByDefaultIn() throws CellBaseException, JsonProcessingException {
-        DataRelease dr = dataReleaseManager.createRelease();
+        Release dr = dataReleaseManager.createRelease();
         dataReleaseManager.update(dr.getRelease(), Arrays.asList("v5.1", "v5.2"));
 
-        DataRelease auxDr = dataReleaseManager.get(dr.getRelease());
+        Release auxDr = dataReleaseManager.get(dr.getRelease());
         assertEquals(dr.getRelease(), auxDr.getRelease());
         assertEquals(2, auxDr.getActiveByDefaultIn().size());
     }
@@ -63,7 +63,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         int rA = dataReleaseManager.createRelease().getRelease();
         dataReleaseManager.update(rA, Arrays.asList(version3, version4));
 
-        DataRelease auxDr1 = dataReleaseManager.get(rA);
+        Release auxDr1 = dataReleaseManager.get(rA);
         assertEquals(2, auxDr1.getActiveByDefaultIn().size());
         assertTrue(auxDr1.getActiveByDefaultIn().contains(version3));
         assertTrue(auxDr1.getActiveByDefaultIn().contains(version4));
@@ -71,11 +71,11 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         int rB = dataReleaseManager.createRelease().getRelease();
         dataReleaseManager.update(rB, Arrays.asList(version4));
 
-        DataRelease auxDr2 = dataReleaseManager.get(rA);
+        Release auxDr2 = dataReleaseManager.get(rA);
         assertEquals(1, auxDr2.getActiveByDefaultIn().size(), 1);
         assertEquals(version3, auxDr2.getActiveByDefaultIn().get(0));
 
-        DataRelease auxDr3 = dataReleaseManager.get(rB);
+        Release auxDr3 = dataReleaseManager.get(rB);
         assertEquals(1, auxDr3.getActiveByDefaultIn().size());
         assertEquals(version4, auxDr3.getActiveByDefaultIn().get(0));
     }
@@ -106,13 +106,13 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         int rA = dataReleaseManager.createRelease().getRelease();
         dataReleaseManager.update(rA, Arrays.asList(version6));
 
-        DataRelease auxDr1 = dataReleaseManager.get(rA);
+        Release auxDr1 = dataReleaseManager.get(rA);
         assertEquals(auxDr1.getActiveByDefaultIn().size(), 1);
         assertTrue(auxDr1.getActiveByDefaultIn().contains(version6));
 
         dataReleaseManager.update(rA, Arrays.asList(version7));
 
-        DataRelease auxDr2 = dataReleaseManager.get(rA);
+        Release auxDr2 = dataReleaseManager.get(rA);
         assertEquals(2, auxDr2.getActiveByDefaultIn().size());
         assertTrue(auxDr2.getActiveByDefaultIn().contains(version6));
         assertTrue(auxDr2.getActiveByDefaultIn().contains(version7));
@@ -127,7 +127,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         int rA = dataReleaseManager.createRelease().getRelease();
         dataReleaseManager.update(rA, Arrays.asList(version8, version9));
 
-        DataRelease auxDr1 = dataReleaseManager.get(rA);
+        Release auxDr1 = dataReleaseManager.get(rA);
         assertEquals(2, auxDr1.getActiveByDefaultIn().size());
         assertTrue(auxDr1.getActiveByDefaultIn().contains(version8));
         assertTrue(auxDr1.getActiveByDefaultIn().contains(version9));
@@ -138,7 +138,7 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
         auxDr1 = dataReleaseManager.get(rA);
         assertEquals(0, auxDr1.getActiveByDefaultIn().size());
 
-        DataRelease auxDr2 = dataReleaseManager.get(rB);
+        Release auxDr2 = dataReleaseManager.get(rB);
         assertEquals(2, auxDr2.getActiveByDefaultIn().size());
         assertTrue(auxDr2.getActiveByDefaultIn().contains(version8));
         assertTrue(auxDr2.getActiveByDefaultIn().contains(version9));
@@ -150,9 +150,9 @@ class DataReleaseManagerTest extends GenericMongoDBAdaptorTest {
             IllegalAccessException {
         dataReleaseManager.update(1, Arrays.asList("v5.5"));
 
-        DataRelease dataRelease = dataReleaseManager.get(1);
+        Release dataRelease = dataReleaseManager.get(1);
         VariantAnnotationCalculator annotator = new VariantAnnotationCalculator(SPECIES, ASSEMBLY, dataRelease, apiKey,
-                cellBaseManagerFactory);
+                cellBaseManagerFactory, cellBaseConfiguration);
 
         Variant variant = new Variant("10", 113588287, "G", "A");
         CellBaseDataResult<VariantAnnotation> cellBaseDataResult = annotator.getAnnotationByVariant(variant, QueryOptions.empty());
