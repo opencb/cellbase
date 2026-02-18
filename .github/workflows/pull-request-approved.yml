@@ -11,3 +11,4 @@ jobs:
     secrets: inherit
     with:
       upload_artifact: false
+      build: false
