@@ -24,7 +24,7 @@ jobs:
 
   build:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-    if: {{ inputs.build }}
+    if: ${{ inputs.build }}
     with:
       needs_hadoop_preparation: false
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
