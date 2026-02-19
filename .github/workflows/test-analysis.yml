@@ -7,11 +7,6 @@ on:
         type: boolean
         required: false
         default: false
-      build:
-        type: boolean
-        description: "Build the project and upload artifact for testing"
-        required: false
-        default: true
     outputs:
       cache_key:
         description: "Cache key used for Maven repository"
@@ -24,7 +19,6 @@ jobs:
 
   build:
     uses: opencb/java-common-libs/.github/workflows/build-java-app-workflow.yml@develop
-    if: ${{ inputs.build }}
     with:
       needs_hadoop_preparation: false
       maven_opts: -Dcheckstyle.skip -DCELLBASE.WAR.NAME=cellbase
@@ -35,6 +29,7 @@ jobs:
   test:
     name: Test and push Sonar analysis
     runs-on: ${{ vars.UBUNTU_VERSION }}
+    needs: build
     steps:
       - uses: actions/checkout@v4
         with:
