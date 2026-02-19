@@ -59,11 +59,11 @@ public class IndexCommandExecutor extends CommandExecutor {
 
             Path indexFile = Paths.get(this.appHome).resolve("conf").resolve("mongodb-indexes.json");
             logger.info("Using index configuration file: {}", indexFile.toAbsolutePath());
-            IndexManager indexManager = new IndexManager(indexCommandOptions.database, indexFile, configuration);
+            IndexManager indexManager = new IndexManager(indexCommandOptions.database, indexFile, dataReleaseManager, configuration);
             if (indexCommandOptions.validate) {
                 indexManager.validateMongoDBIndexes(indexCommandOptions.data);
             } else {
-                indexManager.createMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.dataRelease,
+                indexManager.createMongoDBIndexes(indexCommandOptions.data, Integer.parseInt(indexCommandOptions.dataRelease),
                         indexCommandOptions.dropIndexesFirst);
             }
 

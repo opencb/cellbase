@@ -19,9 +19,15 @@ package org.opencb.cellbase.lib.indexer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellBaseException;
+import org.opencb.cellbase.core.models.Release;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.db.MongoDBManager;
+import org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor;
+import org.opencb.cellbase.lib.managers.DataReleaseManager;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -35,10 +41,12 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor.DATA_RELEASE_SEPARATOR;
+import static org.opencb.cellbase.lib.impl.core.CellBaseDBAdaptor.buildCollectionName;
 
 
 public class IndexManager {
 
+    private DataReleaseManager dataReleaseManager;
     private CellBaseConfiguration configuration;
     private Logger logger;
     private String databaseName;
@@ -48,31 +56,10 @@ public class IndexManager {
 
     private Map<String, List<Map<String, ObjectMap>>> indexes;
 
-    private static final Map<String, List<String>> DATA_COLLECTIONS = new HashMap<>();
-
-    static {
-        DATA_COLLECTIONS.put("genome", Arrays.asList("genome_info", "genome_sequence"));
-        DATA_COLLECTIONS.put("conservation", Collections.singletonList("conservation"));
-        DATA_COLLECTIONS.put("repeats", Collections.singletonList("repeats"));
-        DATA_COLLECTIONS.put("gene", Arrays.asList("gene", "refseq"));
-        DATA_COLLECTIONS.put("protein", Collections.singletonList("protein"));
-        DATA_COLLECTIONS.put("regulation", Arrays.asList("regulatory_region", "regulatory_pfm"));
-        DATA_COLLECTIONS.put("variation", Collections.singletonList("variation"));
-        DATA_COLLECTIONS.put("variation_functional_score", Collections.singletonList("missense_variation_functional_score"));
-        DATA_COLLECTIONS.put("protein_functional_prediction", Collections.singletonList("protein_functional_prediction"));
-        DATA_COLLECTIONS.put("revel", Collections.singletonList("revel"));
-        DATA_COLLECTIONS.put("alphamissense", Collections.singletonList("alphamissense"));
-        DATA_COLLECTIONS.put("clinical_variants", Collections.singletonList("clinical_variants"));
-        DATA_COLLECTIONS.put("splice_score", Collections.singletonList("splice_score"));
-        DATA_COLLECTIONS.put("ontology", Collections.singletonList("ontology"));
-        DATA_COLLECTIONS.put("pubmed", Collections.singletonList("pubmed"));
-        DATA_COLLECTIONS.put("pharmacogenomics", Collections.singletonList("pharmacogenomics"));
-        DATA_COLLECTIONS.put("polygenic_score", Arrays.asList("variant_polygenic_score", "common_polygenic_score"));
-    }
-
-    public IndexManager(String databaseName, Path indexFile, CellBaseConfiguration configuration) {
+    public IndexManager(String databaseName, Path indexFile, DataReleaseManager dataReleaseManager, CellBaseConfiguration configuration) {
         this.databaseName = databaseName;
         this.indexFile = indexFile;
+        this.dataReleaseManager = dataReleaseManager;
         this.configuration = configuration;
 
         init();
@@ -81,8 +68,6 @@ public class IndexManager {
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
         mongoDBManager =  new MongoDBManager(configuration);
-
-//        Path indexFile = Paths.get("./cellbase-lib/src/main/resources/mongodb-indexes.json");
 
         MongoDataStore mongoDBDatastore = mongoDBManager.createMongoDBDatastore(databaseName);
         mongoDBIndexUtils = new MongoDBIndexUtils(mongoDBDatastore, indexFile);
@@ -99,24 +84,46 @@ public class IndexManager {
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
      *                         already exists.
      * @throws IOException if configuration file can't be read
+     * @throws CellBaseException if DataRelease manager raises an exception
      */
-    @Deprecated
-    public void createMongoDBIndexes(String data, String dataRelease, boolean dropIndexesFirst) throws IOException {
-        //        InputStream indexResourceStream = getClass().getResourceAsStream("mongodb-indexes.json");
+    public void createMongoDBIndexes(String data, int dataRelease, boolean dropIndexesFirst) throws IOException, CellBaseException {
+        Release release = dataReleaseManager.get(dataRelease);
+
+        List<String> collections = new ArrayList<>();
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            mongoDBIndexUtils.createAllIndexes(dropIndexesFirst);
-//            mongoDBIndexUtils.createAllIndexes(mongoDataStore, indexResourceStream, dropIndexesFirst);
-            logger.info("Loaded all indexes");
+            logger.info("Indexing all data ({}) for data release {}", StringUtils.join(release.getCollections().keySet(), ", "),
+                    dataRelease);
+            for (Map.Entry<String, String> entry : release.getCollections().entrySet()) {
+                // Sanity check
+                if (!entry.getValue().endsWith(DATA_RELEASE_SEPARATOR + dataRelease)) {
+                    throw new CellBaseException("Something wrong when indexing: Collection " + entry.getValue() + " found when indexing"
+                            + " data release " + dataRelease);
+                }
+                collections.add(entry.getValue());
+            }
         } else {
             List<String> dataList = Arrays.asList(data.split(","));
             for (String dataName : dataList) {
-                List<String> collections = new ArrayList<>();
-                for (String collection : DATA_COLLECTIONS.get(dataName)) {
-                    collections.add(collection + DATA_RELEASE_SEPARATOR + dataRelease);
+                if (release.getCollections().containsKey(dataName)) {
+                    collections.add(release.getCollections().get(dataName));
+                } else {
+                    throw new CellBaseException("Error indexing: data '" + dataName + "' missing in data release " + dataRelease
+                            + " (" + StringUtils.join(release.getCollections().keySet(), ", ") + ")");
                 }
-                createMongoDBIndexes(collections, dropIndexesFirst);
             }
         }
+
+        // Remove temporary polygenic score collections
+        collections.remove(CellBaseDBAdaptor.buildCollectionName(EtlCommons.PGS_COMMON_COLLECTION, dataRelease));
+        collections.remove(CellBaseDBAdaptor.buildCollectionName(EtlCommons.PGS_VARIANT_COLLECTION, dataRelease));
+
+        // Check collection names
+        if (CollectionUtils.isEmpty(collections)) {
+            throw new CellBaseException("No collections to index");
+        }
+
+        // Create MongoDB indexes
+        createMongoDBIndexes(collections, dropIndexesFirst);
     }
 
     public void createMongoDBIndexes(List<String> collections, boolean dropIndexesFirst) throws IOException {
@@ -154,13 +161,21 @@ public class IndexManager {
             }
         }
     }
+    private void createAllIndexes(int dataRelease, boolean dropIndexesFirst) throws IOException {
+        Map<String, List<Map<String, ObjectMap>>> indexes = getIndexesFromFile();
 
+        for (String key : indexes.keySet()) {
+            String collectionName = buildCollectionName(key, dataRelease);
+            logger.info("Creating index for collection {}", collectionName);
+            mongoDBIndexUtils.createIndexes(collectionName, indexes.get(key), dropIndexesFirst);
+            logger.info("Done.");
+        }
+    }
     private void checkIndexes() throws IOException {
         if (indexes == null) {
             indexes = getIndexesFromFile();
         }
     }
-
     private Map<String, List<Map<String, ObjectMap>>> getIndexesFromFile() throws IOException {
         ObjectMapper objectMapper = generateDefaultObjectMapper();
         Map<String, List<Map<String, ObjectMap>>> indexes = new HashMap<>();
