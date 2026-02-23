@@ -28,8 +28,8 @@ jobs:
 
   test:
     name: Test and push Sonar analysis
-    needs: build
     runs-on: ${{ vars.UBUNTU_VERSION }}
+    needs: build
     steps:
       - uses: actions/checkout@v4
         with:
