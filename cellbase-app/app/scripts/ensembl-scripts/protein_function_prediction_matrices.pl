@@ -69,7 +69,7 @@ $jsonVersion->{"urls"} = \@urls;
 print "Generating the JSON file for the Sift version.\n";
 $jsonVersion->{"id"} = "sift";
 $jsonVersion->{"name"} = "Sift";
-open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file\n";
+open(FILE, ">".$outdir."/siftVersion.json") || die "error opening file [$outdir/siftVersion.json]: $!\n";
 print FILE to_json($jsonVersion) . "\n";
 close(FILE);
 
@@ -77,7 +77,7 @@ close(FILE);
 print "Generating the JSON file for the PolyPhen version\n";
 $jsonVersion->{"id"} = "polyphen";
 $jsonVersion->{"name"} = "PolyPhen";
-open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file\n";
+open(FILE, ">".$outdir."/polyphenVersion.json") || die "error opening file [$outdir/polyphenVersion.json]: $!\n";
 print FILE to_json($jsonVersion) . "\n";
 close(FILE);
 
@@ -158,7 +158,8 @@ print "\n";
 #my @all_chroms = @{$slice_adaptor->fetch_all('chromosome')};
 foreach my $chr(@chromosomes) {
 	my @transcripts = @{$chr->get_all_Transcripts()};
-	open(FILE, ">".$outdir."/prot_func_pred_chr_".$chr->seq_region_name.".json") || die "error opening file\n";
+	my $filename = $outdir."/prot_func_pred_chr_".$chr->seq_region_name.".json";
+	open(FILE, ">".$filename) || die "error opening file [$filename]: $!\n";
 	print @transcripts." transcripts fetched!\n";
 	foreach my $trans(@transcripts) {
 		if($trans->biotype eq 'protein_coding') {
