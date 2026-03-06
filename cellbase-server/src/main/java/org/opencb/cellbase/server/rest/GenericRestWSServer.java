@@ -61,6 +61,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.opencb.cellbase.core.ParamConstants.*;
@@ -84,6 +86,11 @@ public class GenericRestWSServer implements IWSServer {
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+    private static final ExecutorService STATS_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "cellbase-stats-writer");
+        t.setDaemon(true);
+        return t;
+    });
     protected long startTime;
     protected static Logger logger;
 
@@ -488,24 +495,32 @@ public class GenericRestWSServer implements IWSServer {
 
         Response jsonResponse = createJsonResponse(queryResponse);
 
-        // Update API key stats, if necessary (i.e., ignore meta endpoints)
+        // Update API key stats asynchronously (non-blocking), ignore meta endpoints
         try {
             if (!uriInfo.getPath().contains("/meta/")) {
-                String apiKey = getApiKey();
-                MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
-                long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
-                // Check number of annotated variants
-                long numAnnotatedVariants = 0;
+                final String statsApiKey = getApiKey();
+                final long bytes = (jsonResponse.getEntity() != null) ? jsonResponse.getEntity().toString().length() : 0;
+                final long numAnnotatedVariants;
                 if (uriInfo.getPath().contains("/variant") && uriInfo.getPath().contains("/annotation")) {
                     numAnnotatedVariants = queryResponse.allResultsSize();
+                } else {
+                    numAnnotatedVariants = 0;
                 }
-                metaManager.incApiKeyStats(apiKey, 1, numAnnotatedVariants, queryResponse.getTime(), bytes);
+                final long time = queryResponse.getTime();
+                STATS_EXECUTOR.submit(() -> {
+                    try {
+                        MetaManager metaManager = cellBaseManagerFactory.getMetaManager();
+                        metaManager.incApiKeyStats(statsApiKey, 1, numAnnotatedVariants, time, bytes);
+                    } catch (Exception e) {
+                        logger.warn("Failed to update API key stats asynchronously: {}", e.getMessage());
+                    }
+                });
             }
-        } catch (CellBaseException ex) {
-            return createErrorResponse(ex);
+        } catch (Exception ex) {
+            logger.warn("Failed to submit API key stats update: {}", ex.getMessage());
         }
 
-        return  jsonResponse;
+        return jsonResponse;
     }
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {

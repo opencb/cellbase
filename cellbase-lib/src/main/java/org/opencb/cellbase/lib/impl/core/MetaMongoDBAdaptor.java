@@ -169,17 +169,20 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         andBsonList.add(Filters.eq("date", date));
         Bson query = Filters.and(andBsonList);
 
-        Bson update = Updates.combine(Updates.inc("numQueries", incNumQueries),
+        Bson update = Updates.combine(
+                Updates.inc("numQueries", incNumQueries),
                 Updates.inc("numAnnotatedVariants", incNumAnnotatedVariants),
                 Updates.inc("duration", incDuration),
-                Updates.inc("outputBytes", incOuputBytes));
+                Updates.inc("outputBytes", incOuputBytes),
+                Updates.setOnInsert("apiKey", apiKey),
+                Updates.setOnInsert("date", date));
 
         Document projection = new Document("numQueries", true)
                 .append("numAnnotatedVariants", true)
                 .append("duration", true)
                 .append("outputBytes", true);
 
-        QueryOptions queryOptions = new QueryOptions("replace", true);
+        QueryOptions queryOptions = new QueryOptions("replace", true).append("upsert", true);
 
         return new CellBaseDataResult<>(apiKeyStatsMongoDBCollection.findAndUpdate(query, projection, null, update, ApiKeyStats.class,
                 queryOptions));

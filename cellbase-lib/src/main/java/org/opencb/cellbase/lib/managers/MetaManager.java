@@ -101,16 +101,10 @@ public class MetaManager extends AbstractManager {
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
         CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getApiKeyStats(apiKey, date);
 
-        long numQueries = 0;
-        long numAnnotatedVariants = 0;
-        long outputBytes = 0;
-        if (quotaResult.getNumResults() == 0) {
-            metaDBAdaptor.initApiKeyStats(apiKey, date);
-        } else {
-            numQueries = quotaResult.first().getNumQueries();
-            numAnnotatedVariants = quotaResult.first().getNumAnnotatedVariants();
-            outputBytes = quotaResult.first().getOutputBytes();
-        }
+        // If no stats exist yet for this period, treat all counters as 0 (incApiKeyStats will upsert on first write)
+        long numQueries = (quotaResult.getNumResults() == 0) ? 0 : quotaResult.first().getNumQueries();
+        long numAnnotatedVariants = (quotaResult.getNumResults() == 0) ? 0 : quotaResult.first().getNumAnnotatedVariants();
+        long outputBytes = (quotaResult.getNumResults() == 0) ? 0 : quotaResult.first().getOutputBytes();
         if (numQueries >= payload.getQuota().getMaxNumQueries()) {
             throw new CellBaseException("Maximum query limit reached: Your current API key has a quota of "
                     + payload.getQuota().getMaxNumQueries() + " queries; currently " + numQueries + " queries");
