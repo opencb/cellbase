@@ -33,18 +33,21 @@ import java.util.Map;
 
 public class MetaManager extends AbstractManager {
 
+    private final MetaMongoDBAdaptor metaDBAdaptor;
+
     public MetaManager(CellBaseConfiguration configuration) throws CellBaseException {
         super("Homo sapiens", null, configuration);
+        this.metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
     }
 
     @Deprecated
     public CellBaseDataResult getVersions(String species, String assembly) {
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         return metaDBAdaptor.getAll();
     }
 
     public CellBaseDataResult getVersions() {
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         return metaDBAdaptor.getAll();
     }
 
@@ -61,18 +64,18 @@ public class MetaManager extends AbstractManager {
     }
 
     public CellBaseDataResult<ApiKeyStats> getApiKeyStats(String apiKey, String date) {
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         return metaDBAdaptor.getApiKeyStats(apiKey, date);
     }
 
     public CellBaseDataResult<ApiKeyStats> getApiKeyStats(List<String> apiKeys, String startDate, String endDate) {
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         return metaDBAdaptor.getApiKeyStats(apiKeys, startDate, endDate);
     }
 
     public CellBaseDataResult<ApiKeyStats> getApiKeys() {
         long dbTimeStart = System.currentTimeMillis();
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         CellBaseIterator<ApiKeyStats> iterator = metaDBAdaptor.apiKeyStatsIterator();
         System.out.println("API Key Stats:");
         Map<String, ApiKeyStats> apiKeyStatsMap = new HashMap<>();
@@ -98,7 +101,7 @@ public class MetaManager extends AbstractManager {
     public void checkQuota(String apiKey, ApiKeyJwtPayload payload) throws CellBaseException {
         String date = getApiKeyStatsDate();
 
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         CellBaseDataResult<ApiKeyStats> quotaResult = metaDBAdaptor.getApiKeyStats(apiKey, date);
 
         // If no stats exist yet for this period, treat all counters as 0 (incApiKeyStats will upsert on first write)
@@ -125,7 +128,7 @@ public class MetaManager extends AbstractManager {
                                              long incOutputBytes) {
         String date = getApiKeyStatsDate();
 
-        MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor();
+
         return metaDBAdaptor.incApiKeyStats(apiKey, date, incNumQueries, incNumAnnotatedVariants, incDuration, incOutputBytes);
     }
 
