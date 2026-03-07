@@ -22,6 +22,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.SampleEntry;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantQuery;
 import org.opencb.cellbase.core.api.query.LogicalList;
@@ -37,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -54,15 +56,44 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantManager = cellBaseManagerFactory.getVariantManager(SPECIES, ASSEMBLY);
     }
 
-    // TODO: to be finished - properly implemented
-    @Disabled
     @Test
-    public void testGetFunctionalScoreVariant() throws Exception {
-//        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
-        CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
-                new QueryOptions(), dataRelease.getRelease());
+    public void testGetFunctionalScoreVariantValidApiKey() throws Exception {
+        Variant variant = Variant.parseVariant("X:32896535:A:T");
+        CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(variant, new QueryOptions(),
+                HGMD_CADD_ACCESS_API_KEY, dataRelease.getRelease());
 
-        System.out.println("Num. of results: " + functionalScoreVariant.getNumResults());
+        assertEquals(2, functionalScoreVariant.getNumResults());
+    }
+
+    @Test
+    public void testGetFunctionalScoreVariantInvalidApiKey() throws Exception {
+        Variant variant = Variant.parseVariant("X:32896535:A:T");
+        CellBaseDataResult functionalScoreVariant = variantManager.getFunctionalScoreVariant(variant, new QueryOptions(),
+                SPLICEAI_ACCESS_API_KEY, dataRelease.getRelease());
+
+        assertEquals(0, functionalScoreVariant.getNumResults());
+        System.out.println("functionalScoreVariant.getEvents() = " + functionalScoreVariant.getEvents());
+    }
+
+    @Test
+    public void testGetFunctionalScoreVariantListValidApiKey() throws Exception {
+        List<Variant> variants = Arrays.asList(Variant.parseVariant("X:32896417:T:G"), Variant.parseVariant("X:32896535:A:T"));
+        List<CellBaseDataResult<Score>> functionalScoreVariantList = variantManager.getFunctionalScoreVariant(variants, new QueryOptions(),
+                HGMD_CADD_ACCESS_API_KEY, dataRelease.getRelease());
+        for (CellBaseDataResult<Score> functionalScoreVariant : functionalScoreVariantList) {
+            assertTrue(functionalScoreVariant.getNumResults() > 0);
+        }
+    }
+
+    @Test
+    public void testGetFunctionalScoreVariantListInvalidApiKey() throws Exception {
+        List<Variant> variants = Arrays.asList(Variant.parseVariant("X:32896417:T:G"), Variant.parseVariant("X:32896535:A:T"));
+        List<CellBaseDataResult<Score>> functionalScoreVariantList = variantManager.getFunctionalScoreVariant(variants, new QueryOptions(),
+                HGMD_SPLICEAI_ACCESS_API_KEY, dataRelease.getRelease());
+        for (CellBaseDataResult<Score> functionalScoreVariant : functionalScoreVariantList) {
+            assertEquals(0, functionalScoreVariant.getNumResults());
+            System.out.println("functionalScoreVariant.getEvents() = " + functionalScoreVariant.getEvents());
+        }
     }
 
     @Test

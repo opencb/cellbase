@@ -194,7 +194,7 @@ public class ExportCommandExecutor extends CommandExecutor {
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA: {
                             // Export data
                             VariantManager variantManager = managerFactory.getVariantManager(species, assembly);
-                            CellBaseDataResult<GenomicScoreRegion> results = variantManager.getFunctionalScoreRegion(regions, null,
+                            CellBaseDataResult<GenomicScoreRegion> results = variantManager.getFunctionalScoreRegion(regions, null, apiKey,
                                     dataRelease);
                             counter = writeExportedData(results.getResults(), "cadd", output);
                             counterMsg = counter + " CADD items";

@@ -35,6 +35,10 @@ public final class ApiKeyLicensedDataUtils {
     public static final Set<String> LICENSED_CLINICAL_DATA = new HashSet<>(Arrays.asList("cosmic", "hgmd"));
     public static final Set<String> UNLICENSED_CLINICAL_DATA = new HashSet<>(Collections.singletonList("clinvar"));
 
+    public static final int NUM_VARIANT_FUNCTIONAL_SCORE_SOURCES = 1;
+    public static final Set<String> LICENSED_VARIANT_FUNCTIONAL_SCORE_SOURCES = new HashSet<>(Collections.singletonList("cadd"));
+
+
     private ApiKeyLicensedDataUtils() {
     }
 
